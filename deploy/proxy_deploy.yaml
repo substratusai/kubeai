@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: proxy-controller
+  labels:
+    app: proxy-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: proxy-controller
+  template:
+    metadata:
+      labels:
+        app: proxy-controller
+    spec:
+      serviceAccountName: proxy-controller
+      containers:
+      - name: main
+        image: proxy-controller

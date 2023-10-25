@@ -1,0 +1,18 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: golang-proxy
+build:
+  artifacts:
+    - image: proxy-controller
+      docker:
+        dockerfile: Dockerfile
+manifests:
+  rawYaml:
+    - deploy/backend_deploy.yaml
+    - deploy/backend_service.yaml
+    - deploy/proxy_serviceaccount.yaml
+    - deploy/proxy_role.yaml
+    - deploy/proxy_rolebinding.yaml
+    - deploy/proxy_deploy.yaml
+    - deploy/proxy_service.yaml
