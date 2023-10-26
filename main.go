@@ -75,10 +75,13 @@ func run() error {
 		return fmt.Errorf("starting manager: %w", err)
 	}
 
+	fifo := NewFIFOQueueManager(1, 1000)
+
 	endpoints, err := NewEndpointsManager(mgr)
 	if err != nil {
 		return fmt.Errorf("setting up endpoint manager: %w", err)
 	}
+	endpoints.EndpointSizeCallback = fifo.UpdateQueueSize
 
 	scaler, err := NewScalerManager(mgr)
 	if err != nil {
@@ -87,13 +90,11 @@ func run() error {
 	scaler.Namespace = namespace
 	scaler.ScaleDownPeriod = 30 * time.Second
 
-	fifo := NewFIFOQueueManager(1)
-
-	autoscaler := &Autoscaler{
-		Interval: 3 * time.Second,
-		Scaler:   scaler,
-		FIFO:     fifo,
-	}
+	autoscaler := NewAutoscaler()
+	autoscaler.Interval = 3 * time.Second
+	autoscaler.AverageCount = 10 // 10 * 3 seconds = 30 sec avg
+	autoscaler.Scaler = scaler
+	autoscaler.FIFO = fifo
 	go autoscaler.Start()
 
 	handler := &Handler{

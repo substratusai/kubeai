@@ -15,7 +15,7 @@ import (
 func NewEndpointsManager(mgr ctrl.Manager) (*EndpointsManager, error) {
 	r := &EndpointsManager{}
 	r.Client = mgr.GetClient()
-	r.endpoints = map[string]*endpoints{}
+	r.endpoints = map[string]*endpointGroup{}
 	if err := r.SetupWithManager(mgr); err != nil {
 		return nil, err
 	}
@@ -25,8 +25,10 @@ func NewEndpointsManager(mgr ctrl.Manager) (*EndpointsManager, error) {
 type EndpointsManager struct {
 	client.Client
 
+	EndpointSizeCallback func(model string, size int)
+
 	endpointsMtx sync.Mutex
-	endpoints    map[string]*endpoints
+	endpoints    map[string]*endpointGroup
 }
 
 func (r *EndpointsManager) SetupWithManager(mgr ctrl.Manager) error {
@@ -53,18 +55,29 @@ func (r *EndpointsManager) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 		return ctrl.Result{}, fmt.Errorf("listing endpointslices: %w", err)
 	}
 
-	var ips []string
+	ips := map[string]struct{}{}
 	for _, sliceItem := range sliceList.Items {
 		for _, endpointItem := range sliceItem.Endpoints {
-			ips = append(ips, endpointItem.Addresses...)
+			ready := endpointItem.Conditions.Ready
+			if ready != nil && *ready {
+				for _, ip := range endpointItem.Addresses {
+					ips[ip] = struct{}{}
+				}
+			}
 		}
 	}
-	r.getEndpoints(serviceName).set(ips)
+
+	priorLen := r.getEndpoints(serviceName).lenIPs()
+	r.getEndpoints(serviceName).setIPs(ips)
+
+	if priorLen != len(ips) {
+		r.EndpointSizeCallback(serviceName, len(ips))
+	}
 
 	return ctrl.Result{}, nil
 }
 
-func (r *EndpointsManager) getEndpoints(service string) *endpoints {
+func (r *EndpointsManager) getEndpoints(service string) *endpointGroup {
 	r.endpointsMtx.Lock()
 	e, ok := r.endpoints[service]
 	if !ok {
@@ -75,6 +88,6 @@ func (r *EndpointsManager) getEndpoints(service string) *endpoints {
 	return e
 }
 
-func (r *EndpointsManager) GetIPs(ctx context.Context, service string) []string {
-	return r.getEndpoints(service).get()
+func (r *EndpointsManager) GetIP(ctx context.Context, service string) string {
+	return r.getEndpoints(service).getIP()
 }

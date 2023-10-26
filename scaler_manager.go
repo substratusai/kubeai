@@ -56,6 +56,14 @@ func (r *ScalerManager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 		return ctrl.Result{}, fmt.Errorf("get: %w", err)
 	}
 
+	//labels := d.GetLabels()
+	//if labels == nil {
+	//	return ctrl.Result{}, nil
+	//}
+	//if labels["lingo"] == "enabled" {
+	//	return ctrl.Result{}, nil
+	//}
+
 	var scale autoscalingv1.Scale
 	if err := r.SubResource("scale").Get(ctx, &d, &scale); err != nil {
 		return ctrl.Result{}, fmt.Errorf("get scale: %w", err)

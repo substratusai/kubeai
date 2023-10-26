@@ -4,6 +4,7 @@ metadata:
   name: backend
   labels:
     app: backend
+    lingo: enabled
 spec:
   replicas: 0
   selector:

@@ -63,7 +63,7 @@ func (s *scaler) compareScales(current, desired int32, zeroToOne bool) {
 
 	if s.desiredScale > s.currentScale {
 		// Scale up immediately.
-		s.scaleFunc(s.desiredScale)
+		go s.scaleFunc(s.desiredScale)
 		s.scaleDownStarted = false
 	} else if s.desiredScale == s.currentScale {
 		// Do nothing, schedule nothing.

@@ -24,20 +24,20 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	modelName := r.Header.Get("X-Model")
 	log.Println("model:", modelName)
 
-	go h.Scaler.AtLeastOne(modelName)
-
-	log.Println("Waiting for IPs")
-	ips := h.Endpoints.GetIPs(r.Context(), modelName)
-	log.Println("Got IPs (%v)", len(ips))
+	h.Scaler.AtLeastOne(modelName)
 
 	log.Println("Entering queue")
 	unqueue := h.FIFO.Enqueue(modelName)
 	log.Println("Admitted into queue")
 	defer unqueue()
 
+	log.Println("Waiting for IPs")
+	ip := h.Endpoints.GetIP(r.Context(), modelName)
+	log.Printf("Got IP: %v", ip)
+
 	// TODO: Avoid creating new reverse proxies for each request.
-	// TODO: Don't just all the first IP every time... round robin or something.
-	newReverseProxy(ips[0]).ServeHTTP(w, r)
+	// TODO: Consider implementing a round robin scheme.
+	newReverseProxy(ip).ServeHTTP(w, r)
 }
 
 func newReverseProxy(ip string) *httputil.ReverseProxy {

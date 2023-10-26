@@ -2,41 +2,69 @@ package main
 
 import (
 	"sync"
+	"sync/atomic"
 )
 
-func newEndpoints() *endpoints {
-	e := &endpoints{}
+func newEndpoints() *endpointGroup {
+	e := &endpointGroup{}
+	e.endpoints = make(map[string]endpoint)
 	e.active = sync.NewCond(&e.mtx)
 	return e
 }
 
-type endpoints struct {
-	ips    []string
-	active *sync.Cond
-	mtx    sync.Mutex
+type endpoint struct {
+	inFlight *atomic.Int64
 }
 
-func (e *endpoints) get() []string {
+type endpointGroup struct {
+	endpoints map[string]endpoint
+	active    *sync.Cond
+	mtx       sync.Mutex
+}
+
+func (e *endpointGroup) getIP() string {
 	e.mtx.Lock()
 	defer e.mtx.Unlock()
 
-	for len(e.ips) == 0 {
+	for len(e.endpoints) == 0 {
 		e.active.Wait()
 	}
 
-	// Return copy of IPs slice.
-	ips := make([]string, len(e.ips))
-	copy(ips, e.ips)
-	return ips
+	var bestIP string
+	var minInFlight int
+	for ip := range e.endpoints {
+		inFlight := int(e.endpoints[ip].inFlight.Load())
+		if bestIP == "" || inFlight < minInFlight {
+			bestIP = ip
+			minInFlight = inFlight
+		}
+	}
+
+	return bestIP
 }
 
-func (e *endpoints) set(ips []string) {
-	e.mtx.Lock()
-	defer e.mtx.Unlock()
+func (g *endpointGroup) lenIPs() int {
+	g.mtx.Lock()
+	defer g.mtx.Unlock()
+	return len(g.endpoints)
+}
 
-	e.ips = ips
+func (g *endpointGroup) setIPs(ips map[string]struct{}) {
+	g.mtx.Lock()
+	defer g.mtx.Unlock()
 
-	if len(e.ips) > 0 {
-		e.active.Broadcast()
+	for ip := range ips {
+		if _, ok := g.endpoints[ip]; !ok {
+			g.endpoints[ip] = endpoint{inFlight: &atomic.Int64{}}
+		}
+	}
+	for ip := range g.endpoints {
+		if _, ok := ips[ip]; !ok {
+			delete(g.endpoints, ip)
+		}
+	}
+
+	if len(g.endpoints) > 0 {
+		g.active.Broadcast()
 	}
 }
