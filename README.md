@@ -1,13 +1,13 @@
 # Lingo - LLM Serving
 
-Inference server and gateway for Large Language Models
+Autoscaling LLM serving on K8s
 
 Insert demo gif
 
 🚀 Serve popular OSS LLM models in minutes on CPUs or GPUs  
-⚖️  Automatically scale your LLM up and down based on requests  
-⚖️  Scale to 0 to save costs  
+⚖️  Automatically scale up and down, all the way to 0  
 ⬆️  Built-in gateway that batches requests while scaling happens  
+🛠️ Easy to install, No complex dependencies such as Istio or Knative  
 ☁️  Provide a unified API across clouds for serving LLMs  
 
 Support the project by adding a star! ❤️
@@ -18,41 +18,40 @@ Join us on Discord:
 </a>
 
 ## Quickstart
-
-Create a file named `mistral-7b.yaml` with following content:
-```yaml
-name: mistral-7b-vllm
-serving: vllm
-model:
-  source:
-    huggingface:
-      id: hf-org/mistral-7b
-
-# Remove if running CPU only
-resources:
-  accelerators:
-    name: nvidia-l4
-    count: 1
-
-# replicas: 1 # just use min max
-autoscaling:
-  min: 0 # default is 0
-  max: 3 # default is 3
-  concurrentRequests: 4 # default is 16
+Install Lingo with default models:
+```bash
+helm repo add substratusai https://substratusai.github.io/helm
+helm install lingo substratusai/lingo --wait
 ```
 
+Lingo will be installed with various LLMs by default. You
+can see the available models by running:
+```bash
+kubectl get deployment -l lingo-model
+```
+The deployments all have 0 replicas by default.
 
-CLI
-```
-lingo serve -f mistral-7b.yaml # OR
-lingo serve mistral-7b --huggingface-model hf_org/model_id --min 0 --max 3
-> Your endpoint is available at http://xx.com/api/mistral-7b
+You can expose the Lingo Gateway service externally
+or setup a port-forward. For the quickstart, we're
+using port-forwarding:
+```bash
+kubectl port-forward service/lingo-gateway 8080:80
 ```
 
-Run inference:
+Send a request to the mistral-7b-instruct model that
+was deployed:
+```bash
+url http://localhost:8080/v1/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model": "mistralai/Mistral-7B-Instruct-v0.1", "prompt": "<s>[INST]Who was the first president of the United States?[/INST]", "max_tokens": 40}'
 ```
-curl /api/mistral-7b
-```
+The first request can take up to 10 minutes,
+because of potentially node provisioning, pulling the
+container image and downloading the model before it can
+serve the request.
+
+## Architecture
+TODO
 
 ## Creators
 Feel free to contact any of us:
