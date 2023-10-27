@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"sync"
 	"sync/atomic"
 )
@@ -13,6 +14,7 @@ func newEndpoints() *endpointGroup {
 }
 
 type endpoint struct {
+	port     int32
 	inFlight *atomic.Int64
 }
 
@@ -22,7 +24,7 @@ type endpointGroup struct {
 	mtx       sync.Mutex
 }
 
-func (e *endpointGroup) getIP() string {
+func (e *endpointGroup) getHost() string {
 	e.mtx.Lock()
 	defer e.mtx.Unlock()
 
@@ -31,16 +33,18 @@ func (e *endpointGroup) getIP() string {
 	}
 
 	var bestIP string
+	var port int32
 	var minInFlight int
 	for ip := range e.endpoints {
 		inFlight := int(e.endpoints[ip].inFlight.Load())
 		if bestIP == "" || inFlight < minInFlight {
 			bestIP = ip
+			port = e.endpoints[ip].port
 			minInFlight = inFlight
 		}
 	}
 
-	return bestIP
+	return fmt.Sprintf("%s:%v", bestIP, port)
 }
 
 func (g *endpointGroup) lenIPs() int {
@@ -49,13 +53,13 @@ func (g *endpointGroup) lenIPs() int {
 	return len(g.endpoints)
 }
 
-func (g *endpointGroup) setIPs(ips map[string]struct{}) {
+func (g *endpointGroup) setIPs(ips map[string]struct{}, port int32) {
 	g.mtx.Lock()
 	defer g.mtx.Unlock()
 
 	for ip := range ips {
 		if _, ok := g.endpoints[ip]; !ok {
-			g.endpoints[ip] = endpoint{inFlight: &atomic.Int64{}}
+			g.endpoints[ip] = endpoint{inFlight: &atomic.Int64{}, port: port}
 		}
 	}
 	for ip := range g.endpoints {

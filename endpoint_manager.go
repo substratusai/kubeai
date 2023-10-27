@@ -56,7 +56,14 @@ func (r *EndpointsManager) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 
 	ips := map[string]struct{}{}
+	var port int32
 	for _, sliceItem := range sliceList.Items {
+		if len(sliceItem.Ports) > 0 {
+			p := sliceItem.Ports[0].Port
+			if p != nil {
+				port = *p
+			}
+		}
 		for _, endpointItem := range sliceItem.Endpoints {
 			ready := endpointItem.Conditions.Ready
 			if ready != nil && *ready {
@@ -68,7 +75,7 @@ func (r *EndpointsManager) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 
 	priorLen := r.getEndpoints(serviceName).lenIPs()
-	r.getEndpoints(serviceName).setIPs(ips)
+	r.getEndpoints(serviceName).setIPs(ips, port)
 
 	if priorLen != len(ips) {
 		r.EndpointSizeCallback(serviceName, len(ips))
@@ -88,6 +95,6 @@ func (r *EndpointsManager) getEndpoints(service string) *endpointGroup {
 	return e
 }
 
-func (r *EndpointsManager) GetIP(ctx context.Context, service string) string {
-	return r.getEndpoints(service).getIP()
+func (r *EndpointsManager) GetHost(ctx context.Context, service string) string {
+	return r.getEndpoints(service).getHost()
 }

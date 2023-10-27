@@ -32,18 +32,18 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer unqueue()
 
 	log.Println("Waiting for IPs")
-	ip := h.Endpoints.GetIP(r.Context(), modelName)
-	log.Printf("Got IP: %v", ip)
+	host := h.Endpoints.GetHost(r.Context(), modelName)
+	log.Printf("Got host: %v", host)
 
 	// TODO: Avoid creating new reverse proxies for each request.
 	// TODO: Consider implementing a round robin scheme.
-	newReverseProxy(ip).ServeHTTP(w, r)
+	newReverseProxy(host).ServeHTTP(w, r)
 }
 
-func newReverseProxy(ip string) *httputil.ReverseProxy {
+func newReverseProxy(host string) *httputil.ReverseProxy {
 	proxy := httputil.NewSingleHostReverseProxy(&url.URL{
 		Scheme: "http",
-		Host:   ip + ":80",
+		Host:   host,
 	})
 	return proxy
 }
