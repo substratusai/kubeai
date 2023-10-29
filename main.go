@@ -83,7 +83,7 @@ func run() error {
 	}
 	endpoints.EndpointSizeCallback = fifo.UpdateQueueSize
 
-	scaler, err := NewScalerManager(mgr)
+	scaler, err := NewDeploymentManager(mgr)
 	if err != nil {
 		return fmt.Errorf("setting up autoscaler: %w", err)
 	}
@@ -98,9 +98,9 @@ func run() error {
 	go autoscaler.Start()
 
 	handler := &Handler{
-		Scaler:    scaler,
-		Endpoints: endpoints,
-		FIFO:      fifo,
+		Deployments: scaler,
+		Endpoints:   endpoints,
+		FIFO:        fifo,
 	}
 	server := &http.Server{Addr: ":8080", Handler: handler}
 

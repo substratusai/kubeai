@@ -17,9 +17,8 @@ type Autoscaler struct {
 	Interval     time.Duration
 	AverageCount int
 
-	Scaler *ScalerManager
-	// TODO: FIFOQueueManager should manage per backend not per model.
-	FIFO *FIFOQueueManager
+	Scaler *DeploymentManager
+	FIFO   *FIFOQueueManager
 
 	movingAvgQueueSizeMtx sync.Mutex
 	movingAvgQueueSize    map[string]*movingAvg
@@ -30,7 +29,7 @@ func (a *Autoscaler) Start() {
 		log.Println("Calculating scales for all")
 		for model, waitCount := range a.FIFO.WaitCounts() {
 			if model == "proxy-controller" {
-				// TODO: Remove this after selecting models based on labels.
+				// TODO: Remove this after selecting models based on labels/annotations.
 				continue
 			}
 			avg := a.getMovingAvgQueueSize(model)

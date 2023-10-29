@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"sync"
 	"time"
 
@@ -15,17 +16,18 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func NewScalerManager(mgr ctrl.Manager) (*ScalerManager, error) {
-	r := &ScalerManager{}
+func NewDeploymentManager(mgr ctrl.Manager) (*DeploymentManager, error) {
+	r := &DeploymentManager{}
 	r.Client = mgr.GetClient()
 	r.scalers = map[string]*scaler{}
+	r.modelToDeployment = map[string]string{}
 	if err := r.SetupWithManager(mgr); err != nil {
 		return nil, err
 	}
 	return r, nil
 }
 
-type ScalerManager struct {
+type DeploymentManager struct {
 	client.Client
 
 	Namespace string
@@ -34,49 +36,57 @@ type ScalerManager struct {
 
 	scalersMtx sync.Mutex
 	scalers    map[string]*scaler
+
+	modelToDeploymentMtx sync.RWMutex
+	modelToDeployment    map[string]string
 }
 
-func (r *ScalerManager) SetupWithManager(mgr ctrl.Manager) error {
+func (r *DeploymentManager) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&appsv1.Deployment{}).
 		Complete(r)
 }
 
-func (r *ScalerManager) AtLeastOne(model string) {
+func (r *DeploymentManager) AtLeastOne(model string) {
 	r.getScaler(model).AtLeastOne()
 }
 
-func (r *ScalerManager) SetDesiredScale(model string, n int32) {
+func (r *DeploymentManager) SetDesiredScale(model string, n int32) {
 	r.getScaler(model).SetDesiredScale(n)
 }
 
-func (r *ScalerManager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *DeploymentManager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	var d appsv1.Deployment
 	if err := r.Get(ctx, req.NamespacedName, &d); err != nil {
 		return ctrl.Result{}, fmt.Errorf("get: %w", err)
 	}
 
-	//labels := d.GetLabels()
-	//if labels == nil {
-	//	return ctrl.Result{}, nil
-	//}
-	//if labels["lingo"] == "enabled" {
-	//	return ctrl.Result{}, nil
-	//}
+	if ann := d.GetAnnotations(); ann != nil {
+		modelCSV, ok := ann["lingo-models"]
+		if !ok {
+			return ctrl.Result{}, nil
+		}
+		models := strings.Split(modelCSV, ",")
+		if len(models) == 0 {
+			return ctrl.Result{}, nil
+		}
+		for _, model := range models {
+			r.setModelMapping(strings.TrimSpace(model), d.Name)
+		}
+	}
 
 	var scale autoscalingv1.Scale
 	if err := r.SubResource("scale").Get(ctx, &d, &scale); err != nil {
 		return ctrl.Result{}, fmt.Errorf("get scale: %w", err)
 	}
 
-	// TODO: Use a label.
 	model := req.Name
 	r.getScaler(model).SetCurrentScale(scale.Spec.Replicas)
 
 	return ctrl.Result{}, nil
 }
 
-func (r *ScalerManager) getScaler(model string) *scaler {
+func (r *DeploymentManager) getScaler(model string) *scaler {
 	r.scalersMtx.Lock()
 	b, ok := r.scalers[model]
 	if !ok {
@@ -87,11 +97,10 @@ func (r *ScalerManager) getScaler(model string) *scaler {
 	return b
 }
 
-func (r *ScalerManager) scaleFunc(ctx context.Context, model string) func(int32) error {
+func (r *DeploymentManager) scaleFunc(ctx context.Context, model string) func(int32) error {
 	return func(n int32) error {
 		log.Printf("Scaling model %q: %v", model, n)
 
-		// TODO: Use model label.
 		req := types.NamespacedName{Namespace: r.Namespace, Name: model}
 		var d appsv1.Deployment
 		if err := r.Get(ctx, req, &d); err != nil {
@@ -113,4 +122,17 @@ func (r *ScalerManager) scaleFunc(ctx context.Context, model string) func(int32)
 
 		return nil
 	}
+}
+
+func (r *DeploymentManager) setModelMapping(model, deployment string) {
+	r.modelToDeploymentMtx.Lock()
+	r.modelToDeployment[model] = deployment
+	r.modelToDeploymentMtx.Unlock()
+}
+
+func (r *DeploymentManager) ResolveDeployment(model string) (string, bool) {
+	r.modelToDeploymentMtx.RLock()
+	deploy, ok := r.modelToDeployment[model]
+	r.modelToDeploymentMtx.RUnlock()
+	return deploy, ok
 }
