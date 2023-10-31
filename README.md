@@ -16,11 +16,11 @@ Join us on Discord:
 <img alt="discord-invite" src="https://dcbadge.vercel.app/api/server/JeXhcmjZVm?style=flat">
 </a>
 
-## Quickstart
+## Quickstart (Any K8s, Kind, GKE, EKS etc)
 Add the Helm repo:
 ```bash
 helm repo add substratusai https://substratusai.github.io/helm
-help repo update
+helm repo update
 ```
 
 Install the Lingo controller and proxy:
@@ -33,7 +33,7 @@ Deploy an embedding model:
 helm install stapi-minilm-l6-v2 substratusai/stapi \
   --set model=all-MiniLM-L6-v2 \
   --set deploymentAnnotations.lingo-models=text-embedding-ada-002 \
-  --set replicas=0
+  --set replicaCount=0
 ```
 
 Deploy a LLM (mistral-7b-instruct) using vLLM:
@@ -41,7 +41,7 @@ Deploy a LLM (mistral-7b-instruct) using vLLM:
 helm install mistral-7b-instruct substratusai/vllm \
   --set model=mistralai/Mistral-7B-Instruct-v0.1 \
   --set deploymentAnnotations.lingo-models=mistral-7b-instruct-v0.1 \
-  --set replicas=0
+  --set replicaCount=0
 ```
 Notice how the deployment has 0 replicas. That's fine because Lingo
 will automatically scale the embedding model server from 0 to 1
@@ -78,7 +78,7 @@ was deployed:
 ```bash
 curl http://localhost:8080/v1/completions \
   -H "Content-Type: application/json" \
-  -d '{"model": "mistralai/Mistral-7B-Inst", "prompt": "<s>[INST]Who was the first president of the United States?[/INST]", "max_tokens": 40}'
+  -d '{"model": "mistral-7b-instruct-v0.1", "prompt": "<s>[INST]Who was the first president of the United States?[/INST]", "max_tokens": 40}'
 ```
 The first request to an LLM takes longer because
 those models require a GPU and require additional time
