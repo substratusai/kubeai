@@ -2,8 +2,6 @@
 
 Lingo is an OpenAI compatible LLM proxy and autoscaler for K8s
 
-Insert demo gif
-
 🚀  Serve popular OSS LLM models in minutes on CPUs or GPUs  
 🧮  Serve Embedding Model servers  
 ⚖️  Automatically scale up and down, all the way to 0  
@@ -27,7 +25,7 @@ help repo update
 
 Install the Lingo controller and proxy:
 ```bash
-helm install lingo substratusai/lingo --wait
+helm install lingo substratusai/lingo
 ```
 
 Deploy an embedding model:
@@ -51,7 +49,7 @@ once there is an incoming HTTP request.
 
 By default, the proxy is only accessible within the Kubernetes cluster. To access it from your local machine, set up a port forward:
 ```bash
-kubectl port-forward svc/proxy-controller 8080:80
+kubectl port-forward svc/lingo 8080:80
 ```
 
 In a separate terminal watch the pods:
