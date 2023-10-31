@@ -7,7 +7,7 @@ set -x
 PROJECT_ID=${PROJECT_ID:=$(gcloud config get project)}
 REGION=${REGION:-us-central1}
 ZONE=${ZONE:=${REGION}-a}
-L4_LOCATIONS="${REGION}-a"
+L4_LOCATIONS=$(gcloud compute accelerator-types list | grep L4 | grep ${REGION} | grep -v Workstation | awk '{ print $2 }' | tr '\n' ',' | sed 's/.$//')
 INSTALL_OPERATOR=${INSTALL_OPERATOR:-yes} # set to yes if you want to install operator
 
 # Enable required services.
