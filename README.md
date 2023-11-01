@@ -30,18 +30,22 @@ helm install lingo substratusai/lingo
 
 Deploy an embedding model:
 ```bash
-helm install stapi-minilm-l6-v2 substratusai/stapi \
-  --set model=all-MiniLM-L6-v2 \
-  --set deploymentAnnotations."lingo\.substratus\.ai/models"=text-embedding-ada-002 \
-  --set replicaCount=0
+helm install stapi-minilm-l6-v2 substratusai/stapi -f - << EOF
+model: all-MiniLM-L6-v2
+replicaCount: 0
+deploymentAnnotations:
+  lingo.substratus.ai/models: text-embedding-ada-002
+EOF
 ```
 
 Deploy a LLM (mistral-7b-instruct) using vLLM:
 ```bash
-helm install mistral-7b-instruct substratusai/vllm \
-  --set model=mistralai/Mistral-7B-Instruct-v0.1 \
-  --set deploymentAnnotations."lingo\.substratus\.ai/models"=mistral-7b-instruct-v0.1 \
-  --set replicaCount=0
+helm install mistral-7b-instruct substratusai/vllm -f - << EOF
+model: mistralai/Mistral-7B-Instruct-v0.1
+replicaCount: 0
+deploymentAnnotations:
+  lingo.substratus.ai/models: mistral-7b-instruct-v0.1
+EOF
 ```
 Notice how the deployment has 0 replicas. That's fine because Lingo
 will automatically scale the embedding model server from 0 to 1
