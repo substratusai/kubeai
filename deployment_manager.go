@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -15,6 +16,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
+
+const lingoDomain = "lingo.substratus.ai"
 
 func NewDeploymentManager(mgr ctrl.Manager) (*DeploymentManager, error) {
 	r := &DeploymentManager{}
@@ -62,7 +65,7 @@ func (r *DeploymentManager) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	if ann := d.GetAnnotations(); ann != nil {
-		modelCSV, ok := ann["lingo-models"]
+		modelCSV, ok := ann[lingoDomain+"/models"]
 		if !ok {
 			return ctrl.Result{}, nil
 		}
@@ -81,7 +84,11 @@ func (r *DeploymentManager) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	model := req.Name
-	r.getScaler(model).SetCurrentScale(scale.Spec.Replicas)
+	r.getScaler(model).UpdateState(
+		scale.Spec.Replicas,
+		getAnnotationInt32(d.GetAnnotations(), lingoDomain+"/min-replicas", 0),
+		getAnnotationInt32(d.GetAnnotations(), lingoDomain+"/max-replicas", 3),
+	)
 
 	return ctrl.Result{}, nil
 }
@@ -135,4 +142,23 @@ func (r *DeploymentManager) ResolveDeployment(model string) (string, bool) {
 	deploy, ok := r.modelToDeployment[model]
 	r.modelToDeploymentMtx.RUnlock()
 	return deploy, ok
+}
+
+func getAnnotationInt32(ann map[string]string, key string, defaultValue int32) int32 {
+	if ann == nil {
+		return defaultValue
+	}
+
+	str, ok := ann[key]
+	if !ok {
+		return defaultValue
+	}
+
+	value, err := strconv.Atoi(str)
+	if err != nil {
+		log.Printf("parsing annotation as int: %v", err)
+		return defaultValue
+	}
+
+	return int32(value)
 }

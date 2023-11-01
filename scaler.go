@@ -11,6 +11,8 @@ type scaler struct {
 	mtx          sync.Mutex
 	currentScale int32
 	desiredScale int32
+	minScale     int32
+	maxScale     int32
 
 	// scaleFuncMtx ensures the scale function is not run concurrently.
 	scaleFuncMtx sync.Mutex
@@ -26,14 +28,35 @@ func (s *scaler) AtLeastOne() {
 	s.compareScales(-1, -1, true)
 }
 
-func (s *scaler) SetCurrentScale(n int32) {
-	log.Printf("SetCurrentScale(%v)", n)
-	s.compareScales(n, -1, false)
+func (s *scaler) UpdateState(replicas, min, max int32) {
+	log.Printf("UpdateState(%v, %v, %v)", replicas, min, max)
+	s.setMinMax(min, max)
+	s.compareScales(replicas, -1, false)
 }
 
 func (s *scaler) SetDesiredScale(n int32) {
 	log.Printf("SetDesiredScale(%v)", n)
-	s.compareScales(-1, n, false)
+	s.compareScales(-1, s.applyMinMax(n), false)
+}
+
+func (s *scaler) setMinMax(min, max int32) {
+	s.mtx.Lock()
+	s.minScale = min
+	s.maxScale = max
+	s.mtx.Unlock()
+}
+
+func (s *scaler) applyMinMax(n int32) int32 {
+	s.mtx.Lock()
+	min := s.minScale
+	max := s.maxScale
+	s.mtx.Unlock()
+	if n < min {
+		n = min
+	} else if n > max {
+		n = max
+	}
+	return n
 }
 
 func (s *scaler) compareScales(current, desired int32, zeroToOne bool) {
