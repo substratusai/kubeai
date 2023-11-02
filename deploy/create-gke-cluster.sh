@@ -7,17 +7,16 @@ set -x
 PROJECT_ID=${PROJECT_ID:=$(gcloud config get project)}
 REGION=${REGION:-us-central1}
 ZONE=${ZONE:=${REGION}-a}
+LOCATION=${LOCATION:-"${REGION}"}
 L4_LOCATIONS=$(gcloud compute accelerator-types list | grep L4 | grep ${REGION} | grep -v Workstation | awk '{ print $2 }' | tr '\n' ',' | sed 's/.$//')
-INSTALL_OPERATOR=${INSTALL_OPERATOR:-yes} # set to yes if you want to install operator
 
 # Enable required services.
 gcloud services enable container.googleapis.com
-gcloud services enable artifactregistry.googleapis.com
 
 export CLUSTER_NAME=substratus
-if ! gcloud container clusters describe ${CLUSTER_NAME} --location ${REGION} -q >/dev/null; then
-gcloud container clusters create ${CLUSTER_NAME} --location ${REGION} \
-  --machine-type e2-medium --num-nodes 1 --min-nodes 1 --max-nodes 5 \
+if ! gcloud container clusters describe ${CLUSTER_NAME} --location ${LOCATION} -q >/dev/null; then
+gcloud container clusters create ${CLUSTER_NAME} --location ${LOCATION} \
+  --machine-type e2-standard-2 --num-nodes 1 --min-nodes 1 --max-nodes 5 \
   --autoscaling-profile optimize-utilization --enable-autoscaling \
   --node-locations ${ZONE} --workload-pool ${PROJECT_ID}.svc.id.goog \
   --enable-image-streaming --enable-shielded-nodes --shielded-secure-boot \
@@ -25,10 +24,10 @@ gcloud container clusters create ${CLUSTER_NAME} --location ${REGION} \
   --addons GcsFuseCsiDriver
 fi
 
-if ! gcloud container node-pools describe g2-standard-8 --cluster ${CLUSTER_NAME} --region ${REGION} -q >/dev/null; then
+if ! gcloud container node-pools describe g2-standard-8 --cluster ${CLUSTER_NAME} --location ${LOCATION} -q >/dev/null; then
 nodepool_args=(--spot --enable-autoscaling --enable-image-streaming
   --num-nodes=0 --min-nodes=0 --max-nodes=3 --cluster ${CLUSTER_NAME}
-  --node-locations "${L4_LOCATIONS}" --region ${REGION} --async)
+  --node-locations "${L4_LOCATIONS}" --location ${LOCATION} --async)
 
 gcloud container node-pools create g2-standard-8 \
   --accelerator type=nvidia-l4,count=1,gpu-driver-version=latest \
