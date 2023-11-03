@@ -2,6 +2,8 @@
 
 Lingo is an OpenAI compatible LLM proxy and autoscaler for K8s
 
+![lingo demo](lingo.gif)
+
 🚀  Serve popular OSS LLM models in minutes on CPUs or GPUs  
 🧮  Serve Embedding Model servers  
 ⚖️  Automatically scale up and down, all the way to 0  
