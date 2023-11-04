@@ -5,11 +5,9 @@ import (
 	"sync"
 )
 
-type DeploymentName string
-
 func NewFIFOQueueManager(size int, totalCapacity int) *FIFOQueueManager {
 	m := &FIFOQueueManager{}
-	m.queues = map[DeploymentName]*fifoQueue{}
+	m.queues = map[string]*fifoQueue{}
 	m.size = size
 	m.totalCapacity = totalCapacity
 	return m
@@ -24,15 +22,15 @@ type FIFOQueueManager struct {
 	totalCapacity int
 
 	mtx    sync.Mutex
-	queues map[DeploymentName]*fifoQueue
+	queues map[string]*fifoQueue
 }
 
-// WaitCounts returns the number of pending or in-progress requests for each model
-func (m *FIFOQueueManager) WaitCounts() map[DeploymentName]int64 {
+// WaitCounts returns the number of pending or in-progress requests for each deployment name
+func (m *FIFOQueueManager) WaitCounts() map[string]int64 {
 	m.mtx.Lock()
-	sizes := make(map[DeploymentName]int64, len(m.queues))
+	sizes := make(map[string]int64, len(m.queues))
 	for name, q := range m.queues {
-		sizes[DeploymentName(name)] = q.waiting.Load()
+		sizes[string(name)] = q.waiting.Load()
 	}
 	m.mtx.Unlock()
 	return sizes
@@ -54,11 +52,11 @@ func (m *FIFOQueueManager) UpdateQueueSize(deploymentName string, replicas int) 
 // if the model does not have a queue, a new queue is created.
 func (m *FIFOQueueManager) getQueue(deploymentName string) *fifoQueue {
 	m.mtx.Lock()
-	q, ok := m.queues[DeploymentName(deploymentName)]
+	q, ok := m.queues[deploymentName]
 	if !ok {
 		q = newFifoQueue(m.size, m.totalCapacity)
 		go q.start()
-		m.queues[DeploymentName(deploymentName)] = q
+		m.queues[deploymentName] = q
 	}
 	m.mtx.Unlock()
 	return q
