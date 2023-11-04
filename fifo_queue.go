@@ -8,6 +8,7 @@ import (
 )
 
 type fifoQueue struct {
+	// queued is a channel of channels that are waiting to be processed.
 	queued    chan chan struct{}
 	completed chan struct{}
 	waiting   atomic.Int64
@@ -26,7 +27,7 @@ func newFifoQueue(size, queueCapacity int) *fifoQueue {
 
 func (q *fifoQueue) start() {
 	log.Println("Starting new fifo queue")
-	var inProgress int
+	var inProgress int = 0
 	for {
 		fmt.Println("1")
 		fmt.Println("inProgress", inProgress, "getSize()", q.getSize())

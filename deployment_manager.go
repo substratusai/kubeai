@@ -38,10 +38,14 @@ type DeploymentManager struct {
 	ScaleDownPeriod time.Duration
 
 	scalersMtx sync.Mutex
-	scalers    map[string]*scaler
+
+	// scalers maps model names to scalers
+	scalers map[string]*scaler
 
 	modelToDeploymentMtx sync.RWMutex
-	modelToDeployment    map[string]string
+
+	// modelToDeployment maps model names to deployment names
+	modelToDeployment map[string]string
 }
 
 func (r *DeploymentManager) SetupWithManager(mgr ctrl.Manager) error {
@@ -93,22 +97,22 @@ func (r *DeploymentManager) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	return ctrl.Result{}, nil
 }
 
-func (r *DeploymentManager) getScaler(model string) *scaler {
+func (r *DeploymentManager) getScaler(modelName string) *scaler {
 	r.scalersMtx.Lock()
-	b, ok := r.scalers[model]
+	b, ok := r.scalers[modelName]
 	if !ok {
-		b = newScaler(r.ScaleDownPeriod, r.scaleFunc(context.TODO(), model))
-		r.scalers[model] = b
+		b = newScaler(r.ScaleDownPeriod, r.scaleFunc(context.TODO(), modelName))
+		r.scalers[modelName] = b
 	}
 	r.scalersMtx.Unlock()
 	return b
 }
 
-func (r *DeploymentManager) scaleFunc(ctx context.Context, model string) func(int32) error {
+func (r *DeploymentManager) scaleFunc(ctx context.Context, modelName string) func(int32) error {
 	return func(n int32) error {
-		log.Printf("Scaling model %q: %v", model, n)
+		log.Printf("Scaling model %q: %v", modelName, n)
 
-		req := types.NamespacedName{Namespace: r.Namespace, Name: model}
+		req := types.NamespacedName{Namespace: r.Namespace, Name: modelName}
 		var d appsv1.Deployment
 		if err := r.Get(ctx, req, &d); err != nil {
 			return fmt.Errorf("get: %w", err)
@@ -131,9 +135,9 @@ func (r *DeploymentManager) scaleFunc(ctx context.Context, model string) func(in
 	}
 }
 
-func (r *DeploymentManager) setModelMapping(model, deployment string) {
+func (r *DeploymentManager) setModelMapping(modelName, deploymentName string) {
 	r.modelToDeploymentMtx.Lock()
-	r.modelToDeployment[model] = deployment
+	r.modelToDeployment[modelName] = deploymentName
 	r.modelToDeploymentMtx.Unlock()
 }
 
