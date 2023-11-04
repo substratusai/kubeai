@@ -13,6 +13,7 @@ func NewAutoscaler() *Autoscaler {
 
 // Autoscaler is responsible for making continuous adjustments to
 // the scale of the backend. It is not responsible for scale-from-zero.
+// Each deployment has its own autoscaler.
 type Autoscaler struct {
 	Interval     time.Duration
 	AverageCount int
@@ -32,18 +33,18 @@ func (a *Autoscaler) Start() {
 			avg.Next(float64(waitCount))
 			flt := avg.Calculate()
 			ceil := math.Ceil(flt)
-			log.Printf("Average for model: %s: %v (ceil: %v), current wait count: %v", deploymentName, flt, ceil, waitCount)
+			log.Printf("Average for deployment: %s: %v (ceil: %v), current wait count: %v", deploymentName, flt, ceil, waitCount)
 			a.Scaler.SetDesiredScale(deploymentName, int32(ceil))
 		}
 	}
 }
 
-func (r *Autoscaler) getMovingAvgQueueSize(model string) *movingAvg {
+func (r *Autoscaler) getMovingAvgQueueSize(deploymentName string) *movingAvg {
 	r.movingAvgQueueSizeMtx.Lock()
-	a, ok := r.movingAvgQueueSize[model]
+	a, ok := r.movingAvgQueueSize[deploymentName]
 	if !ok {
 		a = newSimpleMovingAvg(make([]float64, r.AverageCount))
-		r.movingAvgQueueSize[model] = a
+		r.movingAvgQueueSize[deploymentName] = a
 	}
 	r.movingAvgQueueSizeMtx.Unlock()
 	return a
