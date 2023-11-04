@@ -27,17 +27,13 @@ type Autoscaler struct {
 func (a *Autoscaler) Start() {
 	for range time.Tick(a.Interval) {
 		log.Println("Calculating scales for all")
-		for model, waitCount := range a.FIFO.WaitCounts() {
-			if model == "proxy-controller" {
-				// TODO: Remove this after selecting models based on labels/annotations.
-				continue
-			}
-			avg := a.getMovingAvgQueueSize(model)
+		for deploymentName, waitCount := range a.FIFO.WaitCounts() {
+			avg := a.getMovingAvgQueueSize(deploymentName)
 			avg.Next(float64(waitCount))
 			flt := avg.Calculate()
 			ceil := math.Ceil(flt)
-			log.Printf("Average for model: %s: %v (ceil: %v), current wait count: %v", model, flt, ceil, waitCount)
-			a.Scaler.SetDesiredScale(model, int32(ceil))
+			log.Printf("Average for model: %s: %v (ceil: %v), current wait count: %v", deploymentName, flt, ceil, waitCount)
+			a.Scaler.SetDesiredScale(deploymentName, int32(ceil))
 		}
 	}
 }
