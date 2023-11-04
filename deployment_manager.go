@@ -55,12 +55,12 @@ func (r *DeploymentManager) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *DeploymentManager) AtLeastOne(model string) {
-	r.getScaler(model).AtLeastOne()
+func (r *DeploymentManager) AtLeastOne(deploymentName string) {
+	r.getScaler(deploymentName).AtLeastOne()
 }
 
-func (r *DeploymentManager) SetDesiredScale(model string, n int32) {
-	r.getScaler(model).SetDesiredScale(n)
+func (r *DeploymentManager) SetDesiredScale(deploymentName string, n int32) {
+	r.getScaler(deploymentName).SetDesiredScale(n)
 }
 
 func (r *DeploymentManager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
