@@ -39,12 +39,13 @@ type DeploymentManager struct {
 
 	scalersMtx sync.Mutex
 
-	// scalers maps model names to scalers
+	// scalers maps deployment names to scalers
 	scalers map[string]*scaler
 
 	modelToDeploymentMtx sync.RWMutex
 
-	// modelToDeployment maps model names to deployment names
+	// modelToDeployment maps model names to deployment names. A single deployment
+	// can serve multiple models.
 	modelToDeployment map[string]string
 }
 
@@ -87,8 +88,8 @@ func (r *DeploymentManager) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, fmt.Errorf("get scale: %w", err)
 	}
 
-	model := req.Name
-	r.getScaler(model).UpdateState(
+	deploymentName := req.Name
+	r.getScaler(deploymentName).UpdateState(
 		scale.Spec.Replicas,
 		getAnnotationInt32(d.GetAnnotations(), lingoDomain+"/min-replicas", 0),
 		getAnnotationInt32(d.GetAnnotations(), lingoDomain+"/max-replicas", 3),
@@ -97,22 +98,22 @@ func (r *DeploymentManager) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	return ctrl.Result{}, nil
 }
 
-func (r *DeploymentManager) getScaler(modelName string) *scaler {
+func (r *DeploymentManager) getScaler(deploymentName string) *scaler {
 	r.scalersMtx.Lock()
-	b, ok := r.scalers[modelName]
+	b, ok := r.scalers[deploymentName]
 	if !ok {
-		b = newScaler(r.ScaleDownPeriod, r.scaleFunc(context.TODO(), modelName))
-		r.scalers[modelName] = b
+		b = newScaler(r.ScaleDownPeriod, r.scaleFunc(context.TODO(), deploymentName))
+		r.scalers[deploymentName] = b
 	}
 	r.scalersMtx.Unlock()
 	return b
 }
 
-func (r *DeploymentManager) scaleFunc(ctx context.Context, modelName string) func(int32) error {
+func (r *DeploymentManager) scaleFunc(ctx context.Context, deploymentName string) func(int32) error {
 	return func(n int32) error {
-		log.Printf("Scaling model %q: %v", modelName, n)
+		log.Printf("Scaling model %q: %v", deploymentName, n)
 
-		req := types.NamespacedName{Namespace: r.Namespace, Name: modelName}
+		req := types.NamespacedName{Namespace: r.Namespace, Name: deploymentName}
 		var d appsv1.Deployment
 		if err := r.Get(ctx, req, &d); err != nil {
 			return fmt.Errorf("get: %w", err)
