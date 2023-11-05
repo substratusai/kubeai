@@ -30,7 +30,7 @@ func (m *FIFOQueueManager) WaitCounts() map[string]int64 {
 	m.mtx.Lock()
 	sizes := make(map[string]int64, len(m.queues))
 	for name, q := range m.queues {
-		sizes[string(name)] = q.waiting.Load()
+		sizes[name] = q.waiting.Load()
 	}
 	m.mtx.Unlock()
 	return sizes
