@@ -22,6 +22,15 @@ kubectl port-forward svc/proxy-controller 8080:80
 # In another terminal...
 watch kubectl get pods
 
+# try httpbin with a delay
+curl http://localhost:8080/delay/10 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "Your text string goes here",
+    "model": "backend"
+  }'
+
+
 # Get embeddings using OpenAI compatible API endpoint
 curl http://localhost:8080/v1/embeddings \
   -H "Content-Type: application/json" \
