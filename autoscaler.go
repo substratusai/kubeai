@@ -32,7 +32,11 @@ func (a *Autoscaler) Start() {
 			avg := a.getMovingAvgQueueSize(deploymentName)
 			avg.Next(float64(waitCount))
 			flt := avg.Calculate()
-			queueSize := a.FIFO.getQueue(deploymentName).getSize()
+			// TODO fix this to use configurable concurrency setting that's supplied
+			// by the user.
+			// Note this uses the default queue size, not the current queue size.
+			// the current queue size increases and decreases based on replica count
+			queueSize := a.FIFO.size
 			ceil := math.Ceil(flt)
 			scale := ceil / float64(queueSize)
 			log.Printf("Average for deployment: %s: %v (ceil: %v), current wait count: %v", deploymentName, flt, ceil, waitCount)
