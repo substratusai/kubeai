@@ -3,6 +3,8 @@ run-name: System Tests for kind by @${{ github.actor }}
 
 on:
   push:
+    branches:
+      - main
   pull_request:
 
 jobs:
