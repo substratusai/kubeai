@@ -1,0 +1,32 @@
+name: System Tests for kind
+run-name: System Tests for kind by @${{ github.actor }}
+
+on:
+  push:
+  pull_request:
+
+jobs:
+    install:
+        runs-on: ubuntu-latest
+
+        steps:
+        - name: Checkout code
+          uses: actions/checkout@v2
+
+        - name: Install Kind
+          run: |
+            # For AMD64 / x86_64
+            [ $(uname -m) = x86_64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
+            # For ARM64
+            [ $(uname -m) = aarch64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-arm64
+            chmod +x ./kind
+            sudo mv ./kind /usr/local/bin/kind
+
+        - name: Install Skaffold
+          run: |
+            curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64
+            chmod +x skaffold
+            sudo mv skaffold /usr/local/bin
+
+        - name: Run system test kind
+          run: bash tests/system-test-kind.sh
