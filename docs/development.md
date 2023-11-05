@@ -43,3 +43,10 @@ curl http://localhost:8080/v1/embeddings \
 
 
 ```
+
+Installing the latest development release (main branch):
+```bash
+helm upgrade --install lingo substratusai/lingo \
+  --set image.tag=main \
+  --set image.pullPolicy=Always
+```
