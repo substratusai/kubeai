@@ -6,12 +6,16 @@ kind create cluster
 # Install STAPI
 helm repo add substratusai https://substratusai.github.io/helm
 helm repo update
-helm install stapi-minilm-l6-v2 substratusai/stapi \
-  --set model=all-MiniLM-L6-v2 \
-  --set deploymentAnnotations.lingo-models=text-embedding-ada-002
+helm upgrade --install stapi-minilm-l6-v2 substratusai/stapi -f - << EOF
+model: all-mpnet-base-v2
+replicaCount: 0
+deploymentAnnotations:
+  lingo.substratus.ai/models: text-embedding-ada-002
+EOF
+
 
 # Deploy
-skaffold run
+skaffold dev
 
 # In another terminal...
 kubectl port-forward svc/proxy-controller 8080:80
@@ -25,4 +29,8 @@ curl http://localhost:8080/v1/embeddings \
     "input": "Your text string goes here",
     "model": "text-embedding-ada-002"
   }'
+
+# Install vLLM with facebook opt 125
+
+
 ```

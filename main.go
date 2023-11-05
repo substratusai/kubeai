@@ -75,7 +75,7 @@ func run() error {
 		return fmt.Errorf("starting manager: %w", err)
 	}
 
-	fifo := NewFIFOQueueManager(1, 1000)
+	fifo := NewFIFOQueueManager(100, 60000)
 
 	endpoints, err := NewEndpointsManager(mgr)
 	if err != nil {

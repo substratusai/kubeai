@@ -38,10 +38,15 @@ type DeploymentManager struct {
 	ScaleDownPeriod time.Duration
 
 	scalersMtx sync.Mutex
-	scalers    map[string]*scaler
+
+	// scalers maps deployment names to scalers
+	scalers map[string]*scaler
 
 	modelToDeploymentMtx sync.RWMutex
-	modelToDeployment    map[string]string
+
+	// modelToDeployment maps model names to deployment names. A single deployment
+	// can serve multiple models.
+	modelToDeployment map[string]string
 }
 
 func (r *DeploymentManager) SetupWithManager(mgr ctrl.Manager) error {
@@ -50,12 +55,12 @@ func (r *DeploymentManager) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *DeploymentManager) AtLeastOne(model string) {
-	r.getScaler(model).AtLeastOne()
+func (r *DeploymentManager) AtLeastOne(deploymentName string) {
+	r.getScaler(deploymentName).AtLeastOne()
 }
 
-func (r *DeploymentManager) SetDesiredScale(model string, n int32) {
-	r.getScaler(model).SetDesiredScale(n)
+func (r *DeploymentManager) SetDesiredScale(deploymentName string, n int32) {
+	r.getScaler(deploymentName).SetDesiredScale(n)
 }
 
 func (r *DeploymentManager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -83,8 +88,8 @@ func (r *DeploymentManager) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, fmt.Errorf("get scale: %w", err)
 	}
 
-	model := req.Name
-	r.getScaler(model).UpdateState(
+	deploymentName := req.Name
+	r.getScaler(deploymentName).UpdateState(
 		scale.Spec.Replicas,
 		getAnnotationInt32(d.GetAnnotations(), lingoDomain+"/min-replicas", 0),
 		getAnnotationInt32(d.GetAnnotations(), lingoDomain+"/max-replicas", 3),
@@ -93,22 +98,22 @@ func (r *DeploymentManager) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	return ctrl.Result{}, nil
 }
 
-func (r *DeploymentManager) getScaler(model string) *scaler {
+func (r *DeploymentManager) getScaler(deploymentName string) *scaler {
 	r.scalersMtx.Lock()
-	b, ok := r.scalers[model]
+	b, ok := r.scalers[deploymentName]
 	if !ok {
-		b = newScaler(r.ScaleDownPeriod, r.scaleFunc(context.TODO(), model))
-		r.scalers[model] = b
+		b = newScaler(r.ScaleDownPeriod, r.scaleFunc(context.TODO(), deploymentName))
+		r.scalers[deploymentName] = b
 	}
 	r.scalersMtx.Unlock()
 	return b
 }
 
-func (r *DeploymentManager) scaleFunc(ctx context.Context, model string) func(int32) error {
+func (r *DeploymentManager) scaleFunc(ctx context.Context, deploymentName string) func(int32) error {
 	return func(n int32) error {
-		log.Printf("Scaling model %q: %v", model, n)
+		log.Printf("Scaling model %q: %v", deploymentName, n)
 
-		req := types.NamespacedName{Namespace: r.Namespace, Name: model}
+		req := types.NamespacedName{Namespace: r.Namespace, Name: deploymentName}
 		var d appsv1.Deployment
 		if err := r.Get(ctx, req, &d); err != nil {
 			return fmt.Errorf("get: %w", err)
@@ -131,9 +136,9 @@ func (r *DeploymentManager) scaleFunc(ctx context.Context, model string) func(in
 	}
 }
 
-func (r *DeploymentManager) setModelMapping(model, deployment string) {
+func (r *DeploymentManager) setModelMapping(modelName, deploymentName string) {
 	r.modelToDeploymentMtx.Lock()
-	r.modelToDeployment[model] = deployment
+	r.modelToDeployment[modelName] = deploymentName
 	r.modelToDeploymentMtx.Unlock()
 }
 

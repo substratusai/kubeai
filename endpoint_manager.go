@@ -25,7 +25,7 @@ func NewEndpointsManager(mgr ctrl.Manager) (*EndpointsManager, error) {
 type EndpointsManager struct {
 	client.Client
 
-	EndpointSizeCallback func(model string, size int)
+	EndpointSizeCallback func(deploymentName string, size int)
 
 	endpointsMtx sync.Mutex
 	endpoints    map[string]*endpointGroup
@@ -78,6 +78,9 @@ func (r *EndpointsManager) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	r.getEndpoints(serviceName).setIPs(ips, port)
 
 	if priorLen != len(ips) {
+		// TODO: Currently Service name needs to match Deployment name, however
+		// this shouldn't be the case. We should be able to reference deployment
+		// replicas by something else.
 		r.EndpointSizeCallback(serviceName, len(ips))
 	}
 

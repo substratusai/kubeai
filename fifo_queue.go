@@ -1,13 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"sync"
 	"sync/atomic"
 )
 
 type fifoQueue struct {
+	// queued is a channel of channels that are waiting to be processed.
 	queued    chan chan struct{}
 	completed chan struct{}
 	waiting   atomic.Int64
@@ -26,25 +26,18 @@ func newFifoQueue(size, queueCapacity int) *fifoQueue {
 
 func (q *fifoQueue) start() {
 	log.Println("Starting new fifo queue")
-	var inProgress int
+	var inProgress int = 0
 	for {
-		fmt.Println("1")
-		fmt.Println("inProgress", inProgress, "getSize()", q.getSize())
+		log.Println("inProgress", inProgress, "getSize()", q.getSize())
 		if inProgress >= q.getSize() {
-			fmt.Println("2")
 			<-q.completed
-			fmt.Println("3")
 			inProgress--
-			fmt.Println("4")
 			continue
 		}
-		fmt.Println("5")
 		inProgress++
 
 		c := <-q.queued
-		fmt.Println("6")
 		close(c)
-		fmt.Println("7")
 	}
 }
 
