@@ -11,6 +11,9 @@ kubectl wait --for=condition=available --timeout=30s deployment/proxy-controller
 
 kubectl port-forward svc/proxy-controller 8080:80 &
 
+# need to wait for a bit for the port-forward to be ready
+sleep 5
+
 replicas=$(kubectl get deployment backend -o jsonpath='{.spec.replicas}')
 if [ "$replicas" -ne 0 ]; then
   echo "Expected 0 replica before sending requests, got $replicas"
