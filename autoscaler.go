@@ -28,13 +28,17 @@ type Autoscaler struct {
 func (a *Autoscaler) Start() {
 	for range time.Tick(a.Interval) {
 		log.Println("Calculating scales for all")
-		// TODO: Might need to account for queue size being 100
-		// probably can simply divide the average by queue size
 		for deploymentName, waitCount := range a.FIFO.WaitCounts() {
 			avg := a.getMovingAvgQueueSize(deploymentName)
 			avg.Next(float64(waitCount))
 			flt := avg.Calculate()
-			ceil := math.Ceil(flt)
+			// TODO fix this to use configurable concurrency setting that's supplied
+			// by the user.
+			// Note this uses the default queue size, not the current queue size.
+			// the current queue size increases and decreases based on replica count
+			concurrencyPerReplica := a.FIFO.size
+			normalized := flt / float64(concurrencyPerReplica)
+			ceil := math.Ceil(normalized)
 			log.Printf("Average for deployment: %s: %v (ceil: %v), current wait count: %v", deploymentName, flt, ceil, waitCount)
 			a.Scaler.SetDesiredScale(deploymentName, int32(ceil))
 		}
