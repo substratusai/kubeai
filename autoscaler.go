@@ -36,11 +36,11 @@ func (a *Autoscaler) Start() {
 			// by the user.
 			// Note this uses the default queue size, not the current queue size.
 			// the current queue size increases and decreases based on replica count
-			queueSize := a.FIFO.size
-			ceil := math.Ceil(flt)
-			scale := ceil / float64(queueSize)
+			concurrencyPerReplica := a.FIFO.size
+			normalized := flt / float64(concurrencyPerReplica)
+			ceil := math.Ceil(normalized)
 			log.Printf("Average for deployment: %s: %v (ceil: %v), current wait count: %v", deploymentName, flt, ceil, waitCount)
-			a.Scaler.SetDesiredScale(deploymentName, int32(scale))
+			a.Scaler.SetDesiredScale(deploymentName, int32(ceil))
 		}
 	}
 }
