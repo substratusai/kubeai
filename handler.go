@@ -85,10 +85,20 @@ func parseModel(r *http.Request) (string, *http.Request, error) {
 	return payload.Model, proxyReq, nil
 }
 
+// AdditionalProxyRewrite is an injection point for modifying proxy requests.
+// Used in tests.
+var AdditionalProxyRewrite = func(*httputil.ProxyRequest) {}
+
 func newReverseProxy(host string) *httputil.ReverseProxy {
-	proxy := httputil.NewSingleHostReverseProxy(&url.URL{
-		Scheme: "http",
-		Host:   host,
-	})
+	proxy := &httputil.ReverseProxy{
+		Rewrite: func(r *httputil.ProxyRequest) {
+			r.SetURL(&url.URL{
+				Scheme: "http",
+				Host:   host,
+			})
+			r.Out.Host = r.In.Host
+			AdditionalProxyRewrite(r)
+		},
+	}
 	return proxy
 }

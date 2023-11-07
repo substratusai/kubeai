@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"net/http/httputil"
+	"net/url"
 	"os"
 	"testing"
 	"time"
@@ -29,8 +31,14 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	testCtx, testCancel = context.WithCancel(context.TODO())
-
+	AdditionalProxyRewrite = func(r *httputil.ProxyRequest) {
+		// EndpointSlices do not allow for specifying local IPs (used in mock backend)
+		// so we remap the requests here.
+		r.SetURL(&url.URL{
+			Scheme: r.Out.URL.Scheme,
+			Host:   "127.0.0.1:" + r.Out.URL.Port(),
+		})
+	}
 	log.Println("bootstrapping test environment")
 	testEnv = &envtest.Environment{}
 	cfg, err := testEnv.Start()
@@ -40,6 +48,8 @@ func TestMain(m *testing.M) {
 
 	testK8sClient, err = client.New(cfg, client.Options{Scheme: scheme})
 	requireNoError(err)
+
+	testCtx, testCancel = context.WithCancel(ctrl.SetupSignalHandler())
 
 	requireNoError(testK8sClient.Create(testCtx, &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{Name: testNamespace},
@@ -62,11 +72,11 @@ func TestMain(m *testing.M) {
 	scaler, err := NewDeploymentManager(mgr)
 	requireNoError(err)
 	scaler.Namespace = testNamespace
-	scaler.ScaleDownPeriod = 30 * time.Second
+	scaler.ScaleDownPeriod = 1 * time.Second
 
 	autoscaler := NewAutoscaler()
-	autoscaler.Interval = 3 * time.Second
-	autoscaler.AverageCount = 10 // 10 * 3 seconds = 30 sec avg
+	autoscaler.Interval = 1 * time.Second
+	autoscaler.AverageCount = 1 // 10 * 3 seconds = 30 sec avg
 	autoscaler.Scaler = scaler
 	autoscaler.FIFO = fifo
 	go autoscaler.Start()
@@ -79,11 +89,9 @@ func TestMain(m *testing.M) {
 	testServer = httptest.NewServer(handler)
 	defer testServer.Close()
 
-	ctx := ctrl.SetupSignalHandler()
-
 	go func() {
 		log.Println("starting manager")
-		requireNoError(mgr.Start(ctx))
+		requireNoError(mgr.Start(testCtx))
 	}()
 
 	log.Println("running tests")
