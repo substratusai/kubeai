@@ -43,11 +43,16 @@ func run() error {
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
+	var concurrencyPerReplica int
+	var maxQueueSize int
+
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8082", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
+	flag.IntVar(&concurrencyPerReplica, "concurrency", 100, "the number of simultaneous requests that can be processed by each replica")
+	flag.IntVar(&maxQueueSize, "max-queue-size", 60000, "the maximum size of the queue that holds requests")
 	opts := zap.Options{
 		Development: true,
 	}
@@ -75,7 +80,7 @@ func run() error {
 		return fmt.Errorf("starting manager: %w", err)
 	}
 
-	fifo := NewFIFOQueueManager(100, 60000)
+	fifo := NewFIFOQueueManager(concurrencyPerReplica, maxQueueSize)
 
 	endpoints, err := NewEndpointsManager(mgr)
 	if err != nil {
