@@ -8,15 +8,15 @@ import (
 func NewFIFOQueueManager(size int, totalCapacity int) *FIFOQueueManager {
 	m := &FIFOQueueManager{}
 	m.queues = map[string]*fifoQueue{}
-	m.size = size
+	m.concurrencyPerReplica = size
 	m.totalCapacity = totalCapacity
 	return m
 }
 
 // FIFOQueueManager manages the queues for each deployment
 type FIFOQueueManager struct {
-	// The default size of each queue for each deployment replica
-	size int
+	// The default concurrencyPerReplica of each queue for each deployment replica
+	concurrencyPerReplica int
 
 	// The default total capacity of the queue for deployment
 	totalCapacity int
@@ -43,7 +43,7 @@ func (m *FIFOQueueManager) Enqueue(deploymentName string) func() {
 
 // UpdateQueueSize updates the queue size for the given model name
 func (m *FIFOQueueManager) UpdateQueueSize(deploymentName string, replicas int) {
-	newSize := replicas * m.size
+	newSize := replicas * m.concurrencyPerReplica
 	log.Printf("Updating queue size: deployment: %v, replicas: %v, newSize: %v", deploymentName, replicas, newSize)
 	m.getQueue(deploymentName).resize(newSize)
 }
@@ -54,7 +54,7 @@ func (m *FIFOQueueManager) getQueue(deploymentName string) *fifoQueue {
 	m.mtx.Lock()
 	q, ok := m.queues[deploymentName]
 	if !ok {
-		q = newFifoQueue(m.size, m.totalCapacity)
+		q = newFifoQueue(m.concurrencyPerReplica, m.totalCapacity)
 		go q.start()
 		m.queues[deploymentName] = q
 	}

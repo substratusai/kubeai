@@ -74,7 +74,8 @@ func TestMain(m *testing.M) {
 	scaler.Namespace = testNamespace
 	scaler.ScaleDownPeriod = 1 * time.Second
 
-	autoscaler := NewAutoscaler()
+	autoscaler, err := NewAutoscaler(mgr)
+	requireNoError(err)
 	autoscaler.Interval = 1 * time.Second
 	autoscaler.AverageCount = 1 // 10 * 3 seconds = 30 sec avg
 	autoscaler.Scaler = scaler

@@ -5,7 +5,7 @@ metadata:
   labels:
     app: proxy-controller
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: proxy-controller
@@ -18,3 +18,8 @@ spec:
       containers:
       - name: main
         image: proxy-controller
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
