@@ -47,15 +47,17 @@ if [ "$replicas" -eq 1 ]; then
 fi
 
 
-# Send 1000 requests in parallel to stapi backend using openai python client and threading
-SCRIPT_DIR=$(dirname "$0")
-python3 $SCRIPT_DIR/test_openai_embedding.py --requests 1000 --model text-embedding-ada-002
+requests=500
+echo "Send $requests requests in parallel to stapi backend using openai python client and threading"
+python3 $SCRIPT_DIR/test_openai_embedding.py \
+  --requests $requests \
+  --model text-embedding-ada-002 \
+  --client-per-thread False
 
-# Ensure replicas has been scaled up to more than 1 after sending 1000 parallel requests
 replicas=$(kubectl get deployment stapi-minilm-l6-v2 -o jsonpath='{.spec.replicas}')
 if [ "$replicas" -ge 2 ]; then
-  echo "Test passed: Expected 2 or more replicas after sending more than 1000 requests, got $replicas"
+  echo "Test passed: Expected 2 or more replicas after sending more than $requests requests, got $replicas"
   else
-  echo "Test failed: Expected 2 or more replicas after sending more than 1000 requests, got $replicas"
+  echo "Test failed: Expected 2 or more replicas after sending more than $requests requests, got $replicas"
   exit 1
 fi
