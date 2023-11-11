@@ -38,14 +38,24 @@ pip3 install openai==1.2.3
 python3 $SCRIPT_DIR/test_openai_embedding.py --requests 60 --model text-embedding-ada-002
 
 # Ensure replicas has been scaled up to 1 after sending 60 requests
-replicas=$(kubectl get deployment backend -o jsonpath='{.spec.replicas}')
+replicas=$(kubectl get deployment stapi-minilm-l6-v2 -o jsonpath='{.spec.replicas}')
+if [ "$replicas" -eq 1 ]; then
+  echo "Test passed: Expected 1 replica after sending requests 60 requests"
+  else
+  echo "Test failed: Expected 1 replica after sending requests 60 requests, got $replicas"
+  exit 1
+fi
+
 
 # Send 500 requests in parallel to stapi backend using openai python client and threading
 SCRIPT_DIR=$(dirname "$0")
 python3 $SCRIPT_DIR/test_openai_embedding.py --requests 500 --model text-embedding-ada-002
 
-
+# Ensure replicas has been scaled up to more than 1 after sending 500 parallel requests
+replicas=$(kubectl get deployment stapi-minilm-l6-v2 -o jsonpath='{.spec.replicas}')
 if [ "$replicas" -ge 2 ]; then
-  echo "Expected 2 or more replicas after sending more than 500 requests, got $replicas"
+  echo "Test passed: Expected 2 or more replicas after sending more than 500 requests, got $replicas"
+  else
+  echo "Test failed: Expected 2 or more replicas after sending more than 500 requests, got $replicas"
   exit 1
 fi
