@@ -5,6 +5,8 @@ import (
 	"math"
 	"sync"
 	"time"
+
+	"github.com/substratusai/lingo/pkg/queuemanager"
 )
 
 func NewAutoscaler() *Autoscaler {
@@ -19,7 +21,9 @@ type Autoscaler struct {
 	AverageCount int
 
 	Scaler *DeploymentManager
-	FIFO   *FIFOQueueManager
+	FIFO   *queuemanager.FIFOQueueManager
+
+	ConcurrencyPerReplica int
 
 	movingAvgQueueSizeMtx sync.Mutex
 	movingAvgQueueSize    map[string]*movingAvg
@@ -32,12 +36,7 @@ func (a *Autoscaler) Start() {
 			avg := a.getMovingAvgQueueSize(deploymentName)
 			avg.Next(float64(waitCount))
 			flt := avg.Calculate()
-			// TODO fix this to use configurable concurrency setting that's supplied
-			// by the user.
-			// Note this uses the default queue size, not the current queue size.
-			// the current queue size increases and decreases based on replica count
-			concurrencyPerReplica := a.FIFO.size
-			normalized := flt / float64(concurrencyPerReplica)
+			normalized := flt / float64(a.ConcurrencyPerReplica)
 			ceil := math.Ceil(normalized)
 			log.Printf("Average for deployment: %s: %v (ceil: %v), current wait count: %v", deploymentName, flt, ceil, waitCount)
 			a.Scaler.SetDesiredScale(deploymentName, int32(ceil))

@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/substratusai/lingo/pkg/queuemanager"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -63,11 +64,12 @@ func TestMain(m *testing.M) {
 	})
 	requireNoError(err)
 
-	fifo := NewFIFOQueueManager(1, 1000)
+	const concurrencyPerReplica = 1
+	fifo := queuemanager.NewFIFOQueueManager(concurrencyPerReplica)
 
 	endpoints, err := NewEndpointsManager(mgr)
 	requireNoError(err)
-	endpoints.EndpointSizeCallback = fifo.UpdateQueueSize
+	endpoints.EndpointSizeCallback = fifo.UpdateQueueSizeForReplicas
 
 	scaler, err := NewDeploymentManager(mgr)
 	requireNoError(err)
@@ -79,6 +81,7 @@ func TestMain(m *testing.M) {
 	autoscaler.AverageCount = 1 // 10 * 3 seconds = 30 sec avg
 	autoscaler.Scaler = scaler
 	autoscaler.FIFO = fifo
+	autoscaler.ConcurrencyPerReplica = concurrencyPerReplica
 	go autoscaler.Start()
 
 	handler := &Handler{

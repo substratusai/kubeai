@@ -14,6 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
+	"github.com/substratusai/lingo/pkg/queuemanager"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -44,7 +45,6 @@ func run() error {
 	var enableLeaderElection bool
 	var probeAddr string
 	var concurrencyPerReplica int
-	var maxQueueSize int
 
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8082", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
@@ -52,7 +52,6 @@ func run() error {
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
 	flag.IntVar(&concurrencyPerReplica, "concurrency", 100, "the number of simultaneous requests that can be processed by each replica")
-	flag.IntVar(&maxQueueSize, "max-queue-size", 60000, "the maximum size of the queue that holds requests")
 	opts := zap.Options{
 		Development: true,
 	}
@@ -80,13 +79,13 @@ func run() error {
 		return fmt.Errorf("starting manager: %w", err)
 	}
 
-	fifo := NewFIFOQueueManager(concurrencyPerReplica, maxQueueSize)
+	fifo := queuemanager.NewFIFOQueueManager(concurrencyPerReplica)
 
 	endpoints, err := NewEndpointsManager(mgr)
 	if err != nil {
 		return fmt.Errorf("setting up endpoint manager: %w", err)
 	}
-	endpoints.EndpointSizeCallback = fifo.UpdateQueueSize
+	endpoints.EndpointSizeCallback = fifo.UpdateQueueSizeForReplicas
 
 	scaler, err := NewDeploymentManager(mgr)
 	if err != nil {
@@ -99,6 +98,7 @@ func run() error {
 	autoscaler.Interval = 3 * time.Second
 	autoscaler.AverageCount = 10 // 10 * 3 seconds = 30 sec avg
 	autoscaler.Scaler = scaler
+	autoscaler.ConcurrencyPerReplica = concurrencyPerReplica
 	autoscaler.FIFO = fifo
 	go autoscaler.Start()
 
