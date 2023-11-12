@@ -51,7 +51,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("Waiting for IPs")
 	host := h.Endpoints.GetHost(r.Context(), deploy)
-	log.Printf("Got host: %v", host)
+	log.Printf("Got host: %v \n", host)
 
 	// TODO: Avoid creating new reverse proxies for each request.
 	// TODO: Consider implementing a round robin scheme.
