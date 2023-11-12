@@ -16,6 +16,10 @@ kubectl wait --for=condition=available --timeout=30s deployment/proxy-controller
 
 kubectl port-forward svc/proxy-controller 8080:80 &
 
+if ! helm repo list | grep -q substratusai; then
+  helm repo add substratusai https://substratusai.github.io/helm/
+fi
+helm repo update
 helm upgrade --install stapi-minilm-l6-v2 substratusai/stapi -f - << EOF
 model: all-MiniLM-L6-v2
 replicaCount: 0
