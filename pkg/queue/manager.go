@@ -6,24 +6,24 @@ import (
 	"sync"
 )
 
-func NewFIFOManager(concurrencyPerReplica int) *FIFOManager {
-	m := &FIFOManager{}
-	m.queues = map[string]*FIFO{}
+func NewManager(concurrencyPerReplica int) *Manager {
+	m := &Manager{}
+	m.queues = map[string]*Queue{}
 	m.conccurencyPerReplica = concurrencyPerReplica
 	return m
 }
 
-// FIFOManager manages the queues for each deployment.
-type FIFOManager struct {
+// Manager manages the a set of Queues (for Deployments).
+type Manager struct {
 	// The default conccurencyPerReplica of each queue for each deployment replica
 	conccurencyPerReplica int
 
 	mtx    sync.Mutex
-	queues map[string]*FIFO
+	queues map[string]*Queue
 }
 
 // WaitCounts returns the number of pending or in-progress requests for each deployment name
-func (m *FIFOManager) WaitCounts() map[string]int {
+func (m *Manager) WaitCounts() map[string]int {
 	m.mtx.Lock()
 	sizes := make(map[string]int, len(m.queues))
 	for name, q := range m.queues {
@@ -35,12 +35,12 @@ func (m *FIFOManager) WaitCounts() map[string]int {
 
 // EnqueueAndWait adds a request to the queue for the given deployment name
 // and wait for it to be dequeued.
-func (m *FIFOManager) EnqueueAndWait(ctx context.Context, deploymentName, id string) func() {
+func (m *Manager) EnqueueAndWait(ctx context.Context, deploymentName, id string) func() {
 	return m.getQueue(deploymentName).EnqueueAndWait(ctx, id)
 }
 
 // UpdateQueueSizeForReplicas updates the queue size for the given deployment name.
-func (m *FIFOManager) UpdateQueueSizeForReplicas(deploymentName string, replicas int) {
+func (m *Manager) UpdateQueueSizeForReplicas(deploymentName string, replicas int) {
 	newSize := replicas * m.conccurencyPerReplica
 	log.Printf("Updating queue size: deployment: %v, replicas: %v, newSize: %v", deploymentName, replicas, newSize)
 	m.getQueue(deploymentName).SetConcurrency(newSize)
@@ -48,11 +48,11 @@ func (m *FIFOManager) UpdateQueueSizeForReplicas(deploymentName string, replicas
 
 // getQueue returns the queue for the given model name.
 // if the model does not have a queue, a new queue is created.
-func (m *FIFOManager) getQueue(deploymentName string) *FIFO {
+func (m *Manager) getQueue(deploymentName string) *Queue {
 	m.mtx.Lock()
 	q, ok := m.queues[deploymentName]
 	if !ok {
-		q = NewFIFO(m.conccurencyPerReplica)
+		q = New(m.conccurencyPerReplica)
 		go q.Start()
 		m.queues[deploymentName] = q
 	}

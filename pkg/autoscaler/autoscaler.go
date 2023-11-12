@@ -20,7 +20,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func NewAutoscaler(mgr ctrl.Manager) (*Autoscaler, error) {
+func New(mgr ctrl.Manager) (*Autoscaler, error) {
 	a := &Autoscaler{}
 	a.Client = mgr.GetClient()
 	a.movingAvgQueueSize = map[string]*movingaverage.Simple{}
@@ -42,7 +42,7 @@ type Autoscaler struct {
 	LeaderElection *leader.Election
 
 	Scaler *deployments.Manager
-	FIFO   *queue.FIFOManager
+	Queue  *queue.Manager
 
 	ConcurrencyPerReplica int
 
@@ -77,7 +77,7 @@ func (a *Autoscaler) Start() {
 		log.Println("Calculating scales for all")
 
 		statsEndpoints := []string{}
-		stats, errs := aggregateStats(a.FIFO, a.HTTPClient, statsEndpoints)
+		stats, errs := aggregateStats(a.Queue, a.HTTPClient, statsEndpoints)
 		if len(errs) != 0 {
 			for _, err := range errs {
 				log.Printf("Failed to aggregate stats: %v", err)
@@ -109,7 +109,7 @@ func (r *Autoscaler) getMovingAvgQueueSize(deploymentName string) *movingaverage
 	return a
 }
 
-func aggregateStats(thisQueue *queue.FIFOManager, httpc *http.Client, endpoints []string) (stats.Stats, []error) {
+func aggregateStats(thisQueue *queue.Manager, httpc *http.Client, endpoints []string) (stats.Stats, []error) {
 	stats := stats.Stats{
 		WaitCounts: thisQueue.WaitCounts(),
 	}

@@ -9,7 +9,7 @@ import (
 )
 
 type Handler struct {
-	FIFO *queue.FIFOManager
+	FIFO *queue.Manager
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {

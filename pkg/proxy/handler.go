@@ -16,12 +16,12 @@ import (
 	"github.com/substratusai/lingo/pkg/queue"
 )
 
-// Handler serves http requests.
+// Handler serves http requests for end-clients.
 // It is also responsible for triggering scale-from-zero.
 type Handler struct {
 	Deployments *deployments.Manager
 	Endpoints   *endpoints.Manager
-	FIFO        *queue.FIFOManager
+	FIFO        *queue.Manager
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {

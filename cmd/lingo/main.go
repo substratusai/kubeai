@@ -95,37 +95,37 @@ func run() error {
 	}
 	le := leader.NewElection(clientset, podName, namespace)
 
-	fifo := queue.NewFIFOManager(concurrencyPerReplica)
+	queueManager := queue.NewManager(concurrencyPerReplica)
 
-	endpoints, err := endpoints.NewManager(mgr)
+	endpointManager, err := endpoints.NewManager(mgr)
 	if err != nil {
 		return fmt.Errorf("setting up endpoint manager: %w", err)
 	}
-	endpoints.EndpointSizeCallback = fifo.UpdateQueueSizeForReplicas
+	endpointManager.EndpointSizeCallback = queueManager.UpdateQueueSizeForReplicas
 
-	scaler, err := deployments.NewManager(mgr)
+	deploymentManager, err := deployments.NewManager(mgr)
 	if err != nil {
 		return fmt.Errorf("setting up deloyment manager: %w", err)
 	}
-	scaler.Namespace = namespace
-	scaler.ScaleDownPeriod = 30 * time.Second
+	deploymentManager.Namespace = namespace
+	deploymentManager.ScaleDownPeriod = 30 * time.Second
 
-	autoscaler, err := autoscaler.NewAutoscaler(mgr)
+	autoscaler, err := autoscaler.New(mgr)
 	if err != nil {
 		return fmt.Errorf("setting up autoscaler: %w", err)
 	}
 	autoscaler.Interval = 3 * time.Second
 	autoscaler.AverageCount = 10 // 10 * 3 seconds = 30 sec avg
 	autoscaler.LeaderElection = le
-	autoscaler.Scaler = scaler
+	autoscaler.Scaler = deploymentManager
 	autoscaler.ConcurrencyPerReplica = concurrencyPerReplica
-	autoscaler.FIFO = fifo
+	autoscaler.Queue = queueManager
 	go autoscaler.Start()
 
 	handler := &proxy.Handler{
-		Deployments: scaler,
-		Endpoints:   endpoints,
-		FIFO:        fifo,
+		Deployments: deploymentManager,
+		Endpoints:   endpointManager,
+		FIFO:        queueManager,
 	}
 	server := &http.Server{Addr: ":8080", Handler: handler}
 

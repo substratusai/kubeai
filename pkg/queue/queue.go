@@ -8,8 +8,8 @@ import (
 	"time"
 )
 
-func NewFIFO(initialConcurrency int) *FIFO {
-	return &FIFO{
+func New(initialConcurrency int) *Queue {
+	return &Queue{
 		concurrency: initialConcurrency,
 		list:        list.New(),
 		enqueued:    make(chan struct{}),
@@ -17,7 +17,8 @@ func NewFIFO(initialConcurrency int) *FIFO {
 	}
 }
 
-type FIFO struct {
+// Queue is a thread safe FIFO queue that supports in-queue cancellation.
+type Queue struct {
 	// concurrency is the max number of in progress items.
 	concurrency    int
 	concurrencyMtx sync.RWMutex
@@ -45,7 +46,7 @@ type item struct {
 	closed bool
 }
 
-func (q *FIFO) dequeue(itm *item, inProgress bool) {
+func (q *Queue) dequeue(itm *item, inProgress bool) {
 	q.listMtx.Lock()
 	itm.inProgress = inProgress
 	q.list.Remove(itm.e)
@@ -59,7 +60,7 @@ func (q *FIFO) dequeue(itm *item, inProgress bool) {
 // EnqueueAndWait adds an item to the queue and waits for it to be dequeued.
 // It returns a function that should be called after all work has completed.
 // The id parameter is only used for tracking/debugging purposes.
-func (q *FIFO) EnqueueAndWait(ctx context.Context, id string) func() {
+func (q *Queue) EnqueueAndWait(ctx context.Context, id string) func() {
 	itm := &item{
 		id:       id,
 		dequeued: make(chan struct{}),
@@ -85,7 +86,7 @@ func (q *FIFO) EnqueueAndWait(ctx context.Context, id string) func() {
 	return q.completeFunc(itm)
 }
 
-func (q *FIFO) completeFunc(itm *item) func() {
+func (q *Queue) completeFunc(itm *item) func() {
 	return func() {
 		q.listMtx.Lock()
 		if !itm.closed {
@@ -102,7 +103,7 @@ func (q *FIFO) completeFunc(itm *item) func() {
 	}
 }
 
-func (q *FIFO) Start() {
+func (q *Queue) Start() {
 	var inProgress int
 	for {
 		if inProgress >= q.GetConcurrency() {
@@ -131,19 +132,19 @@ func (q *FIFO) Start() {
 	}
 }
 
-func (q *FIFO) GetConcurrency() int {
+func (q *Queue) GetConcurrency() int {
 	q.concurrencyMtx.RLock()
 	defer q.concurrencyMtx.RUnlock()
 	return q.concurrency
 }
 
-func (q *FIFO) SetConcurrency(n int) {
+func (q *Queue) SetConcurrency(n int) {
 	q.concurrencyMtx.Lock()
 	q.concurrency = n
 	q.concurrencyMtx.Unlock()
 }
 
-func (q *FIFO) Size() int {
+func (q *Queue) Size() int {
 	q.listMtx.Lock()
 	defer q.listMtx.Unlock()
 	return q.list.Len()

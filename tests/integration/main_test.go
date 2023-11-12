@@ -78,35 +78,35 @@ func TestMain(m *testing.M) {
 	requireNoError(err)
 
 	const concurrencyPerReplica = 1
-	fifo := queue.NewFIFOManager(concurrencyPerReplica)
+	queueManager := queue.NewManager(concurrencyPerReplica)
 
-	endpoints, err := endpoints.NewManager(mgr)
+	endpointManager, err := endpoints.NewManager(mgr)
 	requireNoError(err)
-	endpoints.EndpointSizeCallback = fifo.UpdateQueueSizeForReplicas
+	endpointManager.EndpointSizeCallback = queueManager.UpdateQueueSizeForReplicas
 
-	scaler, err := deployments.NewManager(mgr)
+	deploymentManager, err := deployments.NewManager(mgr)
 	requireNoError(err)
-	scaler.Namespace = testNamespace
-	scaler.ScaleDownPeriod = 1 * time.Second
+	deploymentManager.Namespace = testNamespace
+	deploymentManager.ScaleDownPeriod = 1 * time.Second
 
 	clientset, err := kubernetes.NewForConfig(mgr.GetConfig())
 	requireNoError(err)
 	le := leader.NewElection(clientset, "test-lingo-pod", testNamespace)
 
-	autoscaler, err := autoscaler.NewAutoscaler(mgr)
+	autoscaler, err := autoscaler.New(mgr)
 	requireNoError(err)
 	autoscaler.Interval = 1 * time.Second
 	autoscaler.AverageCount = 1 // 10 * 3 seconds = 30 sec avg
 	autoscaler.LeaderElection = le
-	autoscaler.Scaler = scaler
-	autoscaler.FIFO = fifo
+	autoscaler.Scaler = deploymentManager
+	autoscaler.Queue = queueManager
 	autoscaler.ConcurrencyPerReplica = concurrencyPerReplica
 	go autoscaler.Start()
 
 	handler := &proxy.Handler{
-		Deployments: scaler,
-		Endpoints:   endpoints,
-		FIFO:        fifo,
+		Deployments: deploymentManager,
+		Endpoints:   endpointManager,
+		FIFO:        queueManager,
 	}
 	testServer = httptest.NewServer(handler)
 	defer testServer.Close()
