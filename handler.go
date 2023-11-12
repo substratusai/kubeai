@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/substratusai/lingo/pkg/queuemanager"
@@ -103,6 +104,30 @@ func newReverseProxy(host string) *httputil.ReverseProxy {
 			r.Out.Host = r.In.Host
 			AdditionalProxyRewrite(r)
 		},
+		Transport: &retryTransport{
+			maxRetries: 3,
+			base:       http.DefaultTransport,
+		},
 	}
 	return proxy
+}
+
+type retryTransport struct {
+	maxRetries int
+	base       http.RoundTripper
+}
+
+func (t *retryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	for i := 0; i < t.maxRetries; i++ {
+		resp, err := t.base.RoundTrip(req)
+		if err != nil {
+			log.Printf("error during request %v of %v: %v", i+1, t.maxRetries, err)
+			if i == t.maxRetries-1 {
+				return nil, err
+			}
+			time.Sleep(time.Second * 2)
+		}
+		return resp, nil
+	}
+	return nil, fmt.Errorf("max retries reached")
 }
