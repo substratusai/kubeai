@@ -46,7 +46,9 @@ source "$VENV_DIR/bin/activate"
 pip3 install openai==1.2.3
 
 # Send 60 requests in parallel to stapi backend using openai python client and threading
-python3 $SCRIPT_DIR/test_openai_embedding.py --requests 60 --model text-embedding-ada-002
+python3 $SCRIPT_DIR/test_openai_embedding.py \
+  --requests 60 --timeout 300 \
+  --model text-embedding-ada-002
 
 # Ensure replicas has been scaled up to 1 after sending 60 requests
 replicas=$(kubectl get deployment stapi-minilm-l6-v2 -o jsonpath='{.spec.replicas}')
@@ -61,7 +63,7 @@ fi
 requests=500
 echo "Send $requests requests in parallel to stapi backend using openai python client and threading"
 python3 $SCRIPT_DIR/test_openai_embedding.py \
-  --requests $requests \
+  --requests $requests --timeout 600 \
   --model text-embedding-ada-002
 
 replicas=$(kubectl get deployment stapi-minilm-l6-v2 -o jsonpath='{.spec.replicas}')
