@@ -102,6 +102,11 @@ func run() error {
 	autoscaler.FIFO = fifo
 	go autoscaler.Start()
 
+	// Change the global defaults and remove limits on max conns
+	defaultTransport := http.DefaultTransport.(*http.Transport)
+	defaultTransport.MaxIdleConns = 0
+	defaultTransport.MaxIdleConnsPerHost = 0
+	defaultTransport.MaxConnsPerHost = 0
 	handler := &Handler{
 		Deployments: scaler,
 		Endpoints:   endpoints,
