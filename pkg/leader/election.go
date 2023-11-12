@@ -1,4 +1,4 @@
-package main
+package leader
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 )
 
-func NewLeaderElection(clientset kubernetes.Interface, id, namespace string) *LeaderElection {
+func NewElection(clientset kubernetes.Interface, id, namespace string) *Election {
 	lock := &resourcelock.LeaseLock{
 		LeaseMeta: metav1.ObjectMeta{
 			Name:      "lingo.substratus.ai",
@@ -51,17 +51,17 @@ func NewLeaderElection(clientset kubernetes.Interface, id, namespace string) *Le
 		},
 	}
 
-	return &LeaderElection{
+	return &Election{
 		IsLeader: isLeader,
 		config:   config,
 	}
 }
 
-type LeaderElection struct {
+type Election struct {
 	config   leaderelection.LeaderElectionConfig
 	IsLeader *atomic.Bool
 }
 
-func (le *LeaderElection) Start(ctx context.Context) {
+func (le *Election) Start(ctx context.Context) {
 	leaderelection.RunOrDie(ctx, le.config)
 }

@@ -1,4 +1,4 @@
-package main
+package autoscaler
 
 import (
 	"context"
@@ -10,6 +10,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/substratusai/lingo/pkg/deployments"
+	"github.com/substratusai/lingo/pkg/leader"
+	"github.com/substratusai/lingo/pkg/movingaverage"
+	"github.com/substratusai/lingo/pkg/queue"
+	"github.com/substratusai/lingo/pkg/stats"
 	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -18,7 +23,7 @@ import (
 func NewAutoscaler(mgr ctrl.Manager) (*Autoscaler, error) {
 	a := &Autoscaler{}
 	a.Client = mgr.GetClient()
-	a.movingAvgQueueSize = map[string]*movingAvg{}
+	a.movingAvgQueueSize = map[string]*movingaverage.Simple{}
 	if err := a.SetupWithManager(mgr); err != nil {
 		return nil, err
 	}
@@ -34,15 +39,17 @@ type Autoscaler struct {
 	Interval     time.Duration
 	AverageCount int
 
-	LeaderElection *LeaderElection
+	LeaderElection *leader.Election
 
-	Scaler *DeploymentManager
-	FIFO   *FIFOQueueManager
+	Scaler *deployments.Manager
+	FIFO   *queue.FIFOManager
+
+	ConcurrencyPerReplica int
 
 	HTTPClient *http.Client
 
 	movingAvgQueueSizeMtx sync.Mutex
-	movingAvgQueueSize    map[string]*movingAvg
+	movingAvgQueueSize    map[string]*movingaverage.Simple
 }
 
 func (r *Autoscaler) SetupWithManager(mgr ctrl.Manager) error {
@@ -69,8 +76,6 @@ func (a *Autoscaler) Start() {
 
 		log.Println("Calculating scales for all")
 
-		concurrencyPerReplica := a.FIFO.concurrencyPerReplica
-
 		statsEndpoints := []string{}
 		stats, errs := aggregateStats(a.FIFO, a.HTTPClient, statsEndpoints)
 		if len(errs) != 0 {
@@ -85,11 +90,7 @@ func (a *Autoscaler) Start() {
 			avg := a.getMovingAvgQueueSize(deploymentName)
 			avg.Next(float64(waitCount))
 			flt := avg.Calculate()
-			// TODO fix this to use configurable concurrency setting that's supplied
-			// by the user.
-			// Note this uses the default queue size, not the current queue size.
-			// the current queue size increases and decreases based on replica count
-			normalized := flt / float64(concurrencyPerReplica)
+			normalized := flt / float64(a.ConcurrencyPerReplica)
 			ceil := math.Ceil(normalized)
 			log.Printf("Average for deployment: %s: %v (ceil: %v), current wait count: %v", deploymentName, flt, ceil, waitCount)
 			a.Scaler.SetDesiredScale(deploymentName, int32(ceil))
@@ -97,19 +98,19 @@ func (a *Autoscaler) Start() {
 	}
 }
 
-func (r *Autoscaler) getMovingAvgQueueSize(deploymentName string) *movingAvg {
+func (r *Autoscaler) getMovingAvgQueueSize(deploymentName string) *movingaverage.Simple {
 	r.movingAvgQueueSizeMtx.Lock()
 	a, ok := r.movingAvgQueueSize[deploymentName]
 	if !ok {
-		a = newSimpleMovingAvg(make([]float64, r.AverageCount))
+		a = movingaverage.NewSimple(make([]float64, r.AverageCount))
 		r.movingAvgQueueSize[deploymentName] = a
 	}
 	r.movingAvgQueueSizeMtx.Unlock()
 	return a
 }
 
-func aggregateStats(thisQueue *FIFOQueueManager, httpc *http.Client, endpoints []string) (Stats, []error) {
-	stats := Stats{
+func aggregateStats(thisQueue *queue.FIFOManager, httpc *http.Client, endpoints []string) (stats.Stats, []error) {
+	stats := stats.Stats{
 		WaitCounts: thisQueue.WaitCounts(),
 	}
 
@@ -128,8 +129,8 @@ func aggregateStats(thisQueue *FIFOQueueManager, httpc *http.Client, endpoints [
 	return stats, errs
 }
 
-func getStats(httpc *http.Client, endpoint string) (Stats, error) {
-	var stats Stats
+func getStats(httpc *http.Client, endpoint string) (stats.Stats, error) {
+	var stats stats.Stats
 
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {

@@ -1,4 +1,4 @@
-package main
+package integration
 
 import (
 	"bytes"
@@ -60,7 +60,9 @@ func TestIntegration(t *testing.T) {
 	completeRequests(backendComplete, 1)
 
 	// Ensure the deployment scaled scaled past 1.
-	sendRequests(t, &wg, modelName, 2)
+	// 1/3 should be admitted
+	// 2/3 should remain in queue --> replicas should equal 2
+	sendRequests(t, &wg, modelName, 3)
 	requireDeploymentReplicas(t, deploy, 2)
 
 	// Make sure deployment will not be scaled past default max (3).
@@ -68,7 +70,7 @@ func TestIntegration(t *testing.T) {
 	requireDeploymentReplicas(t, deploy, 3)
 
 	// Have the mock backend respond to the remaining 4 requests.
-	completeRequests(backendComplete, 4)
+	completeRequests(backendComplete, 5)
 
 	// Ensure scale-down.
 	requireDeploymentReplicas(t, deploy, 0)
@@ -82,7 +84,7 @@ func requireDeploymentReplicas(t *testing.T, deploy *appsv1.Deployment, n int32)
 		err := testK8sClient.Get(testCtx, types.NamespacedName{Namespace: deploy.Namespace, Name: deploy.Name}, deploy)
 		assert.NoError(t, err, "getting the deployment")
 		assert.NotNil(t, deploy.Spec.Replicas, "scale-up should have occurred")
-		assert.Equal(t, *deploy.Spec.Replicas, n, "scale-up should have occurred")
+		assert.Equal(t, n, *deploy.Spec.Replicas, "scale-up should have occurred")
 	}, 3*time.Second, time.Second/2, "waiting for the deployment to be scaled up")
 }
 

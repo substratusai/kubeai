@@ -1,20 +1,18 @@
-package main
+package stats
 
 import (
 	"encoding/json"
 	"log"
 	"net/http"
+
+	"github.com/substratusai/lingo/pkg/queue"
 )
 
-type StatsHandler struct {
-	FIFO *FIFOQueueManager
+type Handler struct {
+	FIFO *queue.FIFOManager
 }
 
-type Stats struct {
-	WaitCounts map[string]int64 `json:"waitCounts"`
-}
-
-func (h *StatsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	waitCounts := h.FIFO.WaitCounts()
 
 	if err := json.NewEncoder(w).Encode(Stats{

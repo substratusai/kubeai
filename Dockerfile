@@ -14,7 +14,7 @@ RUN go mod download
 COPY . .
 
 # Build the Go app
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o main .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build ./cmd/lingo
 
 ######## Start a new stage from scratch #######
 FROM alpine:latest
@@ -22,7 +22,7 @@ FROM alpine:latest
 WORKDIR /root/
 
 # Copy the Pre-built binary file from the previous stage
-COPY --from=builder /app/main .
+COPY --from=builder /app/lingo .
 
 # Command to run the executable
-CMD ["./main"]
+CMD ["./lingo"]

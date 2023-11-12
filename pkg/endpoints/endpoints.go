@@ -1,4 +1,4 @@
-package main
+package endpoints
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"sync/atomic"
 )
 
-func newEndpoints() *endpointGroup {
+func newEndpointGroup() *endpointGroup {
 	e := &endpointGroup{}
 	e.endpoints = make(map[string]endpoint)
 	e.active = sync.NewCond(&e.mtx)

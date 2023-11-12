@@ -1,4 +1,4 @@
-package main
+package deployments
 
 import (
 	"context"
@@ -19,8 +19,8 @@ import (
 
 const lingoDomain = "lingo.substratus.ai"
 
-func NewDeploymentManager(mgr ctrl.Manager) (*DeploymentManager, error) {
-	r := &DeploymentManager{}
+func NewManager(mgr ctrl.Manager) (*Manager, error) {
+	r := &Manager{}
 	r.Client = mgr.GetClient()
 	r.scalers = map[string]*scaler{}
 	r.modelToDeployment = map[string]string{}
@@ -30,7 +30,7 @@ func NewDeploymentManager(mgr ctrl.Manager) (*DeploymentManager, error) {
 	return r, nil
 }
 
-type DeploymentManager struct {
+type Manager struct {
 	client.Client
 
 	Namespace string
@@ -49,21 +49,21 @@ type DeploymentManager struct {
 	modelToDeployment map[string]string
 }
 
-func (r *DeploymentManager) SetupWithManager(mgr ctrl.Manager) error {
+func (r *Manager) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&appsv1.Deployment{}).
 		Complete(r)
 }
 
-func (r *DeploymentManager) AtLeastOne(deploymentName string) {
+func (r *Manager) AtLeastOne(deploymentName string) {
 	r.getScaler(deploymentName).AtLeastOne()
 }
 
-func (r *DeploymentManager) SetDesiredScale(deploymentName string, n int32) {
+func (r *Manager) SetDesiredScale(deploymentName string, n int32) {
 	r.getScaler(deploymentName).SetDesiredScale(n)
 }
 
-func (r *DeploymentManager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *Manager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	var d appsv1.Deployment
 	if err := r.Get(ctx, req.NamespacedName, &d); err != nil {
 		return ctrl.Result{}, fmt.Errorf("get: %w", err)
@@ -98,7 +98,7 @@ func (r *DeploymentManager) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	return ctrl.Result{}, nil
 }
 
-func (r *DeploymentManager) getScaler(deploymentName string) *scaler {
+func (r *Manager) getScaler(deploymentName string) *scaler {
 	r.scalersMtx.Lock()
 	b, ok := r.scalers[deploymentName]
 	if !ok {
@@ -109,7 +109,7 @@ func (r *DeploymentManager) getScaler(deploymentName string) *scaler {
 	return b
 }
 
-func (r *DeploymentManager) scaleFunc(ctx context.Context, deploymentName string) func(int32) error {
+func (r *Manager) scaleFunc(ctx context.Context, deploymentName string) func(int32) error {
 	return func(n int32) error {
 		log.Printf("Scaling model %q: %v", deploymentName, n)
 
@@ -136,13 +136,13 @@ func (r *DeploymentManager) scaleFunc(ctx context.Context, deploymentName string
 	}
 }
 
-func (r *DeploymentManager) setModelMapping(modelName, deploymentName string) {
+func (r *Manager) setModelMapping(modelName, deploymentName string) {
 	r.modelToDeploymentMtx.Lock()
 	r.modelToDeployment[modelName] = deploymentName
 	r.modelToDeploymentMtx.Unlock()
 }
 
-func (r *DeploymentManager) ResolveDeployment(model string) (string, bool) {
+func (r *Manager) ResolveDeployment(model string) (string, bool) {
 	r.modelToDeploymentMtx.RLock()
 	deploy, ok := r.modelToDeployment[model]
 	r.modelToDeploymentMtx.RUnlock()

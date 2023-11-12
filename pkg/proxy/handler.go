@@ -1,4 +1,4 @@
-package main
+package proxy
 
 import (
 	"bytes"
@@ -9,17 +9,23 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+
+	"github.com/google/uuid"
+	"github.com/substratusai/lingo/pkg/deployments"
+	"github.com/substratusai/lingo/pkg/endpoints"
+	"github.com/substratusai/lingo/pkg/queue"
 )
 
 // Handler serves http requests.
 // It is also responsible for triggering scale-from-zero.
 type Handler struct {
-	Deployments *DeploymentManager
-	Endpoints   *EndpointsManager
-	FIFO        *FIFOQueueManager
+	Deployments *deployments.Manager
+	Endpoints   *endpoints.Manager
+	FIFO        *queue.FIFOManager
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	id := uuid.New().String()
 	log.Printf("request: %v", r.URL)
 
 	w.Header().Set("X-Proxy", "lingo")
@@ -45,9 +51,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.Deployments.AtLeastOne(deploy)
 
 	log.Println("Entering queue")
-	unqueue := h.FIFO.Enqueue(deploy)
+	complete := h.FIFO.EnqueueAndWait(r.Context(), deploy, id)
 	log.Println("Admitted into queue")
-	defer unqueue()
+	defer complete()
 
 	log.Println("Waiting for IPs")
 	host := h.Endpoints.GetHost(r.Context(), deploy)
