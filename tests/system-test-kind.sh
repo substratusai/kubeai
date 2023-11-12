@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
 
-set -e
+set -xe
 
-kind create cluster --name=substratus-test
-# trap "kind delete cluster --name=substratus-test" EXIT
+if kind get clusters | grep -q substratus-test; then
+  echo "Cluster substratus-tests already exists.. reusing it"
+  else
+  kind create cluster --name substratus-test
+fi
 
-skaffold run
+if ! kubectl get deployment proxy-controller; then
+  skaffold run
+fi
 
 kubectl wait --for=condition=available --timeout=30s deployment/proxy-controller
 
@@ -30,7 +35,9 @@ fi
 SCRIPT_DIR=$(dirname "$0")
 VENV_DIR=$SCRIPT_DIR/.venv
 
-python3 -m venv "$VENV_DIR"
+if [ ! -d "$VENV_DIR" ]; then
+  python3 -m venv "$VENV_DIR"
+fi
 source "$VENV_DIR/bin/activate"
 pip3 install openai==1.2.3
 
@@ -51,8 +58,7 @@ requests=500
 echo "Send $requests requests in parallel to stapi backend using openai python client and threading"
 python3 $SCRIPT_DIR/test_openai_embedding.py \
   --requests $requests \
-  --model text-embedding-ada-002 \
-  --client-per-thread False
+  --model text-embedding-ada-002
 
 replicas=$(kubectl get deployment stapi-minilm-l6-v2 -o jsonpath='{.spec.replicas}')
 if [ "$replicas" -ge 2 ]; then
