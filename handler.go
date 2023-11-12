@@ -48,14 +48,14 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	h.Deployments.AtLeastOne(deploy)
 
-	log.Println("Entering queue")
+	log.Println("Entering queue", id)
 	complete := h.FIFO.EnqueueAndWait(r.Context(), deploy, id)
-	log.Println("Admitted into queue")
+	log.Println("Admitted into queue", id)
 	defer complete()
 
-	log.Println("Waiting for IPs")
+	log.Println("Waiting for IPs", id)
 	host := h.Endpoints.GetHost(r.Context(), deploy)
-	log.Printf("Got host: %v", host)
+	log.Printf("Got host: %v, id: %v\n", host, id)
 
 	// TODO: Avoid creating new reverse proxies for each request.
 	// TODO: Consider implementing a round robin scheme.
