@@ -3,7 +3,7 @@ package queue
 import (
 	"container/list"
 	"context"
-	"fmt"
+	"log"
 	"sync"
 	"time"
 )
@@ -125,7 +125,7 @@ func (q *FIFOQueue) Start() {
 
 		itm := e.Value.(*item)
 		q.dequeue(itm, true)
-		fmt.Println("Dequeued: ", itm.id)
+		log.Println("Dequeued: ", itm.id)
 
 		time.Sleep(time.Second / 100)
 	}
