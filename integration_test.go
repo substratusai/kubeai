@@ -60,9 +60,9 @@ func TestIntegration(t *testing.T) {
 	completeRequests(backendComplete, 1)
 
 	// Ensure the deployment scaled scaled past 1.
-	// 1/3 should be admitted
-	// 2/3 should remain in queue --> replicas should equal 2
-	sendRequests(t, &wg, modelName, 3)
+	// 1/2 should be admitted
+	// 1/2 should remain in queue --> replicas should equal 2
+	sendRequests(t, &wg, modelName, 2)
 	requireDeploymentReplicas(t, deploy, 2)
 
 	// Make sure deployment will not be scaled past default max (3).
@@ -70,7 +70,7 @@ func TestIntegration(t *testing.T) {
 	requireDeploymentReplicas(t, deploy, 3)
 
 	// Have the mock backend respond to the remaining 4 requests.
-	completeRequests(backendComplete, 5)
+	completeRequests(backendComplete, 4)
 
 	// Ensure scale-down.
 	requireDeploymentReplicas(t, deploy, 0)

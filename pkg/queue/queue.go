@@ -5,6 +5,7 @@ import (
 	"context"
 	"log"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -30,6 +31,10 @@ type FIFOQueue struct {
 
 	// completed signals when a item that has been dequeued has completed.
 	completed chan struct{}
+
+	// activeCount is all requests that have been enqueued without their completion
+	// callback function called.
+	activeCount atomic.Int64
 }
 
 type item struct {
@@ -60,6 +65,7 @@ func (q *FIFOQueue) dequeue(itm *item, inProgress bool) {
 // It returns a function that should be called after all work has completed.
 // The id parameter is only used for tracking/debugging purposes.
 func (q *FIFOQueue) EnqueueAndWait(ctx context.Context, id string) func() {
+	q.activeCount.Add(1)
 	itm := &item{
 		id:       id,
 		dequeued: make(chan struct{}),
@@ -87,6 +93,8 @@ func (q *FIFOQueue) EnqueueAndWait(ctx context.Context, id string) func() {
 
 func (q *FIFOQueue) completeFunc(itm *item) func() {
 	return func() {
+		q.activeCount.Add(-1)
+
 		q.listMtx.Lock()
 		if !itm.closed {
 			close(itm.dequeued)
@@ -94,6 +102,7 @@ func (q *FIFOQueue) completeFunc(itm *item) func() {
 		}
 		inProgress := itm.inProgress
 		q.listMtx.Unlock()
+
 		if inProgress {
 			// Make sure we only send a message on the completed channel if the
 			// item was counted as inProgress.
@@ -143,8 +152,8 @@ func (q *FIFOQueue) SetConcurrency(n int) {
 	q.concurrencyMtx.Unlock()
 }
 
-func (q *FIFOQueue) Size() int {
-	q.listMtx.Lock()
-	defer q.listMtx.Unlock()
-	return q.list.Len()
+// ActiveCount returns all requests that have made a call to EnqueueAndWait()
+// but have not yet called the returned completion() function.
+func (q *FIFOQueue) ActiveCount() int64 {
+	return q.activeCount.Load()
 }

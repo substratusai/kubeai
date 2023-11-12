@@ -25,11 +25,11 @@ type FIFOQueueManager struct {
 }
 
 // WaitCounts returns the number of pending or in-progress requests for each deployment name
-func (m *FIFOQueueManager) WaitCounts() map[string]int {
+func (m *FIFOQueueManager) WaitCounts() map[string]int64 {
 	m.mtx.Lock()
-	sizes := make(map[string]int, len(m.queues))
+	sizes := make(map[string]int64, len(m.queues))
 	for name, q := range m.queues {
-		sizes[name] = q.Size()
+		sizes[name] = q.ActiveCount()
 	}
 	m.mtx.Unlock()
 	return sizes
