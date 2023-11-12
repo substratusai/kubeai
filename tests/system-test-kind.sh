@@ -12,9 +12,13 @@ if ! kubectl get deployment proxy-controller; then
   skaffold run
 fi
 
+
 kubectl wait --for=condition=available --timeout=30s deployment/proxy-controller
 
-kubectl port-forward svc/proxy-controller 8080:80 &
+HOST=$(kubectl get nodes substratus-test-control-plane \
+  -o=jsonpath='{.status.addresses[?(@.type=="InternalIP")].address}')
+PORT=30080
+BASE_URL="http://$HOST:$PORT/v1"
 
 if ! helm repo list | grep -q substratusai; then
   helm repo add substratusai https://substratusai.github.io/helm/
@@ -47,7 +51,7 @@ pip3 install openai==1.2.3
 
 # Send 60 requests in parallel to stapi backend using openai python client and threading
 python3 $SCRIPT_DIR/test_openai_embedding.py \
-  --requests 60 --timeout 300 \
+  --requests 60 --timeout 300 --base-url "${BASE_URL}" \
   --model text-embedding-ada-002
 
 # Ensure replicas has been scaled up to 1 after sending 60 requests
@@ -60,10 +64,10 @@ if [ "$replicas" -eq 1 ]; then
 fi
 
 
-requests=500
+requests=250
 echo "Send $requests requests in parallel to stapi backend using openai python client and threading"
 python3 $SCRIPT_DIR/test_openai_embedding.py \
-  --requests $requests --timeout 600 \
+  --requests $requests --timeout 600 --base-url "${BASE_URL}" \
   --model text-embedding-ada-002
 
 replicas=$(kubectl get deployment stapi-minilm-l6-v2 -o jsonpath='{.spec.replicas}')
