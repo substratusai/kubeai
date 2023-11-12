@@ -14,6 +14,7 @@ def create_client():
     return OpenAI(
         api_key="this won't be used",
         base_url=args.base_url,
+        timeout=args.timeout,
     )
 
 
