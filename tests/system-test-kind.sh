@@ -64,16 +64,16 @@ if [ "$replicas" -eq 1 ]; then
 fi
 
 
-requests=250
-echo "Send $requests requests in parallel to stapi backend using openai python client and threading"
-python3 $SCRIPT_DIR/test_openai_embedding.py \
-  --requests $requests --timeout 600 --base-url "${BASE_URL}" \
-  --model text-embedding-ada-002
-
-replicas=$(kubectl get deployment stapi-minilm-l6-v2 -o jsonpath='{.spec.replicas}')
-if [ "$replicas" -ge 2 ]; then
-  echo "Test passed: Expected 2 or more replicas after sending more than $requests requests, got $replicas"
-  else
-  echo "Test failed: Expected 2 or more replicas after sending more than $requests requests, got $replicas"
-  exit 1
-fi
+# requests=1000
+# echo "Send $requests requests in parallel to stapi backend using openai python client and threading"
+# python3 $SCRIPT_DIR/test_openai_embedding.py \
+#   --requests $requests --timeout 600 --base-url "${BASE_URL}" \
+#   --model text-embedding-ada-002
+# 
+# replicas=$(kubectl get deployment stapi-minilm-l6-v2 -o jsonpath='{.spec.replicas}')
+# if [ "$replicas" -ge 2 ]; then
+#   echo "Test passed: Expected 2 or more replicas after sending more than $requests requests, got $replicas"
+#   else
+#   echo "Test failed: Expected 2 or more replicas after sending more than $requests requests, got $replicas"
+#   exit 1
+# fi

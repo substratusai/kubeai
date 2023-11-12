@@ -17,9 +17,9 @@ def create_client():
         timeout=args.timeout,
     )
 
-client = create_client()
 
 def embedding_request(index: int):
+    client = create_client()
     print (f"Request {index} of {args.requests}")
     embedding = client.embeddings.create(model=args.model, input=args.text)
     print (f"Finished {index} of {args.requests}")
@@ -29,3 +29,4 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=args.requests) as executo
     futures = [executor.submit(embedding_request, i+1) for i in range(args.requests)]
     results = [future.result() for future in concurrent.futures.as_completed(futures, timeout=args.timeout)]
     assert len(results) == args.requests
+    print(f"Finished getting {args.requests} requests without any errors")
