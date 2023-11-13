@@ -101,6 +101,7 @@ func sendRequest(t *testing.T, wg *sync.WaitGroup, modelName string) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
+
 		body := []byte(fmt.Sprintf(`{"model": %q}`, modelName))
 		req, err := http.NewRequest(http.MethodPost, testServer.URL, bytes.NewReader(body))
 		requireNoError(err)
@@ -108,7 +109,6 @@ func sendRequest(t *testing.T, wg *sync.WaitGroup, modelName string) {
 		res, err := testHTTPClient.Do(req)
 		require.NoError(t, err)
 		require.Equal(t, 200, res.StatusCode)
-
 	}()
 }
 
