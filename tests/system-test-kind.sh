@@ -2,7 +2,6 @@
 
 set -xe
 
-DELETE_CLUSTER=${DELETE_CLUSTER:-true}
 # This is possible because of kind extraPortMappings
 HOST=127.0.0.1
 PORT=30080
@@ -24,11 +23,20 @@ nodes:
     hostPort: 30080
     listenAddress: "127.0.0.1"
 EOF
-  if [ "$DELETE_CLUSTER" = true ]; then
-    echo "Going to delete cluster substratus-test on exit"
-    trap "kind delete cluster --name=substratus-test" EXIT
-  fi
 fi
+
+error_handler() {
+  local exit_status=$?  # Capture the exit status of the last command
+  if [ $exit_status -ne 0 ]; then
+    echo "An error occurred. Exiting with status $exit_status. Leaving kind cluster intact for debugging"
+  else
+    echo "Exiting normally. Deleting kind cluster"
+    kind delete cluster --name=substratus-test
+  fi
+}
+
+trap 'error_handler' ERR EXIT
+
 
 if ! kubectl get deployment proxy-controller; then
   skaffold run
@@ -95,17 +103,16 @@ for i in {1..15}; do
   sleep 8
 done
 
-# Scale up again after scaling to 0 is broken right now
-# requests=500
-# echo "Send $requests requests in parallel to stapi backend using openai python client and threading"
-# python3 $SCRIPT_DIR/test_openai_embedding.py \
-#   --requests $requests --timeout 600 --base-url "${BASE_URL}" \
-#   --model text-embedding-ada-002
-# 
-# replicas=$(kubectl get deployment stapi-minilm-l6-v2 -o jsonpath='{.spec.replicas}')
-# if [ "$replicas" -ge 2 ]; then
-#   echo "Test passed: Expected 2 or more replicas after sending more than $requests requests, got $replicas"
-#   else
-#   echo "Test failed: Expected 2 or more replicas after sending more than $requests requests, got $replicas"
-#   exit 1
-# fi
+requests=500
+echo "Send $requests requests in parallel to stapi backend using openai python client and threading"
+python3 $SCRIPT_DIR/test_openai_embedding.py \
+  --requests $requests --timeout 600 --base-url "${BASE_URL}" \
+  --model text-embedding-ada-002
+
+replicas=$(kubectl get deployment stapi-minilm-l6-v2 -o jsonpath='{.spec.replicas}')
+if [ "$replicas" -ge 2 ]; then
+  echo "Test passed: Expected 2 or more replicas after sending more than $requests requests, got $replicas"
+  else
+  echo "Test failed: Expected 2 or more replicas after sending more than $requests requests, got $replicas"
+  exit 1
+fi
