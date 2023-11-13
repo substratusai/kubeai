@@ -60,6 +60,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: Avoid creating new reverse proxies for each request.
 	// TODO: Consider implementing a round robin scheme.
+	log.Printf("Proxying request to host %v: %v\n", host, id)
 	newReverseProxy(host).ServeHTTP(w, proxyRequest)
 }
 
