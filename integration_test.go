@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -32,6 +33,7 @@ func TestIntegration(t *testing.T) {
 
 	backendRequests := &atomic.Int32{}
 	testBackend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Println("Serving request from testBackend")
 		backendRequests.Add(1)
 		<-backendComplete
 		w.WriteHeader(200)
@@ -54,7 +56,9 @@ func TestIntegration(t *testing.T) {
 
 	// Send request number 1
 	var wg sync.WaitGroup
+	// sendRequest(t, modelName)
 	sendRequests(t, &wg, modelName, 1)
+
 	requireDeploymentReplicas(t, deploy, 1)
 	require.Equal(t, int32(1), backendRequests.Load(), "ensure the request made its way to the backend")
 	completeRequests(backendComplete, 1)
@@ -90,22 +94,25 @@ func requireDeploymentReplicas(t *testing.T, deploy *appsv1.Deployment, n int32)
 
 func sendRequests(t *testing.T, wg *sync.WaitGroup, modelName string, n int) {
 	for i := 0; i < n; i++ {
-		sendRequest(t, wg, modelName)
+		sendRequestWG(t, wg, modelName)
 	}
 }
 
-func sendRequest(t *testing.T, wg *sync.WaitGroup, modelName string) {
+func sendRequest(t *testing.T, modelName string) {
+	body := []byte(fmt.Sprintf(`{"model": %q}`, modelName))
+	req, err := http.NewRequest(http.MethodPost, testServer.URL, bytes.NewReader(body))
+	requireNoError(err)
+
+	res, err := testHTTPClient.Do(req)
+	require.NoError(t, err)
+	require.Equal(t, 200, res.StatusCode)
+}
+
+func sendRequestWG(t *testing.T, wg *sync.WaitGroup, modelName string) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-
-		body := []byte(fmt.Sprintf(`{"model": %q}`, modelName))
-		req, err := http.NewRequest(http.MethodPost, testServer.URL, bytes.NewReader(body))
-		requireNoError(err)
-
-		res, err := testHTTPClient.Do(req)
-		require.NoError(t, err)
-		require.Equal(t, 200, res.StatusCode)
+		sendRequest(t, modelName)
 	}()
 }
 

@@ -124,12 +124,15 @@ func (q *FIFOQueue) completeFunc(itm *item) func() {
 }
 
 func (q *FIFOQueue) Start() {
+	var inProgress int = 0
 	for {
-		// Wait until more are completed before dequeuing more.
-		if q.activeCount.Load() >= int64(q.GetConcurrency()) {
+		if inProgress >= q.GetConcurrency() {
+			log.Println("Waiting for requests to complete")
 			<-q.completed
+			inProgress--
 			continue
 		}
+
 		q.listMtx.Lock()
 		e := q.list.Front()
 		q.listMtx.Unlock()
@@ -140,6 +143,7 @@ func (q *FIFOQueue) Start() {
 			continue
 		}
 
+		inProgress++
 		itm := e.Value.(*item)
 		q.dequeue(itm, true)
 		log.Println("Dequeued: ", itm.id)
