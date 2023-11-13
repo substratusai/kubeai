@@ -32,7 +32,7 @@ type Autoscaler struct {
 func (a *Autoscaler) Start() {
 	for range time.Tick(a.Interval) {
 		log.Println("Calculating scales for all")
-		for deploymentName, waitCount := range a.FIFO.WaitCounts() {
+		for deploymentName, waitCount := range a.FIFO.TotalCounts() {
 			avg := a.getMovingAvgQueueSize(deploymentName)
 			avg.Next(float64(waitCount))
 			flt := avg.Calculate()
