@@ -29,3 +29,4 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=args.requests) as executo
     futures = [executor.submit(embedding_request, i+1) for i in range(args.requests)]
     results = [future.result() for future in concurrent.futures.as_completed(futures, timeout=args.timeout)]
     assert len(results) == args.requests
+    print(f"Finished getting {args.requests} requests without any errors")
