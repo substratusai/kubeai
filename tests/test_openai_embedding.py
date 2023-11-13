@@ -17,9 +17,9 @@ def create_client():
         timeout=args.timeout,
     )
 
-client = create_client()
 
 def embedding_request(index: int):
+    client = create_client()
     print (f"Request {index} of {args.requests}")
     embedding = client.embeddings.create(model=args.model, input=args.text)
     print (f"Finished {index} of {args.requests}")
