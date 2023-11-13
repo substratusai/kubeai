@@ -55,6 +55,9 @@ type item struct {
 }
 
 func (q *FIFOQueue) dequeue(itm *item, inProgress bool) {
+	if inProgress {
+		q.inProgressCount.Add(1)
+	}
 	q.listMtx.Lock()
 	itm.inProgress = inProgress
 	q.list.Remove(itm.e)
@@ -147,7 +150,6 @@ func (q *FIFOQueue) Start() {
 			continue
 		}
 
-		q.inProgressCount.Add(1)
 		itm := e.Value.(*item)
 		q.dequeue(itm, true)
 		log.Println("Dequeued: ", itm.id)
