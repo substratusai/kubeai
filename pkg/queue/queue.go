@@ -3,8 +3,9 @@ package queue
 import (
 	"container/list"
 	"context"
-	"fmt"
+	"log"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -30,6 +31,14 @@ type FIFOQueue struct {
 
 	// completed signals when a item that has been dequeued has completed.
 	completed chan struct{}
+
+	// totalCount is the number of requests that have been enqueued
+	// but not yet completed.
+	totalCount atomic.Int64
+
+	// inProgressCount is the number of requests that have been dequeued
+	// but not yet completed.
+	inProgressCount atomic.Int64
 }
 
 type item struct {
@@ -46,6 +55,9 @@ type item struct {
 }
 
 func (q *FIFOQueue) dequeue(itm *item, inProgress bool) {
+	if inProgress {
+		q.inProgressCount.Add(1)
+	}
 	q.listMtx.Lock()
 	itm.inProgress = inProgress
 	q.list.Remove(itm.e)
@@ -60,6 +72,7 @@ func (q *FIFOQueue) dequeue(itm *item, inProgress bool) {
 // It returns a function that should be called after all work has completed.
 // The id parameter is only used for tracking/debugging purposes.
 func (q *FIFOQueue) EnqueueAndWait(ctx context.Context, id string) func() {
+	q.totalCount.Add(1)
 	itm := &item{
 		id:       id,
 		dequeued: make(chan struct{}),
@@ -87,27 +100,43 @@ func (q *FIFOQueue) EnqueueAndWait(ctx context.Context, id string) func() {
 
 func (q *FIFOQueue) completeFunc(itm *item) func() {
 	return func() {
+		log.Println("Running completeFunc: ", itm.id)
+		q.totalCount.Add(-1)
+
+		log.Println("Locking queue.list: ", itm.id)
 		q.listMtx.Lock()
 		if !itm.closed {
+			log.Println("Closing item.dequeued: ", itm.id)
 			close(itm.dequeued)
 			itm.closed = true
 		}
+
 		inProgress := itm.inProgress
+		log.Printf("Item %v inProgress: %v\n", itm.id, inProgress)
 		q.listMtx.Unlock()
+
 		if inProgress {
+			q.inProgressCount.Add(-1)
+
 			// Make sure we only send a message on the completed channel if the
 			// item was counted as inProgress.
-			q.completed <- struct{}{}
+			select {
+			case q.completed <- struct{}{}:
+				log.Println("Sent completed message: ", itm.id)
+			default:
+				log.Println("Did not send completed message: ", itm.id)
+			}
 		}
+
+		log.Println("Finished completeFunc: ", itm.id)
 	}
 }
 
 func (q *FIFOQueue) Start() {
-	var inProgress int
 	for {
-		if inProgress >= q.GetConcurrency() {
+		if q.inProgressCount.Load() >= int64(q.GetConcurrency()) {
+			log.Println("Waiting for requests to complete")
 			<-q.completed
-			inProgress--
 			continue
 		}
 
@@ -121,11 +150,9 @@ func (q *FIFOQueue) Start() {
 			continue
 		}
 
-		inProgress++
-
 		itm := e.Value.(*item)
 		q.dequeue(itm, true)
-		fmt.Println("Dequeued: ", itm.id)
+		log.Println("Dequeued: ", itm.id)
 
 		time.Sleep(time.Second / 100)
 	}
@@ -143,8 +170,14 @@ func (q *FIFOQueue) SetConcurrency(n int) {
 	q.concurrencyMtx.Unlock()
 }
 
-func (q *FIFOQueue) Size() int {
-	q.listMtx.Lock()
-	defer q.listMtx.Unlock()
-	return q.list.Len()
+// TotalCount returns all requests that have made a call to EnqueueAndWait()
+// but have not yet completed.
+func (q *FIFOQueue) TotalCount() int64 {
+	return q.totalCount.Load()
+}
+
+// inProgressCount returns all requests that have been dequeued
+// but have not yet completed.
+func (q *FIFOQueue) InProgressCount() int64 {
+	return q.inProgressCount.Load()
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -32,6 +33,7 @@ func TestIntegration(t *testing.T) {
 
 	backendRequests := &atomic.Int32{}
 	testBackend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Println("Serving request from testBackend")
 		backendRequests.Add(1)
 		<-backendComplete
 		w.WriteHeader(200)
@@ -55,14 +57,15 @@ func TestIntegration(t *testing.T) {
 	// Send request number 1
 	var wg sync.WaitGroup
 	sendRequests(t, &wg, modelName, 1)
+
 	requireDeploymentReplicas(t, deploy, 1)
 	require.Equal(t, int32(1), backendRequests.Load(), "ensure the request made its way to the backend")
 	completeRequests(backendComplete, 1)
 
 	// Ensure the deployment scaled scaled past 1.
-	// 1/3 should be admitted
-	// 2/3 should remain in queue --> replicas should equal 2
-	sendRequests(t, &wg, modelName, 3)
+	// 1/2 should be admitted
+	// 1/2 should remain in queue --> replicas should equal 2
+	sendRequests(t, &wg, modelName, 2)
 	requireDeploymentReplicas(t, deploy, 2)
 
 	// Make sure deployment will not be scaled past default max (3).
@@ -70,7 +73,7 @@ func TestIntegration(t *testing.T) {
 	requireDeploymentReplicas(t, deploy, 3)
 
 	// Have the mock backend respond to the remaining 4 requests.
-	completeRequests(backendComplete, 5)
+	completeRequests(backendComplete, 4)
 
 	// Ensure scale-down.
 	requireDeploymentReplicas(t, deploy, 0)
