@@ -93,14 +93,19 @@ func (q *FIFOQueue) EnqueueAndWait(ctx context.Context, id string) func() {
 
 func (q *FIFOQueue) completeFunc(itm *item) func() {
 	return func() {
+		log.Println("Running completeFunc: ", itm.id)
 		q.activeCount.Add(-1)
 
+		log.Println("Locking queue.list: ", itm.id)
 		q.listMtx.Lock()
 		if !itm.closed {
+			log.Println("Closing item.dequeued: ", itm.id)
 			close(itm.dequeued)
 			itm.closed = true
 		}
+
 		inProgress := itm.inProgress
+		log.Printf("Item %v inProgress: %v\n", itm.id, inProgress)
 		q.listMtx.Unlock()
 
 		if inProgress {
@@ -108,6 +113,8 @@ func (q *FIFOQueue) completeFunc(itm *item) func() {
 			// item was counted as inProgress.
 			q.completed <- struct{}{}
 		}
+
+		log.Println("Finished completeFunc: ", itm.id)
 	}
 }
 
