@@ -43,7 +43,8 @@ func (m *FIFOQueueManager) EnqueueAndWait(ctx context.Context, deploymentName, i
 
 // UpdateQueueSizeForReplicas updates the queue size for the given deployment name.
 func (m *FIFOQueueManager) UpdateQueueSizeForReplicas(deploymentName string, replicas int) {
-	newSize := replicas * m.conccurencyPerReplica
+	// max is needed to prevent the queue size from being set to 0
+	newSize := max(replicas*m.conccurencyPerReplica, m.conccurencyPerReplica)
 	log.Printf("Updating queue size: deployment: %v, replicas: %v, newSize: %v", deploymentName, replicas, newSize)
 	m.getQueue(deploymentName).SetConcurrency(newSize)
 }
