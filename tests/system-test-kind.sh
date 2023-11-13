@@ -2,7 +2,6 @@
 
 set -xe
 
-DELETE_CLUSTER=${DELETE_CLUSTER:-true}
 # This is possible because of kind extraPortMappings
 HOST=127.0.0.1
 PORT=30080
@@ -24,11 +23,20 @@ nodes:
     hostPort: 30080
     listenAddress: "127.0.0.1"
 EOF
-  if [ "$DELETE_CLUSTER" = true ]; then
-    echo "Going to delete cluster substratus-test on exit"
-    trap "kind delete cluster --name=substratus-test" EXIT
-  fi
 fi
+
+error_handler() {
+  local exit_status=$?  # Capture the exit status of the last command
+  if [ $exit_status -ne 0 ]; then
+    echo "An error occurred. Exiting with status $exit_status. Leaving kind cluster intact for debugging"
+  else
+    echo "Exiting normally. Deleting kind cluster"
+    kind delete cluster --name=substratus-test
+  fi
+}
+
+trap 'error_handler' ERR EXIT
+
 
 if ! kubectl get deployment proxy-controller; then
   skaffold run
