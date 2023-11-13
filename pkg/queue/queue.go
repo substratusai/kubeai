@@ -111,7 +111,12 @@ func (q *FIFOQueue) completeFunc(itm *item) func() {
 		if inProgress {
 			// Make sure we only send a message on the completed channel if the
 			// item was counted as inProgress.
-			q.completed <- struct{}{}
+			select {
+			case q.completed <- struct{}{}:
+				log.Println("Sent completed message: ", itm.id)
+			default:
+				log.Println("Did not send completed message: ", itm.id)
+			}
 		}
 
 		log.Println("Finished completeFunc: ", itm.id)
@@ -119,14 +124,12 @@ func (q *FIFOQueue) completeFunc(itm *item) func() {
 }
 
 func (q *FIFOQueue) Start() {
-	var inProgress int
 	for {
-		if inProgress >= q.GetConcurrency() {
+		// Wait until more are completed before dequeuing more.
+		if q.activeCount.Load() >= int64(q.GetConcurrency()) {
 			<-q.completed
-			inProgress--
 			continue
 		}
-
 		q.listMtx.Lock()
 		e := q.list.Front()
 		q.listMtx.Unlock()
@@ -136,8 +139,6 @@ func (q *FIFOQueue) Start() {
 			<-q.enqueued
 			continue
 		}
-
-		inProgress++
 
 		itm := e.Value.(*item)
 		q.dequeue(itm, true)
