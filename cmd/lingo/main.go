@@ -118,9 +118,9 @@ func run() error {
 	autoscaler.Interval = 3 * time.Second
 	autoscaler.AverageCount = 10 // 10 * 3 seconds = 30 sec avg
 	autoscaler.LeaderElection = le
-	autoscaler.Scaler = deploymentManager
+	autoscaler.Deployments = deploymentManager
 	autoscaler.ConcurrencyPerReplica = concurrencyPerReplica
-	autoscaler.Queue = queueManager
+	autoscaler.Queues = queueManager
 	go autoscaler.Start()
 
 	proxyHandler := &proxy.Handler{

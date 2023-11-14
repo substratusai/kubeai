@@ -41,8 +41,8 @@ type Autoscaler struct {
 
 	LeaderElection *leader.Election
 
-	Scaler *deployments.Manager
-	Queue  *queue.Manager
+	Deployments *deployments.Manager
+	Queues      *queue.Manager
 
 	ConcurrencyPerReplica int
 
@@ -80,7 +80,7 @@ func (a *Autoscaler) Start() {
 		otherLingoEndpoints := []string{}
 
 		stats, errs := aggregateStats(stats.Stats{
-			ActiveRequests: a.Queue.TotalCounts(),
+			ActiveRequests: a.Queues.TotalCounts(),
 		}, a.HTTPClient, otherLingoEndpoints)
 		if len(errs) != 0 {
 			for _, err := range errs {
@@ -97,7 +97,7 @@ func (a *Autoscaler) Start() {
 			normalized := flt / float64(a.ConcurrencyPerReplica)
 			ceil := math.Ceil(normalized)
 			log.Printf("Average for deployment: %s: %v (ceil: %v), current wait count: %v", deploymentName, flt, ceil, waitCount)
-			a.Scaler.SetDesiredScale(deploymentName, int32(ceil))
+			a.Deployments.SetDesiredScale(deploymentName, int32(ceil))
 		}
 	}
 }

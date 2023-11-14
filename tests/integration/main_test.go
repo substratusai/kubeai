@@ -98,8 +98,8 @@ func TestMain(m *testing.M) {
 	autoscaler.Interval = 1 * time.Second
 	autoscaler.AverageCount = 1 // 10 * 3 seconds = 30 sec avg
 	autoscaler.LeaderElection = le
-	autoscaler.Scaler = deploymentManager
-	autoscaler.Queue = queueManager
+	autoscaler.Deployments = deploymentManager
+	autoscaler.Queues = queueManager
 	autoscaler.ConcurrencyPerReplica = concurrencyPerReplica
 	go autoscaler.Start()
 
