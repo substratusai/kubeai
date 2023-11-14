@@ -1,5 +1,7 @@
 package stats
 
+// Stats about the state of Lingo, used for autoscaling and exposed via each
+// lingo instance.
 type Stats struct {
-	WaitCounts map[string]int64 `json:"waitCounts"`
+	ActiveRequests map[string]int64 `json:"activeRequests"`
 }

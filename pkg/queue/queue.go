@@ -18,6 +18,8 @@ func New(initialConcurrency int) *Queue {
 	}
 }
 
+// Queue is a thread-safe FIFO queue that will limit the number of concurrent
+// requests that can be in progress at any given time.
 type Queue struct {
 	// concurrency is the max number of in progress items.
 	concurrency    int

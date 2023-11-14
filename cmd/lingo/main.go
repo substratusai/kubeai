@@ -22,6 +22,7 @@ import (
 	"github.com/substratusai/lingo/pkg/leader"
 	"github.com/substratusai/lingo/pkg/proxy"
 	"github.com/substratusai/lingo/pkg/queue"
+	"github.com/substratusai/lingo/pkg/stats"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -76,8 +77,8 @@ func run() error {
 			BindAddress: metricsAddr,
 		},
 		HealthProbeBindAddress: probeAddr,
-		LeaderElection:         false,
-		// LeaderElectionID:       "af3bat4f.substratus.ai",
+		// LeaderElection is done in the Autoscaler.
+		LeaderElection: false,
 	})
 	if err != nil {
 		return fmt.Errorf("starting manager: %w", err)
@@ -122,20 +123,26 @@ func run() error {
 	autoscaler.Queue = queueManager
 	go autoscaler.Start()
 
-	handler := &proxy.Handler{
+	proxyHandler := &proxy.Handler{
 		Deployments: deploymentManager,
 		Endpoints:   endpointManager,
-		Queue:       queueManager,
+		Queues:      queueManager,
 	}
-	server := &http.Server{Addr: ":8080", Handler: handler}
+	proxyServer := &http.Server{Addr: ":8080", Handler: proxyHandler}
+
+	statsHandler := &stats.Handler{
+		Queues: queueManager,
+	}
+	statsServer := &http.Server{Addr: ":8083", Handler: statsHandler}
 
 	ctx := ctrl.SetupSignalHandler()
 
 	var wg sync.WaitGroup
+	wg.Add(1)
 	go func() {
-		wg.Add(1)
 		defer func() {
-			server.Shutdown(context.Background())
+			statsServer.Shutdown(context.Background())
+			proxyServer.Shutdown(context.Background())
 			wg.Done()
 		}()
 		if err := mgr.Start(ctx); err != nil {
@@ -143,6 +150,10 @@ func run() error {
 			os.Exit(1)
 		}
 	}()
+	if err := statsServer.ListenAndServe(); err != nil {
+		setupLog.Error(err, "error serving stats")
+		os.Exit(1)
+	}
 	go func() {
 		setupLog.Info("Starting leader election")
 		le.Start(ctx)
@@ -153,7 +164,7 @@ func run() error {
 		setupLog.Info("manager stopped")
 	}()
 
-	if err := server.ListenAndServe(); err != nil {
+	if err := proxyServer.ListenAndServe(); err != nil {
 		return fmt.Errorf("listen and serve: %w", err)
 	}
 

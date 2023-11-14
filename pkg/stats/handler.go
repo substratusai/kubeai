@@ -9,14 +9,12 @@ import (
 )
 
 type Handler struct {
-	FIFO *queue.Manager
+	Queues *queue.Manager
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	waitCounts := h.FIFO.TotalCounts()
-
 	if err := json.NewEncoder(w).Encode(Stats{
-		WaitCounts: waitCounts,
+		ActiveRequests: h.Queues.TotalCounts(),
 	}); err != nil {
 		log.Printf("error writing response body: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)

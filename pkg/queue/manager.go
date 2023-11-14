@@ -15,14 +15,14 @@ func NewManager(concurrencyPerReplica int) *Manager {
 
 // Manager manages the a set of Queues (for Deployments).
 type Manager struct {
-	// The default conccurencyPerReplica of each queue for each deployment replica
+	// conccurencyPerReplica of each queue for each deployment replica.
 	conccurencyPerReplica int
 
 	mtx    sync.Mutex
 	queues map[string]*Queue
 }
 
-// WaitCounts returns the number of pending or in-progress requests for each deployment name
+// TotalCounts returns the number of pending or in-progress requests for each deployment name.
 func (m *Manager) TotalCounts() map[string]int64 {
 	m.mtx.Lock()
 	sizes := make(map[string]int64, len(m.queues))

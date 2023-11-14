@@ -76,8 +76,12 @@ func (a *Autoscaler) Start() {
 
 		log.Println("Calculating scales for all")
 
-		statsEndpoints := []string{}
-		stats, errs := aggregateStats(a.Queue, a.HTTPClient, statsEndpoints)
+		// TODO: Get stats from all replicas.
+		otherLingoEndpoints := []string{}
+
+		stats, errs := aggregateStats(stats.Stats{
+			ActiveRequests: a.Queue.TotalCounts(),
+		}, a.HTTPClient, otherLingoEndpoints)
 		if len(errs) != 0 {
 			for _, err := range errs {
 				log.Printf("Failed to aggregate stats: %v", err)
@@ -85,7 +89,7 @@ func (a *Autoscaler) Start() {
 			continue
 		}
 
-		for deploymentName, waitCount := range stats.WaitCounts {
+		for deploymentName, waitCount := range stats.ActiveRequests {
 			log.Println("Is leader, autoscaling")
 			avg := a.getMovingAvgQueueSize(deploymentName)
 			avg.Next(float64(waitCount))
@@ -109,11 +113,7 @@ func (r *Autoscaler) getMovingAvgQueueSize(deploymentName string) *movingaverage
 	return a
 }
 
-func aggregateStats(thisQueue *queue.Manager, httpc *http.Client, endpoints []string) (stats.Stats, []error) {
-	stats := stats.Stats{
-		WaitCounts: thisQueue.TotalCounts(),
-	}
-
+func aggregateStats(s stats.Stats, httpc *http.Client, endpoints []string) (stats.Stats, []error) {
 	var errs []error
 	for _, endpoint := range endpoints {
 		s, err := getStats(httpc, endpoint)
@@ -121,12 +121,12 @@ func aggregateStats(thisQueue *queue.Manager, httpc *http.Client, endpoints []st
 			errs = append(errs, fmt.Errorf("getting stats: %v: %v", endpoint, err))
 			continue
 		}
-		for k, v := range s.WaitCounts {
-			stats.WaitCounts[k] = stats.WaitCounts[k] + v
+		for k, v := range s.ActiveRequests {
+			s.ActiveRequests[k] = s.ActiveRequests[k] + v
 		}
 	}
 
-	return stats, errs
+	return s, errs
 }
 
 func getStats(httpc *http.Client, endpoint string) (stats.Stats, error) {

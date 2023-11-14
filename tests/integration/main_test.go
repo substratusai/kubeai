@@ -106,7 +106,7 @@ func TestMain(m *testing.M) {
 	handler := &proxy.Handler{
 		Deployments: deploymentManager,
 		Endpoints:   endpointManager,
-		Queue:       queueManager,
+		Queues:      queueManager,
 	}
 	testServer = httptest.NewServer(handler)
 	defer testServer.Close()
