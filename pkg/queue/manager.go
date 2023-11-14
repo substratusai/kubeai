@@ -23,11 +23,11 @@ type Manager struct {
 }
 
 // WaitCounts returns the number of pending or in-progress requests for each deployment name
-func (m *Manager) WaitCounts() map[string]int {
+func (m *Manager) TotalCounts() map[string]int64 {
 	m.mtx.Lock()
-	sizes := make(map[string]int, len(m.queues))
+	sizes := make(map[string]int64, len(m.queues))
 	for name, q := range m.queues {
-		sizes[name] = q.Size()
+		sizes[name] = q.TotalCount()
 	}
 	m.mtx.Unlock()
 	return sizes
@@ -41,7 +41,8 @@ func (m *Manager) EnqueueAndWait(ctx context.Context, deploymentName, id string)
 
 // UpdateQueueSizeForReplicas updates the queue size for the given deployment name.
 func (m *Manager) UpdateQueueSizeForReplicas(deploymentName string, replicas int) {
-	newSize := replicas * m.conccurencyPerReplica
+	// max is needed to prevent the queue size from being set to 0
+	newSize := max(replicas*m.conccurencyPerReplica, m.conccurencyPerReplica)
 	log.Printf("Updating queue size: deployment: %v, replicas: %v, newSize: %v", deploymentName, replicas, newSize)
 	m.getQueue(deploymentName).SetConcurrency(newSize)
 }

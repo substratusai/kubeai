@@ -125,7 +125,7 @@ func run() error {
 	handler := &proxy.Handler{
 		Deployments: deploymentManager,
 		Endpoints:   endpointManager,
-		FIFO:        queueManager,
+		Queue:       queueManager,
 	}
 	server := &http.Server{Addr: ":8080", Handler: handler}
 

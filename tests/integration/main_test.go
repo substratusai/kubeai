@@ -106,11 +106,15 @@ func TestMain(m *testing.M) {
 	handler := &proxy.Handler{
 		Deployments: deploymentManager,
 		Endpoints:   endpointManager,
-		FIFO:        queueManager,
+		Queue:       queueManager,
 	}
 	testServer = httptest.NewServer(handler)
 	defer testServer.Close()
 
+	go func() {
+		log.Println("starting leader election")
+		le.Start(testCtx)
+	}()
 	go func() {
 		log.Println("starting manager")
 		requireNoError(mgr.Start(testCtx))

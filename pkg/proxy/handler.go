@@ -21,7 +21,7 @@ import (
 type Handler struct {
 	Deployments *deployments.Manager
 	Endpoints   *endpoints.Manager
-	FIFO        *queue.Manager
+	Queue       *queue.Manager
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -50,17 +50,18 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	h.Deployments.AtLeastOne(deploy)
 
-	log.Println("Entering queue")
-	complete := h.FIFO.EnqueueAndWait(r.Context(), deploy, id)
-	log.Println("Admitted into queue")
+	log.Println("Entering queue", id)
+	complete := h.Queue.EnqueueAndWait(r.Context(), deploy, id)
+	log.Println("Admitted into queue", id)
 	defer complete()
 
-	log.Println("Waiting for IPs")
+	log.Println("Waiting for IPs", id)
 	host := h.Endpoints.GetHost(r.Context(), deploy)
-	log.Printf("Got host: %v", host)
+	log.Printf("Got host: %v, id: %v\n", host, id)
 
 	// TODO: Avoid creating new reverse proxies for each request.
 	// TODO: Consider implementing a round robin scheme.
+	log.Printf("Proxying request to host %v: %v\n", host, id)
 	newReverseProxy(host).ServeHTTP(w, proxyRequest)
 }
 

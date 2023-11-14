@@ -13,7 +13,7 @@ type Handler struct {
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	waitCounts := h.FIFO.WaitCounts()
+	waitCounts := h.FIFO.TotalCounts()
 
 	if err := json.NewEncoder(w).Encode(Stats{
 		WaitCounts: waitCounts,

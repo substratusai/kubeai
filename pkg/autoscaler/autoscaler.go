@@ -111,7 +111,7 @@ func (r *Autoscaler) getMovingAvgQueueSize(deploymentName string) *movingaverage
 
 func aggregateStats(thisQueue *queue.Manager, httpc *http.Client, endpoints []string) (stats.Stats, []error) {
 	stats := stats.Stats{
-		WaitCounts: thisQueue.WaitCounts(),
+		WaitCounts: thisQueue.TotalCounts(),
 	}
 
 	var errs []error
