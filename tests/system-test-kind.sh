@@ -103,7 +103,7 @@ for i in {1..15}; do
   sleep 8
 done
 
-requests=2000
+requests=3000
 echo "Send $requests requests in parallel to stapi backend using openai python client and threading"
 python3 $SCRIPT_DIR/test_openai_embedding.py \
   --requests $requests --timeout 600 --base-url "${BASE_URL}" \
