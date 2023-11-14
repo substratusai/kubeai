@@ -103,7 +103,18 @@ for i in {1..15}; do
   sleep 8
 done
 
-requests=3000
+echo "Patching stapi deployment to sleep on startup"
+cat <<EOF | kubectl patch deployment stapi-minilm-l6-v2 --type merge --patch "$(cat)"
+spec:
+  template:
+    spec:
+      initContainers:
+      - name: sleep
+        image: busybox
+        command: ["sh", "-c", "sleep 10"]
+EOF
+
+requests=300
 echo "Send $requests requests in parallel to stapi backend using openai python client and threading"
 python3 $SCRIPT_DIR/test_openai_embedding.py \
   --requests $requests --timeout 600 --base-url "${BASE_URL}" \
