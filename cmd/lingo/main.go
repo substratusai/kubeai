@@ -150,10 +150,12 @@ func run() error {
 			os.Exit(1)
 		}
 	}()
-	if err := statsServer.ListenAndServe(); err != nil {
-		setupLog.Error(err, "error serving stats")
-		os.Exit(1)
-	}
+	go func() {
+		if err := statsServer.ListenAndServe(); err != nil {
+			setupLog.Error(err, "error serving stats")
+			os.Exit(1)
+		}
+	}()
 	go func() {
 		setupLog.Info("Starting leader election")
 		le.Start(ctx)
