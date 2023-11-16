@@ -45,10 +45,10 @@ func main() {
 }
 
 func run() error {
-	const (
-		// TODO: Detect from environment.
+	namespace := os.Getenv("NAMESPACE")
+	if namespace == "" {
 		namespace = "default"
-	)
+	}
 
 	var metricsAddr string
 	var probeAddr string
