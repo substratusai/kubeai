@@ -10,11 +10,19 @@ import (
 	"sync"
 	"time"
 
+	"k8s.io/client-go/kubernetes"
+
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
-	"github.com/substratusai/lingo/pkg/queuemanager"
+	"github.com/substratusai/lingo/pkg/autoscaler"
+	"github.com/substratusai/lingo/pkg/deployments"
+	"github.com/substratusai/lingo/pkg/endpoints"
+	"github.com/substratusai/lingo/pkg/leader"
+	"github.com/substratusai/lingo/pkg/proxy"
+	"github.com/substratusai/lingo/pkg/queue"
+	"github.com/substratusai/lingo/pkg/stats"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -37,20 +45,17 @@ func main() {
 }
 
 func run() error {
-	const (
+	namespace := os.Getenv("NAMESPACE")
+	if namespace == "" {
 		namespace = "default"
-	)
+	}
 
 	var metricsAddr string
-	var enableLeaderElection bool
 	var probeAddr string
 	var concurrencyPerReplica int
 
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8082", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
-	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
-		"Enable leader election for controller manager. "+
-			"Enabling this will ensure there is only one active controller manager.")
 	flag.IntVar(&concurrencyPerReplica, "concurrency", 100, "the number of simultaneous requests that can be processed by each replica")
 	opts := zap.Options{
 		Development: true,
@@ -72,55 +77,71 @@ func run() error {
 			BindAddress: metricsAddr,
 		},
 		HealthProbeBindAddress: probeAddr,
-		LeaderElection:         enableLeaderElection,
-		LeaderElectionID:       "af3bat4f.substratus.ai",
+		// LeaderElection is done in the Autoscaler.
+		LeaderElection: false,
 	})
 	if err != nil {
 		return fmt.Errorf("starting manager: %w", err)
 	}
 
-	fifo := queuemanager.NewFIFOQueueManager(concurrencyPerReplica)
+	clientset, err := kubernetes.NewForConfig(mgr.GetConfig())
+	if err != nil {
+		return fmt.Errorf("clientset: %w", err)
+	}
 
-	endpoints, err := NewEndpointsManager(mgr)
+	hostname, err := os.Hostname()
+	if err != nil {
+		return fmt.Errorf("getting hostname: %v", err)
+	}
+	le := leader.NewElection(clientset, hostname, namespace)
+
+	queueManager := queue.NewManager(concurrencyPerReplica)
+
+	endpointManager, err := endpoints.NewManager(mgr)
 	if err != nil {
 		return fmt.Errorf("setting up endpoint manager: %w", err)
 	}
-	endpoints.EndpointSizeCallback = fifo.UpdateQueueSizeForReplicas
+	endpointManager.EndpointSizeCallback = queueManager.UpdateQueueSizeForReplicas
 
-	scaler, err := NewDeploymentManager(mgr)
+	deploymentManager, err := deployments.NewManager(mgr)
+	if err != nil {
+		return fmt.Errorf("setting up deloyment manager: %w", err)
+	}
+	deploymentManager.Namespace = namespace
+	deploymentManager.ScaleDownPeriod = 30 * time.Second
+
+	autoscaler, err := autoscaler.New(mgr)
 	if err != nil {
 		return fmt.Errorf("setting up autoscaler: %w", err)
 	}
-	scaler.Namespace = namespace
-	scaler.ScaleDownPeriod = 30 * time.Second
-
-	autoscaler := NewAutoscaler()
 	autoscaler.Interval = 3 * time.Second
 	autoscaler.AverageCount = 10 // 10 * 3 seconds = 30 sec avg
-	autoscaler.Scaler = scaler
+	autoscaler.LeaderElection = le
+	autoscaler.Deployments = deploymentManager
 	autoscaler.ConcurrencyPerReplica = concurrencyPerReplica
-	autoscaler.FIFO = fifo
+	autoscaler.Queues = queueManager
 	go autoscaler.Start()
 
-	// Change the global defaults and remove limits on max conns
-	defaultTransport := http.DefaultTransport.(*http.Transport)
-	defaultTransport.MaxIdleConns = 0
-	defaultTransport.MaxIdleConnsPerHost = 0
-	defaultTransport.MaxConnsPerHost = 0
-	handler := &Handler{
-		Deployments: scaler,
-		Endpoints:   endpoints,
-		FIFO:        fifo,
+	proxyHandler := &proxy.Handler{
+		Deployments: deploymentManager,
+		Endpoints:   endpointManager,
+		Queues:      queueManager,
 	}
-	server := &http.Server{Addr: ":8080", Handler: handler}
+	proxyServer := &http.Server{Addr: ":8080", Handler: proxyHandler}
+
+	statsHandler := &stats.Handler{
+		Queues: queueManager,
+	}
+	statsServer := &http.Server{Addr: ":8083", Handler: statsHandler}
 
 	ctx := ctrl.SetupSignalHandler()
 
 	var wg sync.WaitGroup
+	wg.Add(1)
 	go func() {
-		wg.Add(1)
 		defer func() {
-			server.Shutdown(context.Background())
+			statsServer.Shutdown(context.Background())
+			proxyServer.Shutdown(context.Background())
 			wg.Done()
 		}()
 		if err := mgr.Start(ctx); err != nil {
@@ -128,13 +149,23 @@ func run() error {
 			os.Exit(1)
 		}
 	}()
+	go func() {
+		if err := statsServer.ListenAndServe(); err != nil {
+			setupLog.Error(err, "error serving stats")
+			os.Exit(1)
+		}
+	}()
+	go func() {
+		setupLog.Info("Starting leader election")
+		le.Start(ctx)
+	}()
 	defer func() {
 		setupLog.Info("waiting on manager to stop")
 		wg.Wait()
 		setupLog.Info("manager stopped")
 	}()
 
-	if err := server.ListenAndServe(); err != nil {
+	if err := proxyServer.ListenAndServe(); err != nil {
 		return fmt.Errorf("listen and serve: %w", err)
 	}
 

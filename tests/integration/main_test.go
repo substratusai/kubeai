@@ -1,4 +1,4 @@
-package main
+package integration
 
 import (
 	"context"
@@ -11,9 +11,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/substratusai/lingo/pkg/queuemanager"
+	"github.com/substratusai/lingo/pkg/autoscaler"
+	"github.com/substratusai/lingo/pkg/deployments"
+	"github.com/substratusai/lingo/pkg/endpoints"
+	"github.com/substratusai/lingo/pkg/leader"
+	"github.com/substratusai/lingo/pkg/proxy"
+	"github.com/substratusai/lingo/pkg/queue"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/client-go/kubernetes"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -22,6 +30,7 @@ import (
 )
 
 var (
+	scheme         = runtime.NewScheme()
 	testNamespace  = "test"
 	testK8sClient  client.Client
 	testEnv        *envtest.Environment
@@ -31,8 +40,12 @@ var (
 	testHTTPClient = &http.Client{Timeout: 10 * time.Second}
 )
 
+func init() {
+	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
+}
+
 func TestMain(m *testing.M) {
-	AdditionalProxyRewrite = func(r *httputil.ProxyRequest) {
+	proxy.AdditionalProxyRewrite = func(r *httputil.ProxyRequest) {
 		// EndpointSlices do not allow for specifying local IPs (used in mock backend)
 		// so we remap the requests here.
 		r.SetURL(&url.URL{
@@ -65,33 +78,43 @@ func TestMain(m *testing.M) {
 	requireNoError(err)
 
 	const concurrencyPerReplica = 1
-	fifo := queuemanager.NewFIFOQueueManager(concurrencyPerReplica)
+	queueManager := queue.NewManager(concurrencyPerReplica)
 
-	endpoints, err := NewEndpointsManager(mgr)
+	endpointManager, err := endpoints.NewManager(mgr)
 	requireNoError(err)
-	endpoints.EndpointSizeCallback = fifo.UpdateQueueSizeForReplicas
+	endpointManager.EndpointSizeCallback = queueManager.UpdateQueueSizeForReplicas
 
-	scaler, err := NewDeploymentManager(mgr)
+	deploymentManager, err := deployments.NewManager(mgr)
 	requireNoError(err)
-	scaler.Namespace = testNamespace
-	scaler.ScaleDownPeriod = 1 * time.Second
+	deploymentManager.Namespace = testNamespace
+	deploymentManager.ScaleDownPeriod = 1 * time.Second
 
-	autoscaler := NewAutoscaler()
+	clientset, err := kubernetes.NewForConfig(mgr.GetConfig())
+	requireNoError(err)
+	le := leader.NewElection(clientset, "test-lingo-pod", testNamespace)
+
+	autoscaler, err := autoscaler.New(mgr)
+	requireNoError(err)
 	autoscaler.Interval = 1 * time.Second
 	autoscaler.AverageCount = 1 // 10 * 3 seconds = 30 sec avg
-	autoscaler.Scaler = scaler
-	autoscaler.FIFO = fifo
+	autoscaler.LeaderElection = le
+	autoscaler.Deployments = deploymentManager
+	autoscaler.Queues = queueManager
 	autoscaler.ConcurrencyPerReplica = concurrencyPerReplica
 	go autoscaler.Start()
 
-	handler := &Handler{
-		Deployments: scaler,
-		Endpoints:   endpoints,
-		FIFO:        fifo,
+	handler := &proxy.Handler{
+		Deployments: deploymentManager,
+		Endpoints:   endpointManager,
+		Queues:      queueManager,
 	}
 	testServer = httptest.NewServer(handler)
 	defer testServer.Close()
 
+	go func() {
+		log.Println("starting leader election")
+		le.Start(testCtx)
+	}()
 	go func() {
 		log.Println("starting manager")
 		requireNoError(mgr.Start(testCtx))

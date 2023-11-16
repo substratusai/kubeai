@@ -9,8 +9,8 @@ import (
 	"time"
 )
 
-func NewFIFO(initialConcurrency int) *FIFOQueue {
-	return &FIFOQueue{
+func New(initialConcurrency int) *Queue {
+	return &Queue{
 		concurrency: initialConcurrency,
 		list:        list.New(),
 		enqueued:    make(chan struct{}),
@@ -18,7 +18,9 @@ func NewFIFO(initialConcurrency int) *FIFOQueue {
 	}
 }
 
-type FIFOQueue struct {
+// Queue is a thread-safe FIFO queue that will limit the number of concurrent
+// requests that can be in progress at any given time.
+type Queue struct {
 	// concurrency is the max number of in progress items.
 	concurrency    int
 	concurrencyMtx sync.RWMutex
@@ -54,7 +56,7 @@ type item struct {
 	closed bool
 }
 
-func (q *FIFOQueue) dequeue(itm *item, inProgress bool) {
+func (q *Queue) dequeue(itm *item, inProgress bool) {
 	if inProgress {
 		q.inProgressCount.Add(1)
 	}
@@ -71,7 +73,7 @@ func (q *FIFOQueue) dequeue(itm *item, inProgress bool) {
 // EnqueueAndWait adds an item to the queue and waits for it to be dequeued.
 // It returns a function that should be called after all work has completed.
 // The id parameter is only used for tracking/debugging purposes.
-func (q *FIFOQueue) EnqueueAndWait(ctx context.Context, id string) func() {
+func (q *Queue) EnqueueAndWait(ctx context.Context, id string) func() {
 	q.totalCount.Add(1)
 	itm := &item{
 		id:       id,
@@ -98,7 +100,7 @@ func (q *FIFOQueue) EnqueueAndWait(ctx context.Context, id string) func() {
 	return q.completeFunc(itm)
 }
 
-func (q *FIFOQueue) completeFunc(itm *item) func() {
+func (q *Queue) completeFunc(itm *item) func() {
 	return func() {
 		log.Println("Running completeFunc: ", itm.id)
 		q.totalCount.Add(-1)
@@ -132,7 +134,7 @@ func (q *FIFOQueue) completeFunc(itm *item) func() {
 	}
 }
 
-func (q *FIFOQueue) Start() {
+func (q *Queue) Start() {
 	for {
 		if q.inProgressCount.Load() >= int64(q.GetConcurrency()) {
 			log.Println("Waiting for requests to complete")
@@ -158,13 +160,13 @@ func (q *FIFOQueue) Start() {
 	}
 }
 
-func (q *FIFOQueue) GetConcurrency() int {
+func (q *Queue) GetConcurrency() int {
 	q.concurrencyMtx.RLock()
 	defer q.concurrencyMtx.RUnlock()
 	return q.concurrency
 }
 
-func (q *FIFOQueue) SetConcurrency(n int) {
+func (q *Queue) SetConcurrency(n int) {
 	q.concurrencyMtx.Lock()
 	q.concurrency = n
 	q.concurrencyMtx.Unlock()
@@ -172,12 +174,12 @@ func (q *FIFOQueue) SetConcurrency(n int) {
 
 // TotalCount returns all requests that have made a call to EnqueueAndWait()
 // but have not yet completed.
-func (q *FIFOQueue) TotalCount() int64 {
+func (q *Queue) TotalCount() int64 {
 	return q.totalCount.Load()
 }
 
 // inProgressCount returns all requests that have been dequeued
 // but have not yet completed.
-func (q *FIFOQueue) InProgressCount() int64 {
+func (q *Queue) InProgressCount() int64 {
 	return q.inProgressCount.Load()
 }

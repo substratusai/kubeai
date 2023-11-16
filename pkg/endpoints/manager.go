@@ -1,4 +1,4 @@
-package main
+package endpoints
 
 import (
 	"context"
@@ -12,8 +12,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func NewEndpointsManager(mgr ctrl.Manager) (*EndpointsManager, error) {
-	r := &EndpointsManager{}
+func NewManager(mgr ctrl.Manager) (*Manager, error) {
+	r := &Manager{}
 	r.Client = mgr.GetClient()
 	r.endpoints = map[string]*endpointGroup{}
 	if err := r.SetupWithManager(mgr); err != nil {
@@ -22,7 +22,7 @@ func NewEndpointsManager(mgr ctrl.Manager) (*EndpointsManager, error) {
 	return r, nil
 }
 
-type EndpointsManager struct {
+type Manager struct {
 	client.Client
 
 	EndpointSizeCallback func(deploymentName string, size int)
@@ -31,13 +31,13 @@ type EndpointsManager struct {
 	endpoints    map[string]*endpointGroup
 }
 
-func (r *EndpointsManager) SetupWithManager(mgr ctrl.Manager) error {
+func (r *Manager) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&disv1.EndpointSlice{}).
 		Complete(r)
 }
 
-func (r *EndpointsManager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *Manager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	var slice disv1.EndpointSlice
 	if err := r.Get(ctx, req.NamespacedName, &slice); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
@@ -87,17 +87,17 @@ func (r *EndpointsManager) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	return ctrl.Result{}, nil
 }
 
-func (r *EndpointsManager) getEndpoints(service string) *endpointGroup {
+func (r *Manager) getEndpoints(service string) *endpointGroup {
 	r.endpointsMtx.Lock()
 	e, ok := r.endpoints[service]
 	if !ok {
-		e = newEndpoints()
+		e = newEndpointGroup()
 		r.endpoints[service] = e
 	}
 	r.endpointsMtx.Unlock()
 	return e
 }
 
-func (r *EndpointsManager) GetHost(ctx context.Context, service string) string {
+func (r *Manager) GetHost(ctx context.Context, service string) string {
 	return r.getEndpoints(service).getHost()
 }

@@ -1,4 +1,4 @@
-package main
+package integration
 
 import (
 	"bytes"
@@ -43,6 +43,7 @@ func TestIntegration(t *testing.T) {
 	testBackendURL, err := url.Parse(testBackend.URL)
 	require.NoError(t, err)
 	testBackendPort, err := strconv.Atoi(testBackendURL.Port())
+	require.NoError(t, err)
 	require.NoError(t, testK8sClient.Create(testCtx,
 		endpointSlice(
 			modelName,
@@ -64,7 +65,7 @@ func TestIntegration(t *testing.T) {
 
 	// Ensure the deployment scaled scaled past 1.
 	// 1/2 should be admitted
-	// 1/2 should remain in queue --> replicas should equal 2
+	// 1/2 should remain in queue
 	sendRequests(t, &wg, modelName, 2)
 	requireDeploymentReplicas(t, deploy, 2)
 

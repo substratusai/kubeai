@@ -2,7 +2,7 @@ ENVTEST_K8S_VERSION = 1.27.1
 
 .PHONY: test
 test-integration: envtest
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test ./... -v
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test ./tests/integration -v
 
 ## Location to install dependencies to
 LOCALBIN ?= $(shell pwd)/bin

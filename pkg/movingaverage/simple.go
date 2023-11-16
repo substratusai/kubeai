@@ -1,10 +1,10 @@
-package main
+package movingaverage
 
 import (
 	"sync"
 )
 
-// movingAvg keeps track of a history of measurements and returns the average.
+// Simple keeps track of a history of measurements and returns the average.
 // One important feature of this implementation is that the average can go to zero.
 // All methods are thread safe.
 //
@@ -16,19 +16,19 @@ import (
 //	 r := alpha * value + (1.0 - alpha) * oldValue
 //	 return r
 //	}
-type movingAvg struct {
+type Simple struct {
 	mtx     sync.Mutex
 	history []float64
 	index   int
 }
 
-func newSimpleMovingAvg(seed []float64) *movingAvg {
-	return &movingAvg{
+func NewSimple(seed []float64) *Simple {
+	return &Simple{
 		history: seed,
 	}
 }
 
-func (a *movingAvg) Next(next float64) {
+func (a *Simple) Next(next float64) {
 	a.mtx.Lock()
 	a.history[a.index] = next
 	a.index++
@@ -38,7 +38,7 @@ func (a *movingAvg) Next(next float64) {
 	a.mtx.Unlock()
 }
 
-func (a *movingAvg) Calculate() (result float64) {
+func (a *Simple) Calculate() (result float64) {
 	a.mtx.Lock()
 	for _, p := range a.history {
 		result += p
