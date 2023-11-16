@@ -89,12 +89,11 @@ func run() error {
 		return fmt.Errorf("clientset: %w", err)
 	}
 
-	const POD_NAME = "POD_NAME"
-	podName := os.Getenv(POD_NAME)
-	if podName == "" {
-		return fmt.Errorf("environment variable must be set: %v", POD_NAME)
+	hostname, err := os.Hostname()
+	if err != nil {
+		return fmt.Errorf("getting hostname: %v", err)
 	}
-	le := leader.NewElection(clientset, podName, namespace)
+	le := leader.NewElection(clientset, hostname, namespace)
 
 	queueManager := queue.NewManager(concurrencyPerReplica)
 

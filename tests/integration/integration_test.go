@@ -3,6 +3,7 @@ package integration
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -32,6 +33,7 @@ func TestIntegration(t *testing.T) {
 
 	backendRequests := &atomic.Int32{}
 	testBackend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Println("Serving request from testBackend")
 		backendRequests.Add(1)
 		<-backendComplete
 		w.WriteHeader(200)
@@ -56,6 +58,7 @@ func TestIntegration(t *testing.T) {
 	// Send request number 1
 	var wg sync.WaitGroup
 	sendRequests(t, &wg, modelName, 1)
+
 	requireDeploymentReplicas(t, deploy, 1)
 	require.Equal(t, int32(1), backendRequests.Load(), "ensure the request made its way to the backend")
 	completeRequests(backendComplete, 1)
