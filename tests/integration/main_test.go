@@ -101,6 +101,7 @@ func TestMain(m *testing.M) {
 	autoscaler.Deployments = deploymentManager
 	autoscaler.Queues = queueManager
 	autoscaler.ConcurrencyPerReplica = concurrencyPerReplica
+	autoscaler.Endpoints = endpointManager
 	go autoscaler.Start()
 
 	handler := &proxy.Handler{
