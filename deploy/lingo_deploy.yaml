@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: proxy-controller
+  name: lingo
   labels:
-    app: proxy-controller
+    app: lingo
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
-      app: proxy-controller
+      app: lingo
   template:
     metadata:
       labels:
-        app: proxy-controller
+        app: lingo
     spec:
-      serviceAccountName: proxy-controller
+      serviceAccountName: lingo
       containers:
         - name: main
-          image: proxy-controller
+          image: lingo
           env:
             - name: NAMESPACE
               valueFrom:

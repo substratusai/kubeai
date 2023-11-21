@@ -16,6 +16,7 @@ func NewManager(mgr ctrl.Manager) (*Manager, error) {
 	r := &Manager{}
 	r.Client = mgr.GetClient()
 	r.endpoints = map[string]*endpointGroup{}
+	r.ExcludePods = map[string]struct{}{}
 	if err := r.SetupWithManager(mgr); err != nil {
 		return nil, err
 	}
@@ -29,6 +30,8 @@ type Manager struct {
 
 	endpointsMtx sync.Mutex
 	endpoints    map[string]*endpointGroup
+
+	ExcludePods map[string]struct{}
 }
 
 func (r *Manager) SetupWithManager(mgr ctrl.Manager) error {
@@ -56,15 +59,13 @@ func (r *Manager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result,
 	}
 
 	ips := map[string]struct{}{}
-	var port int32
 	for _, sliceItem := range sliceList.Items {
-		if len(sliceItem.Ports) > 0 {
-			p := sliceItem.Ports[0].Port
-			if p != nil {
-				port = *p
-			}
-		}
 		for _, endpointItem := range sliceItem.Endpoints {
+			if endpointItem.TargetRef != nil && endpointItem.TargetRef.Kind == "Pod" {
+				if _, ok := r.ExcludePods[endpointItem.TargetRef.Name]; ok {
+					continue
+				}
+			}
 			ready := endpointItem.Conditions.Ready
 			if ready != nil && *ready {
 				for _, ip := range endpointItem.Addresses {
@@ -74,8 +75,19 @@ func (r *Manager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result,
 		}
 	}
 
+	ports := map[string]int32{}
+	for _, p := range slice.Ports {
+		var name string
+		if p.Name != nil {
+			name = *p.Name
+		}
+		if p.Port != nil {
+			ports[name] = *p.Port
+		}
+	}
+
 	priorLen := r.getEndpoints(serviceName).lenIPs()
-	r.getEndpoints(serviceName).setIPs(ips, port)
+	r.getEndpoints(serviceName).setIPs(ips, ports)
 
 	if priorLen != len(ips) {
 		// TODO: Currently Service name needs to match Deployment name, however
@@ -98,6 +110,10 @@ func (r *Manager) getEndpoints(service string) *endpointGroup {
 	return e
 }
 
-func (r *Manager) GetHost(ctx context.Context, service string) string {
-	return r.getEndpoints(service).getHost()
+func (r *Manager) GetHost(ctx context.Context, service, portName string) string {
+	return r.getEndpoints(service).getHost(portName)
+}
+
+func (r *Manager) GetAllHosts(ctx context.Context, service, portName string) []string {
+	return r.getEndpoints(service).getAllHosts(portName)
 }

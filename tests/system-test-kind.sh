@@ -38,12 +38,12 @@ error_handler() {
 trap 'error_handler' ERR EXIT
 
 
-if ! kubectl get deployment proxy-controller; then
+if ! kubectl get deployment lingo; then
   skaffold run
 fi
 
 
-kubectl wait --for=condition=available --timeout=30s deployment/proxy-controller
+kubectl wait --for=condition=available --timeout=30s deployment/lingo
 
 
 if ! helm repo list | grep -q substratusai; then

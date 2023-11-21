@@ -18,7 +18,7 @@ EOF
 skaffold dev
 
 # In another terminal...
-kubectl port-forward svc/proxy-controller 8080:80
+kubectl port-forward svc/lingo 8080:80
 # In another terminal...
 watch kubectl get pods
 
