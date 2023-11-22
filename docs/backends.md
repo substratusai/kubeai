@@ -2,6 +2,8 @@
 
 Lingo backends are expected to serve models via an OpenAI-compatible API.
 
+Lingo will select a backend based on the `X-Model` header or the `.model` field in the JSON request body.
+
 ## Deployments
 
 Annotations:
@@ -10,7 +12,7 @@ Annotations:
 | ---------- | -------- | ------- | ----------- |
 | `lingo.substratus.ai/models` | Required | `N/A` | Comma-separated list of models served |
 | `lingo.substratus.ai/min-replicas` | Optional | `0` | Minimum number of replicas to autoscale down to |
-| `lingo.substratus.ai/max-replicas` | Optional | `0` | Maximum number of replicas to autoscale up to |
+| `lingo.substratus.ai/max-replicas` | Optional | `3` | Maximum number of replicas to autoscale up to |
 
 ## Services
 
