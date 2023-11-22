@@ -34,7 +34,7 @@ func (e *endpointGroup) getHost(portName string) string {
 	}
 
 	var bestIP string
-	port := e.ports[portName]
+	port := e.getPort(portName)
 	var minInFlight int
 	for ip := range e.endpoints {
 		inFlight := int(e.endpoints[ip].inFlight.Load())
@@ -52,12 +52,21 @@ func (e *endpointGroup) getAllHosts(portName string) []string {
 	defer e.mtx.Unlock()
 
 	var hosts []string
-	port := e.ports[portName]
+	port := e.getPort(portName)
 	for ip := range e.endpoints {
 		hosts = append(hosts, fmt.Sprintf("%s:%v", ip, port))
 	}
 
 	return hosts
+}
+
+func (e *endpointGroup) getPort(portName string) int32 {
+	if len(e.ports) == 1 {
+		for _, p := range e.ports {
+			return p
+		}
+	}
+	return e.ports[portName]
 }
 
 func (g *endpointGroup) lenIPs() int {

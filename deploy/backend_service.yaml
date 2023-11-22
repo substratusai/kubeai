@@ -6,6 +6,5 @@ spec:
   selector:
     app: backend
   ports:
-    - name: http
-      protocol: TCP
+    - protocol: TCP
       port: 80

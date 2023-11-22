@@ -118,6 +118,11 @@ func (r *Autoscaler) getMovingAvgQueueSize(deploymentName string) *movingaverage
 
 func aggregateStats(s stats.Stats, httpc *http.Client, endpoints []string) (stats.Stats, []error) {
 	var errs []error
+
+	for k, v := range s.ActiveRequests {
+		log.Printf("Leader active requests for: %v: %v", k, v)
+	}
+
 	for _, endpoint := range endpoints {
 		fetched, err := getStats(httpc, "http://"+endpoint)
 		if err != nil {

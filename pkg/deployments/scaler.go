@@ -16,27 +16,36 @@ type scaler struct {
 
 	// scaleFuncMtx ensures the scale function is not run concurrently.
 	scaleFuncMtx sync.Mutex
-	scaleFunc    func(n int32) error
+	scaleFunc    func(n int32, atLeastOne bool) error
 
 	scaleDownDelay   time.Duration
 	scaleDownStarted bool
 	scaleDownTimer   *time.Timer
 }
 
+// AtLeastOne schedules a scale up if the current scale is zero.
 func (s *scaler) AtLeastOne() {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
 	log.Printf("AtLeastOne()")
-	s.compareScales(-1, -1, true)
+	if err := s.scaleFunc(-1, true); err != nil {
+		log.Printf("scale error: %v", err)
+	}
 }
 
+// UpdateState updates the current state of the scaler and
+// scales if needed.
 func (s *scaler) UpdateState(replicas, min, max int32) {
 	log.Printf("UpdateState(%v, %v, %v)", replicas, min, max)
 	s.setMinMax(min, max)
-	s.compareScales(replicas, -1, false)
+	s.compareScales(replicas, -1)
 }
 
+// SetDesiredScale sets the desired scale of the scaler and scales
+// if needed.
 func (s *scaler) SetDesiredScale(n int32) {
 	log.Printf("SetDesiredScale(%v)", n)
-	s.compareScales(-1, s.applyMinMax(n), false)
+	s.compareScales(-1, s.applyMinMax(n))
 }
 
 func (s *scaler) setMinMax(min, max int32) {
@@ -59,24 +68,15 @@ func (s *scaler) applyMinMax(n int32) int32 {
 	return n
 }
 
-func (s *scaler) compareScales(current, desired int32, zeroToOne bool) {
+func (s *scaler) compareScales(current, desired int32) {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 
-	if zeroToOne {
-		// Could be 0 or -1
-		if s.desiredScale < 1 {
-			s.desiredScale = 1
-		} else {
-			return
-		}
-	} else {
-		if current != -1 {
-			s.currentScale = current
-		}
-		if desired != -1 {
-			s.desiredScale = desired
-		}
+	if current != -1 {
+		s.currentScale = current
+	}
+	if desired != -1 {
+		s.desiredScale = desired
 	}
 
 	if s.currentScale == -1 || s.desiredScale == -1 {
@@ -84,9 +84,11 @@ func (s *scaler) compareScales(current, desired int32, zeroToOne bool) {
 		return
 	}
 
+	log.Printf("Comparing scales, current: %v, desired: %v", s.currentScale, s.desiredScale)
+
 	if s.desiredScale > s.currentScale {
 		// Scale up immediately.
-		go s.scaleFunc(s.desiredScale)
+		go s.scaleFunc(s.desiredScale, false)
 		s.scaleDownStarted = false
 	} else if s.desiredScale == s.currentScale {
 		// Do nothing, schedule nothing.
@@ -99,11 +101,11 @@ func (s *scaler) compareScales(current, desired int32, zeroToOne bool) {
 
 		if s.scaleDownTimer == nil {
 			s.scaleDownTimer = time.AfterFunc(s.scaleDownDelay, func() {
-				if err := s.scaleFunc(s.desiredScale); err != nil {
+				if err := s.scaleFunc(s.desiredScale, false); err != nil {
 					log.Printf("task: run error: %v", err)
 				} else {
 					s.scaleDownStarted = false
-					s.compareScales(s.desiredScale, -1, false)
+					s.compareScales(s.desiredScale, -1)
 				}
 			})
 		} else if !s.scaleDownStarted {
@@ -114,7 +116,7 @@ func (s *scaler) compareScales(current, desired int32, zeroToOne bool) {
 	}
 }
 
-func newScaler(scaleDownDelay time.Duration, scaleFunc func(int32) error) *scaler {
+func newScaler(scaleDownDelay time.Duration, scaleFunc func(int32, bool) error) *scaler {
 	s := &scaler{
 		// -1 represents unknown
 		currentScale:   -1,
@@ -122,9 +124,9 @@ func newScaler(scaleDownDelay time.Duration, scaleFunc func(int32) error) *scale
 		scaleDownDelay: scaleDownDelay,
 	}
 
-	s.scaleFunc = func(n int32) error {
+	s.scaleFunc = func(n int32, atLeastOne bool) error {
 		s.scaleFuncMtx.Lock()
-		err := scaleFunc(n)
+		err := scaleFunc(n, atLeastOne)
 		s.scaleFuncMtx.Unlock()
 
 		if err != nil {
