@@ -1,0 +1,3 @@
+smart_open
+requests
+aiohttp
