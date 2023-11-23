@@ -27,20 +27,25 @@ async def read_file_and_enqueue(path, queue: asyncio.Queue):
 
 
 async def worker(
-    requests: asyncio.Queue, results: asyncio.Queue, session: aiohttp.ClientSession
+    requests: asyncio.Queue,
+    results: asyncio.Queue,
+    session: aiohttp.ClientSession,
+    worker_id: int,
+    url: str,
 ):
-    print("Starting worker")
+    print(f"Starting worker {worker_id}")
     while True:
         request = await requests.get()
-        print(f"Got request {request}")
+        print(f"{worker_id}: Got request {request}")
         if request is None:
+            requests.task_done()
             break
-        request_id = request.pop("id", "no_id")
         async with session.post(url=url, json=request) as response:
-            response = response.json()
+            print(f"{worker_id}: HTTP {response.status}")
+            response = await response.json()
             await results.put({"request": request, "response": response})
-            print(f"{request_id} - HTTP {response.status}")
-        requests.task_done()
+            requests.task_done()
+
 
 async def flusher(results: asyncio.Queue, flush_every: int, output_path: str):
     print("Starting flusher")
@@ -54,13 +59,16 @@ async def flusher(results: asyncio.Queue, flush_every: int, output_path: str):
         current_batch.append(result)
         if len(current_batch) >= flush_every or result is None:
             if result is None:
+                current_batch.pop()
                 print(f"Flushing last batch of {len(current_batch) - 1} results")
             else:
                 print(f"Flushing batch of {len(current_batch)} results")
-            jsonl_data = '\n'.join(json.dumps(entry) for entry in current_batch)
-            partitioned_filename = output_path + "/" + filename.format(partition=partition)
+            jsonl_data = "\n".join(json.dumps(entry) for entry in current_batch)
+            partitioned_filename = (
+                output_path + "/" + filename.format(partition=partition)
+            )
             with open(partitioned_filename, mode="w") as file:
-                json.dump(jsonl_data, file)
+                file.write(jsonl_data)
             for _ in range(0, len(current_batch)):
                 results.task_done()
             current_batch = []
@@ -68,21 +76,28 @@ async def flusher(results: asyncio.Queue, flush_every: int, output_path: str):
             if result is None:
                 break
 
-async def main(requests_path):
+
+async def main():
     requests = asyncio.Queue(maxsize=concurrent_requests)
     results = asyncio.Queue(maxsize=flush_every)
     timeout = aiohttp.ClientTimeout(total=600)
     async with aiohttp.ClientSession(timeout=timeout) as session:
-        file_task = asyncio.create_task(read_file_and_enqueue(requests_path, requests))
+        producer_task = asyncio.create_task(
+            read_file_and_enqueue(requests_path, requests)
+        )
         flusher_task = asyncio.create_task(flusher(results, flush_every, output_path))
         workers = [
-            asyncio.create_task(worker(requests, results, session))
-            for _ in range(concurrent_requests)
+            asyncio.create_task(worker(requests, results, session, worker_id, url))
+            for worker_id in range(concurrent_requests)
         ]
-        await file_task
+        await producer_task
+        print("Finished reading requests file and enqueueing requests")
+        print("Waiting for all requests to be processed")
         await requests.join()
+        print("All requests have been processed")
         # Send a signal that all requests have been processed
         await results.put(None)
+        print("Waiting for all results to be flushed")
         await flusher_task
         for w in workers:
             w.cancel()
@@ -100,4 +115,4 @@ if __name__ == "__main__":
     output_path = args.output_path
     flush_every = args.flush_every
     url = args.url
-    asyncio.run(main(requests_path))
+    asyncio.run(main())

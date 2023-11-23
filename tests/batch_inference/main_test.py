@@ -23,9 +23,11 @@ async def test_batching_and_flushing(tmp_path: pathlib.Path):
     total_lines = 0
     for file in os.listdir(tmp_path):
         with open(tmp_path / file, mode="r") as f:
+            print(f"Contents of file {file}: {f.read()}")
+            f.seek(0)
             total_lines += len(f.readlines())
 
-    assert total_lines == 25
+    assert total_lines == 25, f"Expected 25 lines, got {total_lines}."
 
 
 
@@ -33,4 +35,15 @@ async def test_batching_and_flushing(tmp_path: pathlib.Path):
 async def test_termination_condition():
     results = asyncio.Queue(maxsize=100)
     await results.put(None)  # Signal to end the loop
-    await flusher(results, flush_every=10, output_path="")  # This should terminate without error
+    await flusher(results, flush_every=10, output_path="")
+
+@pytest.mark.asyncio
+async def test_worker():
+    requests = asyncio.Queue(maxsize=100)
+    results = asyncio.Queue(maxsize=100)
+    worker_id = 1
+    url = "http://localhost:8080/v1/inference"
+    session = aiohttp.ClientSession()
+    await requests.put({"title": "result_1"})
+    await requests.put(None)
+
