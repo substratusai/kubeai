@@ -1,9 +1,6 @@
 import asyncio
 import pathlib
-import json
 import os
-import unittest
-from unittest.mock import patch, mock_open
 
 import aiohttp
 import pytest
@@ -59,4 +56,4 @@ async def test_worker(httpserver: HTTPServer):
     assert results.qsize() == 1
     result = await results.get()
     assert result == {"request": dummy_request, "response": dummy_data}
-    session.close()
+    await session.close()

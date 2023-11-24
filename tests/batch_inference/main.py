@@ -5,13 +5,14 @@ Batch inference using asyncio.Queue
 import argparse
 import asyncio
 import json
+import os
 
 import aiohttp
 from smart_open import open
 
 url = "http://localhost:8080/v1/completions"
 filename = "part-{partition}.jsonl"
-concurrent_requests = 100
+concurrency = 100
 requests_path = ""
 output_path = "/tmp/lingo-batch-inference"
 flush_every = 1000
@@ -78,17 +79,18 @@ async def flusher(results: asyncio.Queue, flush_every: int, output_path: str):
 
 
 async def main():
-    requests = asyncio.Queue(maxsize=concurrent_requests)
+    requests = asyncio.Queue(maxsize=concurrency)
     results = asyncio.Queue(maxsize=flush_every)
     timeout = aiohttp.ClientTimeout(total=600)
-    async with aiohttp.ClientSession(timeout=timeout) as session:
+    conn = aiohttp.TCPConnector(limit=0)
+    async with aiohttp.ClientSession(timeout=timeout, connector=conn) as session:
         producer_task = asyncio.create_task(
             read_file_and_enqueue(requests_path, requests)
         )
         flusher_task = asyncio.create_task(flusher(results, flush_every, output_path))
         workers = [
             asyncio.create_task(worker(requests, results, session, worker_id, url))
-            for worker_id in range(concurrent_requests)
+            for worker_id in range(concurrency)
         ]
         await producer_task
         print("Finished reading requests file and enqueueing requests")
@@ -106,10 +108,31 @@ async def main():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Test Lingo using Python OpenAI API")
-    parser.add_argument("--url", type=str, default=url)
-    parser.add_argument("--requests-path", type=str)
-    parser.add_argument("--output-path", type=str)
-    parser.add_argument("--flush-every", type=int, default=flush_every)
+    parser.add_argument("--url", type=str, default=os.environ.get("URL", url))
+    parser.add_argument(
+        "--requests-path",
+        type=str,
+        default=os.environ.get("REQUESTS_PATH", requests_path),
+        help="Path to read requests file",
+    )
+    parser.add_argument(
+        "--output-path",
+        type=str,
+        default=os.environ.get("OUTPUT_PATH", output_path),
+        help="Path to write output files",
+    )
+    parser.add_argument(
+        "--flush-every",
+        type=int,
+        default=os.environ.get("FLUSH_EVERY", flush_every),
+        help="Number of requests to flush to disk",
+    )
+    parser.add_argument(
+        "--concurrency",
+        type=int,
+        default=os.environ.get("CONCURRENCY", concurrency),
+        help=f"Number of concurrent requests. Defaults to {concurrency}",
+    )
     args = parser.parse_args()
     requests_path = args.requests_path
     output_path = args.output_path
