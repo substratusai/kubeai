@@ -1,13 +1,17 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: proxy-controller
+  name: lingo
 spec:
   selector:
-    app: proxy-controller
+    app: lingo
   ports:
-    - protocol: TCP
+    - name: proxy
+      protocol: TCP
       port: 80
       targetPort: 8080
       nodePort: 30080
+    - name: stats
+      protocol: TCP
+      port: 8083
   type: NodePort

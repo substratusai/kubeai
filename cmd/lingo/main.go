@@ -102,6 +102,9 @@ func run() error {
 		return fmt.Errorf("setting up endpoint manager: %w", err)
 	}
 	endpointManager.EndpointSizeCallback = queueManager.UpdateQueueSizeForReplicas
+	// The autoscaling leader will scrape other lingo instances.
+	// Exclude this instance from being scraped by itself.
+	endpointManager.ExcludePods[hostname] = struct{}{}
 
 	deploymentManager, err := deployments.NewManager(mgr)
 	if err != nil {
@@ -120,6 +123,7 @@ func run() error {
 	autoscaler.Deployments = deploymentManager
 	autoscaler.ConcurrencyPerReplica = concurrencyPerReplica
 	autoscaler.Queues = queueManager
+	autoscaler.Endpoints = endpointManager
 	go autoscaler.Start()
 
 	proxyHandler := &proxy.Handler{

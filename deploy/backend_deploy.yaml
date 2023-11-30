@@ -17,7 +17,11 @@ spec:
         app: backend
     spec:
       containers:
-      - name: backend
-        image: kennethreitz/httpbin
-        ports:
-        - containerPort: 80
+        - name: backend
+          image: kennethreitz/httpbin
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /get
+              port: 80

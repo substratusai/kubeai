@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/substratusai/lingo/pkg/deployments"
+	"github.com/substratusai/lingo/pkg/endpoints"
 	"github.com/substratusai/lingo/pkg/leader"
 	"github.com/substratusai/lingo/pkg/movingaverage"
 	"github.com/substratusai/lingo/pkg/queue"
@@ -23,6 +24,7 @@ import (
 func New(mgr ctrl.Manager) (*Autoscaler, error) {
 	a := &Autoscaler{}
 	a.Client = mgr.GetClient()
+	a.HTTPClient = &http.Client{}
 	a.movingAvgQueueSize = map[string]*movingaverage.Simple{}
 	if err := a.SetupWithManager(mgr); err != nil {
 		return nil, err
@@ -43,6 +45,7 @@ type Autoscaler struct {
 
 	Deployments *deployments.Manager
 	Queues      *queue.Manager
+	Endpoints   *endpoints.Manager
 
 	ConcurrencyPerReplica int
 
@@ -76,8 +79,8 @@ func (a *Autoscaler) Start() {
 
 		log.Println("Calculating scales for all")
 
-		// TODO: Get stats from all replicas.
-		otherLingoEndpoints := []string{}
+		// TODO: Remove hardcoded Service lookup by name "lingo".
+		otherLingoEndpoints := a.Endpoints.GetAllHosts(context.Background(), "lingo", "stats")
 
 		stats, errs := aggregateStats(stats.Stats{
 			ActiveRequests: a.Queues.TotalCounts(),
@@ -115,14 +118,20 @@ func (r *Autoscaler) getMovingAvgQueueSize(deploymentName string) *movingaverage
 
 func aggregateStats(s stats.Stats, httpc *http.Client, endpoints []string) (stats.Stats, []error) {
 	var errs []error
+
+	for k, v := range s.ActiveRequests {
+		log.Printf("Leader active requests for: %v: %v", k, v)
+	}
+
 	for _, endpoint := range endpoints {
-		s, err := getStats(httpc, endpoint)
+		fetched, err := getStats(httpc, "http://"+endpoint)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("getting stats: %v: %v", endpoint, err))
 			continue
 		}
-		for k, v := range s.ActiveRequests {
-			s.ActiveRequests[k] = s.ActiveRequests[k] + v
+		for k, v := range fetched.ActiveRequests {
+			log.Printf("Aggregating active requests for endpoint: %v: %v: %v", endpoint, k, v)
+			s.ActiveRequests[k] = fetched.ActiveRequests[k] + v
 		}
 	}
 
