@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: perf-backend
+spec:
+  selector:
+    app: perf-backend
+  ports:
+    - protocol: TCP
+      port: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: perf-backend
+  annotations:
+    lingo.substratus.ai/models: perf-test
+  labels:
+    app: perf-backend
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: perf-backend
+  template:
+    metadata:
+      labels:
+        app: perf-backend
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+          ports:
+            - containerPort: 80
