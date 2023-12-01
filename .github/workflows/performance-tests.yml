@@ -14,10 +14,13 @@ jobs:
       uses: 'google-github-actions/auth@v1'
       with:
         workload_identity_provider: 'projects/819220466562/locations/global/workloadIdentityPools/github/providers/my-repo'
-        service_account: 'github-actions@my-project.iam.gserviceaccount.com'
+        service_account: 'github-actions@substratus-dev.iam.gserviceaccount.com'
 
     - id: 'get-credentials'
       uses: 'google-github-actions/get-gke-credentials@v1'
       with:
-        cluster_name: 'my-cluster'
-        location: 'us-central1-a'
+        cluster_name: 'lingo-dev'
+        location: 'us-central1'
+
+    - id: 'get-pods'
+      run: 'kubectl get pods'
