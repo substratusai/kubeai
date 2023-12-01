@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
+  namespace: default
   annotations:
     lingo.substratus.ai/models: backend
   labels:

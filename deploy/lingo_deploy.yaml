@@ -4,6 +4,7 @@ metadata:
   name: lingo
   labels:
     app: lingo
+  namespace: default
 spec:
   replicas: 3
   selector:
