@@ -32,5 +32,7 @@ jobs:
         sudo mv skaffold /usr/local/bin
     - id: 'configure-docker'
       run: gcloud auth configure-docker us-central1-docker.pkg.dev
+    - id: 'test-docker-creds'
+      run: 'docker pull us-central1-docker.pkg.dev/substratus-dev/substratus/lingo'
     - id: 'run-tests'
       run: './tests/performance/test.sh'
