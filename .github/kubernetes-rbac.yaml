@@ -1,0 +1,25 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: github-actions
+  namespace: default
+rules:
+- apiGroups: [""]
+  resources: ["configmaps", "services", "pods", "pods/log"]
+  verbs: ["create", "delete", "update", "get", "watch", "list"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["create", "delete", "update", "get", "watch", "list"]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: github-actions
+  namespace: default
+subjects:
+- kind: User
+  name: github-actions@substratus-dev.iam.gserviceaccount.com
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io
