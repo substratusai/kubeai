@@ -17,8 +17,7 @@ jobs:
       with:
         workload_identity_provider: 'projects/819220466562/locations/global/workloadIdentityPools/github/providers/my-repo'
         service_account: 'github-actions@substratus-dev.iam.gserviceaccount.com'
-        export_environment_variables: true
-        create_credentials_file: true
+        export_default_credentials: true
     - id: 'get-credentials'
       uses: 'google-github-actions/get-gke-credentials@v1'
       with:
