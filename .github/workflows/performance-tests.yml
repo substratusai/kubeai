@@ -1,0 +1,23 @@
+name: Performance Tests
+run-name: Performance Tests by @${{ github.actor }}
+
+on: workflow_dispatch
+
+jobs:
+  job_id:
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+    - id: 'auth'
+      uses: 'google-github-actions/auth@v1'
+      with:
+        workload_identity_provider: 'projects/819220466562/locations/global/workloadIdentityPools/github/providers/my-repo'
+        service_account: 'github-actions@my-project.iam.gserviceaccount.com'
+
+    - id: 'get-credentials'
+      uses: 'google-github-actions/get-gke-credentials@v1'
+      with:
+        cluster_name: 'my-cluster'
+        location: 'us-central1-a'
