@@ -4,7 +4,7 @@ metadata:
   name: golang-proxy
 build:
   artifacts:
-    - image: lingo
+    - image: us-central1-docker.pkg.dev/substratus-dev/substratus/lingo
       docker:
         dockerfile: Dockerfile
 manifests:

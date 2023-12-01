@@ -17,7 +17,7 @@ spec:
       serviceAccountName: lingo
       containers:
         - name: main
-          image: lingo
+          image: us-central1-docker.pkg.dev/substratus-dev/substratus/lingo
           env:
             - name: NAMESPACE
               valueFrom:

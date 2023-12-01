@@ -22,6 +22,7 @@ jobs:
       with:
         cluster_name: 'lingo-dev'
         location: 'us-central1'
+
     - id: 'get-pods'
       run: 'kubectl get pods'
     - id: 'install-skaffold'
@@ -29,5 +30,7 @@ jobs:
         curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64
         chmod +x skaffold
         sudo mv skaffold /usr/local/bin
+    - id: 'configure-docker'
+      run: gcloud auth configure-docker us-central1-docker.pkg.dev
     - id: 'run-tests'
       run: './tests/performance/test.sh'
