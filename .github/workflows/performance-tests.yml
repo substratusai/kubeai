@@ -10,6 +10,8 @@ jobs:
       contents: 'read'
       id-token: 'write'
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
     - id: 'auth'
       uses: 'google-github-actions/auth@v1'
       with:
@@ -22,3 +24,10 @@ jobs:
         location: 'us-central1'
     - id: 'get-pods'
       run: 'kubectl get pods'
+    - id: 'install-skaffold'
+      run: |
+        curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64
+        chmod +x skaffold
+        sudo mv skaffold /usr/local/bin
+    - id: 'run-tests'
+      run: './tests/performance/test.sh'
