@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -44,11 +45,25 @@ func main() {
 	}
 }
 
+func getEnvInt(key string, defaultValue int) int {
+	if envVar := os.Getenv(key); envVar != "" {
+		val, err := strconv.Atoi(envVar)
+		if err != nil {
+			log.Fatalf("invalid value for %s: %v", key, err)
+		}
+		return val
+	}
+	return defaultValue
+}
+
 func run() error {
 	namespace := os.Getenv("NAMESPACE")
 	if namespace == "" {
 		namespace = "default"
 	}
+
+	concurrency := getEnvInt("CONCURRENCY", 100)
+	scaleDownDelay := getEnvInt("SCALE_DOWN_DELAY", 30)
 
 	var metricsAddr string
 	var probeAddr string
@@ -56,7 +71,8 @@ func run() error {
 
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8082", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
-	flag.IntVar(&concurrencyPerReplica, "concurrency", 100, "the number of simultaneous requests that can be processed by each replica")
+	flag.IntVar(&concurrencyPerReplica, "concurrency", concurrency, "the number of simultaneous requests that can be processed by each replica")
+	flag.IntVar(&scaleDownDelay, "scale-down-delay", scaleDownDelay, "seconds to wait before scaling down")
 	opts := zap.Options{
 		Development: true,
 	}
@@ -111,7 +127,7 @@ func run() error {
 		return fmt.Errorf("setting up deloyment manager: %w", err)
 	}
 	deploymentManager.Namespace = namespace
-	deploymentManager.ScaleDownPeriod = 30 * time.Second
+	deploymentManager.ScaleDownPeriod = time.Duration(scaleDownDelay) * time.Second
 
 	autoscaler, err := autoscaler.New(mgr)
 	if err != nil {
