@@ -111,7 +111,7 @@ func (r *Manager) getScaler(deploymentName string) *scaler {
 
 func (r *Manager) scaleFunc(ctx context.Context, deploymentName string) func(int32, bool) error {
 	return func(n int32, atLeastOne bool) error {
-		log.Printf("Scaling model %q: %v", deploymentName, n)
+		log.Printf("Scaling model %q: %v atLeastOne %v", deploymentName, n, atLeastOne)
 
 		req := types.NamespacedName{Namespace: r.Namespace, Name: deploymentName}
 		var d appsv1.Deployment
@@ -124,6 +124,9 @@ func (r *Manager) scaleFunc(ctx context.Context, deploymentName string) func(int
 			return fmt.Errorf("get scale: %w", err)
 		}
 
+		if atLeastOne && scale.Spec.Replicas > 0 {
+			return nil
+		}
 		if atLeastOne && scale.Spec.Replicas == 0 {
 			scale.Spec.Replicas = 1
 			if err := r.SubResource("scale").Update(ctx, &d, client.WithSubResourceBody(&scale)); err != nil {
