@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: perf-backend
+  name: nginx-backend
   annotations:
     lingo.substratus.ai/models: nginx
   labels:
-    app: perf-backend
+    app: nginx-backend
 spec:
   replicas: 0
   selector:
     matchLabels:
-      app: perf-backend
+      app: nginx-backend
   template:
     metadata:
       labels:
-        app: perf-backend
+        app: nginx-backend
     spec:
       containers:
         - name: nginx
