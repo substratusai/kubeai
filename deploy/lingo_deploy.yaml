@@ -4,6 +4,7 @@ metadata:
   name: lingo
   labels:
     app: lingo
+  namespace: default
 spec:
   replicas: 3
   selector:
@@ -17,7 +18,7 @@ spec:
       serviceAccountName: lingo
       containers:
         - name: main
-          image: lingo
+          image: us-central1-docker.pkg.dev/substratus-dev/substratus/lingo
           env:
             - name: NAMESPACE
               valueFrom:
