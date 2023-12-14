@@ -15,7 +15,6 @@ import (
 func NewManager(mgr ctrl.Manager) (*Manager, error) {
 	r := &Manager{}
 	r.Client = mgr.GetClient()
-	r.endpoints = map[string]*endpointGroup{}
 	r.ExcludePods = map[string]struct{}{}
 	if err := r.SetupWithManager(mgr); err != nil {
 		return nil, err
@@ -28,8 +27,7 @@ type Manager struct {
 
 	EndpointSizeCallback func(deploymentName string, size int)
 
-	endpointsMtx sync.Mutex
-	endpoints    map[string]*endpointGroup
+	endpoints sync.Map
 
 	ExcludePods map[string]struct{}
 }
@@ -100,14 +98,8 @@ func (r *Manager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result,
 }
 
 func (r *Manager) getEndpoints(service string) *endpointGroup {
-	r.endpointsMtx.Lock()
-	e, ok := r.endpoints[service]
-	if !ok {
-		e = newEndpointGroup()
-		r.endpoints[service] = e
-	}
-	r.endpointsMtx.Unlock()
-	return e
+	e, _ := r.endpoints.LoadOrStore(service, newEndpointGroup())
+	return e.(*endpointGroup)
 }
 
 func (r *Manager) GetHost(ctx context.Context, service, portName string) string {
