@@ -109,6 +109,16 @@ func (r *Manager) getScaler(deploymentName string) *scaler {
 	return b
 }
 
+func (r *Manager) iterateScalers(f func(deployment string, scaler *scaler) bool) {
+	r.scalersMtx.Lock()
+	defer r.scalersMtx.Unlock()
+	for k, v := range r.scalers {
+		if !f(k, v) {
+			return
+		}
+	}
+}
+
 func (r *Manager) scaleFunc(ctx context.Context, deploymentName string) func(int32, bool) error {
 	return func(n int32, atLeastOne bool) error {
 		if atLeastOne {

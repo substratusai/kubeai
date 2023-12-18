@@ -116,6 +116,12 @@ func (s *scaler) compareScales(current, desired int32) {
 	}
 }
 
+func (s *scaler) metrics() (int32, int32, int32) {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
+	return s.currentScale, s.minScale, s.maxScale
+}
+
 func newScaler(scaleDownDelay time.Duration, scaleFunc func(int32, bool) error) *scaler {
 	s := &scaler{
 		// -1 represents unknown

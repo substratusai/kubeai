@@ -24,6 +24,10 @@ type Handler struct {
 	Queues      *queue.Manager
 }
 
+func NewHandler(deployments *deployments.Manager, endpoints *endpoints.Manager, queues *queue.Manager) *Handler {
+	return &Handler{Deployments: deployments, Endpoints: endpoints, Queues: queues}
+}
+
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	id := uuid.New().String()
 	log.Printf("request: %v", r.URL)
@@ -32,7 +36,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: Only parse model for paths that would have a model.
 	modelName, proxyRequest, err := parseModel(r)
-	if err != nil {
+	if err != nil || modelName == "" {
 		log.Printf("error reading model from request body: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Bad request: unable to parse .model from JSON payload"))
@@ -65,31 +69,41 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	newReverseProxy(host).ServeHTTP(w, proxyRequest)
 }
 
+// parseModel parses the model name from the request
+// returns empty string when none found or an error for failures on the proxy request object
 func parseModel(r *http.Request) (string, *http.Request, error) {
-	if model := r.Header.Get("X-Model"); model != "" {
+	// check context first, in case that we have parsed the request before or that some middleware has
+	// set the model
+	if model, ok := ModelName(r.Context()); ok {
 		return model, r, nil
 	}
-
+	if model := r.Header.Get("X-Model"); model != "" {
+		return model, r.WithContext(WithModelName(r.Context(), model)), nil
+	}
+	// parse request body for model name, ignore errors
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		return "", nil, fmt.Errorf("reading body: %w", err)
+		return "", r, nil
 	}
 
 	var payload struct {
 		Model string `json:"model"`
 	}
-	if err := json.Unmarshal(body, &payload); err != nil {
-		return "", nil, fmt.Errorf("parsing body as json: %w", err)
+	var model string
+	if err := json.Unmarshal(body, &payload); err == nil {
+		model = payload.Model
 	}
 
-	if payload.Model == "" {
-		return "", nil, fmt.Errorf("missing .model in request body")
+	// create new request object with model context
+	proxyReq, err := http.NewRequestWithContext(WithModelName(r.Context(), model), r.Method, r.URL.String(), bytes.NewReader(body))
+	if err != nil {
+		return "", nil, fmt.Errorf("create proxy request: %w", err)
 	}
-
-	proxyReq, _ := http.NewRequest(r.Method, r.URL.String(), bytes.NewReader(body))
 	proxyReq.Header = r.Header
-	proxyReq.ParseForm()
-	return payload.Model, proxyReq, nil
+	if err := proxyReq.ParseForm(); err != nil {
+		return "", nil, fmt.Errorf("parse proxy form: %w", err)
+	}
+	return model, proxyReq, nil
 }
 
 // AdditionalProxyRewrite is an injection point for modifying proxy requests.
