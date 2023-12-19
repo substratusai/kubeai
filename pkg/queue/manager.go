@@ -9,14 +9,14 @@ import (
 func NewManager(concurrencyPerReplica int) *Manager {
 	m := &Manager{}
 	m.queues = map[string]*Queue{}
-	m.concurencyPerReplica = concurrencyPerReplica
+	m.concurrencyPerReplica = concurrencyPerReplica
 	return m
 }
 
 // Manager manages the a set of Queues (for Deployments).
 type Manager struct {
 	// concurrencyPerReplica of each queue for each deployment replica.
-	concurencyPerReplica int
+	concurrencyPerReplica int
 
 	mtx    sync.RWMutex
 	queues map[string]*Queue
@@ -53,7 +53,7 @@ func (m *Manager) EnqueueAndWait(ctx context.Context, deploymentName, id string)
 // UpdateQueueSizeForReplicas updates the queue size for the given deployment name.
 func (m *Manager) UpdateQueueSizeForReplicas(deploymentName string, replicas int) {
 	// max is needed to prevent the queue size from being set to 0
-	newSize := max(replicas*m.concurencyPerReplica, m.concurencyPerReplica)
+	newSize := max(replicas*m.concurrencyPerReplica, m.concurrencyPerReplica)
 	log.Printf("Updating queue size: deployment: %v, replicas: %v, newSize: %v", deploymentName, replicas, newSize)
 	m.getQueue(deploymentName).SetConcurrency(newSize)
 }
@@ -65,7 +65,7 @@ func (m *Manager) getQueue(deploymentName string) *Queue {
 	q, ok := m.queues[deploymentName]
 	m.mtx.RUnlock()
 	if !ok {
-		q = New(m.concurencyPerReplica)
+		q = New(m.concurrencyPerReplica)
 		m.mtx.Lock()
 		m.queues[deploymentName] = q
 		m.mtx.Unlock()
