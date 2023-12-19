@@ -150,7 +150,7 @@ func run() error {
 
 	proxy.MustRegister(metricsRegistry)
 	proxyHandler := proxy.NewHandler(deploymentManager, endpointManager, queueManager)
-	proxyServer := &http.Server{Addr: ":8080", Handler: proxy.WithMetricsMiddleware(proxyHandler)}
+	proxyServer := &http.Server{Addr: ":8080", Handler: proxyHandler}
 
 	statsHandler := &stats.Handler{
 		Queues: queueManager,

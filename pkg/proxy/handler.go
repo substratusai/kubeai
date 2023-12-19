@@ -9,8 +9,11 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"strconv"
 
 	"github.com/google/uuid"
+	"github.com/prometheus/client_golang/prometheus"
+
 	"github.com/substratusai/lingo/pkg/deployments"
 	"github.com/substratusai/lingo/pkg/endpoints"
 	"github.com/substratusai/lingo/pkg/queue"
@@ -29,13 +32,26 @@ func NewHandler(deployments *deployments.Manager, endpoints *endpoints.Manager, 
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	var (
+		modelName          = "unknown"
+		capturedStatusCode *int
+	)
+	w, capturedStatusCode = newCaptureStatusCodeResponseWriter(w)
+	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
+		httpDuration.WithLabelValues(modelName, strconv.Itoa(*capturedStatusCode)).Observe(v)
+	}))
+	defer timer.ObserveDuration()
+
 	id := uuid.New().String()
 	log.Printf("request: %v", r.URL)
-
 	w.Header().Set("X-Proxy", "lingo")
 
+	var (
+		proxyRequest *http.Request
+		err          error
+	)
 	// TODO: Only parse model for paths that would have a model.
-	modelName, proxyRequest, err := parseModel(r)
+	modelName, proxyRequest, err = parseModel(r)
 	if err != nil || modelName == "" {
 		log.Printf("error reading model from request body: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -72,13 +88,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // parseModel parses the model name from the request
 // returns empty string when none found or an error for failures on the proxy request object
 func parseModel(r *http.Request) (string, *http.Request, error) {
-	// check context first, in case that we have parsed the request before or that some middleware has
-	// set the model
-	if model, ok := ModelName(r.Context()); ok {
-		return model, r, nil
-	}
 	if model := r.Header.Get("X-Model"); model != "" {
-		return model, r.WithContext(WithModelName(r.Context(), model)), nil
+		return model, r, nil
 	}
 	// parse request body for model name, ignore errors
 	body, err := io.ReadAll(r.Body)
@@ -94,8 +105,8 @@ func parseModel(r *http.Request) (string, *http.Request, error) {
 		model = payload.Model
 	}
 
-	// create new request object with model context
-	proxyReq, err := http.NewRequestWithContext(WithModelName(r.Context(), model), r.Method, r.URL.String(), bytes.NewReader(body))
+	// create new request object
+	proxyReq, err := http.NewRequestWithContext(r.Context(), r.Method, r.URL.String(), bytes.NewReader(body))
 	if err != nil {
 		return "", nil, fmt.Errorf("create proxy request: %w", err)
 	}

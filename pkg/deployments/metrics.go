@@ -35,11 +35,9 @@ func (p *MetricsCollector) Describe(descs chan<- *prometheus.Desc) {
 
 // Collect is called by the Prometheus registry when collecting metrics.
 func (p *MetricsCollector) Collect(c chan<- prometheus.Metric) {
-	p.manager.iterateScalers(func(model string, scaler *scaler) bool {
-		current, min, max := scaler.metrics()
-		c <- prometheus.MustNewConstMetric(p.currentScaleDescr, prometheus.GaugeValue, float64(current), model)
-		c <- prometheus.MustNewConstMetric(p.minScaleDescr, prometheus.GaugeValue, float64(min), model)
-		c <- prometheus.MustNewConstMetric(p.maxScaleDescr, prometheus.GaugeValue, float64(max), model)
-		return true
-	})
+	for model, status := range p.manager.getScalesSnapshot() {
+		c <- prometheus.MustNewConstMetric(p.currentScaleDescr, prometheus.GaugeValue, float64(status.Current), model)
+		c <- prometheus.MustNewConstMetric(p.minScaleDescr, prometheus.GaugeValue, float64(status.Min), model)
+		c <- prometheus.MustNewConstMetric(p.maxScaleDescr, prometheus.GaugeValue, float64(status.Max), model)
+	}
 }
