@@ -16,9 +16,9 @@ func NewMetricsCollector(m *Manager) *MetricsCollector {
 	}
 	return &MetricsCollector{
 		manager:           m,
-		currentScaleDescr: prometheus.NewDesc("current_model_backends_total", "Total number of model backends currently deployed", []string{"model"}, nil),
-		minScaleDescr:     prometheus.NewDesc("min_model_backends_total", "Max number of model backends to deploy", []string{"model"}, nil),
-		maxScaleDescr:     prometheus.NewDesc("max_model_backends_total", "Min number of model backends to deploy", []string{"model"}, nil),
+		currentScaleDescr: prometheus.NewDesc("current_model_backends", "Number of model backends currently deployed", []string{"model"}, nil),
+		minScaleDescr:     prometheus.NewDesc("min_model_backends", "Max number of model backends to deploy", []string{"model"}, nil),
+		maxScaleDescr:     prometheus.NewDesc("max_model_backends", "Min number of model backends to deploy", []string{"model"}, nil),
 	}
 }
 
@@ -29,8 +29,9 @@ func (p *MetricsCollector) MustRegister(r prometheus.Registerer) {
 
 // Describe sends the super-set of all possible descriptors of metrics
 func (p *MetricsCollector) Describe(descs chan<- *prometheus.Desc) {
-	descs <- p.minScaleDescr
 	descs <- p.currentScaleDescr
+	descs <- p.minScaleDescr
+	descs <- p.maxScaleDescr
 }
 
 // Collect is called by the Prometheus registry when collecting metrics.

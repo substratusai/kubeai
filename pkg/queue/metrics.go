@@ -15,8 +15,8 @@ func NewMetricsCollector(m *Manager) *MetricsCollector {
 	}
 	return &MetricsCollector{
 		manager:       m,
-		inFlightDescr: prometheus.NewDesc("requests_queue_inflight_total", "Total number of requests in flight", []string{"deployment"}, nil),
-		queuedDescr:   prometheus.NewDesc("requests_queue_total", "Total number of request queued", []string{"deployment"}, nil),
+		inFlightDescr: prometheus.NewDesc("requests_queue_inflight", "Number of requests in flight", []string{"deployment"}, nil),
+		queuedDescr:   prometheus.NewDesc("requests_queue", "Number of request queued", []string{"deployment"}, nil),
 	}
 }
 
