@@ -33,7 +33,7 @@ func NewHandler(deployments *deployments.Manager, endpoints *endpoints.Manager, 
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var (
-		modelName          = "unknown"
+		modelName          string
 		capturedStatusCode *int
 	)
 	w, capturedStatusCode = newCaptureStatusCodeResponseWriter(w)
@@ -53,6 +53,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// TODO: Only parse model for paths that would have a model.
 	modelName, proxyRequest, err = parseModel(r)
 	if err != nil || modelName == "" {
+		modelName = "unknown"
 		log.Printf("error reading model from request body: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Bad request: unable to parse .model from JSON payload"))
