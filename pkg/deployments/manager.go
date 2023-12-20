@@ -11,8 +11,8 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
-
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -65,7 +65,11 @@ func (r *Manager) SetDesiredScale(deploymentName string, n int32) {
 
 func (r *Manager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	var d appsv1.Deployment
-	if err := r.Get(ctx, req.NamespacedName, &d); err != nil {
+	switch err := r.Get(ctx, req.NamespacedName, &d); {
+	case apierrors.IsNotFound(err):
+		r.removeDeployment(req)
+		return ctrl.Result{}, nil
+	case err != nil:
 		return ctrl.Result{}, fmt.Errorf("get: %w", err)
 	}
 
@@ -96,6 +100,20 @@ func (r *Manager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result,
 	)
 
 	return ctrl.Result{}, nil
+}
+
+func (r *Manager) removeDeployment(req ctrl.Request) {
+	r.scalersMtx.Lock()
+	delete(r.scalers, req.Name)
+	r.scalersMtx.Unlock()
+
+	r.modelToDeploymentMtx.Lock()
+	for model, deployment := range r.modelToDeployment {
+		if deployment == req.Name {
+			delete(r.modelToDeployment, model)
+		}
+	}
+	r.modelToDeploymentMtx.Unlock()
 }
 
 func (r *Manager) getScaler(deploymentName string) *scaler {

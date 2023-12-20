@@ -11,6 +11,7 @@ import (
 	"net/url"
 
 	"github.com/google/uuid"
+
 	"github.com/substratusai/lingo/pkg/deployments"
 	"github.com/substratusai/lingo/pkg/endpoints"
 	"github.com/substratusai/lingo/pkg/queue"
@@ -54,6 +55,14 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	complete := h.Queues.EnqueueAndWait(r.Context(), deploy, id)
 	log.Println("Admitted into queue", id)
 	defer complete()
+
+	// abort when deployment was removed meanwhile
+	if _, exists := h.Deployments.ResolveDeployment(modelName); !exists {
+		log.Printf("deployment not active for model removed: %v", err)
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte(fmt.Sprintf("Deployment for model was removed: %v", modelName)))
+		return
+	}
 
 	log.Println("Waiting for IPs", id)
 	host := h.Endpoints.GetHost(r.Context(), deploy, "http")

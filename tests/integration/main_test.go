@@ -38,6 +38,7 @@ var (
 	testCancel     context.CancelFunc
 	testServer     *httptest.Server
 	testHTTPClient = &http.Client{Timeout: 10 * time.Second}
+	queueManager   *queue.Manager
 )
 
 func init() {
@@ -78,7 +79,7 @@ func TestMain(m *testing.M) {
 	requireNoError(err)
 
 	const concurrencyPerReplica = 1
-	queueManager := queue.NewManager(concurrencyPerReplica)
+	queueManager = queue.NewManager(concurrencyPerReplica)
 
 	endpointManager, err := endpoints.NewManager(mgr)
 	requireNoError(err)

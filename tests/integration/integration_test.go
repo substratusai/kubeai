@@ -13,17 +13,20 @@ import (
 	"testing"
 	"time"
 
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	disv1 "k8s.io/api/discovery/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/ptr"
 )
 
-func TestIntegration(t *testing.T) {
+func TestScaleUpAndDown(t *testing.T) {
 	const modelName = "test-model-a"
 	deploy := testDeployment(modelName)
 
@@ -83,6 +86,67 @@ func TestIntegration(t *testing.T) {
 	wg.Wait()
 }
 
+func TestHandleModelUndeployment(t *testing.T) {
+	const modelName = "test-model-b"
+	deploy := testDeployment(modelName)
+
+	require.NoError(t, testK8sClient.Create(testCtx, deploy))
+
+	backendComplete := make(chan struct{})
+
+	backendRequests := &atomic.Int32{}
+	testBackend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Println("Serving request from testBackend")
+		backendRequests.Add(1)
+		<-backendComplete
+		w.WriteHeader(200)
+	}))
+
+	// Mock an EndpointSlice.
+	testBackendURL, err := url.Parse(testBackend.URL)
+	require.NoError(t, err)
+	testBackendPort, err := strconv.Atoi(testBackendURL.Port())
+	require.NoError(t, err)
+	require.NoError(t, testK8sClient.Create(testCtx,
+		endpointSlice(
+			modelName,
+			testBackendURL.Hostname(),
+			int32(testBackendPort),
+		),
+	))
+
+	// Wait for deployment mapping to sync.
+	time.Sleep(3 * time.Second)
+
+	// Send request number 1
+	var wg sync.WaitGroup
+	sendRequests(t, &wg, modelName, 1)
+
+	requireDeploymentReplicas(t, deploy, 1)
+	require.Equal(t, int32(1), backendRequests.Load(), "ensure the request made its way to the backend")
+	// Add some more requests to the queue
+	sendRequestsX(t, &wg, modelName, 2, http.StatusNotFound)
+
+	require.NoError(t, testK8sClient.Delete(testCtx, deploy))
+
+	// Check that the deployment was deleted
+	err = testK8sClient.Get(testCtx, client.ObjectKey{
+		Namespace: deploy.Namespace,
+		Name:      deploy.Name,
+	}, deploy)
+
+	// ErrNotFound is desired since we delete the resource earlier
+	assert.True(t, apierrors.IsNotFound(err))
+	// release blocked request
+	completeRequests(backendComplete, 1)
+
+	// Wait for deployment mapping to sync.
+	time.Sleep(3 * time.Second)
+	require.Empty(t, queueManager.TotalCounts()[modelName+"-deploy"])
+	t.Logf("Waiting for wait group")
+	wg.Wait()
+}
+
 func requireDeploymentReplicas(t *testing.T, deploy *appsv1.Deployment, n int32) {
 	require.EventuallyWithT(t, func(t *assert.CollectT) {
 		err := testK8sClient.Get(testCtx, types.NamespacedName{Namespace: deploy.Namespace, Name: deploy.Name}, deploy)
@@ -93,12 +157,17 @@ func requireDeploymentReplicas(t *testing.T, deploy *appsv1.Deployment, n int32)
 }
 
 func sendRequests(t *testing.T, wg *sync.WaitGroup, modelName string, n int) {
+	sendRequestsX(t, wg, modelName, n, http.StatusOK)
+}
+
+func sendRequestsX(t *testing.T, wg *sync.WaitGroup, modelName string, n int, expCode int) {
 	for i := 0; i < n; i++ {
-		sendRequest(t, wg, modelName)
+		sendRequest(t, wg, modelName, expCode)
 	}
 }
 
-func sendRequest(t *testing.T, wg *sync.WaitGroup, modelName string) {
+func sendRequest(t *testing.T, wg *sync.WaitGroup, modelName string, expCode int) {
+	t.Helper()
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -109,7 +178,7 @@ func sendRequest(t *testing.T, wg *sync.WaitGroup, modelName string) {
 
 		res, err := testHTTPClient.Do(req)
 		require.NoError(t, err)
-		require.Equal(t, 200, res.StatusCode)
+		require.Equal(t, expCode, res.StatusCode)
 	}()
 }
 
