@@ -69,20 +69,13 @@ func (r *Manager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result,
 		return ctrl.Result{}, fmt.Errorf("get: %w", err)
 	}
 
-	if ann := d.GetAnnotations(); ann != nil {
-		modelCSV, ok := ann[lingoDomain+"/models"]
-		if !ok {
-			return ctrl.Result{}, nil
-		}
-		models := strings.Split(modelCSV, ",")
-		if len(models) == 0 {
-			return ctrl.Result{}, nil
-		}
-		for _, model := range models {
-			r.setModelMapping(strings.TrimSpace(model), d.Name)
-		}
+	models := getModelsFromAnnotation(d.GetAnnotations())
+	if len(models) == 0 {
+		return ctrl.Result{}, nil
 	}
-
+	for _, model := range models {
+		r.setModelMapping(strings.TrimSpace(model), d.Name)
+	}
 	var scale autoscalingv1.Scale
 	if err := r.SubResource("scale").Get(ctx, &d, &scale); err != nil {
 		return ctrl.Result{}, fmt.Errorf("get scale: %w", err)
@@ -96,6 +89,17 @@ func (r *Manager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result,
 	)
 
 	return ctrl.Result{}, nil
+}
+
+func getModelsFromAnnotation(ann map[string]string) []string {
+	if len(ann) == 0 {
+		return []string{}
+	}
+	modelCSV, ok := ann[lingoDomain+"/models"]
+	if !ok {
+		return []string{}
+	}
+	return strings.Split(modelCSV, ",")
 }
 
 func (r *Manager) getScaler(deploymentName string) *scaler {

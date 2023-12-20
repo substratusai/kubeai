@@ -142,6 +142,12 @@ func run() error {
 	autoscaler.Endpoints = endpointManager
 	go autoscaler.Start()
 
+	readiness := deployments.NewReadiness(mgr.GetClient(), namespace, deploymentManager, 200*time.Millisecond)
+	go readiness.WatchModelBackendsLoaded()
+	if err := mgr.AddReadyzCheck("readyz", readiness.StateLoaded); err != nil {
+		return fmt.Errorf("setup readiness handler: %w", err)
+	}
+
 	proxyHandler := &proxy.Handler{
 		Deployments: deploymentManager,
 		Endpoints:   endpointManager,
