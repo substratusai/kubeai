@@ -61,14 +61,12 @@ func (m *Manager) UpdateQueueSizeForReplicas(deploymentName string, replicas int
 // getQueue returns the queue for the given model name.
 // if the model does not have a queue, a new queue is created.
 func (m *Manager) getQueue(deploymentName string) *Queue {
-	m.mtx.RLock()
+	m.mtx.Lock()
+	defer m.mtx.Unlock()
 	q, ok := m.queues[deploymentName]
-	m.mtx.RUnlock()
 	if !ok {
 		q = New(m.concurrencyPerReplica)
-		m.mtx.Lock()
 		m.queues[deploymentName] = q
-		m.mtx.Unlock()
 		go q.Start()
 	}
 	return q

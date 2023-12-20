@@ -32,13 +32,11 @@ func NewHandler(deployments *deployments.Manager, endpoints *endpoints.Manager, 
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var (
-		modelName          string
-		capturedStatusCode *int
-	)
-	w, capturedStatusCode = newCaptureStatusCodeResponseWriter(w)
+	var modelName string
+	captureStatusRespWriter := newCaptureStatusCodeResponseWriter(w)
+	w = captureStatusRespWriter
 	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
-		httpDuration.WithLabelValues(modelName, strconv.Itoa(*capturedStatusCode)).Observe(v)
+		httpDuration.WithLabelValues(modelName, strconv.Itoa(captureStatusRespWriter.statusCode)).Observe(v)
 	}))
 	defer timer.ObserveDuration()
 

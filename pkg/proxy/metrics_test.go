@@ -73,14 +73,6 @@ func TestMetrics(t *testing.T) {
 	}
 }
 
-func toMap(s []*io_prometheus_client.LabelPair) map[string]string {
-	r := make(map[string]string, len(s))
-	for _, v := range s {
-		r[v.GetName()] = v.GetValue()
-	}
-	return r
-}
-
 func TestMetricsViaLinter(t *testing.T) {
 	registry := prometheus.NewPedanticRegistry()
 	MustRegister(registry)
@@ -88,6 +80,14 @@ func TestMetricsViaLinter(t *testing.T) {
 	problems, err := testutil.GatherAndLint(registry)
 	require.NoError(t, err)
 	require.Empty(t, problems)
+}
+
+func toMap(s []*io_prometheus_client.LabelPair) map[string]string {
+	r := make(map[string]string, len(s))
+	for _, v := range s {
+		r[v.GetName()] = v.GetValue()
+	}
+	return r
 }
 
 // for test setup only

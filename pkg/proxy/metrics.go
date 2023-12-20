@@ -22,9 +22,8 @@ type captureStatusResponseWriter struct {
 	statusCode int
 }
 
-func newCaptureStatusCodeResponseWriter(responseWriter http.ResponseWriter) (*captureStatusResponseWriter, *int) {
-	r := &captureStatusResponseWriter{ResponseWriter: responseWriter}
-	return r, &r.statusCode
+func newCaptureStatusCodeResponseWriter(responseWriter http.ResponseWriter) *captureStatusResponseWriter {
+	return &captureStatusResponseWriter{ResponseWriter: responseWriter}
 }
 
 func (srw *captureStatusResponseWriter) WriteHeader(code int) {
