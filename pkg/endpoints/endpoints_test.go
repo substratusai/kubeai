@@ -41,7 +41,7 @@ func TestConcurrentAccess(t *testing.T) {
 					}()
 				}
 			}
-			startTogether(spec.readerCount, func() { endpoint.getBestHost(myPort) })
+			startTogether(spec.readerCount, func() { endpoint.getBestHost(nil, myPort) })
 			startTogether(spec.writerCount, func() {
 				endpoint.setIPs(
 					map[string]struct{}{rand.String(1): {}},

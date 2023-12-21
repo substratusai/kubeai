@@ -115,24 +115,29 @@ func (r *Manager) getEndpoints(service string) *endpointGroup {
 //
 // It returns a string in the format "host:port" or error on timeout
 func (r *Manager) AwaitHostAddress(ctx context.Context, service, portName string) (string, error) {
-	return execWithTimeout(ctx, func() string { return r.getEndpoints(service).getBestHost(portName) })
+	return r.getEndpoints(service).getBestHost(ctx, portName)
 }
 
 // GetAllHosts retrieves the list of all hosts for a given service and port.
 // It returns a slice of strings representing the hosts or an error if any context timeout occurred.
 func (r *Manager) GetAllHosts(ctx context.Context, service, portName string) ([]string, error) {
-	return execWithTimeout(ctx, func() []string { return r.getEndpoints(service).getAllHosts(portName) })
+	return execWithCtxAbort(ctx, func() []string { return r.getEndpoints(service).getAllHosts(portName) })
 }
 
-func execWithTimeout[T any](ctx context.Context, f func() T) (T, error) {
-	resultChan := make(chan T)
-	defer close(resultChan)
+func execWithCtxAbort[T any](ctx context.Context, f func() T) (T, error) {
+	resultChan := make(chan T, 1)
 	go func() {
-		resultChan <- f()
+		select {
+		case resultChan <- f():
+		case <-ctx.Done(): // exit go routine, too
+		}
+		close(resultChan)
 	}()
 	var result T
 	select {
 	case <-ctx.Done():
+		// keep resultChan open to prevent panic on write
+		// the channel
 		return result, ctx.Err()
 	case result = <-resultChan:
 		return result, nil

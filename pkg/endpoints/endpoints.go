@@ -1,6 +1,7 @@
 package endpoints
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"sync/atomic"
@@ -10,7 +11,7 @@ func newEndpointGroup() *endpointGroup {
 	e := &endpointGroup{}
 	e.ports = make(map[string]int32)
 	e.endpoints = make(map[string]endpoint)
-	e.active = sync.NewCond(&sync.Mutex{})
+	e.bcast = make(chan struct{})
 	return e
 }
 
@@ -23,7 +24,9 @@ type endpointGroup struct {
 	ports     map[string]int32
 	endpoints map[string]endpoint
 
-	active *sync.Cond
+	bmtx      sync.Mutex
+	bcast     chan struct{}   // closed when there's a broadcast
+	listeners []chan struct{} // keeps track of all listeners
 }
 
 // getBestHost returns the best host for the given port name. It blocks until there are available endpoints
@@ -37,10 +40,20 @@ type endpointGroup struct {
 //
 // Returns:
 // - string: The best host with the minimum in-flight requests.
-func (e *endpointGroup) getBestHost(portName string) string {
+func (e *endpointGroup) getBestHost(ctx context.Context, portName string) (string, error) {
 	e.mtx.RLock()
-	e.awaitAnyEndpointsExist()
-
+	// await endpoints exists
+	for len(e.endpoints) == 0 {
+		e.mtx.RUnlock()
+		_, err := execWithCtxAbort(ctx, func() any {
+			<-e.waitForEndpoints(ctx)
+			return nil
+		})
+		if err != nil {
+			return "", err
+		}
+		e.mtx.RLock()
+	}
 	var bestIP string
 	port := e.getPort(portName)
 	var minInFlight int
@@ -52,19 +65,7 @@ func (e *endpointGroup) getBestHost(portName string) string {
 		}
 	}
 	e.mtx.RUnlock()
-	return fmt.Sprintf("%s:%v", bestIP, port)
-}
-
-func (e *endpointGroup) awaitAnyEndpointsExist() {
-	for len(e.endpoints) == 0 {
-		e.mtx.RUnlock()
-		// await update notification
-		e.active.L.Lock()
-		e.active.Wait()
-		e.active.L.Unlock()
-		// proceed
-		e.mtx.RLock()
-	}
+	return fmt.Sprintf("%s:%v", bestIP, port), nil
 }
 
 func (e *endpointGroup) getAllHosts(portName string) []string {
@@ -112,6 +113,35 @@ func (g *endpointGroup) setIPs(ips map[string]struct{}, ports map[string]int32) 
 
 	// notify waiting requests
 	if len(ips) > 0 {
-		g.active.Broadcast()
+		g.broadcastEndpoints()
 	}
+}
+
+func (e *endpointGroup) waitForEndpoints(ctx context.Context) <-chan struct{} {
+	e.bmtx.Lock()
+	defer e.bmtx.Unlock()
+
+	ch := make(chan struct{})
+	e.listeners = append(e.listeners, ch)
+
+	go execWithCtxAbort(ctx, func() any {
+		<-e.bcast
+		close(ch)
+		return nil
+	})
+
+	return ch
+}
+
+func (g *endpointGroup) broadcastEndpoints() {
+	g.bmtx.Lock()
+	defer g.bmtx.Unlock()
+
+	close(g.bcast)
+	g.bcast = make(chan struct{})
+
+	for _, ch := range g.listeners {
+		close(ch)
+	}
+	clear(g.listeners)
 }
