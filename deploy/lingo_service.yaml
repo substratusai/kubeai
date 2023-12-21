@@ -12,6 +12,9 @@ spec:
       port: 80
       targetPort: 8080
       nodePort: 30080
+    - name: metrics
+      protocol: TCP
+      port: 8082
     - name: stats
       protocol: TCP
       port: 8083

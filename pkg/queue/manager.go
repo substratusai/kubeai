@@ -9,27 +9,38 @@ import (
 func NewManager(concurrencyPerReplica int) *Manager {
 	m := &Manager{}
 	m.queues = map[string]*Queue{}
-	m.conccurencyPerReplica = concurrencyPerReplica
+	m.concurrencyPerReplica = concurrencyPerReplica
 	return m
 }
 
 // Manager manages the a set of Queues (for Deployments).
 type Manager struct {
-	// conccurencyPerReplica of each queue for each deployment replica.
-	conccurencyPerReplica int
+	// concurrencyPerReplica of each queue for each deployment replica.
+	concurrencyPerReplica int
 
-	mtx    sync.Mutex
+	mtx    sync.RWMutex
 	queues map[string]*Queue
 }
 
 // TotalCounts returns the number of pending or in-progress requests for each deployment name.
 func (m *Manager) TotalCounts() map[string]int64 {
-	m.mtx.Lock()
+	m.mtx.RLock()
+	defer m.mtx.RUnlock()
 	sizes := make(map[string]int64, len(m.queues))
 	for name, q := range m.queues {
 		sizes[name] = q.TotalCount()
 	}
-	m.mtx.Unlock()
+	return sizes
+}
+
+// InProgressCount returns the number of in-progress requests for each deployment name.
+func (m *Manager) InProgressCount() map[string]int64 {
+	m.mtx.RLock()
+	defer m.mtx.RUnlock()
+	sizes := make(map[string]int64, len(m.queues))
+	for name, q := range m.queues {
+		sizes[name] = q.InProgressCount()
+	}
 	return sizes
 }
 
@@ -42,7 +53,7 @@ func (m *Manager) EnqueueAndWait(ctx context.Context, deploymentName, id string)
 // UpdateQueueSizeForReplicas updates the queue size for the given deployment name.
 func (m *Manager) UpdateQueueSizeForReplicas(deploymentName string, replicas int) {
 	// max is needed to prevent the queue size from being set to 0
-	newSize := max(replicas*m.conccurencyPerReplica, m.conccurencyPerReplica)
+	newSize := max(replicas*m.concurrencyPerReplica, m.concurrencyPerReplica)
 	log.Printf("Updating queue size: deployment: %v, replicas: %v, newSize: %v", deploymentName, replicas, newSize)
 	m.getQueue(deploymentName).SetConcurrency(newSize)
 }
@@ -51,12 +62,12 @@ func (m *Manager) UpdateQueueSizeForReplicas(deploymentName string, replicas int
 // if the model does not have a queue, a new queue is created.
 func (m *Manager) getQueue(deploymentName string) *Queue {
 	m.mtx.Lock()
+	defer m.mtx.Unlock()
 	q, ok := m.queues[deploymentName]
 	if !ok {
-		q = New(m.conccurencyPerReplica)
-		go q.Start()
+		q = New(m.concurrencyPerReplica)
 		m.queues[deploymentName] = q
+		go q.Start()
 	}
-	m.mtx.Unlock()
 	return q
 }

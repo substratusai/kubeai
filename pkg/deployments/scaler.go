@@ -116,6 +116,16 @@ func (s *scaler) compareScales(current, desired int32) {
 	}
 }
 
+type scale struct {
+	Current, Min, Max int32
+}
+
+func (s *scaler) getScale() scale {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
+	return scale{Current: s.currentScale, Min: s.minScale, Max: s.maxScale}
+}
+
 func newScaler(scaleDownDelay time.Duration, scaleFunc func(int32, bool) error) *scaler {
 	s := &scaler{
 		// -1 represents unknown

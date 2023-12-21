@@ -113,6 +113,18 @@ func (r *Manager) getScaler(deploymentName string) *scaler {
 	return b
 }
 
+// getScalesSnapshot returns a snapshot of the stats for all scalers managed by the Manager.
+// The scales are returned as a map, where the keys are the model names
+func (r *Manager) getScalesSnapshot() map[string]scale {
+	r.scalersMtx.Lock()
+	defer r.scalersMtx.Unlock()
+	result := make(map[string]scale, len(r.scalers))
+	for k, v := range r.scalers {
+		result[k] = v.getScale()
+	}
+	return result
+}
+
 func (r *Manager) scaleFunc(ctx context.Context, deploymentName string) func(int32, bool) error {
 	return func(n int32, atLeastOne bool) error {
 		if atLeastOne {
