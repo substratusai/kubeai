@@ -11,6 +11,8 @@ import (
 	"sync"
 	"time"
 
+	"sigs.k8s.io/controller-runtime/pkg/healthz"
+
 	"github.com/prometheus/client_golang/prometheus"
 
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
@@ -103,10 +105,15 @@ func run() error {
 		return fmt.Errorf("starting manager: %w", err)
 	}
 
+	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
+		return fmt.Errorf("setup readiness handler: %w", err)
+	}
+
 	clientset, err := kubernetes.NewForConfig(mgr.GetConfig())
 	if err != nil {
 		return fmt.Errorf("clientset: %w", err)
 	}
+	ctx := ctrl.SetupSignalHandler()
 
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -148,12 +155,6 @@ func run() error {
 	autoscaler.Endpoints = endpointManager
 	go autoscaler.Start()
 
-	readiness := deployments.NewReadiness(mgr.GetClient(), namespace, deploymentManager, 200*time.Millisecond)
-	go readiness.WatchModelBackendsLoaded()
-	if err := mgr.AddReadyzCheck("readyz", readiness.StateLoaded); err != nil {
-		return fmt.Errorf("setup readiness handler: %w", err)
-	}
-
 	proxy.MustRegister(metricsRegistry)
 	proxyHandler := proxy.NewHandler(deploymentManager, endpointManager, queueManager)
 	proxyServer := &http.Server{Addr: ":8080", Handler: proxyHandler}
@@ -162,8 +163,6 @@ func run() error {
 		Queues: queueManager,
 	}
 	statsServer := &http.Server{Addr: ":8083", Handler: statsHandler}
-
-	ctx := ctrl.SetupSignalHandler()
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -193,6 +192,11 @@ func run() error {
 		wg.Wait()
 		setupLog.Info("manager stopped")
 	}()
+
+	_ = mgr.GetCache().WaitForCacheSync(ctx)
+	if err := deploymentManager.Bootstrap(ctx, mgr.GetClient()); err != nil {
+		return fmt.Errorf("bootstrap deloyment manager: %w", err)
+	}
 
 	if err := proxyServer.ListenAndServe(); err != nil {
 		return fmt.Errorf("listen and serve: %w", err)

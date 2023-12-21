@@ -69,26 +69,30 @@ func (r *Manager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result,
 		return ctrl.Result{}, fmt.Errorf("get: %w", err)
 	}
 
+	return ctrl.Result{}, r.addDeployment(ctx, d)
+}
+
+func (r *Manager) addDeployment(ctx context.Context, d appsv1.Deployment) error {
 	models := getModelsFromAnnotation(d.GetAnnotations())
 	if len(models) == 0 {
-		return ctrl.Result{}, nil
+		return nil
 	}
 	for _, model := range models {
 		r.setModelMapping(strings.TrimSpace(model), d.Name)
 	}
 	var scale autoscalingv1.Scale
 	if err := r.SubResource("scale").Get(ctx, &d, &scale); err != nil {
-		return ctrl.Result{}, fmt.Errorf("get scale: %w", err)
+		return fmt.Errorf("get scale: %w", err)
 	}
 
-	deploymentName := req.Name
+	deploymentName := d.Name
 	r.getScaler(deploymentName).UpdateState(
 		scale.Spec.Replicas,
 		getAnnotationInt32(d.GetAnnotations(), lingoDomain+"/min-replicas", 0),
 		getAnnotationInt32(d.GetAnnotations(), lingoDomain+"/max-replicas", 3),
 	)
 
-	return ctrl.Result{}, nil
+	return nil
 }
 
 func getModelsFromAnnotation(ann map[string]string) []string {
@@ -176,6 +180,25 @@ func (r *Manager) ResolveDeployment(model string) (string, bool) {
 	deploy, ok := r.modelToDeployment[model]
 	r.modelToDeploymentMtx.RUnlock()
 	return deploy, ok
+}
+
+type k8sClient interface {
+	List(ctx context.Context, list client.ObjectList, opts ...client.ListOption) error
+}
+
+// Bootstrap initializes the Manager by retrieving a list of deployments from the k8s cluster and adding them to the Manager's internal state.
+// The k8s client passed should either be non caching or have the cache synced first.
+func (r *Manager) Bootstrap(ctx context.Context, k8sClient k8sClient) error {
+	var sliceList appsv1.DeploymentList
+	if err := k8sClient.List(context.TODO(), &sliceList, client.InNamespace(r.Namespace)); err != nil {
+		return fmt.Errorf("list deployments: %w", err)
+	}
+	for _, d := range sliceList.Items {
+		if err := r.addDeployment(ctx, d); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func getAnnotationInt32(ann map[string]string, key string, defaultValue int32) int32 {
