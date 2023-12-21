@@ -9,8 +9,10 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"strconv"
 
 	"github.com/google/uuid"
+	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/substratusai/lingo/pkg/deployments"
 	"github.com/substratusai/lingo/pkg/endpoints"
@@ -25,15 +27,31 @@ type Handler struct {
 	Queues      *queue.Manager
 }
 
+func NewHandler(deployments *deployments.Manager, endpoints *endpoints.Manager, queues *queue.Manager) *Handler {
+	return &Handler{Deployments: deployments, Endpoints: endpoints, Queues: queues}
+}
+
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	var modelName string
+	captureStatusRespWriter := newCaptureStatusCodeResponseWriter(w)
+	w = captureStatusRespWriter
+	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
+		httpDuration.WithLabelValues(modelName, strconv.Itoa(captureStatusRespWriter.statusCode)).Observe(v)
+	}))
+	defer timer.ObserveDuration()
+
 	id := uuid.New().String()
 	log.Printf("request: %v", r.URL)
-
 	w.Header().Set("X-Proxy", "lingo")
 
+	var (
+		proxyRequest *http.Request
+		err          error
+	)
 	// TODO: Only parse model for paths that would have a model.
-	modelName, proxyRequest, err := parseModel(r)
-	if err != nil {
+	modelName, proxyRequest, err = parseModel(r)
+	if err != nil || modelName == "" {
+		modelName = "unknown"
 		log.Printf("error reading model from request body: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Bad request: unable to parse .model from JSON payload"))
@@ -74,31 +92,36 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	newReverseProxy(host).ServeHTTP(w, proxyRequest)
 }
 
+// parseModel parses the model name from the request
+// returns empty string when none found or an error for failures on the proxy request object
 func parseModel(r *http.Request) (string, *http.Request, error) {
 	if model := r.Header.Get("X-Model"); model != "" {
 		return model, r, nil
 	}
-
+	// parse request body for model name, ignore errors
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		return "", nil, fmt.Errorf("reading body: %w", err)
+		return "", r, nil
 	}
 
 	var payload struct {
 		Model string `json:"model"`
 	}
-	if err := json.Unmarshal(body, &payload); err != nil {
-		return "", nil, fmt.Errorf("parsing body as json: %w", err)
+	var model string
+	if err := json.Unmarshal(body, &payload); err == nil {
+		model = payload.Model
 	}
 
-	if payload.Model == "" {
-		return "", nil, fmt.Errorf("missing .model in request body")
+	// create new request object
+	proxyReq, err := http.NewRequestWithContext(r.Context(), r.Method, r.URL.String(), bytes.NewReader(body))
+	if err != nil {
+		return "", nil, fmt.Errorf("create proxy request: %w", err)
 	}
-
-	proxyReq, _ := http.NewRequest(r.Method, r.URL.String(), bytes.NewReader(body))
 	proxyReq.Header = r.Header
-	proxyReq.ParseForm()
-	return payload.Model, proxyReq, nil
+	if err := proxyReq.ParseForm(); err != nil {
+		return "", nil, fmt.Errorf("parse proxy form: %w", err)
+	}
+	return model, proxyReq, nil
 }
 
 // AdditionalProxyRewrite is an injection point for modifying proxy requests.

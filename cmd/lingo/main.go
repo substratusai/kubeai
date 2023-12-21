@@ -11,8 +11,11 @@ import (
 	"sync"
 	"time"
 
-	"k8s.io/client-go/kubernetes"
+	"github.com/prometheus/client_golang/prometheus"
 
+	"sigs.k8s.io/controller-runtime/pkg/metrics"
+
+	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
@@ -112,6 +115,8 @@ func run() error {
 	le := leader.NewElection(clientset, hostname, namespace)
 
 	queueManager := queue.NewManager(concurrencyPerReplica)
+	metricsRegistry := prometheus.WrapRegistererWithPrefix("lingo_", metrics.Registry)
+	queue.NewMetricsCollector(queueManager).MustRegister(metricsRegistry)
 
 	endpointManager, err := endpoints.NewManager(mgr)
 	if err != nil {
@@ -128,6 +133,7 @@ func run() error {
 	}
 	deploymentManager.Namespace = namespace
 	deploymentManager.ScaleDownPeriod = time.Duration(scaleDownDelay) * time.Second
+	deployments.NewMetricsCollector(deploymentManager).MustRegister(metricsRegistry)
 
 	autoscaler, err := autoscaler.New(mgr)
 	if err != nil {
@@ -142,11 +148,8 @@ func run() error {
 	autoscaler.Endpoints = endpointManager
 	go autoscaler.Start()
 
-	proxyHandler := &proxy.Handler{
-		Deployments: deploymentManager,
-		Endpoints:   endpointManager,
-		Queues:      queueManager,
-	}
+	proxy.MustRegister(metricsRegistry)
+	proxyHandler := proxy.NewHandler(deploymentManager, endpointManager, queueManager)
 	proxyServer := &http.Server{Addr: ":8080", Handler: proxyHandler}
 
 	statsHandler := &stats.Handler{
