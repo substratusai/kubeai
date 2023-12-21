@@ -74,6 +74,14 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Println("Admitted into queue", id)
 	defer complete()
 
+	// abort when deployment was removed meanwhile
+	if _, exists := h.Deployments.ResolveDeployment(modelName); !exists {
+		log.Printf("deployment not active for model removed: %v", err)
+		w.WriteHeader(http.StatusNotFound)
+		_, _ = w.Write([]byte(fmt.Sprintf("Deployment for model not found: %v", modelName)))
+		return
+	}
+
 	log.Println("Waiting for IPs", id)
 	host := h.Endpoints.GetHost(r.Context(), deploy, "http")
 	log.Printf("Got host: %v, id: %v\n", host, id)
