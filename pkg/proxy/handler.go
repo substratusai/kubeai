@@ -78,7 +78,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if _, exists := h.Deployments.ResolveDeployment(modelName); !exists {
 		log.Printf("deployment not active for model removed: %v", err)
 		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte(fmt.Sprintf("Deployment for model was removed: %v", modelName)))
+		_, _ = w.Write([]byte(fmt.Sprintf("Deployment for model not found: %v", modelName)))
 		return
 	}
 

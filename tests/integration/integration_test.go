@@ -60,7 +60,7 @@ func TestScaleUpAndDown(t *testing.T) {
 
 	// Send request number 1
 	var wg sync.WaitGroup
-	sendRequests(t, &wg, modelName, 1)
+	sendRequests(t, &wg, modelName, 1, http.StatusOK)
 
 	requireDeploymentReplicas(t, deploy, 1)
 	require.Equal(t, int32(1), backendRequests.Load(), "ensure the request made its way to the backend")
@@ -69,11 +69,11 @@ func TestScaleUpAndDown(t *testing.T) {
 	// Ensure the deployment scaled scaled past 1.
 	// 1/2 should be admitted
 	// 1/2 should remain in queue
-	sendRequests(t, &wg, modelName, 2)
+	sendRequests(t, &wg, modelName, 2, http.StatusOK)
 	requireDeploymentReplicas(t, deploy, 2)
 
 	// Make sure deployment will not be scaled past default max (3).
-	sendRequests(t, &wg, modelName, 2)
+	sendRequests(t, &wg, modelName, 2, http.StatusOK)
 	requireDeploymentReplicas(t, deploy, 3)
 
 	// Have the mock backend respond to the remaining 4 requests.
@@ -120,12 +120,14 @@ func TestHandleModelUndeployment(t *testing.T) {
 
 	// Send request number 1
 	var wg sync.WaitGroup
-	sendRequests(t, &wg, modelName, 1)
+	// send single request to scale up and block on the handler to build a queue
+	sendRequests(t, &wg, modelName, 1, http.StatusOK)
 
 	requireDeploymentReplicas(t, deploy, 1)
 	require.Equal(t, int32(1), backendRequests.Load(), "ensure the request made its way to the backend")
-	// Add some more requests to the queue
-	sendRequestsX(t, &wg, modelName, 2, http.StatusNotFound)
+	// Add some more requests to the queue but with 404 expected
+	// because the deployment is deleted before un-queued
+	sendRequests(t, &wg, modelName, 2, http.StatusNotFound)
 
 	require.NoError(t, testK8sClient.Delete(testCtx, deploy))
 
@@ -141,8 +143,10 @@ func TestHandleModelUndeployment(t *testing.T) {
 	completeRequests(backendComplete, 1)
 
 	// Wait for deployment mapping to sync.
-	time.Sleep(3 * time.Second)
-	require.Empty(t, queueManager.TotalCounts()[modelName+"-deploy"])
+	require.Eventually(t, func() bool {
+		return queueManager.TotalCounts()[modelName+"-deploy"] == 0
+	}, 3*time.Second, 100*time.Millisecond)
+
 	t.Logf("Waiting for wait group")
 	wg.Wait()
 }
@@ -156,11 +160,7 @@ func requireDeploymentReplicas(t *testing.T, deploy *appsv1.Deployment, n int32)
 	}, 3*time.Second, time.Second/2, "waiting for the deployment to be scaled up")
 }
 
-func sendRequests(t *testing.T, wg *sync.WaitGroup, modelName string, n int) {
-	sendRequestsX(t, wg, modelName, n, http.StatusOK)
-}
-
-func sendRequestsX(t *testing.T, wg *sync.WaitGroup, modelName string, n int, expCode int) {
+func sendRequests(t *testing.T, wg *sync.WaitGroup, modelName string, n int, expCode int) {
 	for i := 0; i < n; i++ {
 		sendRequest(t, wg, modelName, expCode)
 	}
