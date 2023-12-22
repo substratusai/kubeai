@@ -24,9 +24,8 @@ type endpointGroup struct {
 	ports     map[string]int32
 	endpoints map[string]endpoint
 
-	bmtx      sync.Mutex
-	bcast     chan struct{}   // closed when there's a broadcast
-	listeners []chan struct{} // keeps track of all listeners
+	bmtx  sync.RWMutex
+	bcast chan struct{} // closed when there's a broadcast
 }
 
 // getBestHost returns the best host for the given port name. It blocks until there are available endpoints
@@ -45,12 +44,10 @@ func (e *endpointGroup) getBestHost(ctx context.Context, portName string) (strin
 	// await endpoints exists
 	for len(e.endpoints) == 0 {
 		e.mtx.RUnlock()
-		_, err := execWithCtxAbort(ctx, func() any {
-			<-e.waitForEndpoints(ctx)
-			return nil
-		})
-		if err != nil {
-			return "", err
+		select {
+		case <-e.bcast:
+		case <-ctx.Done():
+			return "", ctx.Err()
 		}
 		e.mtx.RLock()
 	}
@@ -117,31 +114,10 @@ func (g *endpointGroup) setIPs(ips map[string]struct{}, ports map[string]int32) 
 	}
 }
 
-func (e *endpointGroup) waitForEndpoints(ctx context.Context) <-chan struct{} {
-	e.bmtx.Lock()
-	defer e.bmtx.Unlock()
-
-	ch := make(chan struct{})
-	e.listeners = append(e.listeners, ch)
-
-	go execWithCtxAbort(ctx, func() any {
-		<-e.bcast
-		close(ch)
-		return nil
-	})
-
-	return ch
-}
-
 func (g *endpointGroup) broadcastEndpoints() {
 	g.bmtx.Lock()
 	defer g.bmtx.Unlock()
 
 	close(g.bcast)
 	g.bcast = make(chan struct{})
-
-	for _, ch := range g.listeners {
-		close(ch)
-	}
-	clear(g.listeners)
 }
