@@ -45,7 +45,7 @@ func (e *endpointGroup) getBestHost(ctx context.Context, portName string) (strin
 	for len(e.endpoints) == 0 {
 		e.mtx.RUnlock()
 		select {
-		case <-e.bcast:
+		case <-e.awaitEndpoints():
 		case <-ctx.Done():
 			return "", ctx.Err()
 		}
@@ -63,6 +63,12 @@ func (e *endpointGroup) getBestHost(ctx context.Context, portName string) (strin
 	}
 	e.mtx.RUnlock()
 	return fmt.Sprintf("%s:%v", bestIP, port), nil
+}
+
+func (e *endpointGroup) awaitEndpoints() chan struct{} {
+	e.bmtx.RLock()
+	defer e.bmtx.RUnlock()
+	return e.bcast
 }
 
 func (e *endpointGroup) getAllHosts(portName string) []string {
