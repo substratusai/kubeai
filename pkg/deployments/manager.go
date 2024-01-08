@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -47,6 +49,8 @@ type Manager struct {
 	// modelToDeployment maps model names to deployment names. A single deployment
 	// can serve multiple models.
 	modelToDeployment map[string]string
+
+	bootstrapped atomic.Bool
 }
 
 func (r *Manager) SetupWithManager(mgr ctrl.Manager) error {
@@ -182,21 +186,27 @@ func (r *Manager) ResolveDeployment(model string) (string, bool) {
 	return deploy, ok
 }
 
-type k8sClient interface {
-	List(ctx context.Context, list client.ObjectList, opts ...client.ListOption) error
-}
-
 // Bootstrap initializes the Manager by retrieving a list of deployments from the k8s cluster and adding them to the Manager's internal state.
-// The k8s client passed should either be non caching or have the cache synced first.
-func (r *Manager) Bootstrap(ctx context.Context, k8sClient k8sClient) error {
+func (r *Manager) Bootstrap(ctx context.Context) error {
 	var sliceList appsv1.DeploymentList
-	if err := k8sClient.List(context.TODO(), &sliceList, client.InNamespace(r.Namespace)); err != nil {
+	if err := r.List(ctx, &sliceList, client.InNamespace(r.Namespace)); err != nil {
 		return fmt.Errorf("list deployments: %w", err)
 	}
 	for _, d := range sliceList.Items {
 		if err := r.addDeployment(ctx, d); err != nil {
 			return err
 		}
+	}
+	r.bootstrapped.Store(true)
+	return nil
+}
+
+// ReadinessChecker checks if the Manager state is loaded and ready to handle requests.
+// It returns an error if Manager is not bootstrapped yet.
+// To be used with sigs.k8s.io/controller-runtime manager `AddReadyzCheck`
+func (r *Manager) ReadinessChecker(_ *http.Request) error {
+	if !r.bootstrapped.Load() {
+		return fmt.Errorf("not boostrapped yet")
 	}
 	return nil
 }

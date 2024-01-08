@@ -11,8 +11,6 @@ import (
 	"sync"
 	"time"
 
-	"sigs.k8s.io/controller-runtime/pkg/healthz"
-
 	"github.com/prometheus/client_golang/prometheus"
 
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
@@ -105,10 +103,6 @@ func run() error {
 		return fmt.Errorf("starting manager: %w", err)
 	}
 
-	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
-		return fmt.Errorf("setup readiness handler: %w", err)
-	}
-
 	clientset, err := kubernetes.NewForConfig(mgr.GetConfig())
 	if err != nil {
 		return fmt.Errorf("clientset: %w", err)
@@ -141,6 +135,9 @@ func run() error {
 	deploymentManager.Namespace = namespace
 	deploymentManager.ScaleDownPeriod = time.Duration(scaleDownDelay) * time.Second
 	deployments.NewMetricsCollector(deploymentManager).MustRegister(metricsRegistry)
+	if err := mgr.AddReadyzCheck("readyz", deploymentManager.ReadinessChecker); err != nil {
+		return fmt.Errorf("setup readiness handler: %w", err)
+	}
 
 	autoscaler, err := autoscaler.New(mgr)
 	if err != nil {
@@ -193,8 +190,10 @@ func run() error {
 		setupLog.Info("manager stopped")
 	}()
 
-	_ = mgr.GetCache().WaitForCacheSync(ctx)
-	if err := deploymentManager.Bootstrap(ctx, mgr.GetClient()); err != nil {
+	if ok := mgr.GetCache().WaitForCacheSync(ctx); !ok {
+		return fmt.Errorf("client cache could not be synced")
+	}
+	if err := deploymentManager.Bootstrap(ctx); err != nil {
 		return fmt.Errorf("bootstrap deloyment manager: %w", err)
 	}
 
