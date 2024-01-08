@@ -100,11 +100,10 @@ func (r *Manager) addDeployment(ctx context.Context, d appsv1.Deployment) error 
 	}
 
 	deploymentName := d.Name
-	if n := getAnnotationInt32(d.GetAnnotations(), lingoDomain+"/concurrency", 0); n > 0 {
-		if err := r.queueManager.SetCurrencyPerReplica(deploymentName, uint32(n)); err != nil {
-			return fmt.Errorf("set currency per replica %w", err)
-		}
-	}
+	r.queueManager.SetCurrencyPerReplica(deploymentName, uint32(
+		getAnnotationInt32(d.GetAnnotations(), lingoDomain+"/concurrency", 0),
+	))
+
 	r.getScaler(deploymentName).UpdateState(
 		scale.Spec.Replicas,
 		getAnnotationInt32(d.GetAnnotations(), lingoDomain+"/min-replicas", 0),
