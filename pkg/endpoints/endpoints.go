@@ -2,7 +2,9 @@ package endpoints
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"sync/atomic"
 )
@@ -16,7 +18,8 @@ func newEndpointGroup() *endpointGroup {
 }
 
 type endpoint struct {
-	inFlight *atomic.Int64
+	inFlight   *atomic.Int64
+	terminated chan struct{}
 }
 
 type endpointGroup struct {
@@ -104,12 +107,13 @@ func (g *endpointGroup) setIPs(ips map[string]struct{}, ports map[string]int32) 
 	g.ports = ports
 	for ip := range ips {
 		if _, ok := g.endpoints[ip]; !ok {
-			g.endpoints[ip] = endpoint{inFlight: &atomic.Int64{}}
+			g.endpoints[ip] = endpoint{inFlight: &atomic.Int64{}, terminated: make(chan struct{})}
 		}
 	}
-	for ip := range g.endpoints {
+	for ip, endpoint := range g.endpoints {
 		if _, ok := ips[ip]; !ok {
 			delete(g.endpoints, ip)
+			close(endpoint.terminated)
 		}
 	}
 	g.mtx.Unlock()
@@ -126,4 +130,30 @@ func (g *endpointGroup) broadcastEndpoints() {
 
 	close(g.bcast)
 	g.bcast = make(chan struct{})
+}
+
+func (e *endpointGroup) AddInflight(addr string, cancelRequest context.CancelFunc) (func(), error) {
+	tokens := strings.Split(addr, ":")
+	if len(tokens) != 2 {
+		return nil, errors.New("unsupported address format")
+	}
+	e.mtx.RLock()
+	endpoint, ok := e.endpoints[tokens[0]]
+	e.mtx.RUnlock()
+	if !ok {
+		return nil, errors.New("unsupported endpoint address")
+	}
+	endpoint.inFlight.Add(1)
+	done := make(chan struct{})
+	go func() {
+		select {
+		case <-done:
+		case <-endpoint.terminated:
+			cancelRequest()
+		}
+	}()
+	return func() {
+		close(done)
+		endpoint.inFlight.Add(-1)
+	}, nil
 }

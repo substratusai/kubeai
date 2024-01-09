@@ -12,11 +12,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func NewManager(mgr ctrl.Manager) (*Manager, error) {
+func NewManager(mgr ctrl.Manager, endpointSizeCallback func(deploymentName string, replicas int)) (*Manager, error) {
 	r := &Manager{}
 	r.Client = mgr.GetClient()
 	r.endpoints = map[string]*endpointGroup{}
 	r.ExcludePods = map[string]struct{}{}
+	r.EndpointSizeCallback = endpointSizeCallback
 	if err := r.SetupWithManager(mgr); err != nil {
 		return nil, err
 	}
@@ -86,6 +87,11 @@ func (r *Manager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result,
 		}
 	}
 
+	r.SetEndpoints(serviceName, ips, ports)
+	return ctrl.Result{}, nil
+}
+
+func (r *Manager) SetEndpoints(serviceName string, ips map[string]struct{}, ports map[string]int32) {
 	priorLen := r.getEndpoints(serviceName).lenIPs()
 	r.getEndpoints(serviceName).setIPs(ips, ports)
 
@@ -95,8 +101,6 @@ func (r *Manager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result,
 		// replicas by something else.
 		r.EndpointSizeCallback(serviceName, len(ips))
 	}
-
-	return ctrl.Result{}, nil
 }
 
 func (r *Manager) getEndpoints(service string) *endpointGroup {
@@ -121,4 +125,10 @@ func (r *Manager) AwaitHostAddress(ctx context.Context, service, portName string
 // GetAllHosts retrieves the list of all hosts for a given service and port.
 func (r *Manager) GetAllHosts(service, portName string) []string {
 	return r.getEndpoints(service).getAllHosts(portName)
+}
+
+func (r *Manager) RegisterInFlight(ctx context.Context, service string, hostAddr string) (context.Context, func(), error) {
+	ctx, cancel := context.WithCancel(ctx)
+	completed, err := r.getEndpoints(service).AddInflight(hostAddr, cancel)
+	return ctx, completed, err
 }

@@ -16,20 +16,24 @@ import (
 	"github.com/google/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/substratusai/lingo/pkg/deployments"
 	"github.com/substratusai/lingo/pkg/endpoints"
 	"github.com/substratusai/lingo/pkg/queue"
 )
 
+type deploymentSource interface {
+	ResolveDeployment(model string) (string, bool)
+	AtLeastOne(deploymentName string)
+}
+
 // Handler serves http requests for end-clients.
 // It is also responsible for triggering scale-from-zero.
 type Handler struct {
-	Deployments *deployments.Manager
+	Deployments deploymentSource
 	Endpoints   *endpoints.Manager
 	Queues      *queue.Manager
 }
 
-func NewHandler(deployments *deployments.Manager, endpoints *endpoints.Manager, queues *queue.Manager) *Handler {
+func NewHandler(deployments deploymentSource, endpoints *endpoints.Manager, queues *queue.Manager) *Handler {
 	return &Handler{Deployments: deployments, Endpoints: endpoints, Queues: queues}
 }
 
@@ -108,7 +112,24 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// TODO: Avoid creating new reverse proxies for each request.
 	// TODO: Consider implementing a round robin scheme.
 	log.Printf("Proxying request to host %v: %v\n", host, id)
-	newReverseProxy(host).ServeHTTP(w, proxyRequest)
+	middleware := withCancelDeadTargets(h.Endpoints, deploy, host)
+	middleware(newReverseProxy(host)).ServeHTTP(w, proxyRequest)
+}
+
+func withCancelDeadTargets(endpoints *endpoints.Manager, deploy string, host string) func(other http.Handler) http.HandlerFunc {
+	return func(other http.Handler) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			newCtx, done, err := endpoints.RegisterInFlight(r.Context(), deploy, host)
+			if err != nil {
+				log.Printf("error registering in-flight request: %v", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			defer done()
+
+			other.ServeHTTP(w, r.Clone(newCtx))
+		}
+	}
 }
 
 // parseModel parses the model name from the request

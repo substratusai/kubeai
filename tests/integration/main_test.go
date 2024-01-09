@@ -81,9 +81,8 @@ func TestMain(m *testing.M) {
 	const concurrencyPerReplica = 1
 	queueManager = queue.NewManager(concurrencyPerReplica)
 
-	endpointManager, err := endpoints.NewManager(mgr)
+	endpointManager, err := endpoints.NewManager(mgr, queueManager.UpdateQueueSizeForReplicas)
 	requireNoError(err)
-	endpointManager.EndpointSizeCallback = queueManager.UpdateQueueSizeForReplicas
 
 	deploymentManager, err := deployments.NewManager(mgr)
 	requireNoError(err)

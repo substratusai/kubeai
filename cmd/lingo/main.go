@@ -119,11 +119,10 @@ func run() error {
 	metricsRegistry := prometheus.WrapRegistererWithPrefix("lingo_", metrics.Registry)
 	queue.NewMetricsCollector(queueManager).MustRegister(metricsRegistry)
 
-	endpointManager, err := endpoints.NewManager(mgr)
+	endpointManager, err := endpoints.NewManager(mgr, queueManager.UpdateQueueSizeForReplicas)
 	if err != nil {
 		return fmt.Errorf("setting up endpoint manager: %w", err)
 	}
-	endpointManager.EndpointSizeCallback = queueManager.UpdateQueueSizeForReplicas
 	// The autoscaling leader will scrape other lingo instances.
 	// Exclude this instance from being scraped by itself.
 	endpointManager.ExcludePods[hostname] = struct{}{}
