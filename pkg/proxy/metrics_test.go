@@ -65,10 +65,11 @@ func TestMetrics(t *testing.T) {
 			assert.Equal(t, spec.expCode, recorder.Code)
 			gathered, err := registry.Gather()
 			require.NoError(t, err)
-			require.Len(t, gathered, 1)
-			require.Len(t, gathered[0].Metric, 1)
-			assert.NotEmpty(t, gathered[0].Metric[0].GetHistogram().GetSampleCount())
-			assert.Equal(t, spec.expLabels, toMap(gathered[0].Metric[0].Label))
+			require.Len(t, gathered, 2)
+			require.Equal(t, "http_response_time_seconds", *gathered[1].Name)
+			require.Len(t, gathered[1].Metric, 1)
+			assert.NotEmpty(t, gathered[1].Metric[0].GetHistogram().GetSampleCount())
+			assert.Equal(t, spec.expLabels, toMap(gathered[1].Metric[0].Label))
 		})
 	}
 }

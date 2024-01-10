@@ -113,6 +113,7 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("getting hostname: %v", err)
 	}
+
 	le := leader.NewElection(clientset, hostname, namespace)
 
 	queueManager := queue.NewManager(concurrencyPerReplica)
@@ -152,7 +153,8 @@ func run() error {
 	go autoscaler.Start()
 
 	proxy.MustRegister(metricsRegistry)
-	proxyHandler := proxy.NewHandler(deploymentManager, endpointManager, queueManager)
+	var proxyHandler http.Handler = proxy.NewHandler(deploymentManager, endpointManager, queueManager)
+	proxyHandler = proxy.NewRetryMiddleware(3, proxyHandler)
 	proxyServer := &http.Server{Addr: ":8080", Handler: proxyHandler}
 
 	statsHandler := &stats.Handler{

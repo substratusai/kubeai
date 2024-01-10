@@ -12,8 +12,13 @@ var httpDuration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 	Buckets: prometheus.DefBuckets,
 }, []string{"model", "status_code"})
 
+var totalRetries = prometheus.NewCounter(prometheus.CounterOpts{
+	Name: "http_request_retry_total",
+	Help: "Number of HTTP request retries.",
+})
+
 func MustRegister(r prometheus.Registerer) {
-	r.MustRegister(httpDuration)
+	r.MustRegister(httpDuration, totalRetries)
 }
 
 // captureStatusResponseWriter is a custom HTTP response writer that captures the status code.
