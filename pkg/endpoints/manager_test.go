@@ -21,7 +21,7 @@ func TestAwaitBestHost(t *testing.T) {
 		service  string
 		portName string
 		timeout  time.Duration
-		expErr   bool
+		expErr   error
 	}{
 		"all good": {
 			service:  myService,
@@ -37,7 +37,7 @@ func TestAwaitBestHost(t *testing.T) {
 			service:  "unknownService",
 			portName: myPort,
 			timeout:  time.Millisecond,
-			expErr:   true,
+			expErr:   context.DeadlineExceeded,
 		},
 		// not covered: unknown port with multiple ports on entrypoint
 	}
@@ -48,8 +48,8 @@ func TestAwaitBestHost(t *testing.T) {
 			defer cancel()
 
 			gotHost, gotErr := manager.AwaitHostAddress(ctx, spec.service, spec.portName)
-			if spec.expErr {
-				require.Error(t, gotErr)
+			if spec.expErr != nil {
+				require.ErrorIs(t, spec.expErr, gotErr)
 				return
 			}
 			require.NoError(t, gotErr)

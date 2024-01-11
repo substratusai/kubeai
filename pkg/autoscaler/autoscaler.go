@@ -80,11 +80,7 @@ func (a *Autoscaler) Start() {
 		log.Println("Calculating scales for all")
 
 		// TODO: Remove hardcoded Service lookup by name "lingo".
-		otherLingoEndpoints, err := a.Endpoints.GetAllHosts(context.Background(), "lingo", "stats")
-		if err != nil {
-			log.Printf("Failed to find endpoints: %v", err)
-			continue
-		}
+		otherLingoEndpoints := a.Endpoints.GetAllHosts("lingo", "stats")
 
 		stats, errs := aggregateStats(stats.Stats{
 			ActiveRequests: a.Queues.TotalCounts(),
