@@ -2,7 +2,9 @@ package proxy
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -83,7 +85,24 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Println("Waiting for IPs", id)
-	host := h.Endpoints.GetHost(r.Context(), deploy, "http")
+	host, err := h.Endpoints.AwaitHostAddress(r.Context(), deploy, "http")
+	if err != nil {
+		log.Printf("error while finding the host address %v", err)
+		switch {
+		case errors.Is(err, context.Canceled):
+			w.WriteHeader(http.StatusInternalServerError)
+			_, _ = w.Write([]byte("Request cancelled"))
+			return
+		case errors.Is(err, context.DeadlineExceeded):
+			w.WriteHeader(http.StatusGatewayTimeout)
+			_, _ = w.Write([]byte(fmt.Sprintf("Request timed out for model: %v", modelName)))
+			return
+		default:
+			w.WriteHeader(http.StatusInternalServerError)
+			_, _ = w.Write([]byte("Internal server error"))
+			return
+		}
+	}
 	log.Printf("Got host: %v, id: %v\n", host, id)
 
 	// TODO: Avoid creating new reverse proxies for each request.
