@@ -11,9 +11,9 @@ import (
 var _ http.Handler = &RetryMiddleware{}
 
 type RetryMiddleware struct {
-	other      http.Handler
-	MaxRetries int
-	rSource    *rand.Rand
+	nextHandler http.Handler
+	MaxRetries  int
+	rSource     *rand.Rand
 }
 
 func NewRetryMiddleware(maxRetries int, other http.Handler) *RetryMiddleware {
@@ -21,9 +21,9 @@ func NewRetryMiddleware(maxRetries int, other http.Handler) *RetryMiddleware {
 		panic("invalid retries")
 	}
 	return &RetryMiddleware{
-		other:      other,
-		MaxRetries: maxRetries,
-		rSource:    rand.New(rand.NewSource(time.Now().UnixNano())),
+		nextHandler: other,
+		MaxRetries:  maxRetries,
+		rSource:     rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
 }
 
@@ -35,7 +35,7 @@ func (r RetryMiddleware) ServeHTTP(writer http.ResponseWriter, request *http.Req
 			body:   bytes.NewBuffer([]byte{}),
 		}
 		// call next handler in chain
-		r.other.ServeHTTP(capturedResp, request.Clone(request.Context()))
+		r.nextHandler.ServeHTTP(capturedResp, request.Clone(request.Context()))
 
 		if i == r.MaxRetries || // max retries reached
 			request.Context().Err() != nil || // abort early on timeout, context cancel
