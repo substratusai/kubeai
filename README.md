@@ -97,15 +97,9 @@ to download the model.
 
 What else would you like to see? Join our Discord and ask directly.
 
-## Roadmap
-
-* HA for the proxy controller
-* Response Request Caching
-* Model caching to speed up auto scaling for LLMs
-* Authentication
-* Multi cluster serving
-
 ## Creators
+
 Feel free to contact any of us:
+
 * [Nick Stogner](https://www.linkedin.com/in/nstogner/)
 * [Sam Stoelinga](https://www.linkedin.com/in/samstoelinga/)

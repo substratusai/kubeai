@@ -1,5 +1,5 @@
-name: Integration tests
-run-name: Integration tests by @${{ github.actor }}
+name: Race tests
+run-name: Race tests by @${{ github.actor }}
 
 on:
   push:
@@ -17,5 +17,5 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: ">=1.21.0"
-      - name: Run integration tests
-        run: make test-integration
+      - name: Run race tests
+        run: make test-race
