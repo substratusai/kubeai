@@ -8,7 +8,7 @@ on:
   pull_request:
 
 jobs:
-  unit-race-integration-tests:
+  unit-race-integration:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -23,7 +23,7 @@ jobs:
         run: make test-race
       - name: Run integration tests
         run: make test-integration
-  e2e-tests:
+  e2e:
     runs-on: ubuntu-latest
 
     steps:
