@@ -1,9 +1,8 @@
-# Lingo - K8s LLM Proxy + Scaler
+# Lingo - The lightweight model proxy
 
-Lingo is an OpenAI compatible LLM proxy and autoscaler for K8s
+Lingo is a lightweight ML model proxy and autoscaler that runs on Kubernetes.
 
-![lingo demo](lingo.gif)
-
+✅️ Compatible with the OpenAI API
 🚀  Serve popular OSS LLM models in minutes on CPUs or GPUs  
 🧮  Serve Embedding Model servers  
 ⚖️  Automatically scale up and down, all the way to 0  
@@ -11,26 +10,35 @@ Lingo is an OpenAI compatible LLM proxy and autoscaler for K8s
 🛠️  Easy to install, No complex dependencies such as Istio or Knative  
 ☁️  Provide a unified API across clouds for serving LLMs
 
-Support the project by adding a star! ❤️
+![lingo demo](lingo.gif)
 
-Join us on Discord:  
+Support the project by adding a star! ⭐️
+
+And say hello on Discord!
+
 <a href="https://discord.gg/JeXhcmjZVm">
 <img alt="discord-invite" src="https://dcbadge.vercel.app/api/server/JeXhcmjZVm?style=flat">
 </a>
 
-## Quickstart (Any K8s, Kind, GKE, EKS etc)
-Add the Helm repo:
+## Quickstart
+
+This quickstart will demonstrate how to get Lingo installed and serving both an embeddings model and LLM. This should work on any Kubernetes cluster (GKE, EKS, )
+
+Start by adding and updating the Substratus Helm repo.
+
 ```bash
 helm repo add substratusai https://substratusai.github.io/helm
 helm repo update
 ```
 
-Install the Lingo controller and proxy:
+Install Lingo.
+
 ```bash
 helm install lingo substratusai/lingo
 ```
 
-Deploy an embedding model:
+Deploy an embedding model (runs on CPUs).
+
 ```bash
 helm upgrade --install stapi-minilm-l6-v2 substratusai/stapi -f - << EOF
 model: all-MiniLM-L6-v2
@@ -40,7 +48,8 @@ deploymentAnnotations:
 EOF
 ```
 
-Deploy a LLM (mistral-7b-instruct) using vLLM:
+Deploy the Mistral 7B Instruct LLM using vLLM (GPUs are required).
+
 ```bash
 helm upgrade --install mistral-7b-instruct substratusai/vllm -f - << EOF
 model: mistralai/Mistral-7B-Instruct-v0.1
@@ -54,21 +63,25 @@ deploymentAnnotations:
   lingo.substratus.ai/max-replicas: "3" # needs to be string
 EOF
 ```
+
 Notice how the deployment has 0 replicas. That's fine because Lingo
 will automatically scale the embedding model server from 0 to 1
 once there is an incoming HTTP request.
 
-By default, the proxy is only accessible within the Kubernetes cluster. To access it from your local machine, set up a port forward:
+By default, the proxy is only accessible within the Kubernetes cluster. To access it from your local machine, set up a port forward.
+
 ```bash
 kubectl port-forward svc/lingo 8080:80
 ```
 
-In a separate terminal watch the pods:
+In a separate terminal watch the pods.
+
 ```bash
 watch kubectl get pods
 ```
 
-Get embeddings by using the OpenAI compatible HTTP API:
+Get embeddings by using the OpenAI compatible HTTP API.
+
 ```bash
 curl http://localhost:8080/v1/embeddings \
   -H "Content-Type: application/json" \
@@ -77,7 +90,7 @@ curl http://localhost:8080/v1/embeddings \
     "model": "text-embedding-ada-002"
   }'
 ```
-You should see a stapi pod being created on the fly that
+You should see a STAPI pod being created on the fly that
 will serve the request. The beautiful thing about Lingo
 is that it holds  your request in the proxy while the
 stapi pod is being created, once it's ready to serve, Lingo
@@ -85,7 +98,8 @@ send the request to the stapi pod. The end-user does not
 see any errors and gets the response to their request.
 
 Similarly, send a request to the mistral-7b-instruct model that
-was deployed:
+was deployed.
+
 ```bash
 curl http://localhost:8080/v1/completions \
   -H "Content-Type: application/json" \
@@ -95,11 +109,11 @@ The first request to an LLM takes longer because
 those models require a GPU and require additional time
 to download the model.
 
-What else would you like to see? Join our Discord and ask directly.
+What else would you like to see? [Join our Discord](https://discord.gg/JeXhcmjZVm) and ask directly.
 
 ## Creators
 
-Feel free to contact any of us:
+Reach out if you want to connect!
 
 * [Nick Stogner](https://www.linkedin.com/in/nstogner/)
 * [Sam Stoelinga](https://www.linkedin.com/in/samstoelinga/)
