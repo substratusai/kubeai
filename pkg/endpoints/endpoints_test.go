@@ -39,9 +39,9 @@ func TestConcurrentAccess(t *testing.T) {
 			)
 
 			var startWg, doneWg sync.WaitGroup
+			startWg.Add(spec.readerCount + spec.writerCount)
+			doneWg.Add(spec.readerCount + spec.writerCount)
 			startTogether := func(n int, f func()) {
-				startWg.Add(n)
-				doneWg.Add(n)
 				for i := 0; i < n; i++ {
 					go func() {
 						startWg.Done()
