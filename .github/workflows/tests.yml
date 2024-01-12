@@ -10,19 +10,25 @@ on:
 jobs:
   unit-race-integration:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
           go-version: ">=1.21.0"
+
       - name: Run unit tests
         run: make test-unit
+
       - name: Run race tests
         run: make test-race
+
       - name: Run integration tests
         run: make test-integration
+
   e2e:
     runs-on: ubuntu-latest
 
@@ -30,7 +36,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install Kind
+      - name: Install kind
         run: |
           # For AMD64 / x86_64
           [ $(uname -m) = x86_64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
@@ -39,11 +45,11 @@ jobs:
           chmod +x ./kind
           sudo mv ./kind /usr/local/bin/kind
 
-      - name: Install Skaffold
+      - name: Install skaffold
         run: |
           curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64
           chmod +x skaffold
           sudo mv skaffold /usr/local/bin
 
-      - name: Run system test kind
+      - name: Run e2e tests
         run: make test-e2e
