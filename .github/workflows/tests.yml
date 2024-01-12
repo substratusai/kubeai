@@ -1,5 +1,5 @@
-name: End-to-end tests
-run-name: E2E tests by @${{ github.actor }}
+name: Tests
+run-name: Run tests by @${{ github.actor }}
 
 on:
   push:
@@ -8,7 +8,22 @@ on:
   pull_request:
 
 jobs:
-  install:
+  unit-race-integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ">=1.21.0"
+      - name: Run unit tests
+        run: make test-unit
+      - name: Run race tests
+        run: make test-race
+      - name: Run integration tests
+        run: make test-integration
+  e2e-tests:
     runs-on: ubuntu-latest
 
     steps:

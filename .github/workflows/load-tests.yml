@@ -4,7 +4,7 @@ run-name: Load tests by @${{ github.actor }}
 on: workflow_dispatch
 
 jobs:
-  perf-tests:
+  load-tests:
     runs-on: ubuntu-latest
     permissions:
       contents: "read"

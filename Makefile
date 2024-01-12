@@ -1,7 +1,7 @@
 ENVTEST_K8S_VERSION = 1.27.1
 
 .PHONY: test
-test: test-unit test-integration test-race test-e2e
+test: test-unit test-race test-integration test-e2e
 
 .PHONY: test-unit
 test-unit:

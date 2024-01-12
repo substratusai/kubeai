@@ -2,10 +2,20 @@
 
 ## Testing
 
+Run all tests (takes a while).
 ```sh
+make test
+```
+
+*OR*
+
+Run specific tests.
+
+```bash
 make test-unit
-make test-integration
 make test-race
+make test-integration
+make test-e2e
 ```
 
 ## Local Deployment
