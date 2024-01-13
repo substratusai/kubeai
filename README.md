@@ -99,7 +99,7 @@ curl http://localhost:8080/v1/completions \
 
 The first request to an LLM takes longer because of the size of the model. Subsequent request should be much quicker.
 
-Checkout [substratus.ai](https://substratus.ai) to learn more about the managed hybrid-SaaS offering. Substratus allows you to run Lingo in your cloud account, while benefiting from extensive cluster performance addons that can dramatically reduce startup times and boost throughput.
+Checkout [substratus.ai](https://www.substratus.ai) to learn more about the managed hybrid-SaaS offering. Substratus allows you to run Lingo in your cloud account, while benefiting from extensive cluster performance addons that can dramatically reduce startup times and boost throughput.
 
 ## Creators
 
