@@ -22,6 +22,6 @@ Annotations:
 
 Lingo will keep track of Pods associated with Kubernetes Services tied to backend Deployments.
 
-* Lingo will forward traffic to a backend Service with the same name as the relevant Deployment.
+* Lingo will forward traffic to a backend Service with the same name as the annotated Deployment.
 * If one port exists, lingo will send traffic to it.
 * If more than one port exists, lingo will send traffic to the port named `http`.

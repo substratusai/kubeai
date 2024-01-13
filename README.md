@@ -1,28 +1,25 @@
 # Lingo - The lightweight model proxy
 
-Lingo is a lightweight ML model proxy and autoscaler that runs on Kubernetes.
+Lingo is a lightweight, scale-from-zero ML model proxy and that runs on Kubernetes. Lingo allows you to run text-completion and embedding servers in your own project without changing any of your OpenAI client code.
 
-✅️ Compatible with the OpenAI API
-🚀  Serve popular OSS LLM models in minutes on CPUs or GPUs  
-🧮  Serve Embedding Model servers  
-⚖️  Automatically scale up and down, all the way to 0  
-🪄  Built-in proxy that batches requests while scaling magic happens  
-🛠️  Easy to install, No complex dependencies such as Istio or Knative  
-☁️  Provide a unified API across clouds for serving LLMs
-
-![lingo demo](lingo.gif)
-
-Support the project by adding a star! ⭐️
-
-And say hello on Discord!
+🚀  Serve OSS LLMs on CPUs or GPUs  
+✅️  Compatible with the OpenAI API  
+⚖️  Scale from zero, autoscale based on load  
+…  Queue requests to avoid overloading models  
+🛠️  Zero dependencies (no Istio, Knative, etc.)   
+⦿  Namespaced - no cluster privileges needed
 
 <a href="https://discord.gg/JeXhcmjZVm">
 <img alt="discord-invite" src="https://dcbadge.vercel.app/api/server/JeXhcmjZVm?style=flat">
 </a>
 
+Support the project by adding a star! ⭐️
+
+![lingo demo](lingo.gif)
+
 ## Quickstart
 
-This quickstart will demonstrate how to get Lingo installed and serving both an embeddings model and LLM. This should work on any Kubernetes cluster (GKE, EKS, )
+This quickstart will walk through installing Lingo and demonstrating how it scales models from zero. This should work on any Kubernetes cluster (GKE, EKS, AKS, Kind).
 
 Start by adding and updating the Substratus Helm repo.
 
@@ -64,9 +61,7 @@ deploymentAnnotations:
 EOF
 ```
 
-Notice how the deployment has 0 replicas. That's fine because Lingo
-will automatically scale the embedding model server from 0 to 1
-once there is an incoming HTTP request.
+All model deployments currently have 0 replicas. Lingo will scale the Deployment in response to the first HTTP request.
 
 By default, the proxy is only accessible within the Kubernetes cluster. To access it from your local machine, set up a port forward.
 
@@ -74,7 +69,7 @@ By default, the proxy is only accessible within the Kubernetes cluster. To acces
 kubectl port-forward svc/lingo 8080:80
 ```
 
-In a separate terminal watch the pods.
+In a separate terminal watch the Pods.
 
 ```bash
 watch kubectl get pods
@@ -90,30 +85,27 @@ curl http://localhost:8080/v1/embeddings \
     "model": "text-embedding-ada-002"
   }'
 ```
-You should see a STAPI pod being created on the fly that
-will serve the request. The beautiful thing about Lingo
-is that it holds  your request in the proxy while the
-stapi pod is being created, once it's ready to serve, Lingo
-send the request to the stapi pod. The end-user does not
-see any errors and gets the response to their request.
 
-Similarly, send a request to the mistral-7b-instruct model that
-was deployed.
+You should see a model Pod being created on the fly that
+will serve the request. The first request will wait for this Pod to become ready.
+
+If you deployed the Mistral 7B LLM, try sending it a request as well.
 
 ```bash
 curl http://localhost:8080/v1/completions \
   -H "Content-Type: application/json" \
   -d '{"model": "mistral-7b-instruct-v0.1", "prompt": "<s>[INST]Who was the first president of the United States?[/INST]", "max_tokens": 40}'
 ```
-The first request to an LLM takes longer because
-those models require a GPU and require additional time
-to download the model.
 
-What else would you like to see? [Join our Discord](https://discord.gg/JeXhcmjZVm) and ask directly.
+The first request to an LLM takes longer because of the size of the model. Subsequent request should be much quicker.
+
+Checkout [substratus.ai](https://substratus.ai) to learn more about the managed hybrid-SaaS offering. Substratus allows you to run Lingo in your cloud account, while benefiting from extensive cluster performance addons that can dramatically reduce startup times and boost throughput.
 
 ## Creators
 
-Reach out if you want to connect!
+Let us know about features you are interested in seeing or reach out with questions. [Visit our Discord channel](https://discord.gg/JeXhcmjZVm) to join the discussion!
+
+Or just reach out on LinkedIn if you want to connect:
 
 * [Nick Stogner](https://www.linkedin.com/in/nstogner/)
 * [Sam Stoelinga](https://www.linkedin.com/in/samstoelinga/)
