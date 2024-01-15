@@ -127,8 +127,6 @@ func (r *Manager) GetAllHosts(service, portName string) []string {
 	return r.getEndpoints(service).getAllHosts(portName)
 }
 
-func (r *Manager) RegisterInFlight(ctx context.Context, service string, hostAddr string) (context.Context, func(), error) {
-	ctx, cancel := context.WithCancel(ctx)
-	completed, err := r.getEndpoints(service).AddInflight(hostAddr, cancel)
-	return ctx, completed, err
+func (r *Manager) RegisterInFlight(service string, hostAddr string) (func(), error) {
+	return r.getEndpoints(service).AddInflight(hostAddr)
 }

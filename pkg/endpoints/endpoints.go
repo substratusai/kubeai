@@ -132,28 +132,19 @@ func (g *endpointGroup) broadcastEndpoints() {
 	g.bcast = make(chan struct{})
 }
 
-func (e *endpointGroup) AddInflight(addr string, cancelRequest context.CancelFunc) (func(), error) {
+func (e *endpointGroup) AddInflight(addr string) (func(), error) {
 	tokens := strings.Split(addr, ":")
 	if len(tokens) != 2 {
 		return nil, errors.New("unsupported address format")
 	}
 	e.mtx.RLock()
+	defer e.mtx.RUnlock()
 	endpoint, ok := e.endpoints[tokens[0]]
-	e.mtx.RUnlock()
 	if !ok {
 		return nil, errors.New("unsupported endpoint address")
 	}
 	endpoint.inFlight.Add(1)
-	done := make(chan struct{})
-	go func() {
-		select {
-		case <-done:
-		case <-endpoint.terminated:
-			cancelRequest()
-		}
-	}()
 	return func() {
-		close(done)
 		endpoint.inFlight.Add(-1)
 	}, nil
 }

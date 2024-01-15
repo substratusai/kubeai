@@ -1,8 +1,7 @@
 package proxy
 
 import (
-	"bytes"
-	"log"
+	"io"
 	"math/rand"
 	"net/http"
 	"time"
@@ -28,19 +27,19 @@ func NewRetryMiddleware(maxRetries int, other http.Handler) *RetryMiddleware {
 }
 
 func (r RetryMiddleware) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
-	var capturedResp *responseBuffer
+	var capturedResp *responseWriterDelegator
 	for i := 0; ; i++ {
-		capturedResp = &responseBuffer{
-			header: make(http.Header),
-			body:   bytes.NewBuffer([]byte{}),
+		capturedResp = &responseWriterDelegator{
+			ResponseWriter: writer,
+			headerBuf:      make(http.Header),
+			discardErrResp: i < r.MaxRetries &&
+				request.Context().Err() == nil, // abort early on timeout, context cancel
 		}
 		// call next handler in chain
 		r.nextHandler.ServeHTTP(capturedResp, request.Clone(request.Context()))
 
-		if i == r.MaxRetries || // max retries reached
-			request.Context().Err() != nil || // abort early on timeout, context cancel
-			capturedResp.status != http.StatusBadGateway &&
-				capturedResp.status != http.StatusServiceUnavailable {
+		if !capturedResp.discardErrResp || // max retries reached
+			!isRetryableStatusCode(capturedResp.statusCode) {
 			break
 		}
 		totalRetries.Inc()
@@ -48,30 +47,77 @@ func (r RetryMiddleware) ServeHTTP(writer http.ResponseWriter, request *http.Req
 		jitter := time.Duration(r.rSource.Intn(50))
 		time.Sleep(time.Millisecond*time.Duration(1<<uint(i)) + jitter)
 	}
-	for k, v := range capturedResp.header {
-		writer.Header()[k] = v
+}
+
+func isRetryableStatusCode(status int) bool {
+	return status == http.StatusBadGateway ||
+		status == http.StatusServiceUnavailable ||
+		status == http.StatusGatewayTimeout
+}
+
+var (
+	_ http.Flusher  = &responseWriterDelegator{}
+	_ io.ReaderFrom = &responseWriterDelegator{}
+)
+
+type responseWriterDelegator struct {
+	http.ResponseWriter
+	headerBuf   http.Header
+	wroteHeader bool
+	statusCode  int
+	// always writes to responseWriter when false
+	discardErrResp bool
+}
+
+func (r *responseWriterDelegator) Header() http.Header {
+	return r.headerBuf
+}
+
+func (r *responseWriterDelegator) WriteHeader(status int) {
+	r.statusCode = status
+	if !r.wroteHeader {
+		r.wroteHeader = true
+		// any 1xx informational response should be written
+		r.discardErrResp = r.discardErrResp && !(status >= 100 && status < 200)
 	}
-	writer.WriteHeader(capturedResp.status)
-	if _, err := capturedResp.body.WriteTo(writer); err != nil {
-		log.Printf("response write: %v", err)
+	if r.discardErrResp && isRetryableStatusCode(status) {
+		return
+	}
+	// copy header values to target
+	for k, vals := range r.headerBuf {
+		for _, val := range vals {
+			r.ResponseWriter.Header().Add(k, val)
+		}
+	}
+	r.ResponseWriter.WriteHeader(status)
+}
+
+func (r *responseWriterDelegator) Write(data []byte) (int, error) {
+	// ensure header is set. default is 200 in Go stdlib
+	if !r.wroteHeader {
+		r.WriteHeader(http.StatusOK)
+	}
+	if r.discardErrResp && isRetryableStatusCode(r.statusCode) {
+		return io.Discard.Write(data)
+	} else {
+		return r.ResponseWriter.Write(data)
 	}
 }
 
-type responseBuffer struct {
-	header http.Header
-	body   *bytes.Buffer
-	status int
+func (r *responseWriterDelegator) ReadFrom(re io.Reader) (int64, error) {
+	// ensure header is set. default is 200 in Go stdlib
+	if !r.wroteHeader {
+		r.WriteHeader(http.StatusOK)
+	}
+	if r.discardErrResp && isRetryableStatusCode(r.statusCode) {
+		return io.Copy(io.Discard, re)
+	} else {
+		return r.ResponseWriter.(io.ReaderFrom).ReadFrom(re)
+	}
 }
 
-func (rb *responseBuffer) Header() http.Header {
-	return rb.header
-}
-
-func (r *responseBuffer) WriteHeader(status int) {
-	r.status = status
-	r.header = r.Header().Clone()
-}
-
-func (rb *responseBuffer) Write(data []byte) (int, error) {
-	return rb.body.Write(data)
+func (r *responseWriterDelegator) Flush() {
+	if f, ok := r.ResponseWriter.(http.Flusher); ok {
+		f.Flush()
+	}
 }

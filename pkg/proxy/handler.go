@@ -109,17 +109,24 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Printf("Got host: %v, id: %v\n", host, id)
 
+	done, err := h.Endpoints.RegisterInFlight(deploy, host)
+	if err != nil {
+		log.Printf("error registering in-flight request: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	defer done()
+
+	log.Printf("Proxying request to host %v: %v\n", host, id)
 	// TODO: Avoid creating new reverse proxies for each request.
 	// TODO: Consider implementing a round robin scheme.
-	log.Printf("Proxying request to host %v: %v\n", host, id)
-	middleware := withCancelDeadTargets(h.Endpoints, deploy, host)
-	middleware(newReverseProxy(host)).ServeHTTP(w, proxyRequest)
+	newReverseProxy(host).ServeHTTP(w, proxyRequest)
 }
 
-func withCancelDeadTargets(endpoints *endpoints.Manager, deploy string, host string) func(other http.Handler) http.HandlerFunc {
+func withInflightCounted(endpoints *endpoints.Manager, deploy string, host string) func(other http.Handler) http.HandlerFunc {
 	return func(other http.Handler) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
-			newCtx, done, err := endpoints.RegisterInFlight(r.Context(), deploy, host)
+			done, err := endpoints.RegisterInFlight(deploy, host)
 			if err != nil {
 				log.Printf("error registering in-flight request: %v", err)
 				w.WriteHeader(http.StatusInternalServerError)
@@ -127,7 +134,7 @@ func withCancelDeadTargets(endpoints *endpoints.Manager, deploy string, host str
 			}
 			defer done()
 
-			other.ServeHTTP(w, r.Clone(newCtx))
+			other.ServeHTTP(w, r)
 		}
 	}
 }

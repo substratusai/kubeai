@@ -42,6 +42,12 @@ func TestServeHTTP(t *testing.T) {
 			respStatus: http.StatusBadGateway,
 			expRetries: 3,
 		},
+		"not buffered on 100": {
+			context:    func() context.Context { return context.TODO() },
+			maxRetries: 3,
+			respStatus: http.StatusContinue,
+			expRetries: 0,
+		},
 		"context cancelled": {
 			context: func() context.Context {
 				ctx, cancel := context.WithCancel(context.TODO())

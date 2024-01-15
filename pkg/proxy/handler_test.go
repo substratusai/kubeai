@@ -1,14 +1,12 @@
 package proxy
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"net/http/httputil"
 	"net/url"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -23,7 +21,7 @@ func TestProxy(t *testing.T) {
 	}{
 		"ok": {
 			request: httptest.NewRequest(http.MethodGet, "/", strings.NewReader(`{"model":"my_model"}`)),
-			expCode: http.StatusBadGateway,
+			expCode: http.StatusOK,
 		},
 	}
 	for name, spec := range specs {
@@ -41,8 +39,7 @@ func TestProxy(t *testing.T) {
 
 			svr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				em.SetEndpoints("my-deployment", map[string]struct{}{"my-other-ip": {}}, map[string]int32{"my-other-port": 8080})
-				time.Sleep(time.Millisecond)
-				w.WriteHeader(999)
+				w.WriteHeader(http.StatusOK)
 			}))
 			recorder := httptest.NewRecorder()
 
@@ -51,12 +48,7 @@ func TestProxy(t *testing.T) {
 			}
 
 			// when
-			// newCtx, cancel := context.WithCancel(spec.request.Context())
-			// cancel()
-			// newCtx, _ := context.WithTimeout(spec.request.Context(), time.Nanosecond)
-			newCtx := context.Background()
-
-			h.ServeHTTP(recorder, spec.request.Clone(newCtx))
+			h.ServeHTTP(recorder, spec.request)
 			// then
 			assert.Equal(t, spec.expCode, recorder.Code)
 		})
