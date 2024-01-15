@@ -123,22 +123,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	newReverseProxy(host).ServeHTTP(w, proxyRequest)
 }
 
-func withInflightCounted(endpoints *endpoints.Manager, deploy string, host string) func(other http.Handler) http.HandlerFunc {
-	return func(other http.Handler) http.HandlerFunc {
-		return func(w http.ResponseWriter, r *http.Request) {
-			done, err := endpoints.RegisterInFlight(deploy, host)
-			if err != nil {
-				log.Printf("error registering in-flight request: %v", err)
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-			defer done()
-
-			other.ServeHTTP(w, r)
-		}
-	}
-}
-
 // parseModel parses the model name from the request
 // returns empty string when none found or an error for failures on the proxy request object
 func parseModel(r *http.Request) (string, *http.Request, error) {
