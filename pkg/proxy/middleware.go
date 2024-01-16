@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"io"
+	"log"
 	"math/rand"
 	"net/http"
 	"time"
@@ -60,7 +61,9 @@ func (r RetryMiddleware) ServeHTTP(writer http.ResponseWriter, request *http.Req
 		// call next handler in chain
 		req, err := http.NewRequestWithContext(request.Context(), request.Method, request.URL.String(), lazyBody)
 		if err != nil {
-			panic(err)
+			log.Printf("clone request: %v", err)
+			writer.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 		r.nextHandler.ServeHTTP(capturedResp, req)
 		lazyBody.Capture()
