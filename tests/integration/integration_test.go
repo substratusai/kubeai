@@ -3,6 +3,7 @@ package integration
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -145,6 +146,8 @@ func TestRetryMiddleware(t *testing.T) {
 		code := serverCodes[i-1]
 		t.Logf("Serving request from testBackend: %d; code: %d\n", i, code)
 		w.WriteHeader(code)
+		_, err := w.Write([]byte(strconv.Itoa(code)))
+		require.NoError(t, err)
 	}))
 
 	// Mock an EndpointSlice.
@@ -183,11 +186,9 @@ func TestRetryMiddleware(t *testing.T) {
 			backendRequests.Store(0)
 
 			// when single request sent
-			var wg sync.WaitGroup
-			sendRequest(t, &wg, modelName, spec.expResultCode)
-			wg.Wait()
-
-			// then
+			gotBody := <-sendRequest(t, &sync.WaitGroup{}, modelName, spec.expResultCode)
+			// then only the last body is written
+			assert.Equal(t, strconv.Itoa(spec.expResultCode), gotBody)
 			require.Equal(t, spec.expBackendHits, backendRequests.Load(), "ensure backend hit with retries")
 		})
 	}
@@ -222,9 +223,10 @@ func sendRequests(t *testing.T, wg *sync.WaitGroup, modelName string, n int, exp
 	}
 }
 
-func sendRequest(t *testing.T, wg *sync.WaitGroup, modelName string, expCode int) {
+func sendRequest(t *testing.T, wg *sync.WaitGroup, modelName string, expCode int) <-chan string {
 	t.Helper()
 	wg.Add(1)
+	bodyRespChan := make(chan string, 1)
 	go func() {
 		defer wg.Done()
 
@@ -235,7 +237,13 @@ func sendRequest(t *testing.T, wg *sync.WaitGroup, modelName string, expCode int
 		res, err := testHTTPClient.Do(req)
 		require.NoError(t, err)
 		require.Equal(t, expCode, res.StatusCode)
+		got, err := io.ReadAll(res.Body)
+		_ = res.Body.Close()
+		require.NoError(t, err)
+		bodyRespChan <- string(got)
+		close(bodyRespChan)
 	}()
+	return bodyRespChan
 }
 
 func completeRequests(c chan struct{}, n int) {
