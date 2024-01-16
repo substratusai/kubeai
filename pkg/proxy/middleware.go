@@ -1,6 +1,8 @@
 package proxy
 
 import (
+	"bytes"
+	"errors"
 	"io"
 	"math/rand"
 	"net/http"
@@ -27,6 +29,11 @@ func NewRetryMiddleware(maxRetries int, other http.Handler) *RetryMiddleware {
 }
 
 func (r RetryMiddleware) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	lazyBody := &lazyBodyCapturer{
+		reader: request.Body,
+		buf:    bytes.NewBuffer([]byte{}),
+	}
+	request.Body = lazyBody
 	var capturedResp *responseWriterDelegator
 	for i := 0; ; i++ {
 		capturedResp = &responseWriterDelegator{
@@ -36,8 +43,12 @@ func (r RetryMiddleware) ServeHTTP(writer http.ResponseWriter, request *http.Req
 				request.Context().Err() == nil, // abort early on timeout, context cancel
 		}
 		// call next handler in chain
-		r.nextHandler.ServeHTTP(capturedResp, request.Clone(request.Context()))
-
+		req, err := http.NewRequestWithContext(request.Context(), request.Method, request.URL.String(), lazyBody)
+		if err != nil {
+			panic(err)
+		}
+		r.nextHandler.ServeHTTP(capturedResp, req)
+		lazyBody.Capture()
 		if !capturedResp.discardErrResp || // max retries reached
 			!isRetryableStatusCode(capturedResp.statusCode) {
 			break
@@ -119,5 +130,53 @@ func (r *responseWriterDelegator) ReadFrom(re io.Reader) (int64, error) {
 func (r *responseWriterDelegator) Flush() {
 	if f, ok := r.ResponseWriter.(http.Flusher); ok {
 		f.Flush()
+	}
+}
+
+var (
+	_ io.ReadCloser = &lazyBodyCapturer{}
+	_ io.WriterTo   = &lazyBodyCapturer{}
+)
+
+type lazyBodyCapturer struct {
+	reader       io.ReadCloser
+	capturedBody []byte
+	buf          *bytes.Buffer
+	allRead      bool
+}
+
+func (m *lazyBodyCapturer) Read(p []byte) (int, error) {
+	if m.allRead {
+		return m.reader.Read(p)
+	}
+	n, err := io.TeeReader(m.reader, m.buf).Read(p)
+	if errors.Is(err, io.EOF) {
+		m.allRead = true
+	}
+	return n, err
+}
+
+func (m *lazyBodyCapturer) Close() error {
+	return m.reader.Close()
+}
+
+func (m *lazyBodyCapturer) WriteTo(w io.Writer) (int64, error) {
+	if m.allRead {
+		return m.reader.(io.WriterTo).WriteTo(w)
+	}
+	n, err := m.reader.(io.WriterTo).WriteTo(io.MultiWriter(w, m.buf))
+	if errors.Is(err, io.EOF) {
+		m.allRead = true
+	}
+	return n, err
+}
+
+func (m *lazyBodyCapturer) Capture() {
+	m.allRead = true
+	if m.buf != nil {
+		m.capturedBody = m.buf.Bytes()
+		m.buf = nil
+	} else {
+		m.reader = io.NopCloser(bytes.NewReader(m.capturedBody))
 	}
 }

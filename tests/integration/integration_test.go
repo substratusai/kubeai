@@ -43,17 +43,7 @@ func TestScaleUpAndDown(t *testing.T) {
 	}))
 
 	// Mock an EndpointSlice.
-	testBackendURL, err := url.Parse(testBackend.URL)
-	require.NoError(t, err)
-	testBackendPort, err := strconv.Atoi(testBackendURL.Port())
-	require.NoError(t, err)
-	require.NoError(t, testK8sClient.Create(testCtx,
-		endpointSlice(
-			modelName,
-			testBackendURL.Hostname(),
-			int32(testBackendPort),
-		),
-	))
+	withMockEndpointSlice(t, testBackend, modelName)
 
 	// Wait for deployment mapping to sync.
 	time.Sleep(3 * time.Second)
@@ -103,17 +93,7 @@ func TestHandleModelUndeployment(t *testing.T) {
 	}))
 
 	// Mock an EndpointSlice.
-	testBackendURL, err := url.Parse(testBackend.URL)
-	require.NoError(t, err)
-	testBackendPort, err := strconv.Atoi(testBackendURL.Port())
-	require.NoError(t, err)
-	require.NoError(t, testK8sClient.Create(testCtx,
-		endpointSlice(
-			modelName,
-			testBackendURL.Hostname(),
-			int32(testBackendPort),
-		),
-	))
+	withMockEndpointSlice(t, testBackend, modelName)
 
 	// Wait for deployment mapping to sync.
 	time.Sleep(3 * time.Second)
@@ -132,7 +112,7 @@ func TestHandleModelUndeployment(t *testing.T) {
 	require.NoError(t, testK8sClient.Delete(testCtx, deploy))
 
 	// Check that the deployment was deleted
-	err = testK8sClient.Get(testCtx, client.ObjectKey{
+	err := testK8sClient.Get(testCtx, client.ObjectKey{
 		Namespace: deploy.Namespace,
 		Name:      deploy.Name,
 	}, deploy)
@@ -149,6 +129,82 @@ func TestHandleModelUndeployment(t *testing.T) {
 
 	t.Logf("Waiting for wait group")
 	wg.Wait()
+}
+
+func TestRetryMiddleware(t *testing.T) {
+	const modelName = "test-model-c"
+	deploy := testDeployment(modelName)
+	require.NoError(t, testK8sClient.Create(testCtx, deploy))
+
+	// Wait for deployment mapping to sync.
+	time.Sleep(3 * time.Second)
+	backendRequests := &atomic.Int32{}
+	var serverCodes []int
+	testBackend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		i := backendRequests.Add(1)
+		code := serverCodes[i-1]
+		t.Logf("Serving request from testBackend: %d; code: %d\n", i, code)
+		w.WriteHeader(code)
+	}))
+
+	// Mock an EndpointSlice.
+	withMockEndpointSlice(t, testBackend, modelName)
+
+	specs := map[string]struct {
+		serverCodes    []int
+		expResultCode  int
+		expBackendHits int32
+	}{
+		"max retries - succeeds": {
+			serverCodes:    []int{http.StatusBadGateway, http.StatusServiceUnavailable, http.StatusGatewayTimeout, http.StatusOK},
+			expResultCode:  http.StatusOK,
+			expBackendHits: 4,
+		},
+		"max retries - fails": {
+			serverCodes:    []int{http.StatusServiceUnavailable, http.StatusServiceUnavailable, http.StatusServiceUnavailable, http.StatusBadGateway},
+			expResultCode:  http.StatusBadGateway,
+			expBackendHits: 4,
+		},
+		"non retryable error code": {
+			serverCodes:    []int{http.StatusNotImplemented},
+			expResultCode:  http.StatusNotImplemented,
+			expBackendHits: 1,
+		},
+		"200 status code": {
+			serverCodes:    []int{http.StatusOK},
+			expResultCode:  http.StatusOK,
+			expBackendHits: 1,
+		},
+	}
+	for name, spec := range specs {
+		t.Run(name, func(t *testing.T) {
+			// setup
+			serverCodes = spec.serverCodes
+			backendRequests.Store(0)
+
+			// when single request sent
+			var wg sync.WaitGroup
+			sendRequest(t, &wg, modelName, spec.expResultCode)
+			wg.Wait()
+
+			// then
+			require.Equal(t, spec.expBackendHits, backendRequests.Load(), "ensure backend hit with retries")
+		})
+	}
+}
+
+func withMockEndpointSlice(t *testing.T, testBackend *httptest.Server, modelName string) {
+	testBackendURL, err := url.Parse(testBackend.URL)
+	require.NoError(t, err)
+	testBackendPort, err := strconv.Atoi(testBackendURL.Port())
+	require.NoError(t, err)
+	require.NoError(t, testK8sClient.Create(testCtx,
+		endpointSlice(
+			modelName,
+			testBackendURL.Hostname(),
+			int32(testBackendPort),
+		),
+	))
 }
 
 func requireDeploymentReplicas(t *testing.T, deploy *appsv1.Deployment, n int32) {

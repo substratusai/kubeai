@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"io"
 	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -24,14 +25,30 @@ func MustRegister(r prometheus.Registerer) {
 // captureStatusResponseWriter is a custom HTTP response writer that captures the status code.
 type captureStatusResponseWriter struct {
 	http.ResponseWriter
-	statusCode int
+	statusCode  int
+	wroteHeader bool
 }
 
 func newCaptureStatusCodeResponseWriter(responseWriter http.ResponseWriter) *captureStatusResponseWriter {
 	return &captureStatusResponseWriter{ResponseWriter: responseWriter}
 }
 
-func (srw *captureStatusResponseWriter) WriteHeader(code int) {
-	srw.statusCode = code
-	srw.ResponseWriter.WriteHeader(code)
+func (c *captureStatusResponseWriter) WriteHeader(code int) {
+	c.wroteHeader = true
+	c.statusCode = code
+	c.ResponseWriter.WriteHeader(code)
+}
+
+func (c *captureStatusResponseWriter) Write(b []byte) (int, error) {
+	if !c.wroteHeader {
+		c.WriteHeader(http.StatusOK)
+	}
+	return c.ResponseWriter.Write(b)
+}
+
+func (c *captureStatusResponseWriter) ReadFrom(re io.Reader) (int64, error) {
+	if !c.wroteHeader {
+		c.WriteHeader(http.StatusOK)
+	}
+	return c.ResponseWriter.(io.ReaderFrom).ReadFrom(re)
 }

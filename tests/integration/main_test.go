@@ -109,7 +109,7 @@ func TestMain(m *testing.M) {
 		Endpoints:   endpointManager,
 		Queues:      queueManager,
 	}
-	testServer = httptest.NewServer(handler)
+	testServer = httptest.NewServer(proxy.NewRetryMiddleware(3, handler))
 	defer testServer.Close()
 
 	go func() {

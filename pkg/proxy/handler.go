@@ -129,10 +129,16 @@ func parseModel(r *http.Request) (string, *http.Request, error) {
 	if model := r.Header.Get("X-Model"); model != "" {
 		return model, r, nil
 	}
-	// parse request body for model name, ignore errors
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		return "", r, nil
+	var body []byte
+	if mb, ok := r.Body.(*lazyBodyCapturer); ok && mb.capturedBody != nil {
+		body = mb.capturedBody
+	} else {
+		// parse request body for model name, ignore errors
+		var err error
+		body, err = io.ReadAll(r.Body)
+		if err != nil {
+			return "", r, nil
+		}
 	}
 
 	var payload struct {
