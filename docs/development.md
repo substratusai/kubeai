@@ -1,8 +1,34 @@
 # Development
 
+## Testing
+
+Run all tests (takes a while).
+```sh
+make test
+```
+
+*OR*
+
+Run specific tests.
+
+```bash
+make test-unit
+make test-race
+make test-integration
+make test-e2e
+```
+
+## Local Deployment
+
+Create a local cluster.
+
 ```sh
 kind create cluster
+```
 
+Install a scaled-to-zero embeddings backend.
+
+```sh
 # Install STAPI
 helm repo add substratusai https://substratusai.github.io/helm
 helm repo update
@@ -12,11 +38,27 @@ replicaCount: 0
 deploymentAnnotations:
   lingo.substratus.ai/models: text-embedding-ada-002
 EOF
+```
 
+Deploy Lingo from source.
 
-# Deploy
+```sh
 skaffold dev
+```
 
+OR
+
+Deploy Lingo from the main branch.
+
+```bash
+helm upgrade --install lingo substratusai/lingo \
+  --set image.tag=main \
+  --set image.pullPolicy=Always
+```
+
+Send test requests.
+
+```sh
 # In another terminal...
 kubectl port-forward svc/lingo 8080:80
 # In another terminal...
@@ -31,22 +73,11 @@ curl http://localhost:8080/delay/10 \
   }'
 
 
-# Get embeddings using OpenAI compatible API endpoint
+# Get embeddings using OpenAI compatible API endpoint.
 curl http://localhost:8080/v1/embeddings \
   -H "Content-Type: application/json" \
   -d '{
     "input": "Your text string goes here",
     "model": "text-embedding-ada-002"
   }'
-
-# Install vLLM with facebook opt 125
-
-
-```
-
-Installing the latest development release (main branch):
-```bash
-helm upgrade --install lingo substratusai/lingo \
-  --set image.tag=main \
-  --set image.pullPolicy=Always
 ```

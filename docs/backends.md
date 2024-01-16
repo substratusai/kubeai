@@ -2,9 +2,13 @@
 
 Lingo backends are expected to serve models via an OpenAI-compatible API.
 
+## Routing
+
 Lingo will select a backend based on the `X-Model` header or the `.model` field in the JSON request body.
 
 ## Deployments
+
+Lingo manages the replicas of Kubernetes Deployments.
 
 Annotations:
 
@@ -16,6 +20,8 @@ Annotations:
 
 ## Services
 
-* Lingo will forward traffic to a backend Service with the same name as the relevant Deployment.
+Lingo will keep track of Pods associated with Kubernetes Services tied to backend Deployments.
+
+* Lingo will forward traffic to a backend Service with the same name as the annotated Deployment.
 * If one port exists, lingo will send traffic to it.
 * If more than one port exists, lingo will send traffic to the port named `http`.

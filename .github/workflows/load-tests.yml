@@ -4,34 +4,43 @@ run-name: Load tests by @${{ github.actor }}
 on: workflow_dispatch
 
 jobs:
-  perf-tests:
+  k6:
     runs-on: ubuntu-latest
+
     permissions:
       contents: "read"
       id-token: "write"
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - id: "auth"
+
+      - name: Authenticate with GCP
         uses: "google-github-actions/auth@v1"
         with:
           workload_identity_provider: "projects/819220466562/locations/global/workloadIdentityPools/github/providers/my-repo"
           service_account: "github-actions@substratus-dev.iam.gserviceaccount.com"
-      - name: "Set up Cloud SDK"
+
+      - name: Set up cloud SDK
         uses: "google-github-actions/setup-gcloud@v1"
-      - id: "get-credentials"
+
+      - name: Get credentials
         uses: "google-github-actions/get-gke-credentials@v1"
         with:
           cluster_name: "lingo-dev"
           location: "us-central1"
-      - id: "get-pods"
+
+      - name: Get pods
         run: "kubectl get pods"
-      - id: "install-skaffold"
+
+      - name: Install skaffold
         run: |
           curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64
           chmod +x skaffold
           sudo mv skaffold /usr/local/bin
-      - id: "configure-docker"
+
+      - name: Configure docker
         run: gcloud auth configure-docker -q us-central1-docker.pkg.dev
-      - id: "run-tests"
+
+      - name: Run tests
         run: "./tests/load/test.sh"
