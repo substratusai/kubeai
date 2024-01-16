@@ -1,4 +1,4 @@
-# Lingo - The lightweight model proxy
+# Lingo
 
 Lingo is a lightweight, scale-from-zero ML model proxy and that runs on Kubernetes. Lingo allows you to run text-completion and embedding servers in your own project without changing any of your OpenAI client code.
 

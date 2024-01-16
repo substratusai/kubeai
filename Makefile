@@ -5,10 +5,6 @@ test: test-unit test-race test-integration test-e2e
 
 .PHONY: test-unit
 test-unit:
-	go test -mod=readonly ./pkg/...
-
-.PHONY: test-race
-test-race:
 	go test -mod=readonly -race ./pkg/...
 
 .PHONY: test-integration

@@ -8,7 +8,7 @@ on:
   pull_request:
 
 jobs:
-  unit-race-integration:
+  unit-and-integration:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,9 +22,6 @@ jobs:
 
       - name: Run unit tests
         run: make test-unit
-
-      - name: Run race tests
-        run: make test-race
 
       - name: Run integration tests
         run: make test-integration
