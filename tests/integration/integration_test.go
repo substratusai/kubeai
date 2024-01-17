@@ -229,6 +229,7 @@ func sendRequest(t *testing.T, wg *sync.WaitGroup, modelName string, expCode int
 	bodyRespChan := make(chan string, 1)
 	go func() {
 		defer wg.Done()
+		defer close(bodyRespChan)
 
 		body := []byte(fmt.Sprintf(`{"model": %q}`, modelName))
 		req, err := http.NewRequest(http.MethodPost, testServer.URL, bytes.NewReader(body))
@@ -241,7 +242,6 @@ func sendRequest(t *testing.T, wg *sync.WaitGroup, modelName string, expCode int
 		_ = res.Body.Close()
 		require.NoError(t, err)
 		bodyRespChan <- string(got)
-		close(bodyRespChan)
 	}()
 	return bodyRespChan
 }
