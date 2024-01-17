@@ -22,15 +22,32 @@ func MustRegister(r prometheus.Registerer) {
 	r.MustRegister(httpDuration, totalRetries)
 }
 
-// captureStatusResponseWriter is a custom HTTP response writer that captures the status code.
+// statusCodeCapturer is an interface that extends the http.ResponseWriter interface and provides a method for reading the status code of an HTTP response.
+type statusCodeCapturer interface {
+	http.ResponseWriter
+	CapturedStatusCode() int
+}
+
+// captureStatusResponseWriter is a custom HTTP response writer that implements statusCodeCapturer
 type captureStatusResponseWriter struct {
 	http.ResponseWriter
 	statusCode  int
 	wroteHeader bool
 }
 
-func newCaptureStatusCodeResponseWriter(responseWriter http.ResponseWriter) *captureStatusResponseWriter {
-	return &captureStatusResponseWriter{ResponseWriter: responseWriter}
+func newCaptureStatusCodeResponseWriter(responseWriter http.ResponseWriter) statusCodeCapturer {
+	if o, ok := responseWriter.(statusCodeCapturer); ok { // nothing to do as code is captured already
+		return o
+	}
+	c := &captureStatusResponseWriter{ResponseWriter: responseWriter}
+	if _, ok := responseWriter.(io.ReaderFrom); ok {
+		return &captureStatusResponseWriterWithReadFrom{captureStatusResponseWriter: c}
+	}
+	return c
+}
+
+func (c *captureStatusResponseWriter) CapturedStatusCode() int {
+	return c.statusCode
 }
 
 func (c *captureStatusResponseWriter) WriteHeader(code int) {
@@ -46,7 +63,11 @@ func (c *captureStatusResponseWriter) Write(b []byte) (int, error) {
 	return c.ResponseWriter.Write(b)
 }
 
-func (c *captureStatusResponseWriter) ReadFrom(re io.Reader) (int64, error) {
+type captureStatusResponseWriterWithReadFrom struct {
+	*captureStatusResponseWriter
+}
+
+func (c *captureStatusResponseWriterWithReadFrom) ReadFrom(re io.Reader) (int64, error) {
 	if !c.wroteHeader {
 		c.WriteHeader(http.StatusOK)
 	}

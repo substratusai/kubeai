@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -81,6 +82,50 @@ func TestMetricsViaLinter(t *testing.T) {
 	problems, err := testutil.GatherAndLint(registry)
 	require.NoError(t, err)
 	require.Empty(t, problems)
+}
+
+func TestCaptureStatusCodeResponseWriters(t *testing.T) {
+	specs := map[string]struct {
+		rspWriter http.ResponseWriter
+		expType   any
+		write     func(t *testing.T, r http.ResponseWriter, content string)
+	}{
+		"implements statusCodeCapturer": {
+			rspWriter: &responseWriterDelegator{headerBuf: make(http.Header), ResponseWriter: httptest.NewRecorder()},
+			expType:   &responseWriterDelegator{},
+			write: func(t *testing.T, r http.ResponseWriter, content string) {
+				r.WriteHeader(200)
+			},
+		},
+		"implements io.ReaderFrom": {
+			rspWriter: &testResponseWriter{ResponseRecorder: httptest.NewRecorder()},
+			expType:   &captureStatusResponseWriterWithReadFrom{},
+			write: func(t *testing.T, r http.ResponseWriter, content string) {
+				n, err := r.(io.ReaderFrom).ReadFrom(strings.NewReader(content))
+				require.NoError(t, err)
+				assert.Equal(t, len(content), int(n))
+			},
+		},
+		"default": {
+			rspWriter: httptest.NewRecorder(),
+			expType:   &captureStatusResponseWriter{},
+			write: func(t *testing.T, r http.ResponseWriter, content string) {
+				n, err := r.Write([]byte(content))
+				require.NoError(t, err)
+				assert.Equal(t, len(content), n)
+			},
+		},
+	}
+
+	for name, spec := range specs {
+		t.Run(name, func(t *testing.T) {
+			instance := newCaptureStatusCodeResponseWriter(spec.rspWriter)
+			require.IsType(t, spec.expType, instance)
+			spec.write(t, instance, "foo")
+			gotCode := instance.CapturedStatusCode()
+			assert.Equal(t, http.StatusOK, gotCode)
+		})
+	}
 }
 
 func toMap(s []*io_prometheus_client.LabelPair) map[string]string {

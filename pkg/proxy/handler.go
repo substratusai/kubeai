@@ -42,7 +42,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	captureStatusRespWriter := newCaptureStatusCodeResponseWriter(w)
 	w = captureStatusRespWriter
 	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
-		httpDuration.WithLabelValues(modelName, strconv.Itoa(captureStatusRespWriter.statusCode)).Observe(v)
+		httpDuration.WithLabelValues(modelName, strconv.Itoa(captureStatusRespWriter.CapturedStatusCode())).Observe(v)
 	}))
 	defer timer.ObserveDuration()
 

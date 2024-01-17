@@ -130,7 +130,7 @@ func TestWriteDelegatorReadFrom(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, len(myTestContent), int(n))
 	assert.Equal(t, myTestContent, rec.Body.String())
-	assert.Equal(t, http.StatusOK, d.capturedStatusCode())
+	assert.Equal(t, http.StatusOK, d.CapturedStatusCode())
 
 	// scenario: discard on error enabled
 	rec = &testResponseWriter{ResponseRecorder: httptest.NewRecorder()}
@@ -142,7 +142,7 @@ func TestWriteDelegatorReadFrom(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, len(myTestContent), int(n))
 	assert.Equal(t, "", rec.Body.String())
-	assert.Equal(t, http.StatusOK, d.capturedStatusCode())
+	assert.Equal(t, http.StatusOK, d.CapturedStatusCode())
 
 	// scenario: not implementing io.ReaderFrom
 	d = newResponseWriterDelegator(httptest.NewRecorder(), func(int) bool { return true }, false)

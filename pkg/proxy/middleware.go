@@ -46,7 +46,7 @@ func NewRetryMiddleware(maxRetries int, other http.Handler, optRetryStatusCodes 
 type xResponseWriter interface {
 	http.ResponseWriter
 	discardedResponse() bool
-	capturedStatusCode() int
+	CapturedStatusCode() int
 }
 type xBodyCapturer interface {
 	io.ReadCloser
@@ -64,7 +64,7 @@ func (r RetryMiddleware) ServeHTTP(writer http.ResponseWriter, request *http.Req
 		r.nextHandler.ServeHTTP(capturedResp, reqClone)
 
 		if !capturedResp.discardedResponse() || // max retries reached or context error
-			!r.isRetryableStatusCode(capturedResp.capturedStatusCode()) {
+			!r.isRetryableStatusCode(capturedResp.CapturedStatusCode()) {
 			break
 		}
 		// setup for retry
@@ -83,8 +83,9 @@ func (r RetryMiddleware) isRetryableStatusCode(status int) bool {
 }
 
 var (
-	_ http.Flusher  = &responseWriterDelegator{}
-	_ io.ReaderFrom = &xResponseWriterDelegator{}
+	_ http.Flusher       = &responseWriterDelegator{}
+	_ io.ReaderFrom      = &xResponseWriterDelegator{}
+	_ statusCodeCapturer = &responseWriterDelegator{}
 )
 
 // responseWriterDelegator represents a wrapper around http.ResponseWriter that provides additional
@@ -118,7 +119,7 @@ func (r *responseWriterDelegator) discardedResponse() bool {
 	return r.discardErrResp
 }
 
-func (r *responseWriterDelegator) capturedStatusCode() int {
+func (r *responseWriterDelegator) CapturedStatusCode() int {
 	return r.statusCode
 }
 
