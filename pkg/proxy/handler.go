@@ -131,6 +131,7 @@ func parseModel(r *http.Request) (string, *http.Request, error) {
 	}
 	var body []byte
 	if mb, ok := r.Body.(*lazyBodyCapturer); ok && mb.capturedBody != nil {
+		// reuse buffer
 		body = mb.capturedBody
 	} else {
 		// parse request body for model name, ignore errors

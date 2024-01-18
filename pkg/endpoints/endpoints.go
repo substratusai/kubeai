@@ -18,8 +18,7 @@ func newEndpointGroup() *endpointGroup {
 }
 
 type endpoint struct {
-	inFlight   *atomic.Int64
-	terminated chan struct{}
+	inFlight *atomic.Int64
 }
 
 type endpointGroup struct {
@@ -107,13 +106,12 @@ func (g *endpointGroup) setIPs(ips map[string]struct{}, ports map[string]int32) 
 	g.ports = ports
 	for ip := range ips {
 		if _, ok := g.endpoints[ip]; !ok {
-			g.endpoints[ip] = endpoint{inFlight: &atomic.Int64{}, terminated: make(chan struct{})}
+			g.endpoints[ip] = endpoint{inFlight: &atomic.Int64{}}
 		}
 	}
-	for ip, endpoint := range g.endpoints {
+	for ip := range g.endpoints {
 		if _, ok := ips[ip]; !ok {
 			delete(g.endpoints, ip)
-			close(endpoint.terminated)
 		}
 	}
 	g.mtx.Unlock()

@@ -14,7 +14,6 @@ var _ http.Handler = &RetryMiddleware{}
 type RetryMiddleware struct {
 	nextHandler      http.Handler
 	maxRetries       int
-	rSource          *rand.Rand
 	retryStatusCodes map[int]struct{}
 }
 
@@ -39,7 +38,6 @@ func NewRetryMiddleware(maxRetries int, other http.Handler, optRetryStatusCodes 
 		nextHandler:      other,
 		maxRetries:       maxRetries,
 		retryStatusCodes: statusCodeIndex,
-		rSource:          rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
 }
 
@@ -72,7 +70,7 @@ func (r RetryMiddleware) ServeHTTP(writer http.ResponseWriter, request *http.Req
 
 		totalRetries.Inc()
 		// exponential backoff
-		jitter := time.Duration(r.rSource.Intn(50))
+		jitter := time.Duration(rand.Intn(50))
 		time.Sleep(time.Millisecond*time.Duration(1<<uint(i)) + jitter)
 	}
 }
