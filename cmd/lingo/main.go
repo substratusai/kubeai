@@ -12,12 +12,14 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-
-	"sigs.k8s.io/controller-runtime/pkg/metrics"
-
+	"k8s.io/apimachinery/pkg/runtime"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/kubernetes"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/controller-runtime/pkg/metrics"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	"github.com/substratusai/lingo/pkg/autoscaler"
@@ -27,10 +29,6 @@ import (
 	"github.com/substratusai/lingo/pkg/proxy"
 	"github.com/substratusai/lingo/pkg/queue"
 	"github.com/substratusai/lingo/pkg/stats"
-	"k8s.io/apimachinery/pkg/runtime"
-	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 var (
@@ -113,7 +111,7 @@ func run() error {
 
 	hostname, err := os.Hostname()
 	if err != nil {
-		return fmt.Errorf("getting hostname: %v", err)
+		return fmt.Errorf("getting hostname: %w", err)
 	}
 	le := leader.NewElection(clientset, hostname, namespace)
 

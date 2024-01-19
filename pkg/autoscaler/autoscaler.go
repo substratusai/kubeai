@@ -10,15 +10,16 @@ import (
 	"sync"
 	"time"
 
+	corev1 "k8s.io/api/core/v1"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+
 	"github.com/substratusai/lingo/pkg/deployments"
 	"github.com/substratusai/lingo/pkg/endpoints"
 	"github.com/substratusai/lingo/pkg/leader"
 	"github.com/substratusai/lingo/pkg/movingaverage"
 	"github.com/substratusai/lingo/pkg/queue"
 	"github.com/substratusai/lingo/pkg/stats"
-	corev1 "k8s.io/api/core/v1"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func New(mgr ctrl.Manager) (*Autoscaler, error) {
@@ -70,9 +71,9 @@ func (r *Autoscaler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	return ctrl.Result{}, nil
 }
 
-func (a *Autoscaler) Start() {
-	for range time.Tick(a.Interval) {
-		if !a.LeaderElection.IsLeader.Load() {
+func (r *Autoscaler) Start() {
+	for range time.Tick(r.Interval) {
+		if !r.LeaderElection.IsLeader.Load() {
 			log.Println("Not leader, doing nothing")
 			continue
 		}
@@ -80,11 +81,11 @@ func (a *Autoscaler) Start() {
 		log.Println("Calculating scales for all")
 
 		// TODO: Remove hardcoded Service lookup by name "lingo".
-		otherLingoEndpoints := a.Endpoints.GetAllHosts("lingo", "stats")
+		otherLingoEndpoints := r.Endpoints.GetAllHosts("lingo", "stats")
 
 		stats, errs := aggregateStats(stats.Stats{
-			ActiveRequests: a.Queues.TotalCounts(),
-		}, a.HTTPClient, otherLingoEndpoints)
+			ActiveRequests: r.Queues.TotalCounts(),
+		}, r.HTTPClient, otherLingoEndpoints)
 		if len(errs) != 0 {
 			for _, err := range errs {
 				log.Printf("Failed to aggregate stats: %v", err)
@@ -94,13 +95,13 @@ func (a *Autoscaler) Start() {
 
 		for deploymentName, waitCount := range stats.ActiveRequests {
 			log.Println("Is leader, autoscaling")
-			avg := a.getMovingAvgQueueSize(deploymentName)
+			avg := r.getMovingAvgQueueSize(deploymentName)
 			avg.Next(float64(waitCount))
 			flt := avg.Calculate()
-			normalized := flt / float64(a.ConcurrencyPerReplica)
+			normalized := flt / float64(r.ConcurrencyPerReplica)
 			ceil := math.Ceil(normalized)
 			log.Printf("Average for deployment: %s: %v (ceil: %v), current wait count: %v", deploymentName, flt, ceil, waitCount)
-			a.Deployments.SetDesiredScale(deploymentName, int32(ceil))
+			r.Deployments.SetDesiredScale(deploymentName, int32(ceil))
 		}
 	}
 }
@@ -126,7 +127,7 @@ func aggregateStats(s stats.Stats, httpc *http.Client, endpoints []string) (stat
 	for _, endpoint := range endpoints {
 		fetched, err := getStats(httpc, "http://"+endpoint)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("getting stats: %v: %v", endpoint, err))
+			errs = append(errs, fmt.Errorf("getting stats: %v: %w", endpoint, err))
 			continue
 		}
 		for k, v := range fetched.ActiveRequests {

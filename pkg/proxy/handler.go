@@ -91,7 +91,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, context.Canceled):
 			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte("Request cancelled"))
+			_, _ = w.Write([]byte("Request canceled"))
 			return
 		case errors.Is(err, context.DeadlineExceeded):
 			w.WriteHeader(http.StatusGatewayTimeout)
@@ -112,7 +112,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // parseModel parses the model name from the request
-// returns empty string when none found or an error for failures on the proxy request object
+// returns empty string when none found or an error for failures on the proxy request object.
 func parseModel(r *http.Request) (string, *http.Request, error) {
 	if model := r.Header.Get("X-Model"); model != "" {
 		return model, r, nil

@@ -1,0 +1,43 @@
+run:
+  timeout: 5m
+
+linters-settings:
+  gci:
+    custom-order: true
+    sections:
+      - standard # Standard section: captures all standard packages.
+      - default # Default section: contains all imports that could not be matched to another section type.
+      - prefix(*.k8s.io)
+      - prefix(github.com/substratusai/lingo)
+  lll:
+    line-length: 200
+  misspell:
+    locale: US
+  staticcheck:
+    go: "1.21"
+
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - errorlint
+    - exportloopref
+    - forcetypeassert
+    - gci
+    - gocritic
+    - goconst
+    - godot
+    - gofmt
+    - gofumpt
+    - goimports
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - misspell
+    - revive
+    - staticcheck
+    - typecheck
+    - unconvert
+    - unused
+    - whitespace
