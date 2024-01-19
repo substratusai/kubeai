@@ -56,7 +56,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		modelName = "unknown"
 		log.Printf("error reading model from request body: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Bad request: unable to parse .model from JSON payload"))
+		_, _ = w.Write([]byte("Bad request: unable to parse .model from JSON payload"))
 		return
 	}
 	log.Println("model:", modelName)
@@ -65,7 +65,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if !found {
 		log.Printf("deployment not found for model: %v", err)
 		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte(fmt.Sprintf("Deployment for model not found: %v", modelName)))
+		_, _ = w.Write([]byte(fmt.Sprintf("Deployment for model not found: %v", modelName)))
 		return
 	}
 

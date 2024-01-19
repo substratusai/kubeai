@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -258,6 +259,9 @@ func getAnnotationInt32(ann map[string]string, key string, defaultValue int32) i
 		log.Printf("parsing annotation as int: %v", err)
 		return defaultValue
 	}
-
-	return int32(value)
+	if value > math.MaxInt32 {
+		log.Printf("invalid value that exceeds max int32: %d", value)
+		return defaultValue
+	}
+	return int32(value) // #nosec G109 : checked before
 }

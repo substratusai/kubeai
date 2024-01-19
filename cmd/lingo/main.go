@@ -71,11 +71,13 @@ func run() error {
 	var metricsAddr string
 	var probeAddr string
 	var concurrencyPerReplica int
+	var requestHeaderTimeout time.Duration
 
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8082", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.IntVar(&concurrencyPerReplica, "concurrency", concurrency, "the number of simultaneous requests that can be processed by each replica")
 	flag.IntVar(&scaleDownDelay, "scale-down-delay", scaleDownDelay, "seconds to wait before scaling down")
+	flag.DurationVar(&requestHeaderTimeout, "request-header-timeout", 10*time.Second, "amount of time for the client to send headers before a timeout error will occur")
 	opts := zap.Options{
 		Development: true,
 	}
@@ -154,19 +156,23 @@ func run() error {
 
 	proxy.MustRegister(metricsRegistry)
 	proxyHandler := proxy.NewHandler(deploymentManager, endpointManager, queueManager)
-	proxyServer := &http.Server{Addr: ":8080", Handler: proxyHandler}
+	proxyServer := &http.Server{Addr: ":8080", Handler: proxyHandler, ReadHeaderTimeout: requestHeaderTimeout}
 
 	statsHandler := &stats.Handler{
 		Queues: queueManager,
 	}
-	statsServer := &http.Server{Addr: ":8083", Handler: statsHandler}
+	statsServer := &http.Server{Addr: ":8083", Handler: statsHandler, ReadHeaderTimeout: requestHeaderTimeout}
 
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
 		defer func() {
-			statsServer.Shutdown(context.Background())
-			proxyServer.Shutdown(context.Background())
+			if err := statsServer.Shutdown(context.Background()); err != nil {
+				setupLog.Error(err, "shutdown stats server")
+			}
+			if err := proxyServer.Shutdown(context.Background()); err != nil {
+				setupLog.Error(err, "shutdown proxy server")
+			}
 			wg.Done()
 		}()
 		if err := mgr.Start(ctx); err != nil {
