@@ -1,5 +1,8 @@
 run:
   timeout: 5m
+  tests: false
+  sort-results: true
+  allow-parallel-runners: true
 
 linters-settings:
   gci:

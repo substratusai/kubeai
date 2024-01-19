@@ -36,7 +36,7 @@ $(GOLANGCI): $(LOCALBIN)
 
 .PHONY: lint
 lint: golangci
-	golangci-lint run --tests=false ./... --timeout 5m
+	golangci-lint run ./... --timeout 5m
 
 GOLANGCI ?= $(LOCALBIN)/golangci-lint
 
