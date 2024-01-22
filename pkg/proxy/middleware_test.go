@@ -121,9 +121,9 @@ func TestServeHTTP(t *testing.T) {
 func TestWriteDelegatorReadFrom(t *testing.T) {
 	const myTestContent = `my body content`
 
+	// scenario: with non retry status code
 	rec := &testResponseWriter{ResponseRecorder: httptest.NewRecorder()}
-	// scenario: discard on error disabled
-	d := newResponseWriterDelegator(rec, func(int) bool { return true }, false)
+	d := NewDiscardableResponseWriter(rec, func(int) bool { return false })
 	// when
 	n, err := d.(io.ReaderFrom).ReadFrom(strings.NewReader(myTestContent))
 	// then the content is written
@@ -132,10 +132,9 @@ func TestWriteDelegatorReadFrom(t *testing.T) {
 	assert.Equal(t, myTestContent, rec.Body.String())
 	assert.Equal(t, http.StatusOK, d.CapturedStatusCode())
 
-	// scenario: discard on error enabled
+	// scenario: with a retry status code
 	rec = &testResponseWriter{ResponseRecorder: httptest.NewRecorder()}
-	// with discard on error disabled
-	d = newResponseWriterDelegator(rec, func(int) bool { return true }, true)
+	d = NewDiscardableResponseWriter(rec, func(int) bool { return true })
 	// when
 	n, err = d.(io.ReaderFrom).ReadFrom(strings.NewReader(myTestContent))
 	// then the content is not written
@@ -145,14 +144,14 @@ func TestWriteDelegatorReadFrom(t *testing.T) {
 	assert.Equal(t, http.StatusOK, d.CapturedStatusCode())
 
 	// scenario: not implementing io.ReaderFrom
-	d = newResponseWriterDelegator(httptest.NewRecorder(), func(int) bool { return true }, false)
+	d = NewDiscardableResponseWriter(httptest.NewRecorder(), func(int) bool { return true })
 	_, ok := d.(io.ReaderFrom)
 	require.False(t, ok)
 }
 
 func TestLazyBodyCapturer(t *testing.T) {
 	const myTestContent = "my-test-content"
-	c := newLazyBodyCapturer(io.NopCloser(strings.NewReader(myTestContent)))
+	c := NewLazyBodyCapturer(io.NopCloser(strings.NewReader(myTestContent)))
 	var buf bytes.Buffer
 	n, err := c.(io.WriterTo).WriteTo(&buf)
 	require.NoError(t, err)
@@ -168,7 +167,7 @@ func TestLazyBodyCapturer(t *testing.T) {
 	assert.Equal(t, myTestContent, buf.String())
 
 	// scenario: source reader does not implement WriteTo
-	c = newLazyBodyCapturer(testReader{strings.NewReader(myTestContent)})
+	c = NewLazyBodyCapturer(testReader{strings.NewReader(myTestContent)})
 	// then instance also does not implement it
 	_, ok := c.(io.WriterTo)
 	require.False(t, ok)

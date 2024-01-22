@@ -91,8 +91,12 @@ func TestCaptureStatusCodeResponseWriters(t *testing.T) {
 		write     func(t *testing.T, r http.ResponseWriter, content string)
 	}{
 		"implements statusCodeCapturer": {
-			rspWriter: &responseWriterDelegator{headerBuf: make(http.Header), ResponseWriter: httptest.NewRecorder()},
-			expType:   &responseWriterDelegator{},
+			rspWriter: &discardableResponseWriter{
+				headerBuf:      make(http.Header),
+				ResponseWriter: httptest.NewRecorder(),
+				isDiscardable:  func(status int) bool { return false },
+			},
+			expType: &discardableResponseWriter{},
 			write: func(t *testing.T, r http.ResponseWriter, content string) {
 				r.WriteHeader(200)
 			},
@@ -119,7 +123,7 @@ func TestCaptureStatusCodeResponseWriters(t *testing.T) {
 
 	for name, spec := range specs {
 		t.Run(name, func(t *testing.T) {
-			instance := newCaptureStatusCodeResponseWriter(spec.rspWriter)
+			instance := NewCaptureStatusCodeResponseWriter(spec.rspWriter)
 			require.IsType(t, spec.expType, instance)
 			spec.write(t, instance, "foo")
 			gotCode := instance.CapturedStatusCode()

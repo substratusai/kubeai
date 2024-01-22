@@ -39,7 +39,7 @@ func NewHandler(deployments deploymentSource, endpoints *endpoints.Manager, queu
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var modelName string
-	captureStatusRespWriter := newCaptureStatusCodeResponseWriter(w)
+	captureStatusRespWriter := NewCaptureStatusCodeResponseWriter(w)
 	w = captureStatusRespWriter
 	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
 		httpDuration.WithLabelValues(modelName, strconv.Itoa(captureStatusRespWriter.CapturedStatusCode())).Observe(v)
@@ -130,9 +130,9 @@ func parseModel(r *http.Request) (string, *http.Request, error) {
 		return model, r, nil
 	}
 	var body []byte
-	if mb, ok := r.Body.(*lazyBodyCapturer); ok && mb.capturedBody != nil {
+	if mb, ok := r.Body.(CapturedBodySource); ok && mb.IsCaptured() {
 		// reuse buffer
-		body = mb.capturedBody
+		body = mb.GetBody()
 	} else {
 		// parse request body for model name, ignore errors
 		var err error

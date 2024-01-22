@@ -41,28 +41,25 @@ func NewRetryMiddleware(maxRetries int, other http.Handler, optRetryStatusCodes 
 	}
 }
 
-type xResponseWriter interface {
-	http.ResponseWriter
-	discardedResponse() bool
-	CapturedStatusCode() int
-}
-type xBodyCapturer interface {
-	io.ReadCloser
-	Capture()
-}
-
+// ServeHTTP handles the HTTP request by capturing the request body, calling the next handler in the chain, and retrying if necessary.
+// It captures the request body using a LazyBodyCapturer, and sets a captured response writer using NewDiscardableResponseWriter.
+// It retries the request if the response was discarded and the response status code is retryable.
+// It uses exponential backoff for retries with a random jitter.
+// The maximum number of retries is determined by the maxRetries field of RetryMiddleware.
 func (r RetryMiddleware) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
-	lazyBody := newLazyBodyCapturer(request.Body)
+	lazyBody := NewLazyBodyCapturer(request.Body)
 	request.Body = lazyBody
 	for i := 0; ; i++ {
-		discardErrResp := i < r.maxRetries && request.Context().Err() == nil
-		capturedResp := newResponseWriterDelegator(writer, r.isRetryableStatusCode, discardErrResp)
+		withoutRetry := i == r.maxRetries || request.Context().Err() != nil
+		if withoutRetry {
+			r.nextHandler.ServeHTTP(writer, request)
+			return
+		}
+		capturedResp := NewDiscardableResponseWriter(writer, r.isRetryableStatusCode)
 		// call next handler in chain
-		reqClone := request.Clone(request.Context()) // also copies the reference to the lazy body capturer
-		r.nextHandler.ServeHTTP(capturedResp, reqClone)
+		r.nextHandler.ServeHTTP(capturedResp, request.Clone(request.Context())) // clone also copies the reference to the lazy body capturer
 
-		if !capturedResp.discardedResponse() || // max retries reached or context error
-			!r.isRetryableStatusCode(capturedResp.CapturedStatusCode()) {
+		if !r.isRetryableStatusCode(capturedResp.CapturedStatusCode()) {
 			break
 		}
 		// setup for retry
@@ -76,65 +73,89 @@ func (r RetryMiddleware) ServeHTTP(writer http.ResponseWriter, request *http.Req
 }
 
 func (r RetryMiddleware) isRetryableStatusCode(status int) bool {
+	// any 1xx informational response should be written
+	if status >= 100 && status < 200 {
+		return false
+	}
 	_, ok := r.retryStatusCodes[status]
 	return ok
 }
 
-var (
-	_ http.Flusher       = &responseWriterDelegator{}
-	_ io.ReaderFrom      = &xResponseWriterDelegator{}
-	_ statusCodeCapturer = &responseWriterDelegator{}
+type (
+	StatusCodeCapturer interface {
+		CapturedStatusCode() int
+	}
+	XResponseWriter interface {
+		http.ResponseWriter
+		StatusCodeCapturer
+	}
+
+	// CapturedBodySource represents an interface for capturing and retrieving the body of an HTTP request.
+	CapturedBodySource interface {
+		IsCaptured() bool
+		GetBody() []byte
+	}
+
+	XBodyCapturer interface {
+		io.ReadCloser
+		CapturedBodySource
+		Capture()
+	}
 )
 
-// responseWriterDelegator represents a wrapper around http.ResponseWriter that provides additional
-// functionalities for handling response writing. Depending on the status code and discard settings,
-// the header + content on write is skipped so that it can be re-used on retry.
-type responseWriterDelegator struct {
+var (
+	_ http.Flusher                    = &discardableResponseWriter{}
+	_ io.ReaderFrom                   = &discardableResponseWriterWithReaderFrom{}
+	_ CaptureStatusCodeResponseWriter = &discardableResponseWriter{}
+)
+
+// discardableResponseWriter represents a wrapper around http.ResponseWriter that provides additional
+// functionalities for handling response writing. Depending on the status code,
+// the header + content on write is skipped so that it can be re-used on retry or written to the underlying
+// response writer.
+type discardableResponseWriter struct {
 	http.ResponseWriter
-	headerBuf   http.Header
-	wroteHeader bool
-	statusCode  int
-	// always writes to responseWriter when false
-	discardErrResp        bool
-	isRetryableStatusCode func(status int) bool
+	headerBuf      http.Header
+	wroteHeader    bool
+	statusCode     int
+	immediateWrite bool
+	isDiscardable  func(status int) bool
 }
 
-// newResponseWriterDelegator constructor
-func newResponseWriterDelegator(writer http.ResponseWriter, isRetryableStatusCode func(status int) bool, discardErrResp bool) xResponseWriter {
-	d := &responseWriterDelegator{
-		isRetryableStatusCode: isRetryableStatusCode,
-		ResponseWriter:        writer,
-		headerBuf:             make(http.Header),
-		discardErrResp:        discardErrResp, // abort early on timeout, context cancel
+// NewDiscardableResponseWriter creates a new instance of the response writer delegator.
+// It takes a http.ResponseWriter and a function to determine by the status code if content should be written or discarded (for retry).
+func NewDiscardableResponseWriter(writer http.ResponseWriter, isDiscardable func(status int) bool) XResponseWriter {
+	d := &discardableResponseWriter{
+		isDiscardable:  isDiscardable,
+		ResponseWriter: writer,
+		headerBuf:      make(http.Header),
+		immediateWrite: false,
 	}
 	if _, ok := writer.(io.ReaderFrom); ok {
-		return &xResponseWriterDelegator{responseWriterDelegator: d}
+		return &discardableResponseWriterWithReaderFrom{discardableResponseWriter: d}
 	}
 	return d
 }
 
-func (r *responseWriterDelegator) discardedResponse() bool {
-	return r.discardErrResp
-}
-
-func (r *responseWriterDelegator) CapturedStatusCode() int {
+func (r *discardableResponseWriter) CapturedStatusCode() int {
 	return r.statusCode
 }
 
-func (r *responseWriterDelegator) Header() http.Header {
+func (r *discardableResponseWriter) Header() http.Header {
 	return r.headerBuf
 }
 
-func (r *responseWriterDelegator) WriteHeader(status int) {
+// WriteHeader sets the response status code and writes the response header to the underlying http.ResponseWriter or
+// discards it based on the result of the isDiscardable call.
+func (r *discardableResponseWriter) WriteHeader(status int) {
 	r.statusCode = status
 	if !r.wroteHeader {
 		r.wroteHeader = true
-		// any 1xx informational response should be written
-		r.discardErrResp = r.discardErrResp && !(status >= 100 && status < 200)
 	}
-	if r.discardErrResp && r.isRetryableStatusCode(status) {
+	if r.isDiscardable(status) {
 		return
 	}
+	r.immediateWrite = true
 	// copy header values to target
 	for k, vals := range r.headerBuf {
 		for _, val := range vals {
@@ -146,46 +167,42 @@ func (r *responseWriterDelegator) WriteHeader(status int) {
 
 // Write writes data to the response.
 // If the response header has not been set, it sets the default status code to 200.
-// When the status code qualifies for a retry, no content is written.
+// Based on the status code, the content is either written or discarded.
 //
 // It returns the number of bytes written and any error encountered.
-func (r *responseWriterDelegator) Write(data []byte) (int, error) {
+func (r *discardableResponseWriter) Write(data []byte) (int, error) {
 	// ensure header is set. default is 200 in Go stdlib
 	if !r.wroteHeader {
 		r.WriteHeader(http.StatusOK)
 	}
-	if r.discardErrResp && r.isRetryableStatusCode(r.statusCode) {
-		return io.Discard.Write(data)
-	} else {
+	if r.immediateWrite {
 		return r.ResponseWriter.Write(data)
 	}
+	return io.Discard.Write(data)
 }
 
-func (r *responseWriterDelegator) Flush() {
+func (r *discardableResponseWriter) Flush() {
 	if f, ok := r.ResponseWriter.(http.Flusher); ok {
 		f.Flush()
 	}
 }
 
-// xResponseWriterDelegator provides the same functionalities as responseWriterDelegator but also implements the
+// discardableResponseWriterWithReaderFrom provides the same functionalities as discardableResponseWriter but also implements the
 // io.ReaderFrom interface.
-// The ReadFrom method ensures that the header is set before reading from the reader.
-// In case discardErrResp is true and the response status code is retryable, the content is discarded.
-// Otherwise, it calls the ReadFrom method of the underlying response writer and returns the result.
-type xResponseWriterDelegator struct {
-	*responseWriterDelegator
+// Based on the status code, the content is either written or discarded.
+type discardableResponseWriterWithReaderFrom struct {
+	*discardableResponseWriter
 }
 
-func (r *xResponseWriterDelegator) ReadFrom(re io.Reader) (int64, error) {
+func (r *discardableResponseWriterWithReaderFrom) ReadFrom(re io.Reader) (int64, error) {
 	// ensure header is set. default is 200 in Go stdlib
 	if !r.wroteHeader {
 		r.WriteHeader(http.StatusOK)
 	}
-	if r.discardErrResp && r.isRetryableStatusCode(r.statusCode) {
-		return io.Copy(io.Discard, re)
-	} else {
+	if r.immediateWrite {
 		return r.ResponseWriter.(io.ReaderFrom).ReadFrom(re)
 	}
+	return io.Copy(io.Discard, re)
 }
 
 var (
@@ -203,8 +220,8 @@ type lazyBodyCapturer struct {
 	allRead      bool
 }
 
-// newLazyBodyCapturer constructor
-func newLazyBodyCapturer(body io.ReadCloser) xBodyCapturer {
+// NewLazyBodyCapturer constructor.
+func NewLazyBodyCapturer(body io.ReadCloser) XBodyCapturer {
 	c := &lazyBodyCapturer{
 		reader: body,
 		buf:    bytes.NewBuffer([]byte{}),
@@ -230,13 +247,25 @@ func (m *lazyBodyCapturer) Close() error {
 	return m.reader.Close()
 }
 
+// Capture marks the body as fully captured.
+// The captured body data can be read via GetBody.
 func (m *lazyBodyCapturer) Capture() {
 	m.allRead = true
-	if m.buf != nil {
+	if !m.IsCaptured() {
 		m.capturedBody = m.buf.Bytes()
 		m.buf = nil
 	}
 	m.reader = io.NopCloser(bytes.NewReader(m.capturedBody))
+}
+
+// IsCaptured returns true when a body was captured.
+func (m *lazyBodyCapturer) IsCaptured() bool {
+	return m.capturedBody != nil
+}
+
+// GetBody returns the captured byte slice. Value is nil when not captured, yet.
+func (m *lazyBodyCapturer) GetBody() []byte {
+	return m.capturedBody
 }
 
 type lazyBodyCapturerWriteTo struct {

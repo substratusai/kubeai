@@ -22,21 +22,21 @@ func MustRegister(r prometheus.Registerer) {
 	r.MustRegister(httpDuration, totalRetries)
 }
 
-// statusCodeCapturer is an interface that extends the http.ResponseWriter interface and provides a method for reading the status code of an HTTP response.
-type statusCodeCapturer interface {
+// CaptureStatusCodeResponseWriter is an interface that extends the http.ResponseWriter interface and provides a method for reading the status code of an HTTP response.
+type CaptureStatusCodeResponseWriter interface {
 	http.ResponseWriter
-	CapturedStatusCode() int
+	StatusCodeCapturer
 }
 
-// captureStatusResponseWriter is a custom HTTP response writer that implements statusCodeCapturer
+// captureStatusResponseWriter is a custom HTTP response writer that implements CaptureStatusCodeResponseWriter
 type captureStatusResponseWriter struct {
 	http.ResponseWriter
 	statusCode  int
 	wroteHeader bool
 }
 
-func newCaptureStatusCodeResponseWriter(responseWriter http.ResponseWriter) statusCodeCapturer {
-	if o, ok := responseWriter.(statusCodeCapturer); ok { // nothing to do as code is captured already
+func NewCaptureStatusCodeResponseWriter(responseWriter http.ResponseWriter) CaptureStatusCodeResponseWriter {
+	if o, ok := responseWriter.(CaptureStatusCodeResponseWriter); ok { // nothing to do as code is captured already
 		return o
 	}
 	c := &captureStatusResponseWriter{ResponseWriter: responseWriter}
