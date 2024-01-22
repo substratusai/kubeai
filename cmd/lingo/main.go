@@ -155,8 +155,7 @@ func run() error {
 	go autoscaler.Start()
 
 	proxy.MustRegister(metricsRegistry)
-	var proxyHandler http.Handler = proxy.NewHandler(deploymentManager, endpointManager, queueManager)
-	proxyHandler = proxy.NewRetryMiddleware(maxRetriesOnErr, proxyHandler)
+	var proxyHandler http.Handler = proxy.NewHandler(deploymentManager, endpointManager, queueManager, maxRetriesOnErr)
 	proxyServer := &http.Server{Addr: ":8080", Handler: proxyHandler}
 
 	statsHandler := &stats.Handler{

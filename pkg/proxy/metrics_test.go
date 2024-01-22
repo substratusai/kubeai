@@ -56,7 +56,7 @@ func TestMetrics(t *testing.T) {
 
 			deplMgr, err := deployments.NewManager(&fakeManager{})
 			require.NoError(t, err)
-			h := NewHandler(deplMgr, nil, nil)
+			h := NewHandler(deplMgr, nil, nil, 2)
 			recorder := httptest.NewRecorder()
 
 			// when

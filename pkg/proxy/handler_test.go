@@ -35,7 +35,7 @@ func TestProxy(t *testing.T) {
 			em, err := endpoints.NewManager(&fakeManager{}, func(deploymentName string, replicas int) {})
 			require.NoError(t, err)
 			em.SetEndpoints("my-deployment", map[string]struct{}{"my-ip": {}}, map[string]int32{"my-port": 8080})
-			h := NewHandler(deplMgr, em, queue.NewManager(10))
+			h := NewHandler(deplMgr, em, queue.NewManager(10), 1)
 
 			svr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				em.SetEndpoints("my-deployment", map[string]struct{}{"my-other-ip": {}}, map[string]int32{"my-other-port": 8080})

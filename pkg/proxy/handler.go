@@ -28,13 +28,19 @@ type deploymentSource interface {
 // Handler serves http requests for end-clients.
 // It is also responsible for triggering scale-from-zero.
 type Handler struct {
-	Deployments deploymentSource
-	Endpoints   *endpoints.Manager
-	Queues      *queue.Manager
+	Deployments  deploymentSource
+	Endpoints    *endpoints.Manager
+	Queues       *queue.Manager
+	retriesOnErr int
 }
 
-func NewHandler(deployments deploymentSource, endpoints *endpoints.Manager, queues *queue.Manager) *Handler {
-	return &Handler{Deployments: deployments, Endpoints: endpoints, Queues: queues}
+func NewHandler(deployments deploymentSource, endpoints *endpoints.Manager, queues *queue.Manager, retriesOnErr int) *Handler {
+	return &Handler{
+		Deployments:  deployments,
+		Endpoints:    endpoints,
+		Queues:       queues,
+		retriesOnErr: retriesOnErr,
+	}
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -120,7 +126,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Proxying request to host %v: %v\n", host, id)
 	// TODO: Avoid creating new reverse proxies for each request.
 	// TODO: Consider implementing a round robin scheme.
-	newReverseProxy(host).ServeHTTP(w, proxyRequest)
+	proxy := newReverseProxy(host)
+	NewRetryMiddleware(h.retriesOnErr, proxy).ServeHTTP(w, proxyRequest)
 }
 
 // parseModel parses the model name from the request
