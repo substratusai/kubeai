@@ -165,12 +165,8 @@ func run() error {
 	wg.Add(1)
 	go func() {
 		defer func() {
-			if err := statsServer.Shutdown(context.Background()); err != nil {
-				setupLog.Error(err, "shutdown stats server")
-			}
-			if err := proxyServer.Shutdown(context.Background()); err != nil {
-				setupLog.Error(err, "shutdown proxy server")
-			}
+			_ = statsServer.Shutdown(context.Background())
+			_ = proxyServer.Shutdown(context.Background())
 			wg.Done()
 		}()
 		if err := mgr.Start(ctx); err != nil {
