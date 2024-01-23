@@ -1,25 +1,28 @@
 package proxy
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"strconv"
 
-	"github.com/google/uuid"
 	"github.com/prometheus/client_golang/prometheus"
-
 	"github.com/substratusai/lingo/pkg/deployments"
 	"github.com/substratusai/lingo/pkg/endpoints"
 	"github.com/substratusai/lingo/pkg/queue"
 )
+
+var httpDuration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+	Name:    "http_response_time_seconds",
+	Help:    "Duration of HTTP requests.",
+	Buckets: prometheus.DefBuckets,
+}, []string{"model", "status_code"})
+
+func MustRegister(r prometheus.Registerer) {
+	r.MustRegister(httpDuration)
+}
 
 // Handler serves http requests for end-clients.
 // It is also responsible for triggering scale-from-zero.
@@ -27,127 +30,97 @@ type Handler struct {
 	Deployments *deployments.Manager
 	Endpoints   *endpoints.Manager
 	Queues      *queue.Manager
+	MaxRetries  int
+	RetryCodes  map[int]struct{}
 }
 
-func NewHandler(deployments *deployments.Manager, endpoints *endpoints.Manager, queues *queue.Manager) *Handler {
-	return &Handler{Deployments: deployments, Endpoints: endpoints, Queues: queues}
+func NewHandler(
+	deployments *deployments.Manager,
+	endpoints *endpoints.Manager,
+	queues *queue.Manager,
+) *Handler {
+	return &Handler{
+		Deployments: deployments,
+		Endpoints:   endpoints,
+		Queues:      queues,
+	}
+}
+
+var defaultRetryCodes = map[int]struct{}{
+	http.StatusBadGateway:         {},
+	http.StatusServiceUnavailable: {},
+	http.StatusGatewayTimeout:     {},
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var modelName string
-	captureStatusRespWriter := newCaptureStatusCodeResponseWriter(w)
-	w = captureStatusRespWriter
-	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
-		httpDuration.WithLabelValues(modelName, strconv.Itoa(captureStatusRespWriter.statusCode)).Observe(v)
-	}))
-	defer timer.ObserveDuration()
+	log.Printf("url: %v", r.URL)
 
-	id := uuid.New().String()
-	log.Printf("request: %v", r.URL)
 	w.Header().Set("X-Proxy", "lingo")
 
-	var (
-		proxyRequest *http.Request
-		err          error
-	)
+	pr := newProxyRequest(r)
+	defer pr.done()
+
 	// TODO: Only parse model for paths that would have a model.
-	modelName, proxyRequest, err = parseModel(r)
-	if err != nil || modelName == "" {
-		modelName = "unknown"
-		log.Printf("error reading model from request body: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Bad request: unable to parse .model from JSON payload"))
-		return
-	}
-	log.Println("model:", modelName)
-
-	deploy, found := h.Deployments.ResolveDeployment(modelName)
-	if !found {
-		log.Printf("deployment not found for model: %v", err)
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte(fmt.Sprintf("Deployment for model not found: %v", modelName)))
+	if err := pr.parseModel(); err != nil {
+		pr.sendErrorResponse(w, http.StatusBadRequest, "unable to parse model: %v", err)
 		return
 	}
 
-	h.Deployments.AtLeastOne(deploy)
+	log.Println("model:", pr.model)
 
-	log.Println("Entering queue", id)
-	complete := h.Queues.EnqueueAndWait(r.Context(), deploy, id)
-	log.Println("Admitted into queue", id)
+	var backendExists bool
+	pr.backendDeployment, backendExists = h.Deployments.ResolveDeployment(pr.model)
+	if !backendExists {
+		pr.sendErrorResponse(w, http.StatusNotFound, "model not found: %v", pr.model)
+		return
+	}
+
+	// Ensure the backend is scaled to at least one Pod.
+	h.Deployments.AtLeastOne(pr.backendDeployment)
+
+	log.Printf("Entering queue: %v", pr.id)
+
+	complete := h.Queues.EnqueueAndWait(r.Context(), pr.backendDeployment, pr.id)
 	defer complete()
 
-	// abort when deployment was removed meanwhile
-	if _, exists := h.Deployments.ResolveDeployment(modelName); !exists {
-		log.Printf("deployment not active for model removed: %v", err)
-		w.WriteHeader(http.StatusNotFound)
-		_, _ = w.Write([]byte(fmt.Sprintf("Deployment for model not found: %v", modelName)))
+	log.Printf("Admitted into queue: %v", pr.id)
+
+	// After waiting for the request to be admitted, double check that the model
+	// still exists. It's possible that the model was deleted while waiting.
+	// This would lead to a long subequent wait with the host lookup.
+	pr.backendDeployment, backendExists = h.Deployments.ResolveDeployment(pr.model)
+	if !backendExists {
+		pr.sendErrorResponse(w, http.StatusNotFound, "model not found after being dequeued: %v", pr.model)
 		return
 	}
 
-	log.Println("Waiting for IPs", id)
-	host, err := h.Endpoints.AwaitHostAddress(r.Context(), deploy, "http")
-	if err != nil {
-		log.Printf("error while finding the host address %v", err)
-		switch {
-		case errors.Is(err, context.Canceled):
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte("Request cancelled"))
-			return
-		case errors.Is(err, context.DeadlineExceeded):
-			w.WriteHeader(http.StatusGatewayTimeout)
-			_, _ = w.Write([]byte(fmt.Sprintf("Request timed out for model: %v", modelName)))
-			return
-		default:
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte("Internal server error"))
-			return
-		}
-	}
-	log.Printf("Got host: %v, id: %v\n", host, id)
-
-	// TODO: Avoid creating new reverse proxies for each request.
-	// TODO: Consider implementing a round robin scheme.
-	log.Printf("Proxying request to host %v: %v\n", host, id)
-	newReverseProxy(host).ServeHTTP(w, proxyRequest)
-}
-
-// parseModel parses the model name from the request
-// returns empty string when none found or an error for failures on the proxy request object
-func parseModel(r *http.Request) (string, *http.Request, error) {
-	if model := r.Header.Get("X-Model"); model != "" {
-		return model, r, nil
-	}
-	// parse request body for model name, ignore errors
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		return "", r, nil
-	}
-
-	var payload struct {
-		Model string `json:"model"`
-	}
-	var model string
-	if err := json.Unmarshal(body, &payload); err == nil {
-		model = payload.Model
-	}
-
-	// create new request object
-	proxyReq, err := http.NewRequestWithContext(r.Context(), r.Method, r.URL.String(), bytes.NewReader(body))
-	if err != nil {
-		return "", nil, fmt.Errorf("create proxy request: %w", err)
-	}
-	proxyReq.Header = r.Header
-	if err := proxyReq.ParseForm(); err != nil {
-		return "", nil, fmt.Errorf("parse proxy form: %w", err)
-	}
-	return model, proxyReq, nil
+	h.proxyHTTP(w, pr)
 }
 
 // AdditionalProxyRewrite is an injection point for modifying proxy requests.
 // Used in tests.
 var AdditionalProxyRewrite = func(*httputil.ProxyRequest) {}
 
-func newReverseProxy(host string) *httputil.ReverseProxy {
+func (h *Handler) proxyHTTP(w http.ResponseWriter, pr *proxyRequest) {
+	log.Printf("Waiting for host: %v", pr.id)
+
+	host, err := h.Endpoints.AwaitHostAddress(pr.r.Context(), pr.backendDeployment, "http")
+	if err != nil {
+		switch {
+		case errors.Is(err, context.Canceled):
+			pr.sendErrorResponse(w, http.StatusInternalServerError, "request cancelled while finding host: %v", err)
+			return
+		case errors.Is(err, context.DeadlineExceeded):
+			pr.sendErrorResponse(w, http.StatusGatewayTimeout, "request timeout while finding host: %v", err)
+			return
+		default:
+			pr.sendErrorResponse(w, http.StatusGatewayTimeout, "unable to find host: %v", err)
+			return
+		}
+	}
+
+	log.Printf("Got host: %v, id: %v\n", host, pr.id)
+
 	proxy := &httputil.ReverseProxy{
 		Rewrite: func(r *httputil.ProxyRequest) {
 			r.SetURL(&url.URL{
@@ -158,5 +131,37 @@ func newReverseProxy(host string) *httputil.ReverseProxy {
 			AdditionalProxyRewrite(r)
 		},
 	}
-	return proxy
+
+	proxy.ModifyResponse = func(r *http.Response) error {
+		if h.isRetryCode(r.StatusCode) {
+			// Returning an error will trigger the ErrorHandler.
+			return errors.New("retry")
+		}
+		return nil
+	}
+
+	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
+		if err != nil && pr.attempt < h.MaxRetries {
+			log.Println("retrying")
+			pr.attempt++
+			h.proxyHTTP(w, pr)
+			return
+		}
+
+		pr.sendErrorResponse(w, http.StatusBadGateway, "proxy: exceeded retries: %v/%v", pr.attempt, h.MaxRetries)
+	}
+
+	log.Printf("Proxying request to host %v: %v\n", host, pr.id)
+	proxy.ServeHTTP(w, pr.httpRequest())
+}
+
+func (h *Handler) isRetryCode(status int) bool {
+	var retry bool
+	// TODO: avoid the nil check here and set a default map in the constructor.
+	if h.RetryCodes != nil {
+		_, retry = h.RetryCodes[status]
+	} else {
+		_, retry = defaultRetryCodes[status]
+	}
+	return retry
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/testutil"
-	"github.com/prometheus/client_model/go"
+	io_prometheus_client "github.com/prometheus/client_model/go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/substratusai/lingo/pkg/deployments"
@@ -30,7 +30,7 @@ func TestMetrics(t *testing.T) {
 		expCode   int
 		expLabels map[string]string
 	}{
-		"with mode name": {
+		"with model name": {
 			request: httptest.NewRequest(http.MethodGet, "/", strings.NewReader(`{"model":"my_model"}`)),
 			expCode: http.StatusNotFound,
 			expLabels: map[string]string{
@@ -38,11 +38,11 @@ func TestMetrics(t *testing.T) {
 				"status_code": "404",
 			},
 		},
-		"unknown model name": {
+		"empty model name": {
 			request: httptest.NewRequest(http.MethodGet, "/", strings.NewReader("{}")),
 			expCode: http.StatusBadRequest,
 			expLabels: map[string]string{
-				"model":       "unknown",
+				"model":       "",
 				"status_code": "400",
 			},
 		},

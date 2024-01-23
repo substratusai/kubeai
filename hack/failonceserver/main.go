@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -13,7 +14,9 @@ func main() {
 	paths := map[string]bool{}
 
 	http.ListenAndServe(":8082", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println(r.URL.Path)
 		io.Copy(os.Stdout, r.Body)
+		fmt.Println("---")
 
 		mtx.RLock()
 		shouldSucceed := paths[r.URL.Path]
