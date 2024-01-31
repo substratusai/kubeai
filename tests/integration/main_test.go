@@ -109,6 +109,7 @@ func TestMain(m *testing.M) {
 		Deployments: deploymentManager,
 		Endpoints:   endpointManager,
 		Queues:      queueManager,
+		MaxRetries:  3,
 	}
 	testServer = httptest.NewServer(handler)
 	defer testServer.Close()
