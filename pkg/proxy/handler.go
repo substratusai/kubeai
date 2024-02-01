@@ -9,9 +9,6 @@ import (
 	"net/url"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/substratusai/lingo/pkg/deployments"
-	"github.com/substratusai/lingo/pkg/endpoints"
-	"github.com/substratusai/lingo/pkg/queue"
 )
 
 var httpDuration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
@@ -24,20 +21,34 @@ func MustRegister(r prometheus.Registerer) {
 	r.MustRegister(httpDuration)
 }
 
+type DeploymentManager interface {
+	ResolveDeployment(model string) (string, bool)
+	AtLeastOne(model string)
+}
+
+type EndpointManager interface {
+	AwaitHostAddress(ctx context.Context, service, portName string) (string, error)
+}
+
+type QueueManager interface {
+	EnqueueAndWait(ctx context.Context, deploymentName, id string) func()
+}
+
 // Handler serves http requests for end-clients.
 // It is also responsible for triggering scale-from-zero.
 type Handler struct {
-	Deployments *deployments.Manager
-	Endpoints   *endpoints.Manager
-	Queues      *queue.Manager
-	MaxRetries  int
-	RetryCodes  map[int]struct{}
+	Deployments DeploymentManager
+	Endpoints   EndpointManager
+	Queues      QueueManager
+
+	MaxRetries int
+	RetryCodes map[int]struct{}
 }
 
 func NewHandler(
-	deployments *deployments.Manager,
-	endpoints *endpoints.Manager,
-	queues *queue.Manager,
+	deployments DeploymentManager,
+	endpoints EndpointManager,
+	queues QueueManager,
 ) *Handler {
 	return &Handler{
 		Deployments: deployments,
@@ -47,9 +58,10 @@ func NewHandler(
 }
 
 var defaultRetryCodes = map[int]struct{}{
-	http.StatusBadGateway:         {},
-	http.StatusServiceUnavailable: {},
-	http.StatusGatewayTimeout:     {},
+	http.StatusInternalServerError: {},
+	http.StatusBadGateway:          {},
+	http.StatusServiceUnavailable:  {},
+	http.StatusGatewayTimeout:      {},
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -133,6 +145,7 @@ func (h *Handler) proxyHTTP(w http.ResponseWriter, pr *proxyRequest) {
 	}
 
 	proxy.ModifyResponse = func(r *http.Response) error {
+		pr.status = r.StatusCode
 		if h.isRetryCode(r.StatusCode) {
 			// Returning an error will trigger the ErrorHandler.
 			return errors.New("retry")
