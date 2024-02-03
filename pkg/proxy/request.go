@@ -50,10 +50,15 @@ func newProxyRequest(r *http.Request) *proxyRequest {
 
 }
 
+// done should be called when the original client request is complete.
 func (p *proxyRequest) done() {
 	p.timer.ObserveDuration()
 }
 
+// parseModel attempts to determine the model from the request.
+// It first checks the "X-Model" header, and if that is not set, it
+// attempts to unmarshal the request body as JSON and extract the
+// .model field.
 func (pr *proxyRequest) parseModel() error {
 	pr.model = pr.r.Header.Get("X-Model")
 	if pr.model != "" {
@@ -81,6 +86,9 @@ func (pr *proxyRequest) parseModel() error {
 	return nil
 }
 
+// sendErrorResponse sends an error response to the client and
+// records the status code. If the status code is 5xx, the error
+// message is not included in the response body.
 func (pr *proxyRequest) sendErrorResponse(w http.ResponseWriter, status int, format string, args ...interface{}) {
 	msg := fmt.Sprintf(format, args...)
 	log.Printf("sending error response: %v: %v", status, msg)
@@ -106,6 +114,9 @@ func (pr *proxyRequest) setStatus(w http.ResponseWriter, code int) {
 	w.WriteHeader(code)
 }
 
+// httpRequest returns a new http.Request that is a clone of the original
+// request, preserving the original request body even if it was already
+// read (i.e. if the body was inspected to determine the model).
 func (pr *proxyRequest) httpRequest() *http.Request {
 	clone := pr.r.Clone(pr.r.Context())
 	if pr.body != nil {
