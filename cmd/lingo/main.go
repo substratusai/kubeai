@@ -67,6 +67,7 @@ func run() error {
 
 	concurrency := getEnvInt("CONCURRENCY", 100)
 	scaleDownDelay := getEnvInt("SCALE_DOWN_DELAY", 30)
+	backendRetries := getEnvInt("BACKEND_RETRIES", 1)
 
 	var metricsAddr string
 	var probeAddr string
@@ -154,6 +155,7 @@ func run() error {
 
 	proxy.MustRegister(metricsRegistry)
 	proxyHandler := proxy.NewHandler(deploymentManager, endpointManager, queueManager)
+	proxyHandler.MaxRetries = backendRetries
 	proxyServer := &http.Server{Addr: ":8080", Handler: proxyHandler}
 
 	statsHandler := &stats.Handler{
