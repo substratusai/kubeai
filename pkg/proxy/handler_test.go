@@ -177,6 +177,7 @@ func TestHandler(t *testing.T) {
 			assert.Equal(t, spec.expCode, resp.StatusCode, "Unexpected response code to client")
 			assert.Equal(t, spec.expBody, string(respBody), "Unexpected response body to client")
 			assert.Equal(t, spec.expBackendRequestCount, backendRequestCount, "Unexpected number of requests sent to backend")
+			assert.Equal(t, spec.expBackendRequestCount, endpoints.hostRequestCount, "Unexpected number of requests for backend hosts")
 
 			// Assert on metrics.
 			gathered, err := metricsRegistry.Gather()
@@ -216,9 +217,12 @@ type testEndpointManager struct {
 
 	requestedService string
 	requestedPort    string
+
+	hostRequestCount int
 }
 
 func (t *testEndpointManager) AwaitHostAddress(ctx context.Context, service, portName string) (string, error) {
+	t.hostRequestCount++
 	t.requestedService = service
 	t.requestedPort = portName
 	return t.address, nil
