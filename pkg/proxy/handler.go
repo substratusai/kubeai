@@ -92,6 +92,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Entering queue: %v", pr.id)
 
+	// Wait to until the request is admitted into the queue before proceeding with
+	// serving the request.
 	complete := h.Queues.EnqueueAndWait(r.Context(), pr.backendDeployment, pr.id)
 	defer complete()
 
@@ -145,18 +147,22 @@ func (h *Handler) proxyHTTP(w http.ResponseWriter, pr *proxyRequest) {
 	}
 
 	proxy.ModifyResponse = func(r *http.Response) error {
+		// Record the response for metrics.
 		pr.status = r.StatusCode
+
 		if h.isRetryCode(r.StatusCode) {
 			// Returning an error will trigger the ErrorHandler.
 			return errors.New("retry")
 		}
+
 		return nil
 	}
 
 	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
 		if err != nil && pr.attempt < h.MaxRetries {
-			log.Println("retrying")
 			pr.attempt++
+
+			log.Printf("Retrying request (%v/%v): %v", pr.attempt, h.MaxRetries, pr.id)
 			h.proxyHTTP(w, pr)
 			return
 		}
