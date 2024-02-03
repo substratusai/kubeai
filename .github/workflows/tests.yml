@@ -31,6 +31,7 @@ jobs:
       matrix:
         replicas: ["1", "3"]
     runs-on: ubuntu-latest
+    name: E2E kind tests Lingo.replicas=${{ matrix.replicas }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
