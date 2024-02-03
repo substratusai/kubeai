@@ -91,9 +91,9 @@ fi
 
 # Verify that leader election works by forcing a 20 second apiserver outage
 KIND_NODE=$(kind get nodes --name=substratus-test)
-docker exec -ti ${KIND_NODE} iptables -I INPUT -p tcp --dport 6443 -j DROP
-sleep 20
-docker exec -ti ${KIND_NODE} iptables -D INPUT -p tcp --dport 6443 -j DROP
+docker exec ${KIND_NODE} iptables -I INPUT -p tcp --dport 6443 -j DROP
+sleep 30
+docker exec ${KIND_NODE} iptables -D INPUT -p tcp --dport 6443 -j DROP
 
 echo "Waiting for deployment to scale down back to 0 within 2 minutes"
 for i in {1..15}; do
