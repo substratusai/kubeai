@@ -45,6 +45,8 @@ fi
 
 kubectl patch deployment lingo --patch "{\"spec\": {\"replicas\": $REPLICAS}}"
 
+kubectl logs -f deployment/lingo &
+
 
 kubectl wait --for=condition=available --timeout=30s deployment/lingo
 
