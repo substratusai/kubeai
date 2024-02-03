@@ -47,7 +47,6 @@ kubectl patch deployment lingo --patch "{\"spec\": {\"replicas\": $REPLICAS}}"
 
 kubectl logs -f deployment/lingo &
 
-
 kubectl wait --for=condition=available --timeout=30s deployment/lingo
 
 
@@ -97,12 +96,12 @@ fi
 # Verify that leader election works by forcing a 20 second apiserver outage
 KIND_NODE=$(kind get nodes --name=substratus-test)
 docker exec ${KIND_NODE} iptables -I INPUT -p tcp --dport 6443 -j DROP
-sleep 30
+sleep 60
 docker exec ${KIND_NODE} iptables -D INPUT -p tcp --dport 6443 -j DROP
 
-echo "Waiting for deployment to scale down back to 0 within 2 minutes"
-for i in {1..15}; do
-  if [ "$i" -eq 15 ]; then
+echo "Waiting for deployment to scale down back to 0 within 1 minute"
+for i in {1..10}; do
+  if [ "$i" -eq 10 ]; then
     echo "Test failed: Expected 0 replica after not having requests for more than 1 minute, got $replicas"
     exit 1
   fi
@@ -111,7 +110,7 @@ for i in {1..15}; do
     echo "Test passed: Expected 0 replica after not having requests for more than 1 minute"
     break
   fi
-  sleep 8
+  sleep 6
 done
 
 echo "Patching stapi deployment to sleep on startup"
