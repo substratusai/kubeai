@@ -108,6 +108,8 @@ func (pr *proxyRequest) setStatus(w http.ResponseWriter, code int) {
 
 func (pr *proxyRequest) httpRequest() *http.Request {
 	clone := pr.r.Clone(pr.r.Context())
-	clone.Body = io.NopCloser(bytes.NewReader(pr.body))
+	if pr.body != nil {
+		clone.Body = io.NopCloser(bytes.NewReader(pr.body))
+	}
 	return clone
 }
