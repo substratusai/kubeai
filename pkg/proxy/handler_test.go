@@ -29,12 +29,12 @@ func TestHandler(t *testing.T) {
 	}
 
 	specs := map[string]struct {
-		reqMethod string
-		reqPath   string
-		reqBody   string
+		reqBody    string
+		reqHeaders map[string]string
 
-		backendCode int
-		backendBody string
+		backendPanic bool
+		backendCode  int
+		backendBody  string
 
 		expCode                int
 		expBody                string
@@ -42,11 +42,9 @@ func TestHandler(t *testing.T) {
 		expBackendRequestCount int
 	}{
 		"no model": {
-			reqMethod: http.MethodPost,
-			reqPath:   "/",
-			reqBody:   "{}",
-			expCode:   http.StatusBadRequest,
-			expBody:   `{"error":"unable to parse model: no model specified"}` + "\n",
+			reqBody: "{}",
+			expCode: http.StatusBadRequest,
+			expBody: `{"error":"unable to parse model: no model specified"}` + "\n",
 			expLabels: map[string]string{
 				"model":       "",
 				"status_code": "400",
@@ -54,20 +52,16 @@ func TestHandler(t *testing.T) {
 			expBackendRequestCount: 0,
 		},
 		"model not found": {
-			reqMethod: http.MethodPost,
-			reqPath:   "/",
-			reqBody:   `{"model":"does-not-exist"}`,
-			expCode:   http.StatusNotFound,
-			expBody:   `{"error":"model not found: does-not-exist"}` + "\n",
+			reqBody: `{"model":"does-not-exist"}`,
+			expCode: http.StatusNotFound,
+			expBody: `{"error":"model not found: does-not-exist"}` + "\n",
 			expLabels: map[string]string{
 				"model":       "does-not-exist",
 				"status_code": "404",
 			},
 			expBackendRequestCount: 0,
 		},
-		"happy 200": {
-			reqMethod:   http.MethodPost,
-			reqPath:     "/",
+		"happy 200 model in body": {
 			reqBody:     fmt.Sprintf(`{"model":%q}`, model1),
 			backendCode: http.StatusOK,
 			backendBody: `{"result":"ok"}`,
@@ -79,23 +73,32 @@ func TestHandler(t *testing.T) {
 			},
 			expBackendRequestCount: 1,
 		},
+		"happy 200 model in header": {
+			reqBody:     "{}",
+			reqHeaders:  map[string]string{"X-Model": model1},
+			backendCode: http.StatusOK,
+			backendBody: `{"result":"ok"}`,
+			expCode:     http.StatusOK,
+			expBody:     `{"result":"ok"}`,
+			expLabels: map[string]string{
+				"model":       model1,
+				"status_code": "200",
+			},
+			expBackendRequestCount: 1,
+		},
 		"retryable 500": {
-			reqMethod:   http.MethodPost,
-			reqPath:     "/",
 			reqBody:     fmt.Sprintf(`{"model":%q}`, model1),
 			backendCode: http.StatusInternalServerError,
 			backendBody: `{"err":"oh no!"}`,
-			expCode:     http.StatusBadGateway,
-			expBody:     `{"error":"Bad Gateway"}` + "\n",
+			expCode:     http.StatusInternalServerError,
+			expBody:     `{"err":"oh no!"}`,
 			expLabels: map[string]string{
 				"model":       model1,
-				"status_code": "502",
+				"status_code": "500",
 			},
 			expBackendRequestCount: 1 + maxRetries,
 		},
 		"not retryable 400": {
-			reqMethod:   http.MethodPost,
-			reqPath:     "/",
 			reqBody:     fmt.Sprintf(`{"model":%q}`, model1),
 			backendCode: http.StatusBadRequest,
 			backendBody: `{"err":"bad request"}`,
@@ -106,6 +109,17 @@ func TestHandler(t *testing.T) {
 				"status_code": "400",
 			},
 			expBackendRequestCount: 1,
+		},
+		"good request but dropped connection": {
+			reqBody:      fmt.Sprintf(`{"model":%q}`, model1),
+			backendPanic: true,
+			expCode:      http.StatusBadGateway,
+			expBody:      `{"error":"Bad Gateway"}` + "\n",
+			expLabels: map[string]string{
+				"model":       model1,
+				"status_code": "502",
+			},
+			expBackendRequestCount: 1 + maxRetries,
 		},
 	}
 	for name, spec := range specs {
@@ -119,6 +133,17 @@ func TestHandler(t *testing.T) {
 			var backendRequestCount int
 			backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				backendRequestCount++
+
+				bdy, err := io.ReadAll(r.Body)
+				assert.NoError(t, err)
+				assert.Equal(t, spec.reqBody, string(bdy), "The request body should reach the backend")
+
+				if spec.backendPanic {
+					// Panic should close connection.
+					// https://pkg.go.dev/net/http#Handler
+					panic("panicing on purpose")
+				}
+
 				if spec.backendCode != 0 {
 					w.WriteHeader(spec.backendCode)
 				}
@@ -137,18 +162,21 @@ func TestHandler(t *testing.T) {
 
 			// Issue request.
 			client := &http.Client{}
-			req, err := http.NewRequest(spec.reqMethod, server.URL+spec.reqPath, strings.NewReader(spec.reqBody))
+			req, err := http.NewRequest(http.MethodPost, server.URL, strings.NewReader(spec.reqBody))
 			require.NoError(t, err)
+			for k, v := range spec.reqHeaders {
+				req.Header.Add(k, v)
+			}
 			resp, err := client.Do(req)
-			require.NoError(t, err)
+			require.NoError(t, err, "The client request should not fail")
 			defer resp.Body.Close()
 			respBody, err := io.ReadAll(resp.Body)
 			require.NoError(t, err)
 
 			// Assert on response.
-			assert.Equal(t, spec.expCode, resp.StatusCode)
-			assert.Equal(t, spec.expBody, string(respBody))
-			assert.Equal(t, spec.expBackendRequestCount, backendRequestCount)
+			assert.Equal(t, spec.expCode, resp.StatusCode, "Unexpected response code to client")
+			assert.Equal(t, spec.expBody, string(respBody), "Unexpected response body to client")
+			assert.Equal(t, spec.expBackendRequestCount, backendRequestCount, "Unexpected number of requests sent to backend")
 
 			// Assert on metrics.
 			gathered, err := metricsRegistry.Gather()

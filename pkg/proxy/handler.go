@@ -150,15 +150,19 @@ func (h *Handler) proxyHTTP(w http.ResponseWriter, pr *proxyRequest) {
 		// Record the response for metrics.
 		pr.status = r.StatusCode
 
-		if h.isRetryCode(r.StatusCode) {
+		// This point is reached if a response code is received.
+		if h.isRetryCode(r.StatusCode) && pr.attempt < h.MaxRetries {
 			// Returning an error will trigger the ErrorHandler.
-			return errors.New("retry")
+			return ErrRetry
 		}
 
 		return nil
 	}
 
 	proxy.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
+		// This point could be reached if a bad response code was sent by the backend
+		// or
+		// if there was an issue with the connection and no response was ever received.
 		if err != nil && pr.attempt < h.MaxRetries {
 			pr.attempt++
 
@@ -167,12 +171,16 @@ func (h *Handler) proxyHTTP(w http.ResponseWriter, pr *proxyRequest) {
 			return
 		}
 
-		pr.sendErrorResponse(w, http.StatusBadGateway, "proxy: exceeded retries: %v/%v", pr.attempt, h.MaxRetries)
+		if !errors.Is(err, ErrRetry) {
+			pr.sendErrorResponse(w, http.StatusBadGateway, "proxy: exceeded retries: %v/%v", pr.attempt, h.MaxRetries)
+		}
 	}
 
 	log.Printf("Proxying request to host %v: %v\n", host, pr.id)
 	proxy.ServeHTTP(w, pr.httpRequest())
 }
+
+var ErrRetry = errors.New("retry")
 
 func (h *Handler) isRetryCode(status int) bool {
 	var retry bool
