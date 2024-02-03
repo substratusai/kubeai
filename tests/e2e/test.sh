@@ -6,6 +6,7 @@ set -xe
 HOST=127.0.0.1
 PORT=30080
 BASE_URL="http://$HOST:$PORT/v1"
+REPLICAS=${REPLICAS:-3}
 
 
 if kind get clusters | grep -q substratus-test; then
@@ -41,6 +42,8 @@ trap 'error_handler' ERR EXIT
 if ! kubectl get deployment lingo; then
   skaffold run
 fi
+
+kubectl patch deployment lingo --patch "{\"spec\": {\"replicas\": $REPLICAS}}"
 
 
 kubectl wait --for=condition=available --timeout=30s deployment/lingo
