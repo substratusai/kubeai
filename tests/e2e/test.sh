@@ -105,7 +105,7 @@ for i in {1..15}; do
     echo "Test failed: Expected 0 replica after not having requests for more than 1 minute, got $replicas"
     exit 1
   fi
-  replicas=$(kubectl get deployment stapi-minilm-l6-v2 -o jsonpath='{.spec.replicas}')
+  replicas=$(kubectl get deployment stapi-minilm-l6-v2 -o jsonpath='{.spec.replicas}' || true)
   if [ "$replicas" -eq 0 ]; then
     echo "Test passed: Expected 0 replica after not having requests for more than 1 minute"
     break
