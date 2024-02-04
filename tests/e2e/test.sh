@@ -93,14 +93,19 @@ if [ "$replicas" -eq 1 ]; then
   exit 1
 fi
 
-# Verify that leader election works by forcing a 120 second apiserver outage
+# Verify that leader election works by forcing a 180 second apiserver outage
 KIND_NODE=$(kind get nodes --name=substratus-test)
 docker exec ${KIND_NODE} iptables -I INPUT -p tcp --dport 6443 -j DROP
-sleep 120
+sleep 180
 docker exec ${KIND_NODE} iptables -D INPUT -p tcp --dport 6443 -j DROP
 
+until kubectl get pods; do
+  echo "Waiting for apiserver to be back up"
+  sleep 1
+done
+
 # rerun kubectl logs because previous one got killed when apiserver was down
-kubectl logs --tail=50 -f deployment/lingo &
+kubectl logs --tail=100 -f deployment/lingo &
 
 echo "Waiting for deployment to scale down back to 0 within ~1 minute"
 for i in {1..15}; do
