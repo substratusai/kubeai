@@ -70,12 +70,7 @@ func (le *Election) Start(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			if ctx.Err() == context.DeadlineExceeded {
-				log.Printf("Leader election context deadline exceeded, restarting leader election process. RetryCount: %v", retryCount+1)
-				ctx = context.Background()
-			} else {
-				return
-			}
+			return
 		default:
 			if retryCount > 0 {
 				backoff.Next(backoffID, backoff.Clock.Now())
