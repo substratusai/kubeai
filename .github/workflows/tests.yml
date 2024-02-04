@@ -30,8 +30,11 @@ jobs:
     strategy:
       matrix:
         replicas: ["1", "3"]
+        test_cases:
+          - { requests: 60, expected_replicas: 1 }
+          - { requests: 300, expected_replicas: 2 }
     runs-on: ubuntu-latest
-    name: E2E kind tests Lingo.replicas=${{ matrix.replicas }}
+    name: E2E kind tests Lingo.replicas=${{ matrix.replicas }} requests=${{ matrix.test_cases.requests }} expected_replicas=${{ matrix.test_cases.expected_replicas }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -52,4 +55,8 @@ jobs:
           sudo mv skaffold /usr/local/bin
 
       - name: Run e2e tests
-        run: REPLICAS=${{ matrix.replicas }} make test-e2e
+        env:
+          REPLICAS: ${{ matrix.replicas }}
+          REQUESTS: ${{ matrix.test_cases.requests }}
+          EXPECTED_REPLICAS: ${{ matrix.test_cases.expected_replicas }}
+        run: make test-e2e

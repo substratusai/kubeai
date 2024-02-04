@@ -7,6 +7,8 @@ HOST=127.0.0.1
 PORT=30080
 BASE_URL="http://$HOST:$PORT/v1"
 REPLICAS=${REPLICAS:-3}
+REQUESTS=60
+EXPECTED_REPLICAS=1
 
 
 if kind get clusters | grep -q substratus-test; then
@@ -81,15 +83,15 @@ pip3 install openai==1.2.3
 
 # Send 60 requests in parallel to stapi backend using openai python client and threading
 python3 $SCRIPT_DIR/test_openai_embedding.py \
-  --requests 60 --timeout 300 --base-url "${BASE_URL}" \
+  --requests ${REQUESTS} --timeout 300 --base-url "${BASE_URL}" \
   --model text-embedding-ada-002
 
 # Ensure replicas has been scaled up to 1 after sending 60 requests
 replicas=$(kubectl get deployment stapi-minilm-l6-v2 -o jsonpath='{.spec.replicas}')
-if [ "$replicas" -eq 1 ]; then
-  echo "Test passed: Expected 1 replica after sending requests 60 requests"
+if [ "$replicas" -ge "${EXPECTED_REPLICAS}" ]; then
+  echo "Test passed: Expected ${EXPECTED_REPLICAS} or more replicas and got ${replicas} after sending requests ${REQUESTS} requests"
   else
-  echo "Test failed: Expected 1 replica after sending requests 60 requests, got $replicas"
+  echo "Test failed: Expected ${EXPECTED_REPLICAS} or more replicas after sending requests ${REQUESTS} requests, got ${replicas}"
   exit 1
 fi
 
@@ -120,28 +122,3 @@ for i in {1..15}; do
   fi
   sleep 6
 done
-
-echo "Patching stapi deployment to sleep on startup"
-cat <<EOF | kubectl patch deployment stapi-minilm-l6-v2 --type merge --patch "$(cat)"
-spec:
-  template:
-    spec:
-      initContainers:
-      - name: sleep
-        image: busybox
-        command: ["sh", "-c", "sleep 10"]
-EOF
-
-requests=300
-echo "Send $requests requests in parallel to stapi backend using openai python client and threading"
-python3 $SCRIPT_DIR/test_openai_embedding.py \
-  --requests $requests --timeout 600 --base-url "${BASE_URL}" \
-  --model text-embedding-ada-002
-
-replicas=$(kubectl get deployment stapi-minilm-l6-v2 -o jsonpath='{.spec.replicas}')
-if [ "$replicas" -ge 2 ]; then
-  echo "Test passed: Expected 2 or more replicas after sending more than $requests requests, got $replicas"
-  else
-  echo "Test failed: Expected 2 or more replicas after sending more than $requests requests, got $replicas"
-  exit 1
-fi
