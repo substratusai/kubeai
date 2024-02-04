@@ -99,6 +99,9 @@ docker exec ${KIND_NODE} iptables -I INPUT -p tcp --dport 6443 -j DROP
 sleep 120
 docker exec ${KIND_NODE} iptables -D INPUT -p tcp --dport 6443 -j DROP
 
+# rerun kubectl logs because previous one got killed when apiserver was down
+kubectl logs --tail=50 -f deployment/lingo &
+
 echo "Waiting for deployment to scale down back to 0 within ~1 minute"
 for i in {1..15}; do
   if [ "$i" -eq 15 ]; then
