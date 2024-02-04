@@ -81,9 +81,7 @@ func (le *Election) Start(ctx context.Context) {
 				backoff.Next(backoffID, backoff.Clock.Now())
 				delay := backoff.Get(backoffID)
 				log.Printf("Leader election failed, retrying in %v. RetryCount: %v", delay, retryCount+1)
-				select {
-				case <-time.After(delay):
-				}
+				<-time.After(delay)
 			}
 			log.Printf("Starting leader election process. RetryCount: %v", retryCount+1)
 			leaderelection.RunOrDie(ctx, le.config)
