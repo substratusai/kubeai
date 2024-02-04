@@ -100,7 +100,7 @@ sleep 120
 docker exec ${KIND_NODE} iptables -D INPUT -p tcp --dport 6443 -j DROP
 
 until kubectl get pods; do
-  echo "Waiting for apiserver to be back up"
+  echo "Waiting for apiserver to be back up, waiting for 1 second and trying again"
   sleep 1
 done
 
