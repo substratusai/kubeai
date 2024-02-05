@@ -36,11 +36,11 @@ func NewElection(clientset kubernetes.Interface, id, namespace string) *Election
 		RetryPeriod:     2 * time.Second,
 		Callbacks: leaderelection.LeaderCallbacks{
 			OnStartedLeading: func(ctx context.Context) {
-				log.Println("Started leading")
+				log.Printf("%v started leading", id)
 				isLeader.Store(true)
 			},
 			OnStoppedLeading: func() {
-				log.Println("Stopped leading")
+				log.Printf("%v stopped leading", id)
 				isLeader.Store(false)
 			},
 			OnNewLeader: func(identity string) {
@@ -55,12 +55,14 @@ func NewElection(clientset kubernetes.Interface, id, namespace string) *Election
 	return &Election{
 		IsLeader: isLeader,
 		config:   config,
+		ID:       id,
 	}
 }
 
 type Election struct {
 	config   leaderelection.LeaderElectionConfig
 	IsLeader *atomic.Bool
+	ID       string
 }
 
 func (le *Election) Start(ctx context.Context) error {
@@ -70,7 +72,7 @@ func (le *Election) Start(ctx context.Context) error {
 		leaderelection.RunOrDie(ctx, le.config)
 		backoff.Next(backoffID, backoff.Clock.Now())
 		delay := backoff.Get(backoffID)
-		log.Printf("Leader election stopped, retrying in %v", delay)
+		log.Printf("Leader election stopped on %v, retrying in %v", le.ID, delay)
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
