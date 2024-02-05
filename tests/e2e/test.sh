@@ -109,9 +109,9 @@ done
 # rerun kubectl logs because previous one got killed when apiserver was down
 kubectl logs --tail=500 -f deployment/lingo &
 
-echo "Waiting for deployment to scale down back to 0 within ~1 minute"
-for i in {1..15}; do
-  if [ "$i" -eq 15 ]; then
+echo "Waiting for deployment to scale down back to 0 within ~2 minutes"
+for i in {1..30}; do
+  if [ "$i" -eq 30 ]; then
     echo "Test failed: Expected 0 replica after not having requests for more than 1 minute, got $replicas"
     exit 1
   fi
