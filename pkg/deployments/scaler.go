@@ -79,7 +79,7 @@ func (s *scaler) compareScales(current, desired int32) {
 		s.desiredScale = desired
 	}
 
-	if s.currentScale == -1 || s.desiredScale == -1 {
+	if current == -1 || desired == -1 {
 		// Nothing to compare if we only have partial information
 		return
 	}
