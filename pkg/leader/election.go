@@ -66,25 +66,15 @@ type Election struct {
 func (le *Election) Start(ctx context.Context) error {
 	backoff := flowcontrol.NewBackOff(1*time.Second, 15*time.Second)
 	const backoffID = "lingo-leader-election"
-	retryCount := 0
 	for {
+		leaderelection.RunOrDie(ctx, le.config)
+		backoff.Next(backoffID, backoff.Clock.Now())
+		delay := backoff.Get(backoffID)
+		log.Printf("Leader election stopped, retrying in %v", delay)
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-		default:
-			if retryCount > 0 {
-				backoff.Next(backoffID, backoff.Clock.Now())
-				delay := backoff.Get(backoffID)
-				log.Printf("Leader election failed, retrying in %v. RetryCount: %v", delay, retryCount+1)
-				select {
-				case <-ctx.Done():
-					return ctx.Err()
-				case <-time.After(delay):
-				}
-			}
-			log.Printf("Starting leader election process. RetryCount: %v", retryCount+1)
-			leaderelection.RunOrDie(ctx, le.config)
-			retryCount++
+		case <-time.After(delay):
 		}
 	}
 }
