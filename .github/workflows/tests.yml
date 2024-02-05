@@ -34,7 +34,7 @@ jobs:
           - { requests: 60, expected_replicas: 1 }
           - { requests: 300, expected_replicas: 2 }
     runs-on: ubuntu-latest
-    name: E2E kind tests Lingo.replicas=${{ matrix.replicas }} requests=${{ matrix.test_cases.requests }} expected_replicas=${{ matrix.test_cases.expected_replicas }}
+    name: E2E Lingo.replicas=${{ matrix.replicas }} requests=${{ matrix.test_cases.requests }} expected_replicas=${{ matrix.test_cases.expected_replicas }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
