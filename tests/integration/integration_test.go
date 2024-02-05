@@ -174,7 +174,7 @@ func TestRetryMiddleware(t *testing.T) {
 		"max retries - fails": {
 			serverCodes:    []int{http.StatusServiceUnavailable, http.StatusServiceUnavailable, http.StatusServiceUnavailable, http.StatusBadGateway},
 			expResultCode:  http.StatusBadGateway,
-			expResultBody:  "{\"error\":\"Bad Gateway\"}\n", // note the linebreak
+			expResultBody:  "502",
 			expBackendHits: 4,
 		},
 		"non retryable error code": {
@@ -195,6 +195,13 @@ func TestRetryMiddleware(t *testing.T) {
 			expResultCode:  http.StatusOK,
 			expResultBody:  "200",
 			expBackendHits: 1,
+		},
+		"503 with model header": {
+			serverCodes:    []int{http.StatusServiceUnavailable, http.StatusServiceUnavailable, http.StatusServiceUnavailable, http.StatusServiceUnavailable},
+			header:         []tuple{{k: "X-Model", v: modelName}},
+			expResultCode:  http.StatusServiceUnavailable,
+			expResultBody:  "503",
+			expBackendHits: 4,
 		},
 	}
 	for name, spec := range specs {
