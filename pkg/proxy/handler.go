@@ -163,7 +163,9 @@ func (h *Handler) proxyHTTP(w http.ResponseWriter, pr *proxyRequest) {
 		// This point could be reached if a bad response code was sent by the backend
 		// or
 		// if there was an issue with the connection and no response was ever received.
-		if err != nil && pr.attempt < h.MaxRetries {
+		if err != nil &&
+			r.Context().Err() == nil &&
+			pr.attempt < h.MaxRetries {
 			pr.attempt++
 
 			log.Printf("Retrying request (%v/%v): %v", pr.attempt, h.MaxRetries, pr.id)

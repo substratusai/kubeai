@@ -47,7 +47,6 @@ func newProxyRequest(r *http.Request) *proxyRequest {
 	}))
 
 	return pr
-
 }
 
 // done should be called when the original client request is complete.
@@ -61,14 +60,16 @@ func (p *proxyRequest) done() {
 // .model field.
 func (pr *proxyRequest) parseModel() error {
 	pr.model = pr.r.Header.Get("X-Model")
-	if pr.model != "" {
-		return nil
-	}
 
+	// always buffer body
 	var err error
 	pr.body, err = io.ReadAll(pr.r.Body)
 	if err != nil {
 		return fmt.Errorf("read: %w", err)
+	}
+
+	if pr.model != "" {
+		return nil
 	}
 
 	var payload struct {
