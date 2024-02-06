@@ -100,11 +100,8 @@ KIND_NODE=$(kind get nodes --name=substratus-test)
 docker exec ${KIND_NODE} iptables -I INPUT -p tcp --dport 6443 -j DROP
 sleep 120
 docker exec ${KIND_NODE} iptables -D INPUT -p tcp --dport 6443 -j DROP
-
-until kubectl get pods; do
-  echo "Waiting for apiserver to be back up, waiting for 1 second and trying again"
-  sleep 1
-done
+echo "Waiting for K8s to recover from apiserver outage"
+sleep 20
 
 # rerun kubectl logs because previous one got killed when apiserver was down
 kubectl logs --tail=500 -f deployment/lingo &
@@ -115,7 +112,7 @@ for i in {1..30}; do
     echo "Test failed: Expected 0 replica after not having requests for more than 1 minute, got $replicas"
     exit 1
   fi
-  replicas=$(kubectl get deployment stapi-minilm-l6-v2 -o jsonpath='{.spec.replicas}' || true)
+  replicas=$(kubectl get deployment stapi-minilm-l6-v2 -o jsonpath='{.spec.replicas}')
   if [ "$replicas" -eq 0 ]; then
     echo "Test passed: Expected 0 replica after not having requests for more than 1 minute"
     break
