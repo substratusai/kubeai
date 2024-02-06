@@ -34,11 +34,14 @@ func (s *scaler) AtLeastOne() {
 	}
 }
 
-// UpdateState updates the current state of the scaler and
-// scales if needed.
+// UpdateState updates the current state of the scaler
 func (s *scaler) UpdateState(replicas, min, max int32) {
 	log.Printf("UpdateState(%v, %v, %v)", replicas, min, max)
-	s.setMinMax(min, max)
+	s.mtx.Lock()
+	s.minScale = min
+	s.maxScale = max
+	s.currentScale = replicas
+	s.mtx.Unlock()
 }
 
 // SetDesiredScale sets the desired scale of the scaler and scales
@@ -46,13 +49,6 @@ func (s *scaler) UpdateState(replicas, min, max int32) {
 func (s *scaler) SetDesiredScale(n int32) {
 	log.Printf("SetDesiredScale(%v)", n)
 	s.compareScales(-1, s.applyMinMax(n))
-}
-
-func (s *scaler) setMinMax(min, max int32) {
-	s.mtx.Lock()
-	s.minScale = min
-	s.maxScale = max
-	s.mtx.Unlock()
 }
 
 func (s *scaler) applyMinMax(n int32) int32 {
