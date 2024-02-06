@@ -86,6 +86,12 @@ func (s *scaler) compareScales(current, desired int32) {
 		// Scale up immediately.
 		go s.scaleFunc(s.desiredScale, false)
 		s.scaleDownStarted = false
+	} else if s.desiredScale == s.currentScale {
+		// Do nothing, schedule nothing.
+		if s.scaleDownTimer != nil {
+			s.scaleDownTimer.Stop()
+		}
+		s.scaleDownStarted = false
 	} else {
 		// Schedule a scale down.
 
