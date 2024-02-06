@@ -115,7 +115,7 @@ func getModelsFromAnnotation(ann map[string]string) []string {
 }
 
 func (r *Manager) removeDeployment(req ctrl.Request) {
-	r.getScaler(req.Name).StopScaleDownTimer()
+	r.getScaler(req.Name).Stop()
 	r.scalersMtx.Lock()
 	delete(r.scalers, req.Name)
 	r.scalersMtx.Unlock()
