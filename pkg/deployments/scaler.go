@@ -29,7 +29,6 @@ func (s *scaler) AtLeastOne() {
 	defer s.mtx.Unlock()
 	log.Printf("AtLeastOne()")
 	if err := s.scaleFunc(-1, true); err != nil {
-
 		log.Printf("scale error: %v", err)
 	}
 }
@@ -39,6 +38,7 @@ func (s *scaler) AtLeastOne() {
 func (s *scaler) UpdateState(replicas, min, max int32) {
 	log.Printf("UpdateState(%v, %v, %v)", replicas, min, max)
 	s.setMinMax(min, max)
+	s.compareScales(replicas, -1)
 }
 
 // SetDesiredScale sets the desired scale of the scaler and scales
