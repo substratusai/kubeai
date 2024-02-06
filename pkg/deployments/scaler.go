@@ -111,7 +111,8 @@ func (s *scaler) compareScales(current, desired int32) {
 	}
 }
 
-func (s *scaler) StopScaleDownTimer() {
+// Stop stops the scale down process for the scaler.
+func (s *scaler) Stop() {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 	if s.scaleDownTimer != nil {

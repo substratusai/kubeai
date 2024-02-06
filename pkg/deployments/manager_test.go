@@ -144,58 +144,49 @@ func TestAddDeployment(t *testing.T) {
 func TestRemoveDeployment(t *testing.T) {
 	const myDeployment = "myDeployment"
 	specs := map[string]struct {
-		setup  func(t *testing.T, m *Manager)
-		assert func(t *testing.T, m *Manager)
+		setup      func(t *testing.T, m *Manager)
+		delay      time.Duration
+		expScalers map[string]scale
 	}{
 		"single model deployment": {
 			setup: func(t *testing.T, m *Manager) {
-				m.modelToDeployment["model1"] = myDeployment
-				m.scalers[myDeployment] = &scaler{}
+				m.setModelMapping("model1", myDeployment)
+				m.getScaler(myDeployment)
 			},
-			assert: func(t *testing.T, m *Manager) {
-				assert.Len(t, m.modelToDeployment, 0)
-				assert.Len(t, m.scalers, 0)
-			},
+			expScalers: map[string]scale{},
 		},
 		"multi model deployment": {
 			setup: func(t *testing.T, m *Manager) {
-				m.modelToDeployment["model1"] = myDeployment
-				m.modelToDeployment["model2"] = myDeployment
-				m.modelToDeployment["other"] = "other"
-				m.scalers[myDeployment] = &scaler{}
-				m.scalers["other"] = &scaler{}
+				m.setModelMapping("model1", myDeployment)
+				m.setModelMapping("model2", myDeployment)
+				m.setModelMapping("other", "other")
+				m.getScaler(myDeployment)
+				m.getScaler("other")
 			},
-			assert: func(t *testing.T, m *Manager) {
-				assert.Equal(t, map[string]string{"other": "other"}, m.modelToDeployment)
-				assert.Equal(t, map[string]*scaler{"other": {}}, m.scalers)
-			},
+			expScalers: map[string]scale{"other": {Current: -1}},
 		},
 		"unknown deployment - ignored": {
 			setup: func(t *testing.T, m *Manager) {
-				m.modelToDeployment["other"] = "other"
-				m.scalers["other"] = &scaler{}
+				m.setModelMapping("other", "other")
+				m.getScaler("other")
 			},
-			assert: func(t *testing.T, m *Manager) {
-				assert.Equal(t, map[string]string{"other": "other"}, m.modelToDeployment)
-				assert.Equal(t, map[string]*scaler{"other": {}}, m.scalers)
-			},
+			expScalers: map[string]scale{"other": {Current: -1}},
 		},
 		"scale down timer stopped": {
 			setup: func(t *testing.T, m *Manager) {
-				m.modelToDeployment["model1"] = myDeployment
-				m.scalers[myDeployment] = &scaler{
-					scaleDownStarted: true,
-					scaleDownTimer: time.AfterFunc(100*time.Millisecond, func() {
-						t.Fatal("scale down timer not stopped")
-					}),
+				m.setModelMapping("model1", myDeployment)
+				s := m.getScaler(myDeployment)
+				s.scaleDownDelay = 50 * time.Millisecond
+				s.scaleFunc = func(n int32, atLeastOne bool) error {
+					t.Fatal("scale down timer not stopped")
+					return nil
 				}
+				s.UpdateState(1, 0, 1)
+				s.SetDesiredScale(0)
+				require.True(t, s.scaleDownStarted)
 			},
-			assert: func(t *testing.T, m *Manager) {
-				// wait a bit longer than the timer would need to run
-				time.Sleep(120 * time.Millisecond)
-				assert.Len(t, m.modelToDeployment, 0)
-				assert.Len(t, m.scalers, 0)
-			},
+			delay:      80 * time.Millisecond,
+			expScalers: map[string]scale{},
 		},
 	}
 	for name, spec := range specs {
@@ -208,8 +199,11 @@ func TestRemoveDeployment(t *testing.T) {
 			req := reconcile.Request{NamespacedName: types.NamespacedName{Name: myDeployment}}
 			// when
 			m.removeDeployment(req)
+			time.Sleep(spec.delay) // let scale down timer run
 			// then
-			spec.assert(t, m)
+			_, exists := m.ResolveDeployment(myDeployment)
+			assert.False(t, exists)
+			assert.Equal(t, spec.expScalers, m.getScalesSnapshot())
 		})
 	}
 }
