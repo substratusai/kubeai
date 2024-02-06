@@ -101,7 +101,10 @@ docker exec ${KIND_NODE} iptables -I INPUT -p tcp --dport 6443 -j DROP
 sleep 120
 docker exec ${KIND_NODE} iptables -D INPUT -p tcp --dport 6443 -j DROP
 echo "Waiting for K8s to recover from apiserver outage"
-sleep 20
+sleep 30
+until kubectl get deployment stapi-minilm-l6-v2; do
+  sleep 1
+done
 
 # rerun kubectl logs because previous one got killed when apiserver was down
 kubectl logs --tail=500 -f deployment/lingo &
