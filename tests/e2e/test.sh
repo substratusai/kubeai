@@ -47,8 +47,6 @@ fi
 
 kubectl patch deployment lingo --patch "{\"spec\": {\"replicas\": $REPLICAS}}"
 
-kubectl logs -f deployment/lingo &
-
 kubectl wait --for=condition=available --timeout=30s deployment/lingo
 
 
@@ -106,13 +104,11 @@ until kubectl get deployment stapi-minilm-l6-v2; do
   sleep 1
 done
 
-# rerun kubectl logs because previous one got killed when apiserver was down
-kubectl logs --tail=500 -f deployment/lingo &
-
 echo "Waiting for deployment to scale down back to 0 within ~2 minutes"
 for i in {1..30}; do
   if [ "$i" -eq 30 ]; then
     echo "Test failed: Expected 0 replica after not having requests for more than 1 minute, got $replicas"
+    kubectl logs -l app=lingo --tail=-1
     exit 1
   fi
   replicas=$(kubectl get deployment stapi-minilm-l6-v2 -o jsonpath='{.spec.replicas}')
