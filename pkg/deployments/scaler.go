@@ -116,6 +116,15 @@ func (s *scaler) compareScales(current, desired int32) {
 	}
 }
 
+func (s *scaler) StopScaleDownTimer() {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
+	if s.scaleDownTimer != nil {
+		s.scaleDownTimer.Stop()
+	}
+	s.scaleDownStarted = false
+}
+
 type scale struct {
 	Current, Min, Max int32
 }
