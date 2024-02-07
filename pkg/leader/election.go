@@ -10,6 +10,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
+	"k8s.io/client-go/util/flowcontrol"
 )
 
 func NewElection(clientset kubernetes.Interface, id, namespace string) *Election {
@@ -35,11 +36,11 @@ func NewElection(clientset kubernetes.Interface, id, namespace string) *Election
 		RetryPeriod:     2 * time.Second,
 		Callbacks: leaderelection.LeaderCallbacks{
 			OnStartedLeading: func(ctx context.Context) {
-				log.Println("Started leading")
+				log.Printf("%q started leading", id)
 				isLeader.Store(true)
 			},
 			OnStoppedLeading: func() {
-				log.Println("Stopped leading")
+				log.Printf("%q stopped leading", id)
 				isLeader.Store(false)
 			},
 			OnNewLeader: func(identity string) {
@@ -54,14 +55,28 @@ func NewElection(clientset kubernetes.Interface, id, namespace string) *Election
 	return &Election{
 		IsLeader: isLeader,
 		config:   config,
+		ID:       id,
 	}
 }
 
 type Election struct {
 	config   leaderelection.LeaderElectionConfig
 	IsLeader *atomic.Bool
+	ID       string
 }
 
-func (le *Election) Start(ctx context.Context) {
-	leaderelection.RunOrDie(ctx, le.config)
+func (le *Election) Start(ctx context.Context) error {
+	backoff := flowcontrol.NewBackOff(1*time.Second, 15*time.Second)
+	const backoffID = "lingo-leader-election"
+	for {
+		leaderelection.RunOrDie(ctx, le.config)
+		backoff.Next(backoffID, backoff.Clock.Now())
+		delay := backoff.Get(backoffID)
+		log.Printf("Leader election stopped on %q, retrying in %s", le.ID, delay)
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(delay):
+		}
+	}
 }

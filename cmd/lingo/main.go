@@ -182,7 +182,11 @@ func run() error {
 	}()
 	go func() {
 		setupLog.Info("Starting leader election")
-		le.Start(ctx)
+		err := le.Start(ctx)
+		if err != nil {
+			setupLog.Error(err, "starting leader election")
+			os.Exit(1)
+		}
 	}()
 	defer func() {
 		setupLog.Info("waiting on manager to stop")

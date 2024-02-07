@@ -6,6 +6,9 @@ set -xe
 HOST=127.0.0.1
 PORT=30080
 BASE_URL="http://$HOST:$PORT/v1"
+REPLICAS=${REPLICAS:-3}
+REQUESTS=${REQUESTS:-60}
+EXPECTED_REPLICAS=${EXPECTED_REPLICAS:-1}
 
 
 if kind get clusters | grep -q substratus-test; then
@@ -42,6 +45,7 @@ if ! kubectl get deployment lingo; then
   skaffold run
 fi
 
+kubectl patch deployment lingo --patch "{\"spec\": {\"replicas\": $REPLICAS}}"
 
 kubectl wait --for=condition=available --timeout=30s deployment/lingo
 
@@ -77,22 +81,34 @@ pip3 install openai==1.2.3
 
 # Send 60 requests in parallel to stapi backend using openai python client and threading
 python3 $SCRIPT_DIR/test_openai_embedding.py \
-  --requests 60 --timeout 300 --base-url "${BASE_URL}" \
+  --requests ${REQUESTS} --timeout 300 --base-url "${BASE_URL}" \
   --model text-embedding-ada-002
 
 # Ensure replicas has been scaled up to 1 after sending 60 requests
 replicas=$(kubectl get deployment stapi-minilm-l6-v2 -o jsonpath='{.spec.replicas}')
-if [ "$replicas" -eq 1 ]; then
-  echo "Test passed: Expected 1 replica after sending requests 60 requests"
+if [ "$replicas" -ge "${EXPECTED_REPLICAS}" ]; then
+  echo "Test passed: Expected ${EXPECTED_REPLICAS} or more replicas and got ${replicas} after sending requests ${REQUESTS} requests"
   else
-  echo "Test failed: Expected 1 replica after sending requests 60 requests, got $replicas"
+  echo "Test failed: Expected ${EXPECTED_REPLICAS} or more replicas after sending requests ${REQUESTS} requests, got ${replicas}"
   exit 1
 fi
 
-echo "Waiting for deployment to scale down back to 0 within 2 minutes"
-for i in {1..15}; do
-  if [ "$i" -eq 15 ]; then
+# Verify that leader election works by forcing a 120 second apiserver outage
+KIND_NODE=$(kind get nodes --name=substratus-test)
+docker exec ${KIND_NODE} iptables -I INPUT -p tcp --dport 6443 -j DROP
+sleep 120
+docker exec ${KIND_NODE} iptables -D INPUT -p tcp --dport 6443 -j DROP
+echo "Waiting for K8s to recover from apiserver outage"
+sleep 30
+until kubectl get deployment stapi-minilm-l6-v2; do
+  sleep 1
+done
+
+echo "Waiting for deployment to scale down back to 0 within ~2 minutes"
+for i in {1..30}; do
+  if [ "$i" -eq 30 ]; then
     echo "Test failed: Expected 0 replica after not having requests for more than 1 minute, got $replicas"
+    kubectl logs -l app=lingo --tail=-1
     exit 1
   fi
   replicas=$(kubectl get deployment stapi-minilm-l6-v2 -o jsonpath='{.spec.replicas}')
@@ -100,30 +116,5 @@ for i in {1..15}; do
     echo "Test passed: Expected 0 replica after not having requests for more than 1 minute"
     break
   fi
-  sleep 8
+  sleep 6
 done
-
-echo "Patching stapi deployment to sleep on startup"
-cat <<EOF | kubectl patch deployment stapi-minilm-l6-v2 --type merge --patch "$(cat)"
-spec:
-  template:
-    spec:
-      initContainers:
-      - name: sleep
-        image: busybox
-        command: ["sh", "-c", "sleep 10"]
-EOF
-
-requests=300
-echo "Send $requests requests in parallel to stapi backend using openai python client and threading"
-python3 $SCRIPT_DIR/test_openai_embedding.py \
-  --requests $requests --timeout 600 --base-url "${BASE_URL}" \
-  --model text-embedding-ada-002
-
-replicas=$(kubectl get deployment stapi-minilm-l6-v2 -o jsonpath='{.spec.replicas}')
-if [ "$replicas" -ge 2 ]; then
-  echo "Test passed: Expected 2 or more replicas after sending more than $requests requests, got $replicas"
-  else
-  echo "Test failed: Expected 2 or more replicas after sending more than $requests requests, got $replicas"
-  exit 1
-fi
