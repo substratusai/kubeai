@@ -85,35 +85,38 @@ func (s *scaler) compareScales(current, desired int32) {
 	if s.desiredScale > s.currentScale {
 		// Scale up immediately.
 		go s.scaleFunc(s.desiredScale, false)
-		s.scaleDownStarted = false
+		s.stopScaleDown()
 	} else if s.desiredScale == s.currentScale {
 		// Do nothing, schedule nothing.
-		if s.scaleDownTimer != nil {
-			s.scaleDownTimer.Stop()
-		}
-		s.scaleDownStarted = false
+		s.stopScaleDown()
 	} else {
 		// Schedule a scale down.
-
 		if s.scaleDownTimer == nil {
 			s.scaleDownTimer = time.AfterFunc(s.scaleDownDelay, func() {
-				if s.desiredScale == -1 || s.desiredScale == s.currentScale {
-					s.scaleDownStarted = false
+				s.mtx.Lock()
+				s.scaleDownStarted = false // mark completed already
+				desiredScale, currentScale := s.desiredScale, s.currentScale
+				s.mtx.Unlock()
+				if desiredScale == -1 || desiredScale == currentScale {
 					return
 				}
-				if err := s.scaleFunc(s.desiredScale, false); err != nil {
+				if err := s.scaleFunc(desiredScale, false); err != nil {
 					log.Printf("task: run error: %v", err)
-				} else {
-					s.scaleDownStarted = false
-					s.compareScales(s.desiredScale, -1)
 				}
 			})
 		} else if !s.scaleDownStarted {
 			s.scaleDownTimer.Reset(s.scaleDownDelay)
 		}
-
 		s.scaleDownStarted = true
 	}
+}
+
+// helper to stop async scale down. caller must hold the write lock
+func (s *scaler) stopScaleDown() {
+	if s.scaleDownTimer != nil && s.scaleDownStarted {
+		s.scaleDownTimer.Stop()
+	}
+	s.scaleDownStarted = false
 }
 
 type scale struct {
