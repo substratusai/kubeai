@@ -89,19 +89,22 @@ func (s *scaler) compareScales(current, desired int32) {
 	if s.desiredScale > s.currentScale {
 		// Scale up immediately.
 		go s.scaleFunc(s.desiredScale, false)
-		s.scaleDownStarted = false
+		s.stopScaleDown()
 	} else if s.desiredScale == s.currentScale {
 		// Do nothing, schedule nothing.
-		if s.scaleDownTimer != nil {
-			s.scaleDownTimer.Stop()
-		}
-		s.scaleDownStarted = false
+		s.stopScaleDown()
 	} else {
 		// Schedule a scale down.
-
 		if s.scaleDownTimer == nil {
 			s.scaleDownTimer = time.AfterFunc(s.scaleDownDelay, func() {
-				if err := s.scaleFunc(s.desiredScale, false); err != nil {
+				s.mtx.Lock()
+				s.scaleDownStarted = false // mark completed already
+				desiredScale, currentScale := s.desiredScale, s.currentScale
+				s.mtx.Unlock()
+				if desiredScale == -1 || desiredScale == currentScale {
+					return
+				}
+				if err := s.scaleFunc(desiredScale, false); err != nil {
 					log.Printf("task: run error: %v", err)
 				} else {
 					s.scaleDownStarted = false
@@ -116,11 +119,16 @@ func (s *scaler) compareScales(current, desired int32) {
 	}
 }
 
-// Stop stops the scale down process for the scaler.
+// Stop stops the scale down process for the scaler and unsets the desired scale
 func (s *scaler) Stop() {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
-	if s.scaleDownTimer != nil {
+	s.stopScaleDown()
+	s.desiredScale = -1
+}
+
+func (s *scaler) stopScaleDown() {
+	if s.scaleDownTimer != nil && s.scaleDownStarted {
 		s.scaleDownTimer.Stop()
 	}
 	s.scaleDownStarted = false
