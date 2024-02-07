@@ -93,9 +93,9 @@ func (s *scaler) compareScales(current, desired int32) {
 		if s.scaleDownTimer == nil {
 			s.scaleDownTimer = time.AfterFunc(s.scaleDownDelay, func() {
 				s.mtx.Lock()
+				defer s.mtx.Unlock()
 				s.scaleDownStarted = false // mark completed already
 				desiredScale, currentScale := s.desiredScale, s.currentScale
-				s.mtx.Unlock()
 				if desiredScale == -1 || desiredScale == currentScale {
 					return
 				}
@@ -103,13 +103,12 @@ func (s *scaler) compareScales(current, desired int32) {
 					log.Printf("task: run error: %v", err)
 				} else {
 					s.scaleDownStarted = false
-					s.compareScales(s.desiredScale, -1)
+					s.currentScale = desiredScale
 				}
 			})
 		} else if !s.scaleDownStarted {
 			s.scaleDownTimer.Reset(s.scaleDownDelay)
 		}
-
 		s.scaleDownStarted = true
 	}
 }
