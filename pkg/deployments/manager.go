@@ -230,6 +230,15 @@ func (r *Manager) ReadinessChecker(_ *http.Request) error {
 	return nil
 }
 
+// StopScalers stops all scheduled scale down processes and resets desired state
+func (r *Manager) StopScalers() {
+	r.scalersMtx.Lock()
+	defer r.scalersMtx.Unlock()
+	for _, s := range r.scalers {
+		s.Stop()
+	}
+}
+
 func getAnnotationInt32(ann map[string]string, key string, defaultValue int32) int32 {
 	if ann == nil {
 		return defaultValue
