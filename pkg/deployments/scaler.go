@@ -41,6 +41,7 @@ func (s *scaler) UpdateState(replicas, min, max int32) {
 	s.minScale = min
 	s.maxScale = max
 	s.currentScale = replicas
+	s.desiredScale = -1
 }
 
 // SetDesiredScale sets the desired scale of the scaler and scales
@@ -96,6 +97,10 @@ func (s *scaler) compareScales(current, desired int32) {
 
 		if s.scaleDownTimer == nil {
 			s.scaleDownTimer = time.AfterFunc(s.scaleDownDelay, func() {
+				if s.desiredScale == -1 || s.desiredScale == s.currentScale {
+					s.scaleDownStarted = false
+					return
+				}
 				if err := s.scaleFunc(s.desiredScale, false); err != nil {
 					log.Printf("task: run error: %v", err)
 				} else {

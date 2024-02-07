@@ -2,8 +2,10 @@ package deployments
 
 import (
 	"context"
+	"math/rand"
 	"reflect"
 	"testing"
+	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
@@ -134,6 +136,67 @@ func TestAddDeployment(t *testing.T) {
 			assert.Equal(t, spec.expScale, scales["my-deployment"])
 		})
 	}
+}
+
+func TestScalerState(t *testing.T) {
+	const myDeployment = "myDeployment"
+	ctx, cancel := context.WithCancel(context.Background())
+	r1, r2 := make(chan int32, 1), make(chan int32, 1)
+
+	doReconcile := func(s *scaler, b <-chan int32) {
+		for {
+			select {
+			case n := <-b: // reconcile
+				s.UpdateState(n, 0, 3)
+			case <-ctx.Done():
+				return
+			}
+		}
+	}
+
+	// leader
+	s1 := setupTestScaler(t, myDeployment, "old leader", r1, r2)
+	// add deployment on reconcile
+	s1.UpdateState(1, 0, 3)
+	// scale down: idle
+	s1.SetDesiredScale(0)
+	// reconcile
+	// s1.UpdateState(0, 0, 3)
+	go doReconcile(s1, r1)
+
+	// new leader instance elected, old one still has state
+	s2 := setupTestScaler(t, myDeployment, "new leader", r1, r2)
+	// setup on startup
+	s2.UpdateState(0, 0, 3)
+	// some requests, scale up by autoscaler
+	s2.SetDesiredScale(1)
+	// s2.UpdateState(1, 0, 3)
+	go doReconcile(s2, r2)
+
+	// finalize
+	time.Sleep(2 * time.Second)
+	cancel()
+}
+
+func setupTestScaler(t *testing.T, myDeployment, name string, broadcasts ...chan<- int32) *scaler {
+	m1 := &Manager{
+		scalers:           make(map[string]*scaler),
+		modelToDeployment: make(map[string]string),
+	}
+	m1.setModelMapping("model1", myDeployment)
+	s := m1.getScaler(myDeployment)
+	s.scaleDownDelay = 50 * time.Millisecond
+	s.scaleFunc = func(n int32, atLeastOne bool) error {
+		t.Logf("%s scaler: new replicas: %d, %v", name, n, atLeastOne)
+		for _, b := range broadcasts {
+			go func(b chan<- int32) {
+				time.Sleep(time.Duration(rand.Int()%100) * time.Nanosecond)
+				b <- n
+			}(b)
+		}
+		return nil
+	}
+	return s
 }
 
 type partialFakeClient struct {
