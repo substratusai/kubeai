@@ -26,7 +26,6 @@ func NewManager(mgr ctrl.Manager) (*Manager, error) {
 	r.Client = mgr.GetClient()
 	r.scalers = map[string]*scaler{}
 	r.modelToDeployment = map[string]string{}
-	r.deployments = map[string]struct{}{}
 	if err := r.SetupWithManager(mgr); err != nil {
 		return nil, err
 	}
@@ -39,11 +38,6 @@ type Manager struct {
 	Namespace string
 
 	ScaleDownPeriod time.Duration
-
-	// TODO remove deploymentsMtx and deployments once #59 is fixed
-	deploymentsMtx sync.RWMutex
-	// deployments is a set of deployment names that are managed by the Manager
-	deployments map[string]struct{}
 
 	scalersMtx sync.Mutex
 
@@ -102,9 +96,6 @@ func (r *Manager) addDeployment(ctx context.Context, d appsv1.Deployment) error 
 
 	deploymentName := d.Name
 
-	r.deploymentsMtx.Lock()
-	r.deployments[deploymentName] = struct{}{}
-	r.deploymentsMtx.Unlock()
 	r.getScaler(deploymentName).UpdateState(
 		scale.Spec.Replicas,
 		getAnnotationInt32(d.GetAnnotations(), lingoDomain+"/min-replicas", 0),
@@ -114,12 +105,12 @@ func (r *Manager) addDeployment(ctx context.Context, d appsv1.Deployment) error 
 	return nil
 }
 
-// TODO remove this function once #59 is fixed
-func (r *Manager) HasModel(deploymentName string) bool {
-	r.deploymentsMtx.RLock()
-	defer r.deploymentsMtx.RUnlock()
-	_, exists := r.deployments[deploymentName]
-	return exists
+func (r *Manager) HasModel(d *appsv1.Deployment) bool {
+	models := getModelsFromAnnotation(d.GetAnnotations())
+	if len(models) == 0 {
+		return false
+	}
+	return true
 }
 
 func getModelsFromAnnotation(ann map[string]string) []string {
@@ -145,10 +136,6 @@ func (r *Manager) removeDeployment(req ctrl.Request) {
 		}
 	}
 	r.modelToDeploymentMtx.Unlock()
-
-	r.deploymentsMtx.Lock()
-	delete(r.deployments, req.Name)
-	r.deploymentsMtx.Unlock()
 }
 
 func (r *Manager) getScaler(deploymentName string) *scaler {
@@ -176,10 +163,6 @@ func (r *Manager) getScalesSnapshot() map[string]scale {
 
 func (r *Manager) scaleFunc(ctx context.Context, deploymentName string) func(int32, bool) error {
 	return func(n int32, atLeastOne bool) error {
-		if !r.HasModel(deploymentName) {
-			return fmt.Errorf("not scaling deployment %q: not managed by this manager", deploymentName)
-		}
-
 		if atLeastOne {
 			log.Printf("Scaling model %q: at-least-one", deploymentName)
 		} else {
@@ -190,6 +173,10 @@ func (r *Manager) scaleFunc(ctx context.Context, deploymentName string) func(int
 		var d appsv1.Deployment
 		if err := r.Get(ctx, req, &d); err != nil {
 			return fmt.Errorf("get: %w", err)
+		}
+
+		if !r.HasModel(&d) {
+			return fmt.Errorf("not scaling deployment %q: deployment has no models annotation", deploymentName)
 		}
 
 		var scale autoscalingv1.Scale

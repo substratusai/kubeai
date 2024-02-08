@@ -119,7 +119,6 @@ func TestAddDeployment(t *testing.T) {
 				Client:            &partialFakeClient{subRes: depScale},
 				Namespace:         "default",
 				modelToDeployment: make(map[string]string),
-				deployments:       map[string]struct{}{},
 				scalers:           map[string]*scaler{},
 			}
 
