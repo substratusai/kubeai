@@ -3,7 +3,6 @@ package leader
 import (
 	"context"
 	"log"
-	"sync"
 	"sync/atomic"
 	"time"
 
@@ -26,11 +25,8 @@ func NewElection(clientset kubernetes.Interface, id, namespace string) *Election
 		},
 	}
 
-	var (
-		isLeader = &atomic.Bool{}
-		hooksMtx sync.RWMutex
-		hooks    []func()
-	)
+	isLeader := &atomic.Bool{}
+
 	config := leaderelection.LeaderElectionConfig{
 		Lock: lock,
 		// TODO: Set to true after ensuring autoscaling is done before cancel:
@@ -46,11 +42,6 @@ func NewElection(clientset kubernetes.Interface, id, namespace string) *Election
 			OnStoppedLeading: func() {
 				log.Printf("%q stopped leading", id)
 				isLeader.Store(false)
-				hooksMtx.RLock()
-				defer hooksMtx.RUnlock()
-				for _, hook := range hooks {
-					hook()
-				}
 			},
 			OnNewLeader: func(identity string) {
 				if identity == id {
@@ -65,8 +56,6 @@ func NewElection(clientset kubernetes.Interface, id, namespace string) *Election
 		IsLeader: isLeader,
 		config:   config,
 		ID:       id,
-		hooksMtx: &hooksMtx,
-		hooks:    &hooks,
 	}
 }
 
@@ -74,8 +63,6 @@ type Election struct {
 	config   leaderelection.LeaderElectionConfig
 	IsLeader *atomic.Bool
 	ID       string
-	hooks    *[]func()
-	hooksMtx *sync.RWMutex
 }
 
 func (le *Election) Start(ctx context.Context) error {
@@ -92,11 +79,4 @@ func (le *Election) Start(ctx context.Context) error {
 		case <-time.After(delay):
 		}
 	}
-}
-
-func (le *Election) AfterOnStoppedLeading(f func()) {
-	le.hooksMtx.Lock()
-	defer le.hooksMtx.Unlock()
-
-	*le.hooks = append(*le.hooks, f)
 }
