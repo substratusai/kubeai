@@ -93,6 +93,11 @@ func (a *Autoscaler) Start() {
 		}
 
 		for deploymentName, waitCount := range stats.ActiveRequests {
+			// TODO remove this check and ensure only stats for deployments with models are returned
+			if !a.Deployments.HasModel(deploymentName) {
+				log.Printf("Deployment: %v has no model annotations, skipping", deploymentName)
+				continue
+			}
 			log.Println("Is leader, autoscaling")
 			avg := a.getMovingAvgQueueSize(deploymentName)
 			avg.Next(float64(waitCount))
@@ -130,6 +135,7 @@ func aggregateStats(s stats.Stats, httpc *http.Client, endpoints []string) (stat
 			continue
 		}
 		for k, v := range fetched.ActiveRequests {
+
 			log.Printf("Aggregating active requests for endpoint: %v: %v: %v", endpoint, k, v)
 			s.ActiveRequests[k] = fetched.ActiveRequests[k] + v
 		}

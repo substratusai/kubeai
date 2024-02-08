@@ -26,6 +26,7 @@ func NewManager(mgr ctrl.Manager) (*Manager, error) {
 	r.Client = mgr.GetClient()
 	r.scalers = map[string]*scaler{}
 	r.modelToDeployment = map[string]string{}
+	r.deployments = map[string]struct{}{}
 	if err := r.SetupWithManager(mgr); err != nil {
 		return nil, err
 	}
@@ -38,6 +39,10 @@ type Manager struct {
 	Namespace string
 
 	ScaleDownPeriod time.Duration
+
+	deploymentsMtx sync.RWMutex
+	// deployments is a set of deployment names that are managed by the Manager
+	deployments map[string]struct{}
 
 	scalersMtx sync.Mutex
 
@@ -95,6 +100,10 @@ func (r *Manager) addDeployment(ctx context.Context, d appsv1.Deployment) error 
 	}
 
 	deploymentName := d.Name
+
+	r.deploymentsMtx.Lock()
+	r.deployments[deploymentName] = struct{}{}
+	r.deploymentsMtx.Unlock()
 	r.getScaler(deploymentName).UpdateState(
 		scale.Spec.Replicas,
 		getAnnotationInt32(d.GetAnnotations(), lingoDomain+"/min-replicas", 0),
@@ -102,6 +111,13 @@ func (r *Manager) addDeployment(ctx context.Context, d appsv1.Deployment) error 
 	)
 
 	return nil
+}
+
+func (r *Manager) HasModel(deploymentName string) bool {
+	r.deploymentsMtx.RLock()
+	defer r.deploymentsMtx.RUnlock()
+	_, exists := r.deployments[deploymentName]
+	return exists
 }
 
 func getModelsFromAnnotation(ann map[string]string) []string {
