@@ -4,7 +4,6 @@ import (
 	"context"
 	"reflect"
 	"testing"
-	"time"
 
 	"k8s.io/apimachinery/pkg/types"
 
@@ -146,7 +145,6 @@ func TestRemoveDeployment(t *testing.T) {
 	const myDeployment = "myDeployment"
 	specs := map[string]struct {
 		setup      func(t *testing.T, m *Manager)
-		delay      time.Duration
 		expScalers map[string]scale
 	}{
 		"single model deployment": {
@@ -184,7 +182,6 @@ func TestRemoveDeployment(t *testing.T) {
 			req := reconcile.Request{NamespacedName: types.NamespacedName{Name: myDeployment}}
 			// when
 			m.removeDeployment(req)
-			time.Sleep(spec.delay) // let scale down timer run
 			// then
 			_, exists := m.ResolveDeployment(myDeployment)
 			assert.False(t, exists)
