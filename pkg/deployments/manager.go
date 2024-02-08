@@ -82,6 +82,7 @@ func (r *Manager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result,
 
 func (r *Manager) addDeployment(ctx context.Context, d appsv1.Deployment) error {
 	models := getModelsFromAnnotation(d.GetAnnotations())
+	log.Printf("deployment: %v models: %v", d.Name, models)
 	if len(models) == 0 {
 		return nil
 	}
