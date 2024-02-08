@@ -105,7 +105,7 @@ func (r *Manager) addDeployment(ctx context.Context, d appsv1.Deployment) error 
 	return nil
 }
 
-func (r *Manager) HasModel(d *appsv1.Deployment) bool {
+func (r *Manager) hasModel(d *appsv1.Deployment) bool {
 	models := getModelsFromAnnotation(d.GetAnnotations())
 	if len(models) == 0 {
 		return false
@@ -175,7 +175,7 @@ func (r *Manager) scaleFunc(ctx context.Context, deploymentName string) func(int
 			return fmt.Errorf("get: %w", err)
 		}
 
-		if !r.HasModel(&d) {
+		if !r.hasModel(&d) {
 			return fmt.Errorf("not scaling deployment %q: deployment has no models annotation", deploymentName)
 		}
 
