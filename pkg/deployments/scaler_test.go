@@ -91,14 +91,14 @@ func TestSetDesiredScale(t *testing.T) {
 			s.UpdateState(tc.current, tc.minScale, tc.maxScale)
 			scaleFuncCalled = false
 
-			mockScaleWG.Add(1)
+			if tc.expectedScaleFunc {
+				mockScaleWG.Add(1)
+			}
 			// Action
 			s.SetDesiredScale(tc.desiredScale)
 
-			if tc.expectedScaleFunc {
-				// Wait for the scale function to be called
-				mockScaleWG.Wait()
-			}
+			// Wait for the scale function to be called
+			mockScaleWG.Wait()
 
 			// Assertions
 			mockScaleMtx.Lock() // Ensure consistency of the checked state
