@@ -93,13 +93,6 @@ func (a *Autoscaler) Start() {
 		}
 
 		for deploymentName, waitCount := range stats.ActiveRequests {
-			// TODO remove this check and ensure only stats for deployments with models are returned.
-			// Currently stats.ActiveRequests includes service names / deployments that have no model annotation.
-			// This check is needed to prevent Lingo from scaling itself and other deployments to 0
-			if !a.Deployments.HasModel(deploymentName) {
-				log.Printf("Deployment: %v has no model annotations, skipping", deploymentName)
-				continue
-			}
 			log.Println("Is leader, autoscaling")
 			avg := a.getMovingAvgQueueSize(deploymentName)
 			avg.Next(float64(waitCount))

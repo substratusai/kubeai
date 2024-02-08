@@ -176,6 +176,10 @@ func (r *Manager) getScalesSnapshot() map[string]scale {
 
 func (r *Manager) scaleFunc(ctx context.Context, deploymentName string) func(int32, bool) error {
 	return func(n int32, atLeastOne bool) error {
+		if !r.HasModel(deploymentName) {
+			return fmt.Errorf("not scaling deployment %q: not managed by this manager", deploymentName)
+		}
+
 		if atLeastOne {
 			log.Printf("Scaling model %q: at-least-one", deploymentName)
 		} else {
