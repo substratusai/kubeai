@@ -29,7 +29,6 @@ func newScaler(scaleDownDelay time.Duration, scaleFunc func(int32, bool) error) 
 		currentScale:   -1,
 		desiredScale:   -1,
 		scaleDownDelay: scaleDownDelay,
-		lastScaleDown:  time.Now(),
 	}
 
 	s.scaleFunc = func(n int32, atLeastOne bool) error {
@@ -89,7 +88,7 @@ func (s *scaler) SetDesiredScale(n int32) {
 	} else if s.desiredScale == s.currentScale {
 		log.Println("Desired scale equals current scale, doing nothing")
 	} else {
-		if time.Since(s.lastScaleDown) >= s.scaleDownDelay {
+		if s.lastScaleDown.IsZero() || time.Since(s.lastScaleDown) >= s.scaleDownDelay {
 			go func() {
 				if err := s.scaleFunc(s.desiredScale, false); err != nil {
 					log.Printf("scale down error: %v", err)
