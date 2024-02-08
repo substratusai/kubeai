@@ -115,7 +115,6 @@ func getModelsFromAnnotation(ann map[string]string) []string {
 }
 
 func (r *Manager) removeDeployment(req ctrl.Request) {
-	r.getScaler(req.Name).Stop()
 	r.scalersMtx.Lock()
 	delete(r.scalers, req.Name)
 	r.scalersMtx.Unlock()
@@ -228,15 +227,6 @@ func (r *Manager) ReadinessChecker(_ *http.Request) error {
 		return fmt.Errorf("not boostrapped yet")
 	}
 	return nil
-}
-
-// StopScalers stops all scheduled scale down processes and resets desired state
-func (r *Manager) StopScalers() {
-	r.scalersMtx.Lock()
-	defer r.scalersMtx.Unlock()
-	for _, s := range r.scalers {
-		s.Stop()
-	}
 }
 
 func getAnnotationInt32(ann map[string]string, key string, defaultValue int32) int32 {

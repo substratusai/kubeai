@@ -71,7 +71,6 @@ func (r *Autoscaler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 }
 
 func (a *Autoscaler) Start() {
-	a.LeaderElection.AfterOnStoppedLeading(a.Deployments.StopScalers)
 	for range time.Tick(a.Interval) {
 		if !a.LeaderElection.IsLeader.Load() {
 			log.Println("Not leader, doing nothing")

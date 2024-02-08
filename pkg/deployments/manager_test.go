@@ -172,22 +172,6 @@ func TestRemoveDeployment(t *testing.T) {
 			},
 			expScalers: map[string]scale{"other": {Current: -1}},
 		},
-		"scale down timer stopped": {
-			setup: func(t *testing.T, m *Manager) {
-				m.setModelMapping("model1", myDeployment)
-				s := m.getScaler(myDeployment)
-				s.scaleDownDelay = 50 * time.Millisecond
-				s.scaleFunc = func(n int32, atLeastOne bool) error {
-					t.Fatal("scale down timer not stopped")
-					return nil
-				}
-				s.UpdateState(1, 0, 1)
-				s.SetDesiredScale(0)
-				require.True(t, s.scaleDownStarted)
-			},
-			delay:      80 * time.Millisecond,
-			expScalers: map[string]scale{},
-		},
 	}
 	for name, spec := range specs {
 		t.Run(name, func(t *testing.T) {
