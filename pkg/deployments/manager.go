@@ -40,6 +40,7 @@ type Manager struct {
 
 	ScaleDownPeriod time.Duration
 
+	// TODO remove deploymentsMtx and deployments once #59 is fixed
 	deploymentsMtx sync.RWMutex
 	// deployments is a set of deployment names that are managed by the Manager
 	deployments map[string]struct{}
@@ -113,6 +114,7 @@ func (r *Manager) addDeployment(ctx context.Context, d appsv1.Deployment) error 
 	return nil
 }
 
+// TODO remove this function once #59 is fixed
 func (r *Manager) HasModel(deploymentName string) bool {
 	r.deploymentsMtx.RLock()
 	defer r.deploymentsMtx.RUnlock()
