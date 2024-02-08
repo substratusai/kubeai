@@ -14,6 +14,7 @@ func TestSetDesiredScale(t *testing.T) {
 		minScale          int32
 		maxScale          int32
 		desiredScale      int32
+		lastScaleDown     time.Time
 		expectedScaleFunc bool
 		expectedLastScale int32
 	}{
@@ -35,16 +36,35 @@ func TestSetDesiredScale(t *testing.T) {
 			expectedScaleFunc: true,
 			expectedLastScale: 10,
 		},
-		// TODO: Add more test cases for scale down, currently results in DATA RACE
-		//		{
-		//			name:              "Scale down within bounds",
-		//			current:           5,
-		//			minScale:          1,
-		//			maxScale:          10,
-		//			desiredScale:      3,
-		//			expectedScaleFunc: true,
-		//			expectedLastScale: 3,
-		//		},
+		{
+			name:              "Scale to min only when below min scale",
+			current:           5,
+			minScale:          1,
+			maxScale:          10,
+			desiredScale:      0,
+			expectedScaleFunc: true,
+			expectedLastScale: 1,
+		},
+		{
+			name:              "Scale down within bounds",
+			current:           5,
+			minScale:          1,
+			maxScale:          10,
+			desiredScale:      3,
+			expectedScaleFunc: true,
+			lastScaleDown:     time.Now().Add(-2 * time.Second),
+			expectedLastScale: 3,
+		},
+		{
+			name:              "Scale down needs to wait",
+			current:           5,
+			minScale:          1,
+			maxScale:          10,
+			desiredScale:      3,
+			expectedScaleFunc: false,
+			lastScaleDown:     time.Now().Add(5 * time.Second),
+			expectedLastScale: 3,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -65,6 +85,7 @@ func TestSetDesiredScale(t *testing.T) {
 				return nil
 			}
 			s := newScaler(1*time.Second, mockScaleFunc)
+			s.lastScaleDown = tc.lastScaleDown
 
 			// Setup
 			s.UpdateState(tc.current, tc.minScale, tc.maxScale)
@@ -74,8 +95,10 @@ func TestSetDesiredScale(t *testing.T) {
 			// Action
 			s.SetDesiredScale(tc.desiredScale)
 
-			// Wait for the scale function to be called
-			mockScaleWG.Wait()
+			if tc.expectedScaleFunc {
+				// Wait for the scale function to be called
+				mockScaleWG.Wait()
+			}
 
 			// Assertions
 			mockScaleMtx.Lock() // Ensure consistency of the checked state
