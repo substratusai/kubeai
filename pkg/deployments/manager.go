@@ -143,6 +143,10 @@ func (r *Manager) removeDeployment(req ctrl.Request) {
 		}
 	}
 	r.modelToDeploymentMtx.Unlock()
+
+	r.deploymentsMtx.Lock()
+	delete(r.deployments, req.Name)
+	r.deploymentsMtx.Unlock()
 }
 
 func (r *Manager) getScaler(deploymentName string) *scaler {
