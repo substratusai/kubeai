@@ -70,10 +70,9 @@ func (s *scaler) UpdateState(replicas, min, max int32) {
 // if needed.
 func (s *scaler) SetDesiredScale(n int32) {
 	log.Printf("SetDesiredScale(%v), current: %v, min: %v, max: %v", n, s.currentScale, s.minScale, s.maxScale)
-	nMinMax := s.applyMinMax(n)
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
-	s.desiredScale = nMinMax
+	s.desiredScale = s.applyMinMax(n)
 
 	if s.desiredScale > s.currentScale {
 		// Scale up immediately.
@@ -105,11 +104,11 @@ func (s *scaler) SetDesiredScale(n int32) {
 	}
 }
 
+// applyMinMax applies the min and max scale to the given number
+// function needs to be called within the locked scaler.mtx
 func (s *scaler) applyMinMax(n int32) int32 {
-	s.mtx.Lock()
 	min := s.minScale
 	max := s.maxScale
-	s.mtx.Unlock()
 	if n < min {
 		n = min
 	} else if n > max {
