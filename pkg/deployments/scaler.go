@@ -81,9 +81,9 @@ func (s *scaler) SetDesiredScale(n int32) {
 		go func() {
 			if err := s.scaleFunc(s.desiredScale, false); err != nil {
 				log.Printf("scale down to %v error: %v", s.desiredScale, err)
-			} else {
-				log.Printf("Scaled up to %v successfully", s.desiredScale)
+				return
 			}
+			log.Printf("Scaled up to %v successfully", s.desiredScale)
 		}()
 	} else if s.desiredScale == s.currentScale {
 		log.Println("Desired scale equals current scale, doing nothing")
@@ -92,12 +92,12 @@ func (s *scaler) SetDesiredScale(n int32) {
 			go func() {
 				if err := s.scaleFunc(s.desiredScale, false); err != nil {
 					log.Printf("scale down error: %v", err)
-				} else {
-					log.Printf("Scaled down to %v successfully", s.desiredScale)
-					s.mtx.Lock()
-					s.lastScaleDown = time.Now()
-					s.mtx.Unlock()
+					return
 				}
+				log.Printf("Scaled down to %v successfully", s.desiredScale)
+				s.mtx.Lock()
+				s.lastScaleDown = time.Now()
+				s.mtx.Unlock()
 			}()
 		} else {
 			log.Printf("Waiting for scale down delay to pass, last scale down: %v. Waiting for at least another %v", s.lastScaleDown, time.Since(s.lastScaleDown))
