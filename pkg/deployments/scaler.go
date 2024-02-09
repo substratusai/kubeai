@@ -14,11 +14,12 @@ type scaler struct {
 	minScale     int32
 	maxScale     int32
 
-	lastSuccessfulScale time.Time
+	// The time that scaler decided to scale down which gets delayed by scaleDownDelay
+	desiredScaleDownTime time.Time
 
 	// scaleFuncMtx ensures the scale function is not run concurrently.
 	scaleFuncMtx sync.Mutex
-	scaleFunc    func(n int32, atLeastOne bool) error
+	scaleFunc    func(n int32, atLeastOne bool)
 
 	scaleDownDelay time.Duration
 }
@@ -31,16 +32,15 @@ func newScaler(scaleDownDelay time.Duration, scaleFunc func(int32, bool) error) 
 		scaleDownDelay: scaleDownDelay,
 	}
 
-	s.scaleFunc = func(n int32, atLeastOne bool) error {
+	// do error handling by logging here and do not return error
+	s.scaleFunc = func(n int32, atLeastOne bool) {
 		s.scaleFuncMtx.Lock()
 		err := scaleFunc(n, atLeastOne)
 		s.scaleFuncMtx.Unlock()
 
 		if err != nil {
-			return err
+			log.Printf("error scaling: %+v", err)
 		}
-
-		return nil
 	}
 
 	return s
@@ -51,9 +51,7 @@ func (s *scaler) AtLeastOne() {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 	log.Printf("AtLeastOne()")
-	if err := s.scaleFunc(-1, true); err != nil {
-		log.Printf("scale error: %v", err)
-	}
+	s.scaleFunc(-1, true)
 }
 
 // UpdateState updates the current state of the scaler
@@ -76,33 +74,20 @@ func (s *scaler) SetDesiredScale(n int32) {
 
 	if s.desiredScale > s.currentScale {
 		// Scale up immediately.
-		log.Printf("Scaling up immediately")
-		go func() {
-			s.mtx.Lock()
-			defer s.mtx.Unlock()
-			if err := s.scaleFunc(s.desiredScale, false); err != nil {
-				log.Printf("scale down to %v error: %v", s.desiredScale, err)
-				return
-			}
-			s.lastSuccessfulScale = time.Now()
-			log.Printf("Scaled up to %v successfully", s.desiredScale)
-		}()
+		log.Printf("Scaling up to %v immediately", s.desiredScale)
+		s.scaleFunc(s.desiredScale, false)
+		s.desiredScaleDownTime = time.Time{}
 	} else if s.desiredScale == s.currentScale {
-		log.Println("Desired scale equals current scale, doing nothing")
+		log.Printf("Desired scale %v equals current scale %v, doing nothing", s.desiredScale, s.currentScale)
+		s.desiredScaleDownTime = time.Time{}
 	} else {
-		if s.lastSuccessfulScale.IsZero() || time.Since(s.lastSuccessfulScale) >= s.scaleDownDelay {
-			go func() {
-				s.mtx.Lock()
-				defer s.mtx.Unlock()
-				if err := s.scaleFunc(s.desiredScale, false); err != nil {
-					log.Printf("scale down error: %v", err)
-					return
-				}
-				log.Printf("Scaled down to %v successfully", s.desiredScale)
-				s.lastSuccessfulScale = time.Now()
-			}()
-		} else {
-			log.Printf("Waiting for scale down delay to pass, last scale down: %v. Waiting for at least another %v", s.lastSuccessfulScale, time.Since(s.lastSuccessfulScale))
+		if s.desiredScaleDownTime.IsZero() {
+			s.desiredScaleDownTime = time.Now()
+			expectedNextScaleDown := s.desiredScaleDownTime.Add(s.scaleDownDelay)
+			log.Printf("Delaying scale down to happen on or after %v", expectedNextScaleDown)
+		} else if time.Since(s.desiredScaleDownTime) >= s.scaleDownDelay {
+			log.Printf("Scaling down to %v immediately", s.desiredScale)
+			s.scaleFunc(s.desiredScale, false)
 		}
 	}
 }
