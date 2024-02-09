@@ -4,6 +4,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestSetDesiredScale(t *testing.T) {
@@ -22,9 +24,9 @@ func TestSetDesiredScale(t *testing.T) {
 			current:           5,
 			minScale:          1,
 			maxScale:          10,
-			desiredScale:      7,
+			desiredScale:      int32(7),
 			expectedScaleFunc: true,
-			expectedLastScale: 7,
+			expectedLastScale: int32(7),
 		},
 		{
 			name:              "Scale to max only when exceeding max scale",
@@ -35,16 +37,6 @@ func TestSetDesiredScale(t *testing.T) {
 			expectedScaleFunc: true,
 			expectedLastScale: 10,
 		},
-		// TODO: Add more test cases for scale down, currently results in DATA RACE
-		//		{
-		//			name:              "Scale down within bounds",
-		//			current:           5,
-		//			minScale:          1,
-		//			maxScale:          10,
-		//			desiredScale:      3,
-		//			expectedScaleFunc: true,
-		//			expectedLastScale: 3,
-		//		},
 	}
 
 	for _, tc := range testCases {
@@ -54,10 +46,7 @@ func TestSetDesiredScale(t *testing.T) {
 			var scaleFuncCalled bool
 
 			var mockScaleMtx sync.Mutex // Mutex to protect shared state in mockScaleFunc
-			var mockScaleWG sync.WaitGroup
 			mockScaleFunc := func(n int32, atLeastOne bool) error {
-				defer mockScaleWG.Done()
-
 				mockScaleMtx.Lock()
 				defer mockScaleMtx.Unlock()
 				lastScale = n
@@ -70,22 +59,118 @@ func TestSetDesiredScale(t *testing.T) {
 			s.UpdateState(tc.current, tc.minScale, tc.maxScale)
 			scaleFuncCalled = false
 
-			mockScaleWG.Add(1)
+			if tc.expectedScaleFunc {
+				time.Sleep(100 * time.Millisecond)
+			}
+
 			// Action
 			s.SetDesiredScale(tc.desiredScale)
 
-			// Wait for the scale function to be called
-			mockScaleWG.Wait()
-
 			// Assertions
 			mockScaleMtx.Lock() // Ensure consistency of the checked state
-			if scaleFuncCalled != tc.expectedScaleFunc {
-				t.Errorf("expected scaleFuncCalled to be %v, got %v", tc.expectedScaleFunc, scaleFuncCalled)
-			}
+
+			require.Equalf(t, tc.expectedScaleFunc, scaleFuncCalled, "expected scaleFuncCalled to be %v", tc.expectedLastScale)
 			if scaleFuncCalled && lastScale != tc.expectedLastScale {
 				t.Errorf("expected lastScale to be %v, got %v", tc.expectedLastScale, lastScale)
 			}
 			mockScaleMtx.Unlock()
 		})
 	}
+}
+
+// Tests that right afer a scale up, a scale down is not triggered,
+// but once scaleDownDelay passes the scale down will be triggered.
+func TestNoScaleDownAfterScaleUp(t *testing.T) {
+	var lastScale int32
+	var scaleFuncCalled bool
+
+	var mockScaleMtx sync.Mutex // Mutex to protect shared state in mockScaleFunc
+	mockScaleFunc := func(n int32, atLeastOne bool) error {
+		mockScaleMtx.Lock()
+		defer mockScaleMtx.Unlock()
+		lastScale = n
+		scaleFuncCalled = true
+		return nil
+	}
+
+	// Create a new scaler
+	s := newScaler(2*time.Second, mockScaleFunc)
+
+	// Trigger a scale up
+	s.UpdateState(5, 1, 10)
+	s.SetDesiredScale(7)
+	time.Sleep(10 * time.Millisecond)
+
+	// Verify scale up worked as expected
+	mockScaleMtx.Lock() // Ensure consistency of the checked state
+
+	require.True(t, scaleFuncCalled, "expected scaleFuncCalled to be true")
+	require.Equal(t, int32(7), lastScale, "expected lastScale to be 7")
+	scaleFuncCalled = false
+	mockScaleMtx.Unlock()
+
+	// Trigger a scale down right after scale up and verify it won't happen
+	s.SetDesiredScale(3)
+	time.Sleep(1 * time.Second)
+	mockScaleMtx.Lock() // Ensure consistency of the checked state
+	require.False(t, scaleFuncCalled, "expected scaleFuncCalled to be false")
+	mockScaleMtx.Unlock()
+
+	// Trigger a scale down after 2 more seconds and verify scale down succeeded
+	time.Sleep(2 * time.Second)
+	s.SetDesiredScale(3)
+	mockScaleMtx.Lock() // Ensure consistency of the checked state
+	require.True(t, scaleFuncCalled, "expected scaleFuncCalled to be true")
+	mockScaleMtx.Unlock()
+}
+
+// Tests that scale down would still be delayed even if
+// current replicas has been stable for a duration beyond the scaleDownDelay
+func TestDelayedScaleDownAfterSustainedUsage(t *testing.T) {
+	var lastScale int32
+	var scaleFuncCalled bool
+
+	var mockScaleMtx sync.Mutex // Mutex to protect shared state in mockScaleFunc
+	mockScaleFunc := func(n int32, atLeastOne bool) error {
+		mockScaleMtx.Lock()
+		defer mockScaleMtx.Unlock()
+		lastScale = n
+		scaleFuncCalled = true
+		return nil
+	}
+
+	// Create a new scaler
+	s := newScaler(2*time.Second, mockScaleFunc)
+
+	// Trigger a scale up
+	s.UpdateState(5, 1, 10)
+	s.SetDesiredScale(7)
+
+	// Verify scale up worked as expected
+	mockScaleMtx.Lock() // Ensure consistency of the checked state
+
+	require.True(t, scaleFuncCalled, "expected scaleFuncCalled to be true")
+	require.Equal(t, int32(7), lastScale, "expected lastScale to be 7")
+	scaleFuncCalled = false
+	mockScaleMtx.Unlock()
+	s.UpdateState(int32(7), 1, 10)
+
+	// Wait for scale down delay to pass
+	time.Sleep(2*time.Second + 10*time.Millisecond)
+
+	// Trigger a scale down
+	s.SetDesiredScale(3)
+	time.Sleep(1 * time.Second)
+	mockScaleMtx.Lock() // Ensure consistency of the checked state
+	require.False(t, scaleFuncCalled, "expected scaleFuncCalled to be false")
+	require.Equal(t, int32(7), lastScale, "expected lastScale to still be 7")
+	mockScaleMtx.Unlock()
+
+	// Trigger a scale down after 2 more seconds and verify scale down succeeded
+	time.Sleep(2*time.Second + 10*time.Millisecond)
+	s.SetDesiredScale(3)
+	mockScaleMtx.Lock() // Ensure consistency of the checked state
+	require.True(t, scaleFuncCalled, "expected scaleFuncCalled to be true")
+	require.Equal(t, int32(3), lastScale, "expected lastScale to be 3")
+	mockScaleMtx.Unlock()
 }

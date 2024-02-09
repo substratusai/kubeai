@@ -5,6 +5,10 @@ import (
 	"reflect"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/types"
+
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
 	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -132,6 +136,55 @@ func TestAddDeployment(t *testing.T) {
 			assert.Len(t, r.modelToDeployment, len(spec.expModels))
 			scales := r.getScalesSnapshot()
 			assert.Equal(t, spec.expScale, scales["my-deployment"])
+		})
+	}
+}
+
+func TestRemoveDeployment(t *testing.T) {
+	const myDeployment = "myDeployment"
+	specs := map[string]struct {
+		setup      func(t *testing.T, m *Manager)
+		expScalers map[string]scale
+	}{
+		"single model deployment": {
+			setup: func(t *testing.T, m *Manager) {
+				m.setModelMapping("model1", myDeployment)
+				m.getScaler(myDeployment)
+			},
+			expScalers: map[string]scale{},
+		},
+		"multi model deployment": {
+			setup: func(t *testing.T, m *Manager) {
+				m.setModelMapping("model1", myDeployment)
+				m.setModelMapping("model2", myDeployment)
+				m.setModelMapping("other", "other")
+				m.getScaler(myDeployment)
+				m.getScaler("other")
+			},
+			expScalers: map[string]scale{"other": {Current: -1}},
+		},
+		"unknown deployment - ignored": {
+			setup: func(t *testing.T, m *Manager) {
+				m.setModelMapping("other", "other")
+				m.getScaler("other")
+			},
+			expScalers: map[string]scale{"other": {Current: -1}},
+		},
+	}
+	for name, spec := range specs {
+		t.Run(name, func(t *testing.T) {
+			m := &Manager{
+				scalers:           make(map[string]*scaler),
+				modelToDeployment: make(map[string]string),
+			}
+			spec.setup(t, m)
+			req := reconcile.Request{NamespacedName: types.NamespacedName{Name: myDeployment}}
+			// when
+			m.removeDeployment(req)
+			// then
+			_, exists := m.ResolveDeployment(myDeployment)
+			assert.False(t, exists)
+			assert.Equal(t, spec.expScalers, m.getScalesSnapshot())
 		})
 	}
 }

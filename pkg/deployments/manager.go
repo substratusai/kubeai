@@ -82,6 +82,7 @@ func (r *Manager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result,
 
 func (r *Manager) addDeployment(ctx context.Context, d appsv1.Deployment) error {
 	models := getModelsFromAnnotation(d.GetAnnotations())
+	log.Printf("deployment: %v models: %v", d.Name, models)
 	if len(models) == 0 {
 		return nil
 	}
@@ -94,6 +95,7 @@ func (r *Manager) addDeployment(ctx context.Context, d appsv1.Deployment) error 
 	}
 
 	deploymentName := d.Name
+
 	r.getScaler(deploymentName).UpdateState(
 		scale.Spec.Replicas,
 		getAnnotationInt32(d.GetAnnotations(), lingoDomain+"/min-replicas", 0),
@@ -101,6 +103,14 @@ func (r *Manager) addDeployment(ctx context.Context, d appsv1.Deployment) error 
 	)
 
 	return nil
+}
+
+func (r *Manager) hasModel(d *appsv1.Deployment) bool {
+	models := getModelsFromAnnotation(d.GetAnnotations())
+	if len(models) == 0 {
+		return false
+	}
+	return true
 }
 
 func getModelsFromAnnotation(ann map[string]string) []string {
@@ -163,6 +173,10 @@ func (r *Manager) scaleFunc(ctx context.Context, deploymentName string) func(int
 		var d appsv1.Deployment
 		if err := r.Get(ctx, req, &d); err != nil {
 			return fmt.Errorf("get: %w", err)
+		}
+
+		if !r.hasModel(&d) {
+			return fmt.Errorf("not scaling deployment %q: deployment has no models annotation", deploymentName)
 		}
 
 		var scale autoscalingv1.Scale

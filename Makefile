@@ -5,7 +5,7 @@ test: test-unit test-race test-integration test-e2e
 
 .PHONY: test-unit
 test-unit:
-	go test -mod=readonly -race ./pkg/...
+	go test -timeout=5m -mod=readonly -race ./pkg/...
 
 .PHONY: test-integration
 test-integration: envtest
