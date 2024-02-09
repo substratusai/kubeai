@@ -131,7 +131,9 @@ func TestNoScaleDownAfterScaleUp(t *testing.T) {
 	mockScaleMtx.Unlock()
 }
 
-func TestDelayedScaleDownAfterLoad(t *testing.T) {
+// Tests that scale down would still be delayed even if
+// current replicas has been stable for a duration beyond the scaleDownDelay
+func TestDelayedScaleDownAfterSustainedUsage(t *testing.T) {
 	var lastScale int32
 	var scaleFuncCalled bool
 
@@ -182,5 +184,4 @@ func TestDelayedScaleDownAfterLoad(t *testing.T) {
 		t.Errorf("expected scaleFuncCalled to be true, got %v", scaleFuncCalled)
 	}
 	mockScaleMtx.Unlock()
-
 }
