@@ -14,7 +14,6 @@ func TestSetDesiredScale(t *testing.T) {
 		minScale          int32
 		maxScale          int32
 		desiredScale      int32
-		lastScaleDown     time.Time
 		expectedScaleFunc bool
 		expectedLastScale int32
 	}{
