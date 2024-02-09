@@ -4,6 +4,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestSetDesiredScale(t *testing.T) {
@@ -22,9 +24,9 @@ func TestSetDesiredScale(t *testing.T) {
 			current:           5,
 			minScale:          1,
 			maxScale:          10,
-			desiredScale:      7,
+			desiredScale:      int32(7),
 			expectedScaleFunc: true,
-			expectedLastScale: 7,
+			expectedLastScale: int32(7),
 		},
 		{
 			name:              "Scale to max only when exceeding max scale",
@@ -66,9 +68,8 @@ func TestSetDesiredScale(t *testing.T) {
 
 			// Assertions
 			mockScaleMtx.Lock() // Ensure consistency of the checked state
-			if scaleFuncCalled != tc.expectedScaleFunc {
-				t.Errorf("expected scaleFuncCalled to be %v, got %v", tc.expectedScaleFunc, scaleFuncCalled)
-			}
+
+			require.Equalf(t, tc.expectedScaleFunc, scaleFuncCalled, "expected scaleFuncCalled to be %v", tc.expectedLastScale)
 			if scaleFuncCalled && lastScale != tc.expectedLastScale {
 				t.Errorf("expected lastScale to be %v, got %v", tc.expectedLastScale, lastScale)
 			}
@@ -102,12 +103,9 @@ func TestNoScaleDownAfterScaleUp(t *testing.T) {
 
 	// Verify scale up worked as expected
 	mockScaleMtx.Lock() // Ensure consistency of the checked state
-	if scaleFuncCalled != true {
-		t.Errorf("expected scaleFuncCalled to be true, got %v", scaleFuncCalled)
-	}
-	if scaleFuncCalled && lastScale != 7 {
-		t.Errorf("expected lastScale to be 7, got %v", lastScale)
-	}
+
+	require.True(t, scaleFuncCalled, "expected scaleFuncCalled to be true")
+	require.Equal(t, int32(7), lastScale, "expected lastScale to be 7")
 	scaleFuncCalled = false
 	mockScaleMtx.Unlock()
 
@@ -115,18 +113,14 @@ func TestNoScaleDownAfterScaleUp(t *testing.T) {
 	s.SetDesiredScale(3)
 	time.Sleep(1 * time.Second)
 	mockScaleMtx.Lock() // Ensure consistency of the checked state
-	if scaleFuncCalled != false {
-		t.Errorf("expected scaleFuncCalled to be false, got %v", scaleFuncCalled)
-	}
+	require.False(t, scaleFuncCalled, "expected scaleFuncCalled to be false")
 	mockScaleMtx.Unlock()
 
 	// Trigger a scale down after 2 more seconds and verify scale down succeeded
 	time.Sleep(2 * time.Second)
 	s.SetDesiredScale(3)
 	mockScaleMtx.Lock() // Ensure consistency of the checked state
-	if scaleFuncCalled != true {
-		t.Errorf("expected scaleFuncCalled to be true, got %v", scaleFuncCalled)
-	}
+	require.True(t, scaleFuncCalled, "expected scaleFuncCalled to be true")
 	mockScaleMtx.Unlock()
 }
 
@@ -154,15 +148,13 @@ func TestDelayedScaleDownAfterSustainedUsage(t *testing.T) {
 
 	// Verify scale up worked as expected
 	mockScaleMtx.Lock() // Ensure consistency of the checked state
-	if scaleFuncCalled != true {
-		t.Errorf("expected scaleFuncCalled to be true, got %v", scaleFuncCalled)
-	}
-	if scaleFuncCalled && lastScale != 7 {
-		t.Errorf("expected lastScale to be 7, got %v", lastScale)
-	}
+
+	require.True(t, scaleFuncCalled, "expected scaleFuncCalled to be true")
+	require.Equal(t, int32(7), lastScale, "expected lastScale to be 7")
 	scaleFuncCalled = false
 	mockScaleMtx.Unlock()
-	s.UpdateState(7, 1, 10)
+	s.UpdateState(int32(7), 1, 10)
+
 	// Wait for scale down delay to pass
 	time.Sleep(2*time.Second + 10*time.Millisecond)
 
@@ -170,17 +162,15 @@ func TestDelayedScaleDownAfterSustainedUsage(t *testing.T) {
 	s.SetDesiredScale(3)
 	time.Sleep(1 * time.Second)
 	mockScaleMtx.Lock() // Ensure consistency of the checked state
-	if scaleFuncCalled != false {
-		t.Errorf("expected scaleFuncCalled to be false, got %v", scaleFuncCalled)
-	}
+	require.False(t, scaleFuncCalled, "expected scaleFuncCalled to be false")
+	require.Equal(t, int32(7), lastScale, "expected lastScale to still be 7")
 	mockScaleMtx.Unlock()
 
 	// Trigger a scale down after 2 more seconds and verify scale down succeeded
 	time.Sleep(2*time.Second + 10*time.Millisecond)
 	s.SetDesiredScale(3)
 	mockScaleMtx.Lock() // Ensure consistency of the checked state
-	if scaleFuncCalled != true {
-		t.Errorf("expected scaleFuncCalled to be true, got %v", scaleFuncCalled)
-	}
+	require.True(t, scaleFuncCalled, "expected scaleFuncCalled to be true")
+	require.Equal(t, int32(3), lastScale, "expected lastScale to be 3")
 	mockScaleMtx.Unlock()
 }
