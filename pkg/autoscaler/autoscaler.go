@@ -130,7 +130,6 @@ func aggregateStats(s stats.Stats, httpc *http.Client, endpoints []string) (stat
 			continue
 		}
 		for k, v := range fetched.ActiveRequests {
-
 			log.Printf("Aggregating active requests for endpoint: %v: %v: %v", endpoint, k, v)
 			s.ActiveRequests[k] = fetched.ActiveRequests[k] + v
 		}
