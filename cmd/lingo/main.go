@@ -66,10 +66,12 @@ func run() error {
 	concurrency := getEnvInt("CONCURRENCY", 100)
 	scaleDownDelay := getEnvInt("SCALE_DOWN_DELAY", 30)
 
-	var metricsAddr string
-	var probeAddr string
-	var concurrencyPerReplica int
-	var requestHeaderTimeout time.Duration
+	var (
+		metricsAddr           string
+		probeAddr             string
+		concurrencyPerReplica int
+		requestHeaderTimeout  time.Duration // setting to prevent slowloris attack on http server
+	)
 
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8082", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")

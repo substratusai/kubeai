@@ -56,24 +56,24 @@ type Autoscaler struct {
 	movingAvgQueueSize    map[string]*movingaverage.Simple
 }
 
-func (r *Autoscaler) SetupWithManager(mgr ctrl.Manager) error {
+func (a *Autoscaler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1.ConfigMap{}).
-		Complete(r)
+		Complete(a)
 }
 
-func (r *Autoscaler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (a *Autoscaler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	var cm corev1.ConfigMap
-	if err := r.Get(ctx, req.NamespacedName, &cm); err != nil {
+	if err := a.Get(ctx, req.NamespacedName, &cm); err != nil {
 		return ctrl.Result{}, fmt.Errorf("get: %w", err)
 	}
 
 	return ctrl.Result{}, nil
 }
 
-func (r *Autoscaler) Start() {
-	for range time.Tick(r.Interval) {
-		if !r.LeaderElection.IsLeader.Load() {
+func (a *Autoscaler) Start() {
+	for range time.Tick(a.Interval) {
+		if !a.LeaderElection.IsLeader.Load() {
 			log.Println("Not leader, doing nothing")
 			continue
 		}
@@ -81,11 +81,11 @@ func (r *Autoscaler) Start() {
 		log.Println("Calculating scales for all")
 
 		// TODO: Remove hardcoded Service lookup by name "lingo".
-		otherLingoEndpoints := r.Endpoints.GetAllHosts("lingo", "stats")
+		otherLingoEndpoints := a.Endpoints.GetAllHosts("lingo", "stats")
 
 		stats, errs := aggregateStats(stats.Stats{
-			ActiveRequests: r.Queues.TotalCounts(),
-		}, r.HTTPClient, otherLingoEndpoints)
+			ActiveRequests: a.Queues.TotalCounts(),
+		}, a.HTTPClient, otherLingoEndpoints)
 		if len(errs) != 0 {
 			for _, err := range errs {
 				log.Printf("Failed to aggregate stats: %v", err)
@@ -95,26 +95,26 @@ func (r *Autoscaler) Start() {
 
 		for deploymentName, waitCount := range stats.ActiveRequests {
 			log.Println("Is leader, autoscaling")
-			avg := r.getMovingAvgQueueSize(deploymentName)
+			avg := a.getMovingAvgQueueSize(deploymentName)
 			avg.Next(float64(waitCount))
 			flt := avg.Calculate()
-			normalized := flt / float64(r.ConcurrencyPerReplica)
+			normalized := flt / float64(a.ConcurrencyPerReplica)
 			ceil := math.Ceil(normalized)
 			log.Printf("Average for deployment: %s: %v (ceil: %v), current wait count: %v", deploymentName, flt, ceil, waitCount)
-			r.Deployments.SetDesiredScale(deploymentName, int32(ceil))
+			a.Deployments.SetDesiredScale(deploymentName, int32(ceil))
 		}
 	}
 }
 
-func (r *Autoscaler) getMovingAvgQueueSize(deploymentName string) *movingaverage.Simple {
-	r.movingAvgQueueSizeMtx.Lock()
-	a, ok := r.movingAvgQueueSize[deploymentName]
+func (a *Autoscaler) getMovingAvgQueueSize(deploymentName string) *movingaverage.Simple {
+	a.movingAvgQueueSizeMtx.Lock()
+	avg, ok := a.movingAvgQueueSize[deploymentName]
 	if !ok {
-		a = movingaverage.NewSimple(make([]float64, r.AverageCount))
-		r.movingAvgQueueSize[deploymentName] = a
+		avg = movingaverage.NewSimple(make([]float64, a.AverageCount))
+		a.movingAvgQueueSize[deploymentName] = avg
 	}
-	r.movingAvgQueueSizeMtx.Unlock()
-	return a
+	a.movingAvgQueueSizeMtx.Unlock()
+	return avg
 }
 
 func aggregateStats(s stats.Stats, httpc *http.Client, endpoints []string) (stats.Stats, []error) {
