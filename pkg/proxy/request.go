@@ -51,8 +51,8 @@ func newProxyRequest(r *http.Request) *proxyRequest {
 }
 
 // done should be called when the original client request is complete.
-func (p *proxyRequest) done() {
-	p.timer.ObserveDuration()
+func (pr *proxyRequest) done() {
+	pr.timer.ObserveDuration()
 }
 
 // parseModel attempts to determine the model from the request.
