@@ -79,18 +79,16 @@ func (r *Manager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result,
 					log.Printf("error fetching pod: %v\n", err)
 					continue
 				}
-				deploymentName := ""
 				if pod.OwnerReferences != nil {
 					for _, owner := range pod.OwnerReferences {
 						if owner.Kind == "ReplicaSet" {
-							deploymentName = owner.Name
+							for _, ip := range endpointItem.Addresses {
+								ips[ip] = struct{}{}
+							}
+							deployments[owner.Name] = ips
 						}
 					}
 				}
-				for _, ip := range endpointItem.Addresses {
-					ips[ip] = struct{}{}
-				}
-				deployments[deploymentName] = ips
 			}
 		}
 	}
