@@ -114,6 +114,8 @@ func (s *Subscriber) handleRequest(ctx context.Context, msg *pubsub.Message) err
 	log.Printf("Entering queue: %s", msg.LoggableID)
 
 	complete := s.Queues.EnqueueAndWait(ctx, backendDeployment, msg.LoggableID)
+	// TODO: Make sure complete() is called at the right time once code is modified to launch a goroutine
+	// to support concurrency.
 	defer complete()
 
 	log.Printf("Awaiting host for message %s", msg.LoggableID)

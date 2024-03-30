@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
-	"strconv"
 	"testing"
 	"time"
 
@@ -35,18 +33,7 @@ func TestSubscriber(t *testing.T) {
 	}))
 	t.Logf("testBackend URL: %s", testBackend.URL)
 
-	// Mock an EndpointSlice.
-	testBackendURL, err := url.Parse(testBackend.URL)
-	require.NoError(t, err)
-	testBackendPort, err := strconv.Atoi(testBackendURL.Port())
-	require.NoError(t, err)
-	require.NoError(t, testK8sClient.Create(testCtx,
-		endpointSlice(
-			modelName,
-			testBackendURL.Hostname(),
-			int32(testBackendPort),
-		),
-	))
+	mockEndpointSlice(t, modelName, testBackend)
 
 	// Wait for deployment mapping to sync.
 	time.Sleep(3 * time.Second)
@@ -64,10 +51,10 @@ func shouldReceiveResponseMessage(t *testing.T, model, id string) {
 	defer cancel()
 
 	t.Logf("Waiting for response message for model %q and id %q", model, id)
-	respA, err := testResponsesSubscription.Receive(ctx)
+	resp, err := testResponsesSubscription.Receive(ctx)
 	require.NoError(t, err)
-	respA.Ack()
-	require.JSONEq(t, fmt.Sprintf(`{"metadata": {"my-id": %q}, "model": %q, "choices": [{"text": "hey"}]}`, id, model), string(respA.Body))
+	resp.Ack()
+	require.JSONEq(t, fmt.Sprintf(`{"metadata": {"my-id": %q}, "model": %q, "choices": [{"text": "hey"}]}`, id, model), string(resp.Body))
 }
 
 func sendRequestMessage(t *testing.T, modelName string, id string) {
