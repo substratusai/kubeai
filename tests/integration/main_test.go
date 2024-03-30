@@ -17,6 +17,9 @@ import (
 	"github.com/substratusai/lingo/pkg/leader"
 	"github.com/substratusai/lingo/pkg/proxy"
 	"github.com/substratusai/lingo/pkg/queue"
+	"github.com/substratusai/lingo/pkg/subscriber"
+	"gocloud.dev/pubsub"
+	_ "gocloud.dev/pubsub/mempubsub"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -29,16 +32,23 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 )
 
+const (
+	memRequestsURL  = "mem://requests"
+	memResponsesURL = "mem://responses"
+)
+
 var (
-	scheme         = runtime.NewScheme()
-	testNamespace  = "test"
-	testK8sClient  client.Client
-	testEnv        *envtest.Environment
-	testCtx        context.Context
-	testCancel     context.CancelFunc
-	testServer     *httptest.Server
-	testHTTPClient = &http.Client{Timeout: 10 * time.Second}
-	queueManager   *queue.Manager
+	scheme                    = runtime.NewScheme()
+	testNamespace             = "test"
+	testK8sClient             client.Client
+	testEnv                   *envtest.Environment
+	testCtx                   context.Context
+	testCancel                context.CancelFunc
+	testServer                *httptest.Server
+	testHTTPClient            = &http.Client{Timeout: 10 * time.Second}
+	queueManager              *queue.Manager
+	testRequestsTopic         *pubsub.Topic
+	testResponsesSubscription *pubsub.Subscription
 )
 
 func init() {
@@ -46,13 +56,22 @@ func init() {
 }
 
 func TestMain(m *testing.M) {
+	// EndpointSlices do not allow for specifying local IPs (used in mock backend)
+	// so we remap the requests here.
 	proxy.AdditionalProxyRewrite = func(r *httputil.ProxyRequest) {
-		// EndpointSlices do not allow for specifying local IPs (used in mock backend)
-		// so we remap the requests here.
 		r.SetURL(&url.URL{
 			Scheme: r.Out.URL.Scheme,
 			Host:   "127.0.0.1:" + r.Out.URL.Port(),
 		})
+	}
+	subscriberHTTPClient := &http.Client{}
+	// Rewrite the request to the test server.
+	subscriberHTTPClient.Transport = &http.Transport{
+		Proxy: func(req *http.Request) (*url.URL, error) {
+			u := req.URL
+			u.Host = "127.0.0.1:" + u.Port()
+			return u, nil
+		},
 	}
 	log.Println("bootstrapping test environment")
 	testEnv = &envtest.Environment{}
@@ -120,6 +139,28 @@ func TestMain(m *testing.M) {
 	go func() {
 		log.Println("starting manager")
 		requireNoError(mgr.Start(testCtx))
+	}()
+
+	testRequestsTopic, err = pubsub.OpenTopic(testCtx, memRequestsURL)
+	requireNoError(err)
+
+	sub, err := subscriber.NewSubscriber(
+		testCtx,
+		memRequestsURL,
+		memResponsesURL,
+		deploymentManager,
+		endpointManager,
+		queueManager,
+		subscriberHTTPClient,
+	)
+	requireNoError(err)
+
+	testResponsesSubscription, err = pubsub.OpenSubscription(testCtx, memResponsesURL)
+	requireNoError(err)
+
+	go func() {
+		log.Println("starting subscriber")
+		sub.Start(testCtx)
 	}()
 
 	log.Println("running tests")

@@ -27,20 +27,22 @@ type Subscriber struct {
 
 func NewSubscriber(
 	ctx context.Context,
-	url string,
+	requestsURL string,
+	responsesURL string,
 	deployments DeploymentManager,
 	endpoints EndpointManager,
 	queues QueueManager,
+	httpClient *http.Client,
 ) (*Subscriber, error) {
 
 	// Example URL for GCP PubSub:
 	// "gcppubsub://projects/my-project/subscriptions/my-subscription"
-	requests, err := pubsub.OpenSubscription(ctx, url)
+	requests, err := pubsub.OpenSubscription(ctx, requestsURL)
 	if err != nil {
 		return nil, err
 	}
 
-	responses, err := pubsub.OpenTopic(ctx, url)
+	responses, err := pubsub.OpenTopic(ctx, responsesURL)
 	if err != nil {
 		return nil, err
 	}
@@ -49,6 +51,7 @@ func NewSubscriber(
 		Deployments: deployments,
 		Endpoints:   endpoints,
 		Queues:      queues,
+		HTTPC:       httpClient,
 		requests:    requests,
 		responses:   responses,
 	}, nil
@@ -61,7 +64,8 @@ func (s *Subscriber) Start(ctx context.Context) error {
 			return err
 		}
 
-		// TODO: Concurrency.
+		log.Println("Received message:", msg.LoggableID)
+
 		if err := s.handleRequest(context.Background(), msg); err != nil {
 			log.Printf("Error handling message %s: %v", msg.LoggableID, err)
 			return err
@@ -71,8 +75,9 @@ func (s *Subscriber) Start(ctx context.Context) error {
 
 func (s *Subscriber) handleRequest(ctx context.Context, msg *pubsub.Message) error {
 	var payload struct {
-		Model string `json:"model"`
-		Path  string `json:"path"`
+		Metadata map[string]interface{} `json:"metadata"`
+		Path     string                 `json:"path"`
+		Model    string                 `json:"model"`
 	}
 	if err := json.Unmarshal(msg.Body, &payload); err != nil {
 		log.Printf("Error unmarshalling message (%s) as json: %v", msg.LoggableID, err)
@@ -111,7 +116,7 @@ func (s *Subscriber) handleRequest(ctx context.Context, msg *pubsub.Message) err
 	complete := s.Queues.EnqueueAndWait(ctx, backendDeployment, msg.LoggableID)
 	defer complete()
 
-	log.Printf("Admitted into queue: %s", msg.LoggableID)
+	log.Printf("Awaiting host for message %s", msg.LoggableID)
 
 	host, err := s.Endpoints.AwaitHostAddress(ctx, backendDeployment, "http")
 	if err != nil {
@@ -131,7 +136,11 @@ func (s *Subscriber) handleRequest(ctx context.Context, msg *pubsub.Message) err
 		path = "/" + payload.Path
 	}
 
-	respPayload, err := s.sendRequest(ctx, fmt.Sprintf("http://%s%s", host, path), msg.Body)
+	// TODO: Concurrency.
+
+	url := fmt.Sprintf("http://%s%s", host, path)
+	log.Printf("Sending request to backend for message %s: %s", msg.LoggableID, url)
+	respPayload, err := s.sendRequest(ctx, url, msg.Body)
 	if err != nil {
 		log.Printf("Error sending request for message %s: %v", msg.LoggableID, err)
 
@@ -141,10 +150,31 @@ func (s *Subscriber) handleRequest(ctx context.Context, msg *pubsub.Message) err
 		return nil
 	}
 
+	var decodedRespPayload map[string]interface{}
+	if err := json.Unmarshal(respPayload, &decodedRespPayload); err != nil {
+		log.Printf("Error unmarshalling response for message %s: %v", msg.LoggableID, err)
+
+		if msg.Nackable() {
+			msg.Nack()
+		}
+		return nil
+	}
+	decodedRespPayload["metadata"] = payload.Metadata
+	respPayloadWithMetadata, err := json.Marshal(decodedRespPayload)
+	if err != nil {
+		log.Printf("Error marshalling response with metadata for message %s: %v", msg.LoggableID, err)
+
+		// Retrying wont fix, discard.
+		msg.Ack()
+		return nil
+	}
+
+	log.Printf("Sending response for message %s", msg.LoggableID)
+
 	if err := s.responses.Send(ctx, &pubsub.Message{
-		Body: respPayload,
+		Body: respPayloadWithMetadata,
 		Metadata: map[string]string{
-			"model": payload.Model,
+			"request_message_id": msg.LoggableID,
 		},
 	}); err != nil {
 		log.Printf("Error sending response for message %s: %v", msg.LoggableID, err)
@@ -155,7 +185,7 @@ func (s *Subscriber) handleRequest(ctx context.Context, msg *pubsub.Message) err
 		return nil
 	}
 
-	// Success!
+	log.Printf("Successfully processed request, ack'ing message %s", msg.LoggableID)
 
 	msg.Ack()
 	return nil
