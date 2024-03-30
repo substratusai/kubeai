@@ -49,6 +49,7 @@ var (
 	queueManager              *queue.Manager
 	testRequestsTopic         *pubsub.Topic
 	testResponsesSubscription *pubsub.Subscription
+	expectedAutoscalingLag    time.Duration
 )
 
 func init() {
@@ -116,7 +117,9 @@ func TestMain(m *testing.M) {
 	autoscaler, err := autoscaler.New(mgr)
 	requireNoError(err)
 	autoscaler.Interval = 1 * time.Second
-	autoscaler.AverageCount = 1 // 10 * 3 seconds = 30 sec avg
+	autoscaler.AverageCount = 3
+	// Calculate the expected lag in order to make sure assertions are ran long enough.
+	expectedAutoscalingLag = autoscaler.Interval * time.Duration(autoscaler.AverageCount)
 	autoscaler.LeaderElection = le
 	autoscaler.Deployments = deploymentManager
 	autoscaler.Queues = queueManager

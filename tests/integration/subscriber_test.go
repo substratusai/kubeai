@@ -20,6 +20,7 @@ func TestSubscriber(t *testing.T) {
 
 	require.NoError(t, testK8sClient.Create(testCtx, deploy))
 
+	backendComplete := make(chan struct{})
 	testBackend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t.Logf("Serving request from testBackend")
 
@@ -28,6 +29,8 @@ func TestSubscriber(t *testing.T) {
 		}
 		require.NoError(t, json.NewDecoder(r.Body).Decode(&reqBody))
 		require.Equal(t, modelName, reqBody.Model)
+
+		<-backendComplete
 
 		w.Write([]byte(fmt.Sprintf(`{"model": %q, "choices": [{"text": "hey"}]}`, reqBody.Model)))
 	}))
@@ -41,7 +44,10 @@ func TestSubscriber(t *testing.T) {
 	// Send request id "a"
 	sendRequestMessage(t, modelName, "a")
 
+	// Assert on replicas before completing the request - otherwise there is a race condition
+	// with the autoscaler.
 	requireDeploymentReplicas(t, deploy, 1)
+	completeRequests(backendComplete, 1)
 
 	shouldReceiveResponseMessage(t, modelName, "a")
 }

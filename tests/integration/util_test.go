@@ -69,5 +69,8 @@ func requireDeploymentReplicas(t *testing.T, deploy *appsv1.Deployment, n int32)
 		assert.NoError(t, err, "getting the deployment")
 		assert.NotNil(t, deploy.Spec.Replicas, "scale-up should have occurred")
 		assert.Equal(t, n, *deploy.Spec.Replicas, "scale-up should have occurred")
-	}, 5*time.Second, time.Second/2, "waiting for the deployment to be scaled up")
+	},
+		expectedAutoscalingLag+time.Second,
+		time.Second/2,
+		"waiting for the deployment to be scaled up")
 }
