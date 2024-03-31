@@ -74,6 +74,21 @@ func (s *Subscriber) Start(ctx context.Context) error {
 }
 
 func (s *Subscriber) handleRequest(ctx context.Context, msg *pubsub.Message) error {
+	// Expecting a message with the following structure:
+	/*
+		{
+			"metadata": {
+				"some-sort-of-id": 123,
+				"optional-key": "some-user-value"
+				# ...
+			},
+			"path": "/v1/completions",
+			"body": {
+				"model": "test-model"
+				# ... other OpenAI compatible fields
+			}
+		}
+	*/
 	var payload struct {
 		Metadata map[string]interface{} `json:"metadata"`
 		Path     string                 `json:"path"`
