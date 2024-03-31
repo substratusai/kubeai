@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -20,6 +20,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
+	"github.com/sethvargo/go-envconfig"
 	"github.com/substratusai/lingo/pkg/autoscaler"
 	"github.com/substratusai/lingo/pkg/deployments"
 	"github.com/substratusai/lingo/pkg/endpoints"
@@ -27,6 +28,7 @@ import (
 	"github.com/substratusai/lingo/pkg/proxy"
 	"github.com/substratusai/lingo/pkg/queue"
 	"github.com/substratusai/lingo/pkg/stats"
+	"github.com/substratusai/lingo/pkg/subscriber"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -48,35 +50,9 @@ func main() {
 	}
 }
 
-func getEnvInt(key string, defaultValue int) int {
-	if envVar := os.Getenv(key); envVar != "" {
-		val, err := strconv.Atoi(envVar)
-		if err != nil {
-			log.Fatalf("invalid value for %s: %v", key, err)
-		}
-		return val
-	}
-	return defaultValue
-}
-
 func run() error {
-	namespace := os.Getenv("NAMESPACE")
-	if namespace == "" {
-		namespace = "default"
-	}
-
-	concurrency := getEnvInt("CONCURRENCY", 100)
-	scaleDownDelay := getEnvInt("SCALE_DOWN_DELAY", 30)
-	backendRetries := getEnvInt("BACKEND_RETRIES", 1)
-
-	var metricsAddr string
-	var probeAddr string
-	var concurrencyPerReplica int
-
-	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8082", "The address the metric endpoint binds to.")
-	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
-	flag.IntVar(&concurrencyPerReplica, "concurrency", concurrency, "the number of simultaneous requests that can be processed by each replica")
-	flag.IntVar(&scaleDownDelay, "scale-down-delay", scaleDownDelay, "seconds to wait before scaling down")
+	// Flags are only used to control logging.
+	// TODO: Migrate to env variables.
 	opts := zap.Options{
 		Development: true,
 	}
@@ -85,18 +61,77 @@ func run() error {
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
+	var cfg struct {
+		Namespace string `env:"NAMESPACE, default=default"`
+
+		// Concurrency per replica.
+		Concurrency int `env:"CONCURRENCY, default=100"`
+
+		ScaleDownDelay int `env:"SCALE_DOWN_DELAY, default=30"`
+		BackendRetries int `env:"BACKEND_RETRIES, default=1"`
+
+		// SubscriptionURLs is a list of (comma-separated) URLs to launch subscribers for.
+		//
+		// Format: <request-subscription1>|<response-topic1>,<request-subscription2>|<response-topic2>,...
+		//
+		// URL Examples:
+		//
+		// Google PubSub:
+		// 		requests:	"gcppubsub://projects/my-project/subscriptions/my-subscription"
+		// 		responses:	"gcppubsub://projects/myproject/topics/mytopic"
+		// Amazon SQS/SNS:
+		// 		requests  (SQS):	"awssqs://sqs.us-east-2.amazonaws.com/123456789012/myqueue?region=us-east-2"
+		// 		responses (SQS):	"awssns:///arn:aws:sns:us-east-2:123456789012:mytopic?region=us-east-2"
+		// 		responses (SNS):	"awssqs://sqs.us-east-2.amazonaws.com/123456789012/myqueue?region=us-east-2"
+		// Azure Service Bus:
+		// 		requests:	"azuresb://mytopic?subscription=mysubscription"
+		// 		responses:	"azuresb://mytopic"
+		// Rabbit MQ:
+		// 		requests:	"rabbit://myqueue"
+		// 		responses:	"rabbit://myexchange"
+		// NATS:
+		// 		requests:	"nats://example.mysubject"
+		// 		responses:	"nats://example.mysubject"
+		// Kafka:
+		// 		requests:	"kafka://my-group?topic=my-topic"
+		// 		responses:	"kafka://my-topic"
+		SubscriptionURLs []string `env:"SUBSCRIPTION_URLS"`
+
+		MetricsBindAddress     string `env:"METRICS_BIND_ADDRESS, default=:8082"`
+		HealthProbeBindAddress string `env:"HEALTH_PROBE_BIND_ADDRESS, default=:8081"`
+	}
+	if err := envconfig.Process(context.Background(), &cfg); err != nil {
+		return fmt.Errorf("parsing environment variables: %w", err)
+	}
+
+	type messageURLPair struct {
+		requestURL  string
+		responseURL string
+	}
+	var messageURLPairs []messageURLPair
+	for _, s := range cfg.SubscriptionURLs {
+		parts := strings.Split(s, "|")
+		if len(parts) != 2 {
+			return fmt.Errorf("invalid subscription URL: %q", s)
+		}
+		messageURLPairs = append(messageURLPairs, messageURLPair{
+			requestURL:  parts[0],
+			responseURL: parts[1],
+		})
+	}
+
 	// TODO: Add Deployments to cache list.
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme: scheme,
 		Cache: cache.Options{
 			DefaultNamespaces: map[string]cache.Config{
-				namespace: {},
+				cfg.Namespace: {},
 			},
 		},
 		Metrics: metricsserver.Options{
-			BindAddress: metricsAddr,
+			BindAddress: cfg.MetricsBindAddress,
 		},
-		HealthProbeBindAddress: probeAddr,
+		HealthProbeBindAddress: cfg.HealthProbeBindAddress,
 		// LeaderElection is done in the Autoscaler.
 		LeaderElection: false,
 	})
@@ -114,9 +149,9 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("getting hostname: %v", err)
 	}
-	le := leader.NewElection(clientset, hostname, namespace)
+	le := leader.NewElection(clientset, hostname, cfg.Namespace)
 
-	queueManager := queue.NewManager(concurrencyPerReplica)
+	queueManager := queue.NewManager(cfg.Concurrency)
 	metricsRegistry := prometheus.WrapRegistererWithPrefix("lingo_", metrics.Registry)
 	queue.NewMetricsCollector(queueManager).MustRegister(metricsRegistry)
 
@@ -133,8 +168,8 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("setting up deloyment manager: %w", err)
 	}
-	deploymentManager.Namespace = namespace
-	deploymentManager.ScaleDownPeriod = time.Duration(scaleDownDelay) * time.Second
+	deploymentManager.Namespace = cfg.Namespace
+	deploymentManager.ScaleDownPeriod = time.Duration(cfg.ScaleDownDelay) * time.Second
 	deployments.NewMetricsCollector(deploymentManager).MustRegister(metricsRegistry)
 	if err := mgr.AddReadyzCheck("readyz", deploymentManager.ReadinessChecker); err != nil {
 		return fmt.Errorf("setup readiness handler: %w", err)
@@ -148,20 +183,40 @@ func run() error {
 	autoscaler.AverageCount = 10 // 10 * 3 seconds = 30 sec avg
 	autoscaler.LeaderElection = le
 	autoscaler.Deployments = deploymentManager
-	autoscaler.ConcurrencyPerReplica = concurrencyPerReplica
+	autoscaler.ConcurrencyPerReplica = cfg.Concurrency
 	autoscaler.Queues = queueManager
 	autoscaler.Endpoints = endpointManager
 	go autoscaler.Start()
 
 	proxy.MustRegister(metricsRegistry)
 	proxyHandler := proxy.NewHandler(deploymentManager, endpointManager, queueManager)
-	proxyHandler.MaxRetries = backendRetries
+	proxyHandler.MaxRetries = cfg.BackendRetries
 	proxyServer := &http.Server{Addr: ":8080", Handler: proxyHandler}
 
 	statsHandler := &stats.Handler{
 		Queues: queueManager,
 	}
 	statsServer := &http.Server{Addr: ":8083", Handler: statsHandler}
+
+	httpClient := &http.Client{
+		Timeout: 30 * time.Minute,
+	}
+	var subscriberInstances []*subscriber.Subscriber
+	for i, msgURL := range messageURLPairs {
+		sub, err := subscriber.NewSubscriber(
+			ctx,
+			msgURL.requestURL,
+			msgURL.responseURL,
+			deploymentManager,
+			endpointManager,
+			queueManager,
+			httpClient,
+		)
+		if err != nil {
+			return fmt.Errorf("creating subscriber[%d]: %w", i, err)
+		}
+		subscriberInstances = append(subscriberInstances, sub)
+	}
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -190,6 +245,16 @@ func run() error {
 			os.Exit(1)
 		}
 	}()
+	for i := range subscriberInstances {
+		go func() {
+			setupLog.Info("Starting subscriber", "index", i)
+			err := subscriberInstances[i].Start(ctx)
+			if err != nil {
+				setupLog.Error(err, "starting subscriber")
+				os.Exit(1)
+			}
+		}()
+	}
 	defer func() {
 		setupLog.Info("waiting on manager to stop")
 		wg.Wait()
@@ -205,6 +270,10 @@ func run() error {
 
 	if err := proxyServer.ListenAndServe(); err != nil {
 		return fmt.Errorf("listen and serve: %w", err)
+	}
+
+	for i := range subscriberInstances {
+		subscriberInstances[i].Stop(ctx)
 	}
 
 	return nil
