@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"gocloud.dev/pubsub"
 	_ "gocloud.dev/pubsub/gcppubsub"
@@ -58,6 +59,7 @@ func NewSubscriber(
 }
 
 func (s *Subscriber) Start(ctx context.Context) error {
+	var consecutiveErrors int
 	for {
 		msg, err := s.requests.Receive(ctx)
 		if err != nil {
@@ -68,9 +70,26 @@ func (s *Subscriber) Start(ctx context.Context) error {
 
 		if err := s.handleRequest(context.Background(), msg); err != nil {
 			log.Printf("Error handling message %s: %v", msg.LoggableID, err)
-			return err
+			consecutiveErrors++
+
+			// Slow down a bit to avoid churning through messages and running
+			// up cloud costs when no meaningful work is being done.
+			wait := consecutiveErrBackoff(consecutiveErrors)
+			log.Printf("after %d consecutive errors, waiting %v before processing next message", consecutiveErrors, wait)
+			time.Sleep(wait)
+		} else {
+			consecutiveErrors = 0
 		}
 	}
+}
+
+func consecutiveErrBackoff(n int) time.Duration {
+	d := time.Duration(n) * time.Second
+	const maxBackoff = 3 * time.Minute
+	if d > maxBackoff {
+		return maxBackoff
+	}
+	return d
 }
 
 func (s *Subscriber) handleRequest(ctx context.Context, msg *pubsub.Message) error {
@@ -89,49 +108,16 @@ func (s *Subscriber) handleRequest(ctx context.Context, msg *pubsub.Message) err
 			}
 		}
 	*/
-	var payload struct {
-		Metadata map[string]interface{} `json:"metadata"`
-		Path     string                 `json:"path"`
-		Body     json.RawMessage        `json:"body"`
-	}
-	if err := json.Unmarshal(msg.Body, &payload); err != nil {
-		log.Printf("Error unmarshalling message (%s) as json: %v", msg.LoggableID, err)
-
-		// Acknowledge the message to prevent re-delivery since it is not processable.
-		msg.Ack()
-		return nil
+	req, err := parseRequest(ctx, msg)
+	if err != nil {
+		return s.sendResponse(req, jsonError("error parsing request: %v", err), http.StatusBadRequest)
 	}
 
-	var payloadBody struct {
-		Model string `json:"model"`
-	}
-	if err := json.Unmarshal(payload.Body, &payloadBody); err != nil {
-		log.Printf("Error unmarshalling message (%s) .body as json: %v", msg.LoggableID, err)
-
-		// Acknowledge the message to prevent re-delivery since it is not processable.
-		msg.Ack()
-		return nil
-	}
-
-	if payloadBody.Model == "" {
-		log.Printf("Empty model in message: %s", msg.LoggableID)
-
-		// Acknowledge the message to prevent re-delivery since it is not processable.
-		msg.Ack()
-		return nil
-	}
-
-	backendDeployment, backendExists := s.Deployments.ResolveDeployment(payloadBody.Model)
+	backendDeployment, backendExists := s.Deployments.ResolveDeployment(req.model)
 	if !backendExists {
-		log.Printf("Message (%s): deployment not found for model: %s", msg.LoggableID, payloadBody.Model)
-
-		// Hopefully the backend will be deployed soon or another subscriber will handle it.
-		// Hopefully exponential backoff will be used to prevent overwhelming the backend.
-		if msg.Nackable() {
-			msg.Nack()
-		}
-
-		return nil
+		// Send a 400 response to the client, however it is possible the backend
+		// will be deployed soon or another subscriber will handle it.
+		return s.sendResponse(req, jsonError("backend not found for model: %v", req.model), http.StatusNotFound)
 	}
 
 	// Ensure the backend is scaled to at least one Pod.
@@ -148,77 +134,22 @@ func (s *Subscriber) handleRequest(ctx context.Context, msg *pubsub.Message) err
 
 	host, err := s.Endpoints.AwaitHostAddress(ctx, backendDeployment, "http")
 	if err != nil {
-		log.Printf("Error waiting for host for message %s: %v", msg.LoggableID, err)
-
-		if msg.Nackable() {
-			msg.Nack()
-		}
-		return nil
-	}
-
-	path := payload.Path
-	if payload.Path == "" {
-		// Default to completions endpoint.
-		path = "/v1/completions"
-	} else if !strings.HasPrefix(payload.Path, "/") {
-		path = "/" + payload.Path
+		return s.sendResponse(req, jsonError("error awaiting host for backend: %v", err), http.StatusBadGateway)
 	}
 
 	// TODO: Concurrency.
 
-	url := fmt.Sprintf("http://%s%s", host, path)
+	url := fmt.Sprintf("http://%s%s", host, req.path)
 	log.Printf("Sending request to backend for message %s: %s", msg.LoggableID, url)
-	respPayload, respCode, err := s.sendRequest(ctx, url, payload.Body)
+	respPayload, respCode, err := s.sendBackendRequest(ctx, url, req.body)
 	if err != nil {
-		log.Printf("Error sending request for message %s: %v", msg.LoggableID, err)
-
-		if msg.Nackable() {
-			msg.Nack()
-		}
-		return nil
+		return s.sendResponse(req, jsonError("error sending request to backend: %v", err), http.StatusBadGateway)
 	}
 
-	response := struct {
-		Metadata   map[string]interface{} `json:"metadata"`
-		StatusCode int                    `json:"status_code"`
-		Body       json.RawMessage        `json:"body"`
-	}{
-		Metadata:   payload.Metadata,
-		StatusCode: respCode,
-		Body:       respPayload,
-	}
-	respPayloadWithMetadata, err := json.Marshal(response)
-	if err != nil {
-		log.Printf("Error marshalling response with metadata for message %s: %v", msg.LoggableID, err)
-
-		// Retrying wont fix, discard.
-		msg.Ack()
-		return nil
-	}
-
-	log.Printf("Sending response for message %s", msg.LoggableID)
-
-	if err := s.responses.Send(ctx, &pubsub.Message{
-		Body: respPayloadWithMetadata,
-		Metadata: map[string]string{
-			"request_message_id": msg.LoggableID,
-		},
-	}); err != nil {
-		log.Printf("Error sending response for message %s: %v", msg.LoggableID, err)
-
-		if msg.Nackable() {
-			msg.Nack()
-		}
-		return nil
-	}
-
-	log.Printf("Successfully processed request, ack'ing message %s", msg.LoggableID)
-
-	msg.Ack()
-	return nil
+	return s.sendResponse(req, respPayload, respCode)
 }
 
-func (s *Subscriber) sendRequest(ctx context.Context, url string, body []byte) ([]byte, int, error) {
+func (s *Subscriber) sendBackendRequest(ctx context.Context, url string, body []byte) ([]byte, int, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
 		return nil, 0, err
@@ -241,6 +172,116 @@ func (s *Subscriber) sendRequest(ctx context.Context, url string, body []byte) (
 	return payload, resp.StatusCode, nil
 }
 
+var (
+	ErrFailedToSendResponse = fmt.Errorf("failed to send response")
+)
+
+func (s *Subscriber) sendResponse(req *request, body []byte, statusCode int) error {
+	log.Printf("Sending response to message: %v", req.msg.LoggableID)
+
+	response := struct {
+		Metadata   map[string]interface{} `json:"metadata"`
+		StatusCode int                    `json:"status_code"`
+		Body       json.RawMessage        `json:"body"`
+	}{
+		Metadata:   req.metadata,
+		StatusCode: statusCode,
+		Body:       body,
+	}
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		jsonResponse = []byte(fmt.Sprintf(`{"error": "error marshalling response: %v"}`, err))
+	}
+
+	if err := s.responses.Send(req.ctx, &pubsub.Message{
+		Body: jsonResponse,
+		Metadata: map[string]string{
+			"request_message_id": req.msg.LoggableID,
+		},
+	}); err != nil {
+		log.Printf("Error sending response for message %s: %v", req.msg.LoggableID, err)
+
+		// If a repsonse cant be sent, the message should be redelivered.
+		if req.msg.Nackable() {
+			req.msg.Nack()
+		}
+		return fmt.Errorf("%w: %v", ErrFailedToSendResponse, err)
+	}
+
+	log.Printf("Send response for message: %s", req.msg.LoggableID)
+	req.msg.Ack()
+	return nil
+}
+
 func (s *Subscriber) Stop(ctx context.Context) error {
 	return s.requests.Shutdown(ctx)
+}
+
+type request struct {
+	ctx      context.Context
+	msg      *pubsub.Message
+	metadata map[string]interface{}
+	path     string
+	body     json.RawMessage
+	model    string
+}
+
+func parseRequest(ctx context.Context, msg *pubsub.Message) (*request, error) {
+	var payload struct {
+		Metadata map[string]interface{} `json:"metadata"`
+		Path     string                 `json:"path"`
+		Body     json.RawMessage        `json:"body"`
+	}
+	if err := json.Unmarshal(msg.Body, &payload); err != nil {
+		return nil, fmt.Errorf("unmarshalling message (%s) as json: %w", msg.LoggableID, err)
+	}
+
+	var payloadBody struct {
+		Model string `json:"model"`
+	}
+	if err := json.Unmarshal(payload.Body, &payloadBody); err != nil {
+		return nil, fmt.Errorf("unmarshalling message (%s) .body as json: %w", msg.LoggableID, err)
+	}
+
+	if payloadBody.Model == "" {
+		return nil, fmt.Errorf("empty model in message: %s", msg.LoggableID)
+	}
+
+	path := payload.Path
+	if payload.Path == "" {
+		// Default to completions endpoint.
+		path = "/v1/completions"
+	} else if !strings.HasPrefix(payload.Path, "/") {
+		path = "/" + payload.Path
+	}
+
+	return &request{
+		ctx:      ctx,
+		msg:      msg,
+		metadata: payload.Metadata,
+		path:     path,
+		body:     payload.Body,
+		model:    payloadBody.Model,
+	}, nil
+}
+
+func jsonError(format string, args ...interface{}) []byte {
+	s := fmt.Sprintf(format, args...)
+	fmt.Println(s)
+	// Example OpenAI error response:
+	/*
+		{
+		  "error": {
+		    "message": "Invalid authorization header",
+		    "type": "server_error",
+		    "param": null,
+		    "code": null
+		  }
+	*/
+	return []byte(fmt.Sprintf(`{
+	"error": {
+		"message": %q
+	}
+}`, s))
 }

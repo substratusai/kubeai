@@ -50,6 +50,30 @@ func TestSubscriber(t *testing.T) {
 	completeRequests(backendComplete, 1)
 
 	shouldReceiveResponseMessage(t, modelName, "a")
+
+	sendRequestMessage(t, "/v1/completions", "non-existant-model", "b")
+	shouldReceiveResponseErrMessage(t, http.StatusNotFound, "backend not found for model: non-existant-model", "b")
+}
+
+func shouldReceiveResponseErrMessage(t *testing.T, statusCode int, message string, id string) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	t.Logf("Waiting for response error message: id %q", id)
+	resp, err := testResponsesSubscription.Receive(ctx)
+	require.NoError(t, err)
+	resp.Ack()
+
+	require.JSONEq(t, fmt.Sprintf(`
+{
+	"metadata": {"my-id": %q},
+	"status_code": %d,
+	"body": {
+		"error": {
+			"message": %q
+		}
+	}
+}`, id, statusCode, message), string(resp.Body))
 }
 
 func shouldReceiveResponseMessage(t *testing.T, model, id string) {
