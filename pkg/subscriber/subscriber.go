@@ -77,7 +77,7 @@ func (s *Subscriber) handleRequest(ctx context.Context, msg *pubsub.Message) err
 	var payload struct {
 		Metadata map[string]interface{} `json:"metadata"`
 		Path     string                 `json:"path"`
-		Model    string                 `json:"model"`
+		Body     json.RawMessage        `json:"body"`
 	}
 	if err := json.Unmarshal(msg.Body, &payload); err != nil {
 		log.Printf("Error unmarshalling message (%s) as json: %v", msg.LoggableID, err)
@@ -87,7 +87,18 @@ func (s *Subscriber) handleRequest(ctx context.Context, msg *pubsub.Message) err
 		return nil
 	}
 
-	if payload.Model == "" {
+	var payloadBody struct {
+		Model string `json:"model"`
+	}
+	if err := json.Unmarshal(payload.Body, &payloadBody); err != nil {
+		log.Printf("Error unmarshalling message (%s) .body as json: %v", msg.LoggableID, err)
+
+		// Acknowledge the message to prevent re-delivery since it is not processable.
+		msg.Ack()
+		return nil
+	}
+
+	if payloadBody.Model == "" {
 		log.Printf("Empty model in message: %s", msg.LoggableID)
 
 		// Acknowledge the message to prevent re-delivery since it is not processable.
@@ -95,9 +106,9 @@ func (s *Subscriber) handleRequest(ctx context.Context, msg *pubsub.Message) err
 		return nil
 	}
 
-	backendDeployment, backendExists := s.Deployments.ResolveDeployment(payload.Model)
+	backendDeployment, backendExists := s.Deployments.ResolveDeployment(payloadBody.Model)
 	if !backendExists {
-		log.Printf("Message (%s): deployment not found for model: %s", msg.LoggableID, payload.Model)
+		log.Printf("Message (%s): deployment not found for model: %s", msg.LoggableID, payloadBody.Model)
 
 		// Hopefully the backend will be deployed soon or another subscriber will handle it.
 		// Hopefully exponential backoff will be used to prevent overwhelming the backend.
@@ -142,7 +153,7 @@ func (s *Subscriber) handleRequest(ctx context.Context, msg *pubsub.Message) err
 
 	url := fmt.Sprintf("http://%s%s", host, path)
 	log.Printf("Sending request to backend for message %s: %s", msg.LoggableID, url)
-	respPayload, err := s.sendRequest(ctx, url, msg.Body)
+	respPayload, respCode, err := s.sendRequest(ctx, url, payload.Body)
 	if err != nil {
 		log.Printf("Error sending request for message %s: %v", msg.LoggableID, err)
 
@@ -152,17 +163,16 @@ func (s *Subscriber) handleRequest(ctx context.Context, msg *pubsub.Message) err
 		return nil
 	}
 
-	var decodedRespPayload map[string]interface{}
-	if err := json.Unmarshal(respPayload, &decodedRespPayload); err != nil {
-		log.Printf("Error unmarshalling response for message %s: %v", msg.LoggableID, err)
-
-		if msg.Nackable() {
-			msg.Nack()
-		}
-		return nil
+	response := struct {
+		Metadata   map[string]interface{} `json:"metadata"`
+		StatusCode int                    `json:"status_code"`
+		Body       json.RawMessage        `json:"body"`
+	}{
+		Metadata:   payload.Metadata,
+		StatusCode: respCode,
+		Body:       respPayload,
 	}
-	decodedRespPayload["metadata"] = payload.Metadata
-	respPayloadWithMetadata, err := json.Marshal(decodedRespPayload)
+	respPayloadWithMetadata, err := json.Marshal(response)
 	if err != nil {
 		log.Printf("Error marshalling response with metadata for message %s: %v", msg.LoggableID, err)
 
@@ -193,10 +203,10 @@ func (s *Subscriber) handleRequest(ctx context.Context, msg *pubsub.Message) err
 	return nil
 }
 
-func (s *Subscriber) sendRequest(ctx context.Context, url string, body []byte) ([]byte, error) {
+func (s *Subscriber) sendRequest(ctx context.Context, url string, body []byte) ([]byte, int, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -204,20 +214,16 @@ func (s *Subscriber) sendRequest(ctx context.Context, url string, body []byte) (
 
 	resp, err := s.HTTPC.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-	}
-
 	payload, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return payload, nil
+	return payload, resp.StatusCode, nil
 }
 
 func (s *Subscriber) Stop(ctx context.Context) error {

@@ -42,7 +42,7 @@ func TestSubscriber(t *testing.T) {
 	time.Sleep(3 * time.Second)
 
 	// Send request id "a"
-	sendRequestMessage(t, modelName, "a")
+	sendRequestMessage(t, "/v1/completions", modelName, "a")
 
 	// Assert on replicas before completing the request - otherwise there is a race condition
 	// with the autoscaler.
@@ -60,16 +60,29 @@ func shouldReceiveResponseMessage(t *testing.T, model, id string) {
 	resp, err := testResponsesSubscription.Receive(ctx)
 	require.NoError(t, err)
 	resp.Ack()
-	require.JSONEq(t, fmt.Sprintf(`{"metadata": {"my-id": %q}, "model": %q, "choices": [{"text": "hey"}]}`, id, model), string(resp.Body))
-}
-
-func sendRequestMessage(t *testing.T, modelName string, id string) {
-	body := []byte(fmt.Sprintf(`
+	require.JSONEq(t, fmt.Sprintf(`
 {
 	"metadata": {"my-id": %q},
-	"model": %q
+	"status_code": 200,
+	"body": {
+		"model": %q,
+		"choices": [
+			{"text": "hey"}
+		]
+	}
+}`, id, model), string(resp.Body))
+}
+
+func sendRequestMessage(t *testing.T, path, modelName, id string) {
+	body := []byte(fmt.Sprintf(`
+{
+	"path": %q,
+	"body": {
+		"model": %q
+	},
+	"metadata": {"my-id": %q}
 }`,
-		id, modelName))
+		path, modelName, id))
 
 	err := testRequestsTopic.Send(context.Background(), &pubsub.Message{
 		Body: body,
