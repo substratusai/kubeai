@@ -9,7 +9,7 @@ test-unit:
 
 .PHONY: test-integration
 test-integration: envtest
-	go clean -testcache; KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test ./tests/integration -run Subs -v
+	go clean -testcache; KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test ./tests/integration -v
 
 .PHONY: test-e2e
 test-e2e:

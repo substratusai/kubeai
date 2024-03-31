@@ -15,9 +15,9 @@ import (
 	"github.com/substratusai/lingo/pkg/deployments"
 	"github.com/substratusai/lingo/pkg/endpoints"
 	"github.com/substratusai/lingo/pkg/leader"
+	"github.com/substratusai/lingo/pkg/messenger"
 	"github.com/substratusai/lingo/pkg/proxy"
 	"github.com/substratusai/lingo/pkg/queue"
-	"github.com/substratusai/lingo/pkg/subscriber"
 	"gocloud.dev/pubsub"
 	_ "gocloud.dev/pubsub/mempubsub"
 	corev1 "k8s.io/api/core/v1"
@@ -147,7 +147,7 @@ func TestMain(m *testing.M) {
 	testRequestsTopic, err = pubsub.OpenTopic(testCtx, memRequestsURL)
 	requireNoError(err)
 
-	sub, err := subscriber.NewSubscriber(
+	msgr, err := messenger.NewMessenger(
 		testCtx,
 		memRequestsURL,
 		memResponsesURL,
@@ -163,7 +163,7 @@ func TestMain(m *testing.M) {
 
 	go func() {
 		log.Println("starting subscriber")
-		sub.Start(testCtx)
+		msgr.Start(testCtx)
 	}()
 
 	log.Println("running tests")

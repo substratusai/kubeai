@@ -13,9 +13,9 @@ import (
 	"gocloud.dev/pubsub"
 )
 
-func TestSubscriber(t *testing.T) {
+func TestMessenger(t *testing.T) {
 
-	const modelName = "test-model-a-for-subscriber"
+	const modelName = "test-model-a-for-messenger"
 	deploy := testDeployment(modelName)
 
 	require.NoError(t, testK8sClient.Create(testCtx, deploy))

@@ -25,10 +25,10 @@ import (
 	"github.com/substratusai/lingo/pkg/deployments"
 	"github.com/substratusai/lingo/pkg/endpoints"
 	"github.com/substratusai/lingo/pkg/leader"
+	"github.com/substratusai/lingo/pkg/messenger"
 	"github.com/substratusai/lingo/pkg/proxy"
 	"github.com/substratusai/lingo/pkg/queue"
 	"github.com/substratusai/lingo/pkg/stats"
-	"github.com/substratusai/lingo/pkg/subscriber"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -70,7 +70,7 @@ func run() error {
 		ScaleDownDelay int `env:"SCALE_DOWN_DELAY, default=30"`
 		BackendRetries int `env:"BACKEND_RETRIES, default=1"`
 
-		// SubscriptionURLs is a list of (comma-separated) URLs to launch subscribers for.
+		// MessengerURLs is a list of (comma-separated) URLs to listen for requests and send responses on.
 		//
 		// Format: <request-subscription1>|<response-topic1>,<request-subscription2>|<response-topic2>,...
 		//
@@ -95,7 +95,7 @@ func run() error {
 		// Kafka:
 		// 		requests:	"kafka://my-group?topic=my-topic"
 		// 		responses:	"kafka://my-topic"
-		SubscriptionURLs []string `env:"SUBSCRIPTION_URLS"`
+		MessengerURLs []string `env:"MESSENGER_URLS"`
 
 		MetricsBindAddress     string `env:"METRICS_BIND_ADDRESS, default=:8082"`
 		HealthProbeBindAddress string `env:"HEALTH_PROBE_BIND_ADDRESS, default=:8081"`
@@ -104,19 +104,19 @@ func run() error {
 		return fmt.Errorf("parsing environment variables: %w", err)
 	}
 
-	type messageURLPair struct {
-		requestURL  string
-		responseURL string
+	type messengerURLPair struct {
+		requests  string
+		responses string
 	}
-	var messageURLPairs []messageURLPair
-	for _, s := range cfg.SubscriptionURLs {
+	var messengerURLPairs []messengerURLPair
+	for _, s := range cfg.MessengerURLs {
 		parts := strings.Split(s, "|")
 		if len(parts) != 2 {
 			return fmt.Errorf("invalid subscription URL: %q", s)
 		}
-		messageURLPairs = append(messageURLPairs, messageURLPair{
-			requestURL:  parts[0],
-			responseURL: parts[1],
+		messengerURLPairs = append(messengerURLPairs, messengerURLPair{
+			requests:  parts[0],
+			responses: parts[1],
 		})
 	}
 
@@ -201,21 +201,21 @@ func run() error {
 	httpClient := &http.Client{
 		Timeout: 30 * time.Minute,
 	}
-	var subscriberInstances []*subscriber.Subscriber
-	for i, msgURL := range messageURLPairs {
-		sub, err := subscriber.NewSubscriber(
+	var msgrs []*messenger.Messenger
+	for i, msgURL := range messengerURLPairs {
+		msgr, err := messenger.NewMessenger(
 			ctx,
-			msgURL.requestURL,
-			msgURL.responseURL,
+			msgURL.requests,
+			msgURL.responses,
 			deploymentManager,
 			endpointManager,
 			queueManager,
 			httpClient,
 		)
 		if err != nil {
-			return fmt.Errorf("creating subscriber[%d]: %w", i, err)
+			return fmt.Errorf("creating messenger[%d]: %w", i, err)
 		}
-		subscriberInstances = append(subscriberInstances, sub)
+		msgrs = append(msgrs, msgr)
 	}
 
 	var wg sync.WaitGroup
@@ -245,12 +245,12 @@ func run() error {
 			os.Exit(1)
 		}
 	}()
-	for i := range subscriberInstances {
+	for i := range msgrs {
 		go func() {
-			setupLog.Info("Starting subscriber", "index", i)
-			err := subscriberInstances[i].Start(ctx)
+			setupLog.Info("Starting messenger", "index", i)
+			err := msgrs[i].Start(ctx)
 			if err != nil {
-				setupLog.Error(err, "starting subscriber")
+				setupLog.Error(err, "starting messenger")
 				os.Exit(1)
 			}
 		}()
@@ -272,8 +272,8 @@ func run() error {
 		return fmt.Errorf("listen and serve: %w", err)
 	}
 
-	for i := range subscriberInstances {
-		subscriberInstances[i].Stop(ctx)
+	for i := range msgrs {
+		msgrs[i].Stop(ctx)
 	}
 
 	return nil
