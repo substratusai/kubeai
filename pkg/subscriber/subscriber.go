@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"gocloud.dev/pubsub"
@@ -24,6 +25,9 @@ type Subscriber struct {
 
 	requests  *pubsub.Subscription
 	responses *pubsub.Topic
+
+	consecutiveErrorsMtx sync.RWMutex
+	consecutiveErrors    int
 }
 
 func NewSubscriber(
@@ -59,7 +63,6 @@ func NewSubscriber(
 }
 
 func (s *Subscriber) Start(ctx context.Context) error {
-	var consecutiveErrors int
 	for {
 		msg, err := s.requests.Receive(ctx)
 		if err != nil {
@@ -68,17 +71,14 @@ func (s *Subscriber) Start(ctx context.Context) error {
 
 		log.Println("Received message:", msg.LoggableID)
 
-		if err := s.handleRequest(context.Background(), msg); err != nil {
-			log.Printf("Error handling message %s: %v", msg.LoggableID, err)
-			consecutiveErrors++
+		s.handleRequest(context.Background(), msg)
 
-			// Slow down a bit to avoid churning through messages and running
-			// up cloud costs when no meaningful work is being done.
+		// Slow down a bit to avoid churning through messages and running
+		// up cloud costs when no meaningful work is being done.
+		if consecutiveErrors := s.getConsecutiveErrors(); consecutiveErrors > 0 {
 			wait := consecutiveErrBackoff(consecutiveErrors)
 			log.Printf("after %d consecutive errors, waiting %v before processing next message", consecutiveErrors, wait)
 			time.Sleep(wait)
-		} else {
-			consecutiveErrors = 0
 		}
 	}
 }
@@ -92,7 +92,7 @@ func consecutiveErrBackoff(n int) time.Duration {
 	return d
 }
 
-func (s *Subscriber) handleRequest(ctx context.Context, msg *pubsub.Message) error {
+func (s *Subscriber) handleRequest(ctx context.Context, msg *pubsub.Message) {
 	// Expecting a message with the following structure:
 	/*
 		{
@@ -110,14 +110,16 @@ func (s *Subscriber) handleRequest(ctx context.Context, msg *pubsub.Message) err
 	*/
 	req, err := parseRequest(ctx, msg)
 	if err != nil {
-		return s.sendResponse(req, jsonError("error parsing request: %v", err), http.StatusBadRequest)
+		s.sendResponse(req, s.jsonError("error parsing request: %v", err), http.StatusBadRequest)
+		return
 	}
 
 	backendDeployment, backendExists := s.Deployments.ResolveDeployment(req.model)
 	if !backendExists {
 		// Send a 400 response to the client, however it is possible the backend
 		// will be deployed soon or another subscriber will handle it.
-		return s.sendResponse(req, jsonError("backend not found for model: %v", req.model), http.StatusNotFound)
+		s.sendResponse(req, s.jsonError("backend not found for model: %v", req.model), http.StatusNotFound)
+		return
 	}
 
 	// Ensure the backend is scaled to at least one Pod.
@@ -126,27 +128,28 @@ func (s *Subscriber) handleRequest(ctx context.Context, msg *pubsub.Message) err
 	log.Printf("Entering queue: %s", msg.LoggableID)
 
 	complete := s.Queues.EnqueueAndWait(ctx, backendDeployment, msg.LoggableID)
-	// TODO: Make sure complete() is called at the right time once code is modified to launch a goroutine
-	// to support concurrency.
-	defer complete()
 
 	log.Printf("Awaiting host for message %s", msg.LoggableID)
 
 	host, err := s.Endpoints.AwaitHostAddress(ctx, backendDeployment, "http")
 	if err != nil {
-		return s.sendResponse(req, jsonError("error awaiting host for backend: %v", err), http.StatusBadGateway)
+		complete()
+		s.sendResponse(req, s.jsonError("error awaiting host for backend: %v", err), http.StatusBadGateway)
+		return
 	}
 
-	// TODO: Concurrency.
+	// Do work in a goroutine to avoid blocking the main loop.
+	go func() {
+		defer complete()
+		url := fmt.Sprintf("http://%s%s", host, req.path)
+		log.Printf("Sending request to backend for message %s: %s", msg.LoggableID, url)
+		respPayload, respCode, err := s.sendBackendRequest(ctx, url, req.body)
+		if err != nil {
+			s.sendResponse(req, s.jsonError("error sending request to backend: %v", err), http.StatusBadGateway)
+		}
 
-	url := fmt.Sprintf("http://%s%s", host, req.path)
-	log.Printf("Sending request to backend for message %s: %s", msg.LoggableID, url)
-	respPayload, respCode, err := s.sendBackendRequest(ctx, url, req.body)
-	if err != nil {
-		return s.sendResponse(req, jsonError("error sending request to backend: %v", err), http.StatusBadGateway)
-	}
-
-	return s.sendResponse(req, respPayload, respCode)
+		s.sendResponse(req, respPayload, respCode)
+	}()
 }
 
 func (s *Subscriber) sendBackendRequest(ctx context.Context, url string, body []byte) ([]byte, int, error) {
@@ -176,7 +179,7 @@ var (
 	ErrFailedToSendResponse = fmt.Errorf("failed to send response")
 )
 
-func (s *Subscriber) sendResponse(req *request, body []byte, statusCode int) error {
+func (s *Subscriber) sendResponse(req *request, body []byte, statusCode int) {
 	log.Printf("Sending response to message: %v", req.msg.LoggableID)
 
 	response := struct {
@@ -191,7 +194,8 @@ func (s *Subscriber) sendResponse(req *request, body []byte, statusCode int) err
 
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
-		jsonResponse = []byte(fmt.Sprintf(`{"error": "error marshalling response: %v"}`, err))
+		log.Println("Error marshalling response:", err)
+		s.addConsecutiveError()
 	}
 
 	if err := s.responses.Send(req.ctx, &pubsub.Message{
@@ -201,17 +205,20 @@ func (s *Subscriber) sendResponse(req *request, body []byte, statusCode int) err
 		},
 	}); err != nil {
 		log.Printf("Error sending response for message %s: %v", req.msg.LoggableID, err)
+		s.addConsecutiveError()
 
 		// If a repsonse cant be sent, the message should be redelivered.
 		if req.msg.Nackable() {
 			req.msg.Nack()
 		}
-		return fmt.Errorf("%w: %v", ErrFailedToSendResponse, err)
+		return
 	}
 
 	log.Printf("Send response for message: %s", req.msg.LoggableID)
+	if statusCode < 300 {
+		s.resetConsecutiveErrors()
+	}
 	req.msg.Ack()
-	return nil
 }
 
 func (s *Subscriber) Stop(ctx context.Context) error {
@@ -266,9 +273,30 @@ func parseRequest(ctx context.Context, msg *pubsub.Message) (*request, error) {
 	}, nil
 }
 
-func jsonError(format string, args ...interface{}) []byte {
-	s := fmt.Sprintf(format, args...)
-	fmt.Println(s)
+func (s *Subscriber) addConsecutiveError() {
+	s.consecutiveErrorsMtx.Lock()
+	defer s.consecutiveErrorsMtx.Unlock()
+	s.consecutiveErrors++
+}
+
+func (s *Subscriber) resetConsecutiveErrors() {
+	s.consecutiveErrorsMtx.Lock()
+	defer s.consecutiveErrorsMtx.Unlock()
+	s.consecutiveErrors = 0
+}
+
+func (s *Subscriber) getConsecutiveErrors() int {
+	s.consecutiveErrorsMtx.RLock()
+	defer s.consecutiveErrorsMtx.RUnlock()
+	return s.consecutiveErrors
+}
+
+func (s *Subscriber) jsonError(format string, args ...interface{}) []byte {
+	s.addConsecutiveError()
+
+	m := fmt.Sprintf(format, args...)
+	fmt.Println(m)
+
 	// Example OpenAI error response:
 	/*
 		{
@@ -283,5 +311,5 @@ func jsonError(format string, args ...interface{}) []byte {
 	"error": {
 		"message": %q
 	}
-}`, s))
+}`, m))
 }
