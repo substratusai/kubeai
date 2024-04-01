@@ -168,24 +168,18 @@ type request struct {
 }
 
 func parseRequest(ctx context.Context, msg *pubsub.Message) (*request, error) {
+	req := &request{
+		ctx: ctx,
+		msg: msg,
+	}
+
 	var payload struct {
 		Metadata map[string]interface{} `json:"metadata"`
 		Path     string                 `json:"path"`
 		Body     json.RawMessage        `json:"body"`
 	}
 	if err := json.Unmarshal(msg.Body, &payload); err != nil {
-		return nil, fmt.Errorf("unmarshalling message (%s) as json: %w", msg.LoggableID, err)
-	}
-
-	var payloadBody struct {
-		Model string `json:"model"`
-	}
-	if err := json.Unmarshal(payload.Body, &payloadBody); err != nil {
-		return nil, fmt.Errorf("unmarshalling message (%s) .body as json: %w", msg.LoggableID, err)
-	}
-
-	if payloadBody.Model == "" {
-		return nil, fmt.Errorf("empty model in message: %s", msg.LoggableID)
+		return req, fmt.Errorf("unmarshalling message as json: %w", err)
 	}
 
 	path := payload.Path
@@ -196,14 +190,24 @@ func parseRequest(ctx context.Context, msg *pubsub.Message) (*request, error) {
 		path = "/" + payload.Path
 	}
 
-	return &request{
-		ctx:      ctx,
-		msg:      msg,
-		metadata: payload.Metadata,
-		path:     path,
-		body:     payload.Body,
-		model:    payloadBody.Model,
-	}, nil
+	req.metadata = payload.Metadata
+	req.path = path
+	req.body = payload.Body
+
+	var payloadBody struct {
+		Model string `json:"model"`
+	}
+	if err := json.Unmarshal(payload.Body, &payloadBody); err != nil {
+		return req, fmt.Errorf("unmarshalling message .body as json: %w", err)
+	}
+
+	if payloadBody.Model == "" {
+		return req, fmt.Errorf("empty .body.model in message")
+	}
+
+	req.model = payloadBody.Model
+
+	return req, nil
 }
 
 func (m *Messenger) sendBackendRequest(ctx context.Context, url string, body []byte) ([]byte, int, error) {
@@ -275,7 +279,7 @@ func (m *Messenger) jsonError(format string, args ...interface{}) []byte {
 	m.addConsecutiveError()
 
 	message := fmt.Sprintf(format, args...)
-	fmt.Println(message)
+	log.Println(message)
 
 	// Example OpenAI error response:
 	/*
