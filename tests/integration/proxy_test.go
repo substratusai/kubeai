@@ -19,11 +19,8 @@ import (
 	"github.com/stretchr/testify/require"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	disv1 "k8s.io/api/discovery/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/utils/ptr"
 )
 
 func TestScaleUpAndDown(t *testing.T) {
@@ -102,18 +99,7 @@ func TestHandleModelUndeployment(t *testing.T) {
 		w.WriteHeader(200)
 	}))
 
-	// Mock an EndpointSlice.
-	testBackendURL, err := url.Parse(testBackend.URL)
-	require.NoError(t, err)
-	testBackendPort, err := strconv.Atoi(testBackendURL.Port())
-	require.NoError(t, err)
-	require.NoError(t, testK8sClient.Create(testCtx,
-		endpointSlice(
-			modelName,
-			testBackendURL.Hostname(),
-			int32(testBackendPort),
-		),
-	))
+	mockEndpointSlice(t, modelName, testBackend)
 
 	// Wait for deployment mapping to sync.
 	time.Sleep(3 * time.Second)
@@ -132,7 +118,7 @@ func TestHandleModelUndeployment(t *testing.T) {
 	require.NoError(t, testK8sClient.Delete(testCtx, deploy))
 
 	// Check that the deployment was deleted
-	err = testK8sClient.Get(testCtx, client.ObjectKey{
+	err := testK8sClient.Get(testCtx, client.ObjectKey{
 		Namespace: deploy.Namespace,
 		Name:      deploy.Name,
 	}, deploy)
@@ -149,15 +135,6 @@ func TestHandleModelUndeployment(t *testing.T) {
 
 	t.Logf("Waiting for wait group")
 	wg.Wait()
-}
-
-func requireDeploymentReplicas(t *testing.T, deploy *appsv1.Deployment, n int32) {
-	require.EventuallyWithT(t, func(t *assert.CollectT) {
-		err := testK8sClient.Get(testCtx, types.NamespacedName{Namespace: deploy.Namespace, Name: deploy.Name}, deploy)
-		assert.NoError(t, err, "getting the deployment")
-		assert.NotNil(t, deploy.Spec.Replicas, "scale-up should have occurred")
-		assert.Equal(t, n, *deploy.Spec.Replicas, "scale-up should have occurred")
-	}, 5*time.Second, time.Second/2, "waiting for the deployment to be scaled up")
 }
 
 func sendRequests(t *testing.T, wg *sync.WaitGroup, modelName string, n int, expCode int) {
@@ -220,37 +197,6 @@ func testDeployment(name string) *appsv1.Deployment {
 						},
 					},
 				},
-			},
-		},
-	}
-}
-
-func endpointSlice(name, ip string, port int32) *disv1.EndpointSlice {
-	return &disv1.EndpointSlice{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name + "-deploy",
-			Namespace: testNamespace,
-			Labels: map[string]string{
-				disv1.LabelServiceName: name + "-deploy",
-			},
-		},
-		AddressType: disv1.AddressTypeIPv4,
-		Endpoints: []disv1.Endpoint{
-			{
-				// Address is not used, see TestMain() where this is re-written at request-time.
-				Addresses: []string{"10.0.0.10"},
-				Conditions: disv1.EndpointConditions{
-					Ready:       ptr.To(true),
-					Serving:     ptr.To(true),
-					Terminating: ptr.To(false),
-				},
-			},
-		},
-		Ports: []disv1.EndpointPort{
-			{
-				Name:     ptr.To("http"),
-				Port:     ptr.To(port),
-				Protocol: ptr.To(corev1.ProtocolTCP),
 			},
 		},
 	}

@@ -1,9 +1,10 @@
 # Lingo
 
-Lingo is a lightweight, scale-from-zero ML model proxy and that runs on Kubernetes. Lingo allows you to run text-completion and embedding servers in your own project without changing any of your OpenAI client code.
+Lingo is a lightweight, scale-from-zero ML model proxy and that runs on Kubernetes. Lingo allows you to run text-completion and embedding servers in your own project without changing any of your OpenAI client code. Large scale batch processing is as simple as configuring Lingo to consume-from and publish-to your favorite messaging system (AWS SQS, GCP PubSub, Azure Service Bus, Kafka, and more).
 
 🚀  Serve OSS LLMs on CPUs or GPUs  
 ✅️  Compatible with the OpenAI API  
+✉️  Plug-and-play with most messaging systems (Kafka, etc.)  
 ⚖️  Scale from zero, autoscale based on load  
 …  Queue requests to avoid overloading models  
 🛠️  Zero dependencies (no Istio, Knative, etc.)   
