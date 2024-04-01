@@ -273,6 +273,9 @@ func run() error {
 	}
 
 	for i := range msgrs {
+		// TODO: Investigate if in-progress message handling will exit cleanly.
+		// One concern is that responses might not be sent and messages may hang
+		// in an un-Ack'd state if the context is cancelled.
 		msgrs[i].Stop(ctx)
 	}
 
