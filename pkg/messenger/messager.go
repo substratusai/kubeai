@@ -76,7 +76,13 @@ func (m *Messenger) Start(ctx context.Context) error {
 		m.handleRequest(context.Background(), msg)
 
 		// Slow down a bit to avoid churning through messages and running
-		// up cloud costs when no meaningful work is being done.
+		// up cloud costs PubSub & GPUs when no meaningful work is being done.
+		//
+		// Intended to mitigate cases such as:
+		// * Spontaneous failures that might creep up overnight.
+		//   (Slow and speed back up later)
+		// * Some request-generation job sending a million malformed requests into a topic.
+		//   (Slow until an admin can intervene)
 		if consecutiveErrors := m.getConsecutiveErrors(); consecutiveErrors > 0 {
 			wait := consecutiveErrBackoff(consecutiveErrors)
 			log.Printf("after %d consecutive errors, waiting %v before processing next message", consecutiveErrors, wait)

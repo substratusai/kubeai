@@ -74,27 +74,16 @@ func run() error {
 		//
 		// Format: <request-subscription1>|<response-topic1>,<request-subscription2>|<response-topic2>,...
 		//
-		// URL Examples:
+		// Examples:
 		//
-		// Google PubSub:
-		// 		requests:	"gcppubsub://projects/my-project/subscriptions/my-subscription"
-		// 		responses:	"gcppubsub://projects/myproject/topics/mytopic"
-		// Amazon SQS/SNS:
-		// 		requests  (SQS):	"awssqs://sqs.us-east-2.amazonaws.com/123456789012/myqueue?region=us-east-2"
-		// 		responses (SQS):	"awssns:///arn:aws:sns:us-east-2:123456789012:mytopic?region=us-east-2"
-		// 		responses (SNS):	"awssqs://sqs.us-east-2.amazonaws.com/123456789012/myqueue?region=us-east-2"
-		// Azure Service Bus:
-		// 		requests:	"azuresb://mytopic?subscription=mysubscription"
-		// 		responses:	"azuresb://mytopic"
-		// Rabbit MQ:
-		// 		requests:	"rabbit://myqueue"
-		// 		responses:	"rabbit://myexchange"
-		// NATS:
-		// 		requests:	"nats://example.mysubject"
-		// 		responses:	"nats://example.mysubject"
-		// Kafka:
-		// 		requests:	"kafka://my-group?topic=my-topic"
-		// 		responses:	"kafka://my-topic"
+		// Google PubSub:		"gcppubsub://projects/my-project/subscriptions/my-subscription|gcppubsub://projects/myproject/topics/mytopic"
+		// Amazon SQS-to-SQS:	"awssqs://sqs.us-east-2.amazonaws.com/123456789012/myqueue1?region=us-east-2|awssqs://sqs.us-east-2.amazonaws.com/123456789012/myqueue2?region=us-east-2"
+		// Amazon SQS-to-SNS:	"awssqs://sqs.us-east-2.amazonaws.com/123456789012/myqueue1?region=us-east-2|awssns:///arn:aws:sns:us-east-2:123456789012:mytopic?region=us-east-2"
+		//  (NOTE: 3 slashes for SNS)
+		// Azure Service Bus:	"azuresb://mytopic1?subscription=mysubscription|azuresb://mytopic2"
+		// Rabbit MQ:			"rabbit://myqueue|rabbit://myexchange"
+		// NATS:				"nats://example.mysubject1|nats://example.mysubject2"
+		// Kafka:				"kafka://my-group?topic=my-topic1|kafka://my-topic2"
 		MessengerURLs []string `env:"MESSENGER_URLS"`
 
 		MetricsBindAddress     string `env:"METRICS_BIND_ADDRESS, default=:8082"`
