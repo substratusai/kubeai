@@ -26,6 +26,8 @@ type Messenger struct {
 
 	HTTPC *http.Client
 
+	MaxHandlers int
+
 	requests  *pubsub.Subscription
 	responses *pubsub.Topic
 }
@@ -56,10 +58,14 @@ func NewMessenger(
 		HTTPC:       httpClient,
 		requests:    requests,
 		responses:   responses,
+		MaxHandlers: 1000,
 	}, nil
 }
 
 func (m *Messenger) Start(ctx context.Context) error {
+	sem := make(chan struct{}, m.MaxHandlers)
+
+recvLoop:
 	for {
 		msg, err := m.requests.Receive(ctx)
 		if err != nil {
@@ -68,9 +74,28 @@ func (m *Messenger) Start(ctx context.Context) error {
 
 		log.Println("Received message:", msg.LoggableID)
 
-		m.handleRequest(context.Background(), msg)
+		// Wait if there are too many active handle goroutines and acquire the
+		// semaphore. If the context is canceled, stop waiting and start shutting
+		// down.
+		select {
+		case sem <- struct{}{}:
+		case <-ctx.Done():
+			break recvLoop
+		}
 
+		go func() {
+			defer func() { <-sem }()
+			m.handleRequest(context.Background(), msg)
+		}()
 	}
+
+	// We're no longer receiving messages. Wait to finish handling any
+	// unacknowledged messages by totally acquiring the semaphore.
+	for n := 0; n < m.MaxHandlers; n++ {
+		sem <- struct{}{}
+	}
+
+	return nil
 }
 
 func (m *Messenger) handleRequest(ctx context.Context, msg *pubsub.Message) {
@@ -109,28 +134,24 @@ func (m *Messenger) handleRequest(ctx context.Context, msg *pubsub.Message) {
 	log.Printf("Entering queue: %s", msg.LoggableID)
 
 	complete := m.Queues.EnqueueAndWait(ctx, backendDeployment, msg.LoggableID)
+	defer complete()
 
 	log.Printf("Awaiting host for message %s", msg.LoggableID)
 
 	host, err := m.Endpoints.AwaitHostAddress(ctx, backendDeployment, "http")
 	if err != nil {
-		complete()
 		m.sendResponse(req, m.jsonError("error awaiting host for backend: %v", err), http.StatusBadGateway)
 		return
 	}
 
-	// Do work in a goroutine to avoid blocking the main loop.
-	go func() {
-		defer complete()
-		url := fmt.Sprintf("http://%s%s", host, req.path)
-		log.Printf("Sending request to backend for message %s: %s", msg.LoggableID, url)
-		respPayload, respCode, err := m.sendBackendRequest(ctx, url, req.body)
-		if err != nil {
-			m.sendResponse(req, m.jsonError("error sending request to backend: %v", err), http.StatusBadGateway)
-		}
+	url := fmt.Sprintf("http://%s%s", host, req.path)
+	log.Printf("Sending request to backend for message %s: %s", msg.LoggableID, url)
+	respPayload, respCode, err := m.sendBackendRequest(ctx, url, req.body)
+	if err != nil {
+		m.sendResponse(req, m.jsonError("error sending request to backend: %v", err), http.StatusBadGateway)
+	}
 
-		m.sendResponse(req, respPayload, respCode)
-	}()
+	m.sendResponse(req, respPayload, respCode)
 }
 
 func (m *Messenger) Stop(ctx context.Context) error {
