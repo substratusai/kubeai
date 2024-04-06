@@ -74,10 +74,14 @@ func run() error {
 		// MessengerURLs is a list of (comma-separated) URLs to listen for requests and send responses on.
 		//
 		// Format: <request-subscription1>|<response-topic1>,<request-subscription2>|<response-topic2>,...
+		// You can optionally also specify the max number of handlers for each messenger URL pair.
+		// If not specified, the default is 1000.
+		// Format with setting max concurrency: <request-subscription1>|<response-topic1>|<max-handlers1>,
 		//
 		// Examples:
 		//
 		// Google PubSub:		"gcppubsub://projects/my-project/subscriptions/my-subscription|gcppubsub://projects/myproject/topics/mytopic"
+		// with maxHanlders:	"gcppubsub://projects/my-project/subscriptions/my-subscription|gcppubsub://projects/myproject/topics/mytopic|1000"
 		// Amazon SQS-to-SQS:	"awssqs://sqs.us-east-2.amazonaws.com/123456789012/myqueue1?region=us-east-2|awssqs://sqs.us-east-2.amazonaws.com/123456789012/myqueue2?region=us-east-2"
 		// Amazon SQS-to-SNS:	"awssqs://sqs.us-east-2.amazonaws.com/123456789012/myqueue1?region=us-east-2|awssns:///arn:aws:sns:us-east-2:123456789012:mytopic?region=us-east-2"
 		//  (NOTE: 3 slashes for SNS)
