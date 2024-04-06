@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -94,18 +95,29 @@ func run() error {
 	}
 
 	type messengerURLPair struct {
-		requests  string
-		responses string
+		requests    string
+		responses   string
+		maxHandlers int
 	}
 	var messengerURLPairs []messengerURLPair
 	for _, s := range cfg.MessengerURLs {
 		parts := strings.Split(s, "|")
-		if len(parts) != 2 {
+		if len(parts) != 2 && len(parts) != 3 {
 			return fmt.Errorf("invalid subscription URL: %q", s)
 		}
+		var maxHandlers int = 1000
+		var err error
+		if len(parts) == 3 {
+			maxHandlers, err = strconv.Atoi(parts[2])
+			if err != nil {
+				return fmt.Errorf("error converting messenger URL maxHandlers string %v to int: %w",
+					parts[2], err)
+			}
+		}
 		messengerURLPairs = append(messengerURLPairs, messengerURLPair{
-			requests:  parts[0],
-			responses: parts[1],
+			requests:    parts[0],
+			responses:   parts[1],
+			maxHandlers: maxHandlers,
 		})
 	}
 
@@ -196,6 +208,7 @@ func run() error {
 			ctx,
 			msgURL.requests,
 			msgURL.responses,
+			msgURL.maxHandlers,
 			deploymentManager,
 			endpointManager,
 			queueManager,

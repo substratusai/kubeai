@@ -36,6 +36,7 @@ func NewMessenger(
 	ctx context.Context,
 	requestsURL string,
 	responsesURL string,
+	maxHandlers int,
 	deployments DeploymentManager,
 	endpoints EndpointManager,
 	queues QueueManager,
@@ -58,7 +59,7 @@ func NewMessenger(
 		HTTPC:       httpClient,
 		requests:    requests,
 		responses:   responses,
-		MaxHandlers: 1000,
+		MaxHandlers: maxHandlers,
 	}, nil
 }
 

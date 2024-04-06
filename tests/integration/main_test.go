@@ -151,6 +151,7 @@ func TestMain(m *testing.M) {
 		testCtx,
 		memRequestsURL,
 		memResponsesURL,
+		1000,
 		deploymentManager,
 		endpointManager,
 		queueManager,
