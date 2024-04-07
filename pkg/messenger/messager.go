@@ -9,6 +9,8 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
+	"time"
 
 	"gocloud.dev/pubsub"
 	_ "gocloud.dev/pubsub/awssnssqs"
@@ -30,6 +32,9 @@ type Messenger struct {
 
 	requests  *pubsub.Subscription
 	responses *pubsub.Topic
+
+	consecutiveErrorsMtx sync.RWMutex
+	consecutiveErrors    int
 }
 
 func NewMessenger(
@@ -88,6 +93,20 @@ recvLoop:
 			defer func() { <-sem }()
 			m.handleRequest(context.Background(), msg)
 		}()
+
+		// Slow down a bit to avoid churning through messages and running
+		// up cloud costs PubSub & GPUs when no meaningful work is being done.
+		//
+		// Intended to mitigate cases such as:
+		// * Spontaneous failures that might creep up overnight.
+		//   (Slow and speed back up later)
+		// * Some request-generation job sending a million malformed requests into a topic.
+		//   (Slow until an admin can intervene)
+		if consecutiveErrors := m.getConsecutiveErrors(); consecutiveErrors > 0 {
+			wait := consecutiveErrBackoff(consecutiveErrors)
+			log.Printf("after %d consecutive errors, waiting %v before processing next message", consecutiveErrors, wait)
+			time.Sleep(wait)
+		}
 	}
 
 	// We're no longer receiving messages. Wait to finish handling any
@@ -97,6 +116,15 @@ recvLoop:
 	}
 
 	return nil
+}
+
+func consecutiveErrBackoff(n int) time.Duration {
+	d := time.Duration(n) * time.Second
+	const maxBackoff = 3 * time.Minute
+	if d > maxBackoff {
+		return maxBackoff
+	}
+	return d
 }
 
 func (m *Messenger) handleRequest(ctx context.Context, msg *pubsub.Message) {
@@ -250,6 +278,7 @@ func (m *Messenger) sendResponse(req *request, body []byte, statusCode int) {
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		log.Println("Error marshalling response:", err)
+		m.addConsecutiveError()
 	}
 
 	if err := m.responses.Send(req.ctx, &pubsub.Message{
@@ -259,6 +288,7 @@ func (m *Messenger) sendResponse(req *request, body []byte, statusCode int) {
 		},
 	}); err != nil {
 		log.Printf("Error sending response for message %s: %v", req.msg.LoggableID, err)
+		m.addConsecutiveError()
 
 		// If a repsonse cant be sent, the message should be redelivered.
 		if req.msg.Nackable() {
@@ -268,10 +298,14 @@ func (m *Messenger) sendResponse(req *request, body []byte, statusCode int) {
 	}
 
 	log.Printf("Send response for message: %s", req.msg.LoggableID)
+	if statusCode < 300 {
+		m.resetConsecutiveErrors()
+	}
 	req.msg.Ack()
 }
 
 func (m *Messenger) jsonError(format string, args ...interface{}) []byte {
+	m.addConsecutiveError()
 
 	message := fmt.Sprintf(format, args...)
 	log.Println(message)
@@ -291,4 +325,22 @@ func (m *Messenger) jsonError(format string, args ...interface{}) []byte {
 		"message": %q
 	}
 }`, message))
+}
+
+func (m *Messenger) addConsecutiveError() {
+	m.consecutiveErrorsMtx.Lock()
+	defer m.consecutiveErrorsMtx.Unlock()
+	m.consecutiveErrors++
+}
+
+func (m *Messenger) resetConsecutiveErrors() {
+	m.consecutiveErrorsMtx.Lock()
+	defer m.consecutiveErrorsMtx.Unlock()
+	m.consecutiveErrors = 0
+}
+
+func (m *Messenger) getConsecutiveErrors() int {
+	m.consecutiveErrorsMtx.RLock()
+	defer m.consecutiveErrorsMtx.RUnlock()
+	return m.consecutiveErrors
 }
