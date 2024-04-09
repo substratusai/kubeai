@@ -178,6 +178,7 @@ func (m *Messenger) handleRequest(ctx context.Context, msg *pubsub.Message) {
 	respPayload, respCode, err := m.sendBackendRequest(ctx, url, req.body)
 	if err != nil {
 		m.sendResponse(req, m.jsonError("error sending request to backend: %v", err), http.StatusBadGateway)
+		return
 	}
 
 	m.sendResponse(req, respPayload, respCode)
@@ -290,7 +291,7 @@ func (m *Messenger) sendResponse(req *request, body []byte, statusCode int) {
 		log.Printf("Error sending response for message %s: %v", req.msg.LoggableID, err)
 		m.addConsecutiveError()
 
-		// If a repsonse cant be sent, the message should be redelivered.
+		// If a response cant be sent, the message should be redelivered.
 		if req.msg.Nackable() {
 			req.msg.Nack()
 		}
