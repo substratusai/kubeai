@@ -13,7 +13,7 @@ L4_LOCATIONS=$(gcloud compute accelerator-types list | grep L4 | grep ${REGION} 
 # Enable required services.
 gcloud services enable container.googleapis.com
 
-export CLUSTER_NAME=substratus
+export CLUSTER_NAME=${CLUSTER_NAME:-substratus}
 if ! gcloud container clusters describe ${CLUSTER_NAME} --location ${LOCATION} -q >/dev/null; then
 gcloud container clusters create ${CLUSTER_NAME} --location ${LOCATION} \
   --machine-type e2-standard-2 --num-nodes 1 --min-nodes 1 --max-nodes 5 \

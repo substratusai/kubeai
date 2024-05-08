@@ -29,6 +29,8 @@ nodepool and then take time to download and load the model.
 
 Check the progress:
 ```
+kubectl get pods -w
+kubectl logs -l app.kubernetes.io/instance=mistral-7b-instruct-v02
 ```
 
 Create a file called `weaviate-values.yaml` with the following content:
@@ -96,3 +98,9 @@ kubectl port-forward service/verba 8080:80
 ```
 
 Now go to [localhost:8080](http://localhost:8080) in your browser. Try adding a document and then ask some question about your document.
+
+Download a PDF document about Nasoni Smart Faucet [here](https://github.com/docugami/KG-RAG-datasets/blob/main/nih-clinical-trial-protocols/data/v1/docs/NCT06159946_Prot_000.pdf).
+
+Upload the document inside Verba and ask questions like:
+- How did they test the Nasoni Smart Facet?
+- What's a Nasoni Smart Facet?
