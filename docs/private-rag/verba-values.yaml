@@ -1,0 +1,9 @@
+env:
+- name: OPENAI_MODEL
+  value: mistral-7b-instruct-v0.2
+- name: OPENAI_API_KEY
+  value: ignored-by-lingo
+- name: OPENAI_BASE_URL
+  value: http://lingo/v1
+- name: WEAVIATE_URL_VERBA
+  value: http://weaviate:80
