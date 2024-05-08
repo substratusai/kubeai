@@ -31,7 +31,7 @@ nodepool_args=(--spot --enable-autoscaling --enable-image-streaming
 
 gcloud container node-pools create g2-standard-8 \
   --accelerator type=nvidia-l4,count=1,gpu-driver-version=latest \
-  --machine-type g2-standard-8 --ephemeral-storage-local-ssd=count=1 \
+  --machine-type g2-standard-8 \
   "${nodepool_args[@]}"
 fi
 
