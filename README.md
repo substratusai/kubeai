@@ -59,6 +59,9 @@ deploymentAnnotations:
   lingo.substratus.ai/models: mistral-7b-instruct-v0.1
   lingo.substratus.ai/min-replicas: "0" # needs to be string
   lingo.substratus.ai/max-replicas: "3" # needs to be string
+resources:
+  limits:
+    nvidia.com/gpu: "1"
 EOF
 ```
 
