@@ -100,7 +100,16 @@ func (a *Autoscaler) Start() {
 			normalized := flt / float64(a.ConcurrencyPerReplica)
 			ceil := math.Ceil(normalized)
 			log.Printf("Average for deployment: %s: %v (ceil: %v), current wait count: %v", deploymentName, flt, ceil, waitCount)
-			a.Deployments.SetDesiredScale(deploymentName, int32(ceil))
+			current := a.Deployments.GetCurrentReplicas(deploymentName)
+			// Scale up based on average wait count.
+			if current < int32(ceil) {
+				a.Deployments.SetDesiredScale(deploymentName, int32(ceil))
+			} else if int(flt) < a.ConcurrencyPerReplica {
+				// Scale down if the average is less than the current scale.
+				a.Deployments.SetDesiredScale(deploymentName, current-1)
+			} else {
+				log.Printf("No change for deployment: %s, current: %v, desired: %v", deploymentName, current, ceil)
+			}
 		}
 	}
 }

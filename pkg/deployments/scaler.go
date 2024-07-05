@@ -109,7 +109,7 @@ type scale struct {
 	Current, Min, Max int32
 }
 
-func (s *scaler) getScale() scale {
+func (s *scaler) GetScale() scale {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 	return scale{Current: s.currentScale, Min: s.minScale, Max: s.maxScale}

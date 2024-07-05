@@ -67,6 +67,10 @@ func (r *Manager) SetDesiredScale(deploymentName string, n int32) {
 	r.getScaler(deploymentName).SetDesiredScale(n)
 }
 
+func (r *Manager) GetCurrentReplicas(deploymentName string) int32 {
+	return r.getScaler(deploymentName).GetScale().Current
+}
+
 func (r *Manager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	var d appsv1.Deployment
 	switch err := r.Get(ctx, req.NamespacedName, &d); {
@@ -156,7 +160,7 @@ func (r *Manager) getScalesSnapshot() map[string]scale {
 	defer r.scalersMtx.Unlock()
 	result := make(map[string]scale, len(r.scalers))
 	for k, v := range r.scalers {
-		result[k] = v.getScale()
+		result[k] = v.GetScale()
 	}
 	return result
 }
