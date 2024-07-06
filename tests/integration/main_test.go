@@ -152,6 +152,7 @@ func TestMain(m *testing.M) {
 		memRequestsURL,
 		memResponsesURL,
 		1000,
+		time.Minute,
 		deploymentManager,
 		endpointManager,
 		queueManager,
