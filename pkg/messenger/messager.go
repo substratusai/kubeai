@@ -28,7 +28,8 @@ type Messenger struct {
 
 	HTTPC *http.Client
 
-	MaxHandlers int
+	MaxHandlers     int
+	ErrorMaxBackoff time.Duration
 
 	requests  *pubsub.Subscription
 	responses *pubsub.Topic
@@ -42,6 +43,7 @@ func NewMessenger(
 	requestsURL string,
 	responsesURL string,
 	maxHandlers int,
+	errorMaxBackoff time.Duration,
 	deployments DeploymentManager,
 	endpoints EndpointManager,
 	queues QueueManager,
@@ -58,13 +60,14 @@ func NewMessenger(
 	}
 
 	return &Messenger{
-		Deployments: deployments,
-		Endpoints:   endpoints,
-		Queues:      queues,
-		HTTPC:       httpClient,
-		requests:    requests,
-		responses:   responses,
-		MaxHandlers: maxHandlers,
+		Deployments:     deployments,
+		Endpoints:       endpoints,
+		Queues:          queues,
+		HTTPC:           httpClient,
+		requests:        requests,
+		responses:       responses,
+		MaxHandlers:     maxHandlers,
+		ErrorMaxBackoff: errorMaxBackoff,
 	}, nil
 }
 
@@ -103,7 +106,7 @@ recvLoop:
 		// * Some request-generation job sending a million malformed requests into a topic.
 		//   (Slow until an admin can intervene)
 		if consecutiveErrors := m.getConsecutiveErrors(); consecutiveErrors > 0 {
-			wait := consecutiveErrBackoff(consecutiveErrors)
+			wait := consecutiveErrBackoff(consecutiveErrors, m.ErrorMaxBackoff)
 			log.Printf("after %d consecutive errors, waiting %v before processing next message", consecutiveErrors, wait)
 			time.Sleep(wait)
 		}
@@ -118,11 +121,10 @@ recvLoop:
 	return nil
 }
 
-func consecutiveErrBackoff(n int) time.Duration {
+func consecutiveErrBackoff(n int, max time.Duration) time.Duration {
 	d := time.Duration(n) * time.Second
-	const maxBackoff = 3 * time.Minute
-	if d > maxBackoff {
-		return maxBackoff
+	if d > max {
+		return max
 	}
 	return d
 }

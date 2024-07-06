@@ -89,7 +89,8 @@ func run() error {
 		// Rabbit MQ:			"rabbit://myqueue|rabbit://myexchange"
 		// NATS:				"nats://example.mysubject1|nats://example.mysubject2"
 		// Kafka:				"kafka://my-group?topic=my-topic1|kafka://my-topic2"
-		MessengerURLs []string `env:"MESSENGER_URLS"`
+		MessengerURLs            []string      `env:"MESSENGER_URLS"`
+		MessengerErrorMaxBackoff time.Duration `env:"MESSENGER_ERROR_MAX_BACKOFF, default=3m"`
 
 		MetricsBindAddress     string `env:"METRICS_BIND_ADDRESS, default=:8082"`
 		HealthProbeBindAddress string `env:"HEALTH_PROBE_BIND_ADDRESS, default=:8081"`
@@ -213,6 +214,7 @@ func run() error {
 			msgURL.requests,
 			msgURL.responses,
 			msgURL.maxHandlers,
+			cfg.MessengerErrorMaxBackoff,
 			deploymentManager,
 			endpointManager,
 			queueManager,
