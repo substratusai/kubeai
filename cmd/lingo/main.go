@@ -92,6 +92,9 @@ func run() error {
 		MessengerURLs            []string      `env:"MESSENGER_URLS"`
 		MessengerErrorMaxBackoff time.Duration `env:"MESSENGER_ERROR_MAX_BACKOFF, default=3m"`
 
+		AutoscalingInterval   time.Duration `env:"AUTOSCALING_INTERVAL, default=3s"`
+		AutoscalingTimeWindow time.Duration `env:"AUTOSCALING_TIME_WINDOW, default=30s"`
+
 		MetricsBindAddress     string `env:"METRICS_BIND_ADDRESS, default=:8082"`
 		HealthProbeBindAddress string `env:"HEALTH_PROBE_BIND_ADDRESS, default=:8081"`
 	}
@@ -185,8 +188,9 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("setting up autoscaler: %w", err)
 	}
-	autoscaler.Interval = 3 * time.Second
-	autoscaler.AverageCount = 10 // 10 * 3 seconds = 30 sec avg
+	autoscaler.Interval = cfg.AutoscalingInterval
+	// 10 average count = 30 sec window / 3 sec interval
+	autoscaler.AverageCount = int(cfg.AutoscalingTimeWindow / cfg.AutoscalingInterval)
 	autoscaler.LeaderElection = le
 	autoscaler.Deployments = deploymentManager
 	autoscaler.ConcurrencyPerReplica = cfg.Concurrency
