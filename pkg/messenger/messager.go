@@ -78,6 +78,10 @@ recvLoop:
 	for {
 		msg, err := m.requests.Receive(ctx)
 		if err != nil {
+			if strings.Contains(err.Error(), "EXACTLY_ONCE_ACKID_FAILURE") {
+				// This error is expected when a message is redelivered. So skip it.
+				continue
+			}
 			return err
 		}
 
