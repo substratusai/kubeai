@@ -31,8 +31,9 @@ type Messenger struct {
 	MaxHandlers     int
 	ErrorMaxBackoff time.Duration
 
-	requests  *pubsub.Subscription
-	responses *pubsub.Topic
+	requestsURL string
+	requests    *pubsub.Subscription
+	responses   *pubsub.Topic
 
 	consecutiveErrorsMtx sync.RWMutex
 	consecutiveErrors    int
@@ -64,6 +65,7 @@ func NewMessenger(
 		Endpoints:       endpoints,
 		Queues:          queues,
 		HTTPC:           httpClient,
+		requestsURL:     requestsURL,
 		requests:        requests,
 		responses:       responses,
 		MaxHandlers:     maxHandlers,
@@ -78,7 +80,24 @@ recvLoop:
 	for {
 		msg, err := m.requests.Receive(ctx)
 		if err != nil {
-			return err
+			// If there is a non-recoverable error, recreate the
+			// subscription and continue receiving messages.
+			// This is important so existing handlers can continue.
+			log.Printf("Error receiving message: %v", err)
+			// Shutdown isn't strictly necessary, but it's good practice.
+			shutdownErr := m.requests.Shutdown(ctx)
+			if shutdownErr != nil {
+				log.Printf("Error shutting down requests topic: %v. Continuing to recreate subscription.",
+					shutdownErr)
+			}
+			var subErr error
+			m.requests, subErr = pubsub.OpenSubscription(ctx, m.requestsURL)
+			if subErr != nil {
+				log.Printf("Error recreating requests subscription %v: %v",
+					m.requestsURL, subErr)
+				return subErr
+			}
+			continue
 		}
 
 		log.Println("Received message:", msg.LoggableID)
