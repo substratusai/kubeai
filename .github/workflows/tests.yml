@@ -26,15 +26,17 @@ jobs:
       - name: Run integration tests
         run: make test-integration
 
-  e2e:
+  e2e-openai:
     strategy:
       matrix:
-        replicas: ["1", "3"]
         test_cases:
-          - { requests: 60, expected_replicas: 1 }
-          - { requests: 300, expected_replicas: 2 }
+          - { case: "openai", replicas: "1", requests: "60", expected_replicas: "1" }
+          - { case: "openai", replicas: "3", requests: "60", expected_replicas: "1" }
+          - { case: "openai", replicas: "1", requests: "300", expected_replicas: "2" }
+          - { case: "openai", replicas: "3", requests: "300", expected_replicas: "2" }
+          - { case: "pubsub"}
     runs-on: ubuntu-latest
-    name: E2E Lingo.replicas=${{ matrix.replicas }} requests=${{ matrix.test_cases.requests }} expected_replicas=${{ matrix.test_cases.expected_replicas }}
+    name: E2E ${{ matrix.test_cases.case }} Lingo.replicas=${{ matrix.test_cases.replicas }} requests=${{ matrix.test_cases.requests }} expected_replicas=${{ matrix.test_cases.expected_replicas }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -54,9 +56,9 @@ jobs:
           chmod +x skaffold
           sudo mv skaffold /usr/local/bin
 
-      - name: Run e2e tests
+      - name: Run e2e tests ${{ matrix.test_cases.case }}
         env:
-          REPLICAS: ${{ matrix.replicas }}
-          REQUESTS: ${{ matrix.test_cases.requests }}
-          EXPECTED_REPLICAS: ${{ matrix.test_cases.expected_replicas }}
-        run: make test-e2e
+          OPENAI_LINGO_REPLICAS: ${{ matrix.test_cases.replicas }}
+          OPENAI_REQUEST_COUNT: ${{ matrix.test_cases.requests }}
+          OPENAI_EXPECTED_REPLICAS: ${{ matrix.test_cases.expected_replicas }}
+        run: make test-e2e-${{ matrix.test_cases.case }}

@@ -15,9 +15,15 @@ test-integration: envtest
 # export PROJECT_ID=$(gcloud config get-value project) 
 # export GCP_PUBSUB_KEYFILE_PATH=/tmp/lingo-test-pubsub-client.keyfile.json
 .PHONY: test-e2e
-test-e2e:
-	TEST_CASE=gcp_pubsub ./tests/e2e/test.sh
+test-e2e: test-e2e-openai test-e2e-pubsub
+
+.PHONY: test-e2e-openai
+test-e2e-openai:
 	TEST_CASE=openai_client ./tests/e2e/test.sh
+
+.PHONY: test-e2e-pubsub
+test-e2e-pubsub:
+	TEST_CASE=gcp_pubsub ./tests/e2e/test.sh
 
 ## Location to install dependencies to
 LOCALBIN ?= $(shell pwd)/bin
