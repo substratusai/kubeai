@@ -6,7 +6,6 @@ import (
 	"log"
 	"sync"
 	"sync/atomic"
-	"time"
 )
 
 func New(initialConcurrency int) *Queue {
@@ -155,8 +154,6 @@ func (q *Queue) Start() {
 		itm := e.Value.(*item)
 		q.dequeue(itm, true)
 		log.Println("Dequeued: ", itm.id)
-
-		time.Sleep(time.Second / 100)
 	}
 }
 
