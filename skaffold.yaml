@@ -11,6 +11,7 @@ manifests:
   rawYaml:
     - deploy/backend_deploy.yaml
     - deploy/backend_service.yaml
+    - deploy/lingo_configmap_env.yaml
     - deploy/lingo_serviceaccount.yaml
     - deploy/lingo_role.yaml
     - deploy/lingo_rolebinding.yaml
