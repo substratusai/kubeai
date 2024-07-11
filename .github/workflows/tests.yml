@@ -49,7 +49,8 @@ jobs:
           workload_identity_provider: 'projects/489627518739/locations/global/workloadIdentityPools/github-identities/providers/github-com'
           create_credentials_file: true
           export_environment_variables: true
-
+      - name: Set project ID
+        run: echo "PROJECT_ID=$GCP_PROJECT" >> $GITHUB_ENV
       - name: Install kind
         run: |
           # For AMD64 / x86_64
