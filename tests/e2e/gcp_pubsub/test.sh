@@ -14,7 +14,8 @@ if [ -z "$PROJECT_ID" ]; then
     exit 1
 fi
 
-test_prefix=substratus-lingo-test
+random_id=$(openssl rand -hex 2)
+test_prefix=lingo-test-${random_id}
 requests_topic=${test_prefix}-requests
 responses_topic=${test_prefix}-responses
 requests_subscription=${test_prefix}-requests-sub
@@ -22,7 +23,7 @@ responses_subscription=${test_prefix}-responses-sub
 
 function cleanup() {
     kubectl logs -l app=lingo
-    if [ "$TEST_CLEANUP" != "false" ]; then
+    if [ "$CLEANUP_PUBSUB" != "false" ]; then
         if gcloud pubsub subscriptions list | grep -q $requests_subscription; then
             gcloud pubsub subscriptions delete $requests_subscription --quiet
         fi
