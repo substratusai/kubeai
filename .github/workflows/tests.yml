@@ -27,6 +27,9 @@ jobs:
         run: make test-integration
 
   e2e-openai:
+    permissions:
+      contents: 'read'
+      id-token: 'write'
     strategy:
       matrix:
         test_cases:
@@ -40,6 +43,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - uses: 'google-github-actions/auth@v2'
+        with:
+          project_id: 'substratus-integration-tests'
+          workload_identity_provider: 'projects/489627518739/locations/global/workloadIdentityPools/github-identities/providers/github-com'
+          create_credentials_file: true
+          export_environment_variables: true
 
       - name: Install kind
         run: |

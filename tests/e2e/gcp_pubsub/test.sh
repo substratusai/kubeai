@@ -3,9 +3,9 @@
 set -xe
 
 # NOTE: The keyfile created by hack/create-test-pubsub-keyfile.sh defaults to:
-# GCP_PUBSUB_KEYFILE_PATH=/tmp/lingo-test-pubsub-client.keyfile.json
-if [ -z "$GCP_PUBSUB_KEYFILE_PATH" ]; then
-    echo "GCP_PUBSUB_KEYFILE_PATH not set. Exiting."
+# GOOGLE_APPLICATION_CREDENTIALS=/tmp/lingo-test-pubsub-client.keyfile.json
+if [ -z "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
+    echo "GOOGLE_APPLICATION_CREDENTIALS not set. Exiting."
     exit 1
 fi
 
@@ -63,7 +63,7 @@ EOF
 )
 
 kubectl patch configmap lingo-env --patch "$configmap_patch"
-kubectl create secret generic lingo-secrets --from-file=gcp-keyfile.json=$GCP_PUBSUB_KEYFILE_PATH -oyaml --dry-run=client | kubectl apply -f -
+kubectl create secret generic lingo-secrets --from-file=gcp-keyfile.json=$GOOGLE_APPLICATION_CREDENTIALS -oyaml --dry-run=client | kubectl apply -f -
 kubectl delete pods -l app=lingo
 
 function test_message() {
