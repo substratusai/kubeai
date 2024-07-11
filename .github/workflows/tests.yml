@@ -27,18 +27,30 @@ jobs:
         run: make test-integration
 
   e2e:
+    permissions:
+      contents: 'read'
+      id-token: 'write'
     strategy:
       matrix:
-        replicas: ["1", "3"]
         test_cases:
-          - { requests: 60, expected_replicas: 1 }
-          - { requests: 300, expected_replicas: 2 }
+          - { case: "openai", lingo_replicas: "1", requests: "60", expected_replicas: "1" }
+          - { case: "openai", lingo_replicas: "3", requests: "60", expected_replicas: "1" }
+          - { case: "openai", lingo_replicas: "1", requests: "300", expected_replicas: "2" }
+          - { case: "openai", lingo_replicas: "3", requests: "300", expected_replicas: "2" }
+          - { case: "pubsub"}
     runs-on: ubuntu-latest
-    name: E2E Lingo.replicas=${{ matrix.replicas }} requests=${{ matrix.test_cases.requests }} expected_replicas=${{ matrix.test_cases.expected_replicas }}
+    name: E2E ${{ toJson(matrix.test_cases) }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
+      - uses: 'google-github-actions/auth@v2'
+        with:
+          project_id: 'substratus-integration-tests'
+          workload_identity_provider: 'projects/489627518739/locations/global/workloadIdentityPools/github-identities/providers/github-com'
+          create_credentials_file: true
+          export_environment_variables: true
+      - name: Set project ID
+        run: echo "PROJECT_ID=$GCP_PROJECT" >> $GITHUB_ENV
       - name: Install kind
         run: |
           # For AMD64 / x86_64
@@ -54,9 +66,9 @@ jobs:
           chmod +x skaffold
           sudo mv skaffold /usr/local/bin
 
-      - name: Run e2e tests
+      - name: Run e2e tests ${{ toJson(matrix.test_cases) }}
         env:
-          REPLICAS: ${{ matrix.replicas }}
-          REQUESTS: ${{ matrix.test_cases.requests }}
-          EXPECTED_REPLICAS: ${{ matrix.test_cases.expected_replicas }}
-        run: make test-e2e
+          OPENAI_LINGO_REPLICAS: ${{ matrix.test_cases.lingo_replicas }}
+          OPENAI_REQUEST_COUNT: ${{ matrix.test_cases.requests }}
+          OPENAI_EXPECTED_REPLICAS: ${{ matrix.test_cases.expected_replicas }}
+        run: make test-e2e-${{ matrix.test_cases.case }}

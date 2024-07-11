@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -31,8 +32,9 @@ type Messenger struct {
 	MaxHandlers     int
 	ErrorMaxBackoff time.Duration
 
-	requests  *pubsub.Subscription
-	responses *pubsub.Topic
+	requestsURL string
+	requests    *pubsub.Subscription
+	responses   *pubsub.Topic
 
 	consecutiveErrorsMtx sync.RWMutex
 	consecutiveErrors    int
@@ -64,6 +66,7 @@ func NewMessenger(
 		Endpoints:       endpoints,
 		Queues:          queues,
 		HTTPC:           httpClient,
+		requestsURL:     requestsURL,
 		requests:        requests,
 		responses:       responses,
 		MaxHandlers:     maxHandlers,
@@ -74,11 +77,50 @@ func NewMessenger(
 func (m *Messenger) Start(ctx context.Context) error {
 	sem := make(chan struct{}, m.MaxHandlers)
 
+	var restartAttempt int
+	const maxRestartAttempts = 20
+	const maxRestartBackoff = 10 * time.Second
+
 recvLoop:
 	for {
 		msg, err := m.requests.Receive(ctx)
 		if err != nil {
-			return err
+			if errors.Is(err, context.Canceled) {
+				return err
+			}
+
+			if restartAttempt > maxRestartAttempts {
+				log.Printf("Error receiving message: %v. Restarted subscription %d times, giving up.",
+					err, restartAttempt)
+				return err
+			}
+
+			// If there is a non-recoverable error, recreate the
+			// subscription and continue receiving messages.
+			// This is important so existing handlers can continue.
+			log.Printf("Error receiving message: %v", err)
+			// Shutdown isn't strictly necessary, but it's good practice.
+			shutdownErr := m.requests.Shutdown(ctx)
+			if shutdownErr != nil {
+				log.Printf("Error shutting down requests topic: %v. Continuing to recreate subscription.",
+					shutdownErr)
+			}
+			restartWait := min(time.Duration(restartAttempt)*time.Second, maxRestartBackoff)
+			log.Printf("Waiting %v before recreating requests subscription %v", restartWait, m.requestsURL)
+			time.Sleep(restartWait)
+
+			var subErr error
+			m.requests, subErr = pubsub.OpenSubscription(ctx, m.requestsURL)
+			if subErr != nil {
+				log.Printf("Error recreating requests subscription %v: %v",
+					m.requestsURL, subErr)
+				return subErr
+			}
+
+			restartAttempt++
+			continue
+		} else {
+			restartAttempt = 0
 		}
 
 		log.Println("Received message:", msg.LoggableID)

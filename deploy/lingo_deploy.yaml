@@ -6,7 +6,7 @@ metadata:
     app: lingo
   namespace: default
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: lingo
@@ -24,6 +24,12 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+          envFrom:
+            - configMapRef:
+                name: lingo-env
+          volumeMounts:
+            - name: secrets
+              mountPath: /secrets
           readinessProbe:
             httpGet:
               path: /readyz
@@ -35,3 +41,8 @@ spec:
               port: 8080
             initialDelaySeconds: 15
             periodSeconds: 20
+      volumes:
+      - name: secrets
+        secret:
+          secretName: lingo-secrets
+          optional: true
