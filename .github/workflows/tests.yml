@@ -65,7 +65,7 @@ jobs:
           chmod +x skaffold
           sudo mv skaffold /usr/local/bin
 
-      - name: Run e2e tests ${{ matrix.test_cases.case }}
+      - name: Run e2e tests ${{ toJson(matrix.test_cases) }}
         env:
           OPENAI_LINGO_REPLICAS: ${{ matrix.test_cases.replicas }}
           OPENAI_REQUEST_COUNT: ${{ matrix.test_cases.requests }}
