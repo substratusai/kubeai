@@ -21,6 +21,7 @@ requests_subscription=${test_prefix}-requests-sub
 responses_subscription=${test_prefix}-responses-sub
 
 function cleanup() {
+    kubectl logs -l app=lingo
     if [ "$TEST_CLEANUP" != "false" ]; then
         if gcloud pubsub subscriptions list | grep -q $requests_subscription; then
             gcloud pubsub subscriptions delete $requests_subscription --quiet
@@ -67,8 +68,6 @@ kubectl create secret generic lingo-secrets --from-file=gcp-keyfile.json=$GOOGLE
 kubectl delete pods -l app=lingo
 # Wait for pods to become ready again.
 kubectl wait --for=condition=ready --timeout=60s pod -l app=lingo
-# Tail the logs in the background.
-kubectl logs -l app=lingo -f &
 
 function test_message() {
     # Send a request to the requests topic and expect a response on the responses topic.
