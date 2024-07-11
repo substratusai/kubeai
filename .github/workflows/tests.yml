@@ -33,10 +33,10 @@ jobs:
     strategy:
       matrix:
         test_cases:
-          - { case: "openai", replicas: "1", requests: "60", expected_replicas: "1" }
-          - { case: "openai", replicas: "3", requests: "60", expected_replicas: "1" }
-          - { case: "openai", replicas: "1", requests: "300", expected_replicas: "2" }
-          - { case: "openai", replicas: "3", requests: "300", expected_replicas: "2" }
+          - { case: "openai", lingo_replicas: "1", requests: "60", expected_replicas: "1" }
+          - { case: "openai", lingo_replicas: "3", requests: "60", expected_replicas: "1" }
+          - { case: "openai", lingo_replicas: "1", requests: "300", expected_replicas: "2" }
+          - { case: "openai", lingo_replicas: "3", requests: "300", expected_replicas: "2" }
           - { case: "pubsub"}
     runs-on: ubuntu-latest
     name: E2E ${{ toJson(matrix.test_cases) }}
@@ -68,7 +68,7 @@ jobs:
 
       - name: Run e2e tests ${{ toJson(matrix.test_cases) }}
         env:
-          OPENAI_LINGO_REPLICAS: ${{ matrix.test_cases.replicas }}
+          OPENAI_LINGO_REPLICAS: ${{ matrix.test_cases.lingo_replicas }}
           OPENAI_REQUEST_COUNT: ${{ matrix.test_cases.requests }}
           OPENAI_EXPECTED_REPLICAS: ${{ matrix.test_cases.expected_replicas }}
         run: make test-e2e-${{ matrix.test_cases.case }}
