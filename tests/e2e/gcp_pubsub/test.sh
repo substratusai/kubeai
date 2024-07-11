@@ -65,6 +65,10 @@ EOF
 kubectl patch configmap lingo-env --patch "$configmap_patch"
 kubectl create secret generic lingo-secrets --from-file=gcp-keyfile.json=$GOOGLE_APPLICATION_CREDENTIALS -oyaml --dry-run=client | kubectl apply -f -
 kubectl delete pods -l app=lingo
+# Wait for pods to become ready again.
+kubectl wait --for=condition=ready --timeout=60s pod -l app=lingo
+# Tail the logs in the background.
+kubectl logs -l app=lingo -f &
 
 function test_message() {
     # Send a request to the requests topic and expect a response on the responses topic.
@@ -88,6 +92,7 @@ EOF
     for i in {1..120}; do
         gcloud pubsub subscriptions pull $responses_subscription --auto-ack --filter="message.attributes.request_message_id = \"$published_msg_id\"" > $msg_path
         if [ -s $msg_path ]; then
+            echo "Received response message"
             break
         fi
         sleep 10
