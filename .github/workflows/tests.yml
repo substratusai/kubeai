@@ -39,7 +39,7 @@ jobs:
           - { case: "openai", replicas: "3", requests: "300", expected_replicas: "2" }
           - { case: "pubsub"}
     runs-on: ubuntu-latest
-    name: E2E ${{ matrix.test_cases }}
+    name: E2E ${{ matrix.test_cases.case }} Lingo.replicas=${{ matrix.test_cases.replicas }} requests=${{ matrix.test_cases.requests }} expected_replicas=${{ matrix.test_cases.expected_replicas }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
