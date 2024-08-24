@@ -62,8 +62,7 @@ EOF
 
 helm upgrade --install kubeai ./charts/kubeai \
     -f ./helm-values.yaml \
-    --wait --timeout 10m \
-    --set image.tag=latest
+    --wait --timeout 10m
 ```
 
 Before progressing to the next steps, start a watch on Pods in a standalone terminal to see how KubeAI deploys models. 
