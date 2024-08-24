@@ -55,8 +55,7 @@ openwebui:
 replicaCount: 1
 
 image:
-  # TODO: Change to public image.
-  repository: us-central1-docker.pkg.dev/substratus-dev/default/kubeai
+  repository: substratusai/kubeai
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
