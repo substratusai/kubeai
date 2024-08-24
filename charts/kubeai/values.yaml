@@ -8,8 +8,8 @@ secrets:
 
 modelServers:
   vLLM:
-    gpuImage: "vllm/vllm-openai:latest"
-    cpuImage: "us-central1-docker.pkg.dev/substratus-dev/default/vllm-cpu:v0.5.4-118-gfc93e561"
+    gpuImage: "vllm/vllm-openai:v0.5.5"
+    cpuImage: "substratusai/vllm:v0.5.5-cpu"
   ollama:
     image: "ollama/ollama:latest"
 
