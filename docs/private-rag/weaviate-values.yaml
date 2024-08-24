@@ -1,7 +1,0 @@
-modules:
-  text2vec-openai:
-    enabled: true
-    apiKey: 'thiswillbeignoredbylingo'
-
-service:
-  type: ClusterIP

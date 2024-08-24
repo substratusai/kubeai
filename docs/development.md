@@ -1,83 +1,57 @@
 # Development
 
-## Testing
-
-Run all tests (takes a while).
-```sh
-make test
-```
-
-*OR*
-
-Run specific tests.
+## Cloud Setup
 
 ```bash
-make test-unit
-make test-race
-make test-integration
-make test-e2e
+gcloud pubsub topics create test-kubeai-requests
+gcloud pubsub subscriptions create test-kubeai-requests-sub --topic test-kubeai-requests
+gcloud pubsub topics create test-kubeai-responses
+gcloud pubsub subscriptions create test-kubeai-responses-sub --topic test-kubeai-responses
 ```
 
-## Local Deployment
+## Local Cluster
 
-Create a local cluster.
-
-```sh
+```bash
 kind create cluster
+# OR
+#./hack/create-dev-gke-cluster.yaml
+
+# When CRDs are changed reapply using kubectl:
+kubectl apply -f ./charts/kubeai/charts/crds/crds
+
+# Model with special address annotations:
+kubectl apply -f ./hack/dev-model.yaml
+
+# For developing in-cluster features:
+helm upgrade --install kubeai ./charts/kubeai \
+    --set openwebui.enabled=false \
+    --set image.tag=latest \
+    --set image.pullPolicy=Always \
+    --set replicaCount=1 # 0 if running locally
+
+# Run in development mode.
+CONFIG_PATH=./hack/dev-config.yaml POD_NAMESPACE=default go run ./cmd/main.go --allow-pod-address-override
+
+# In another terminal:
+while true; do kubectl port-forward service/dev-model 7000:7000; done
 ```
 
-Install a scaled-to-zero embeddings backend.
+## Running
 
-```sh
-# Install STAPI
-helm repo add substratusai https://substratusai.github.io/helm
-helm repo update
-helm upgrade --install stapi-minilm-l6-v2 substratusai/stapi -f - << EOF
-model: all-mpnet-base-v2
-replicaCount: 0
-deploymentAnnotations:
-  lingo.substratus.ai/models: text-embedding-ada-002
-EOF
-```
-
-Deploy Lingo from source.
-
-```sh
-skaffold dev
-```
-
-OR
-
-Deploy Lingo from the main branch.
+### Completions API
 
 ```bash
-helm upgrade --install lingo substratusai/lingo \
-  --set image.tag=main \
-  --set image.pullPolicy=Always
+# If you are running kubeai in-cluster:
+# kubectl port-forward svc/kubeai 8000:80
+
+curl http://localhost:8000/openai/v1/completions -H "Content-Type: application/json" -d '{"prompt": "Hi", "model": "dev"}' -v
 ```
 
-Send test requests.
+### Messaging Integration
 
-```sh
-# In another terminal...
-kubectl port-forward svc/lingo 8080:80
-# In another terminal...
-watch kubectl get pods
+```bash
+gcloud pubsub topics publish test-kubeai-requests \                  
+  --message='{"path":"/v1/completions", "metadata":{"a":"b"}, "body": {"model": "dev", "prompt": "hi"}}'
 
-# try httpbin with a delay
-curl http://localhost:8080/delay/10 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "Your text string goes here",
-    "model": "backend"
-  }'
-
-
-# Get embeddings using OpenAI compatible API endpoint.
-curl http://localhost:8080/v1/embeddings \
-  -H "Content-Type: application/json" \
-  -d '{
-    "input": "Your text string goes here",
-    "model": "text-embedding-ada-002"
-  }'
+gcloud pubsub subscriptions pull test-kubeai-responses-sub --auto-ack
 ```

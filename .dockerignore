@@ -1,4 +1,5 @@
-Dockerfile
-skaffold.yaml
-deploy/
-tests/
+# More info: https://docs.docker.com/engine/reference/builder/#dockerignore-file
+# Ignore build and test binaries.
+bin/
+docs/
+manifests/
