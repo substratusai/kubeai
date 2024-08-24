@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"hash"
 	"hash/fnv"
+	"strconv"
 
+	v1 "github.com/substratusai/kubeai/api/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/dump"
 	"k8s.io/apimachinery/pkg/util/rand"
@@ -17,6 +19,11 @@ func PodIsReady(pod *corev1.Pod) bool {
 		}
 	}
 	return false
+}
+
+func PodIndex(pod *corev1.Pod) int {
+	idx, _ := strconv.Atoi(GetLabel(pod, v1.PodIndexLabel))
+	return idx
 }
 
 // PodHash returns a hash value calculated from Pod spec.

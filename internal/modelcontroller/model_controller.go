@@ -23,6 +23,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -99,9 +100,18 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{}, fmt.Errorf("listing all node pools: %w", err)
 	}
 
-	plan := r.calculatePodPlan(log, allPods, model, modelConfig)
-	if err := plan.execute(ctx, r.Client, r.Scheme); err != nil {
-		return ctrl.Result{}, fmt.Errorf("executing pod plan: %w", err)
+	plan := r.calculatePodPlan(allPods, model, modelConfig)
+	if plan.containsActions() {
+		changed, err := plan.execute(ctx, r.Client, r.Scheme)
+		if changed {
+			// Slow things down to wait for caches to sync.
+			// This is important because the pod plan has some calculations that
+			// assume the cache is up to date.
+			time.Sleep(3 * time.Second)
+		}
+		if err != nil {
+			return ctrl.Result{}, fmt.Errorf("executing pod plan: %w", err)
+		}
 	}
 
 	// Summarize all pods.
@@ -126,6 +136,7 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *ModelReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	// TODO: Set Model concurrency. Pod rollouts can be slow.
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&kubeaiv1.Model{}).
 		Owns(&corev1.Pod{}).
