@@ -48,6 +48,8 @@ kind create cluster # OR: minikube start
 Install KubeAI using [Helm](https://helm.sh/docs/intro/install/) and wait for all components to be ready (may take a minute).
 
 ```bash
+git clone https://github.com/substratusai/kubeai && cd kubeai
+
 cat <<EOF > helm-values.yaml
 models:
   catalog:
