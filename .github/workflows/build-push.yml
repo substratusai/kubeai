@@ -15,7 +15,7 @@ env:
   IMAGE_NAME: substratusai/kubeai
 
 jobs:
-  cpu:
+  kubeai:
     runs-on: ubuntu-latest
     # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
     permissions:
