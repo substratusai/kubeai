@@ -1,0 +1,26 @@
+secretNames:
+  huggingface: huggingface
+modelServers:
+  vLLM:
+    gpuImage: "vllm/vllm-openai:latest"
+    cpuImage: "us-central1-docker.pkg.dev/substratus-dev/default/vllm-cpu:v0.5.4-118-gfc93e561"
+  ollama:
+    image: "ollama/ollama:latest"
+messaging:
+  errorMaxBackoff: 30s
+  streams:
+  - requestsURL: gcppubsub://projects/substratus-dev/subscriptions/test-kubeai-requests-sub
+    responsesURL: gcppubsub://projects/substratus-dev/topics/test-kubeai-responses
+    maxHandlers: 1
+resourceProfiles:
+  CPU:
+    requests:
+      cpu: 1
+      memory: 2
+  L4:
+    limits:
+      nvidia.com/gpu: "1"
+    requests:
+      nvidia.com/gpu: "1"
+      cpu: "6"
+      memory: "24Gi"

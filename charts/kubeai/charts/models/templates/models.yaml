@@ -1,0 +1,32 @@
+{{- range $name, $model := .Values.catalog}}
+{{- if $model.enabled}}
+---
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: {{ $name }}
+spec:
+  owner: {{ $model.owner }}
+  url: {{ $model.url }}
+  {{- with $model.engine }}
+  engine: {{ . }}
+  {{- end }}
+  {{- with $model.args }}
+  args:
+  {{ . | toYaml | nindent 4 }}
+  {{- end }}
+  {{- with $model.env }}
+  env:
+  {{ . | toYaml | nindent 4 }}
+  {{- end }}
+  minReplicas: {{ $model.minReplicas | default $.Values.defaults.minReplicas}}
+  maxReplicas: {{ $model.maxReplicas | default $.Values.defaults.maxReplicas}}
+  {{- with $model.resources}}
+  resources:
+    {{ toYaml . | nindent 4 }}
+  {{- end}}
+  {{- with $model.resourceProfile }}
+  resourceProfile: {{ . }}
+  {{- end}}
+{{- end}}
+{{- end}}

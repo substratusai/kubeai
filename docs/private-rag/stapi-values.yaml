@@ -1,5 +1,0 @@
-deploymentAnnotations:
-  lingo.substratus.ai/models: text-embedding-ada-002
-  lingo.substratus.ai/min-replicas: "1" # needs to be string
-model: all-MiniLM-L6-v2
-replicaCount: 0
