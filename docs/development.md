@@ -24,12 +24,13 @@ kubectl apply -f ./hack/dev-model.yaml
 
 # For developing in-cluster features:
 helm upgrade --install kubeai ./charts/kubeai \
-    -f ./helm-values.yaml \
     --set openwebui.enabled=true \
     --set image.tag=latest \
     --set image.pullPolicy=Always \
     --set image.repository=us-central1-docker.pkg.dev/substratus-dev/default/kubeai \
     --set replicaCount=1 # 0 if running out-of-cluster (using "go run")
+
+# -f ./helm-values.yaml \
 
 # Run in development mode.
 CONFIG_PATH=./hack/dev-config.yaml POD_NAMESPACE=default go run ./cmd/main.go --allow-pod-address-override
