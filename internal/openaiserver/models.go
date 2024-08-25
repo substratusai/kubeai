@@ -25,6 +25,8 @@ func (h *Handler) getModels(w http.ResponseWriter, r *http.Request) {
 	var k8sModels []kubeaiv1.Model
 	k8sModelNames := map[string]struct{}{}
 	for _, feature := range features {
+		// NOTE(nstogner): Could not find a way to do an OR query with the client,
+		// so we just do multiple queries and merge the results.
 		labelSelector := client.MatchingLabels{kubeaiv1.ModelFeatureLabelDomain + "/" + feature: "true"}
 		list := &kubeaiv1.ModelList{}
 		if err := h.K8sClient.List(r.Context(), list, labelSelector); err != nil {
