@@ -23,9 +23,10 @@ import (
 
 // ModelSpec defines the desired state of Model
 type ModelSpec struct {
-	Owner    string   `json:"owner"`
-	URL      string   `json:"url"`
-	Features []string `json:"features,omitempty"`
+	Owner string `json:"owner"`
+	URL   string `json:"url"`
+
+	Features []ModelFeature `json:"features"`
 
 	// +kubebuilder:validation:Enum=OLlama;VLLM
 	Engine string `json:"engine"`
@@ -51,6 +52,14 @@ type ModelSpec struct {
 	// Env variables to be added to the server process.
 	Env map[string]string `json:"env,omitempty"`
 }
+
+// +kubebuilder:validation:Enum=TextGeneration;TextEmbedding
+type ModelFeature string
+
+const (
+	ModelFeatureTextGeneration = "TextGeneration"
+	ModelFeatureTextEmbedding  = "TextEmbedding"
+)
 
 const (
 	OLlamaEngine = "OLlama"

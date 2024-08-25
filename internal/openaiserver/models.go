@@ -62,7 +62,7 @@ type Model struct {
 
 	// Adiditional (non-OpenAI) fields
 
-	Features []string `json:"features,omitempty"`
+	Features []kubeaiv1.ModelFeature `json:"features,omitempty"`
 }
 
 func (m *Model) FromK8sModel(model *kubeaiv1.Model) {

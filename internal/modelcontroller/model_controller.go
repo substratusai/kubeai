@@ -87,6 +87,7 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			return ctrl.Result{}, nil
 		}
 		if changed {
+			log.Info("applied resource profile")
 			shouldUpdate = true
 		}
 	}
@@ -367,7 +368,10 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, index int32) *cor
 
 	ollamaModelRef := strings.TrimPrefix(m.Spec.URL, "ollama://")
 
-	featuresMap := sliceToMap(m.Spec.Features)
+	featuresMap := map[kubeaiv1.ModelFeature]struct{}{}
+	for _, f := range m.Spec.Features {
+		featuresMap[f] = struct{}{}
+	}
 
 	// Pull model and copy to rename it to Model.metadata.name.
 	// See Ollama issue for rename/copy workaround: https://github.com/ollama/ollama/issues/5914
@@ -564,7 +568,10 @@ func (r *ModelReconciler) applyResourceProfile(model *kubeaiv1.Model) (bool, err
 }
 
 func (r *ModelReconciler) applySelfLabels(model *kubeaiv1.Model) bool {
-	modelFeaturesMap := sliceToMap(model.Spec.Features)
+	modelFeaturesMap := make(map[kubeaiv1.ModelFeature]struct{}, len(model.Spec.Features))
+	for _, f := range model.Spec.Features {
+		modelFeaturesMap[f] = struct{}{}
+	}
 
 	if model.GetLabels() == nil {
 		model.SetLabels(map[string]string{})
@@ -575,7 +582,7 @@ func (r *ModelReconciler) applySelfLabels(model *kubeaiv1.Model) bool {
 	for key := range model.GetLabels() {
 		if strings.HasPrefix(key, kubeaiv1.ModelFeatureLabelDomain) {
 			feat := strings.TrimPrefix(key, kubeaiv1.ModelFeatureLabelDomain+"/")
-			if _, ok := modelFeaturesMap[feat]; !ok {
+			if _, ok := modelFeaturesMap[kubeaiv1.ModelFeature(feat)]; !ok {
 				delete(model.GetLabels(), key)
 				changed = true
 			}
@@ -614,12 +621,4 @@ func selectorsEqual(a, b map[string]string) bool {
 		}
 	}
 	return true
-}
-
-func sliceToMap(slice []string) map[string]struct{} {
-	m := make(map[string]struct{}, len(slice))
-	for _, s := range slice {
-		m[s] = struct{}{}
-	}
-	return m
 }

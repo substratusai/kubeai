@@ -89,7 +89,7 @@ func (in *ModelSpec) DeepCopyInto(out *ModelSpec) {
 	*out = *in
 	if in.Features != nil {
 		in, out := &in.Features, &out.Features
-		*out = make([]string, len(*in))
+		*out = make([]ModelFeature, len(*in))
 		copy(*out, *in)
 	}
 	if in.Replicas != nil {

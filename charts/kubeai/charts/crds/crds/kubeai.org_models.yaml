@@ -56,6 +56,9 @@ spec:
                 type: object
               features:
                 items:
+                  enum:
+                  - TextGeneration
+                  - TextEmbedding
                   type: string
                 type: array
               maxReplicas:
@@ -140,6 +143,7 @@ spec:
                 type: string
             required:
             - engine
+            - features
             - maxReplicas
             - minReplicas
             - owner

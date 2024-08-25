@@ -11,8 +11,3 @@ const (
 	ModelPodIPAnnotation   = "model-pod-ip"
 	ModelPodPortAnnotation = "model-pod-port"
 )
-
-const (
-	ModelFeatureTextGeneration = "TextGeneration"
-	ModelFeatureTextEmbedding  = "TextEmbedding"
-)
