@@ -90,6 +90,13 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			shouldUpdate = true
 		}
 	}
+	{
+		// Apply self labels based on features so that we can easily filter models.
+		changed := r.applySelfLabels(model)
+		if changed {
+			shouldUpdate = true
+		}
+	}
 	if shouldUpdate {
 		if err := r.Update(ctx, model); err != nil {
 			return ctrl.Result{}, fmt.Errorf("updating model: %w", err)
@@ -359,6 +366,26 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, index int32) *cor
 	}
 
 	ollamaModelRef := strings.TrimPrefix(m.Spec.URL, "ollama://")
+
+	featuresMap := sliceToMap(m.Spec.Features)
+
+	// Pull model and copy to rename it to Model.metadata.name.
+	// See Ollama issue for rename/copy workaround: https://github.com/ollama/ollama/issues/5914
+	// NOTE: The cp command should just create a pointer to the old model, not copy data
+	// (see https://github.com/ollama/ollama/issues/5914#issuecomment-2248168474).
+	// Use `ollama run` to send a single prompt to ollama to load the model into memory
+	// before the Pod becomes Ready. (by default it will load on the first prompt request).
+	startupProbeScript := fmt.Sprintf("/bin/ollama pull %s && /bin/ollama cp %s %s",
+		ollamaModelRef, ollamaModelRef, m.Name)
+	if _, ok := featuresMap["TextGeneration"]; ok {
+		// NOTE: Embedding text models do not support "ollama pull":
+		//
+		// ollama run nomic-embed-text hey
+		// Error: "nomic-embed-text" does not support generate
+		//
+		startupProbeScript += fmt.Sprintf(" && /bin/ollama run %s hi", m.Name)
+	}
+
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        fmt.Sprintf("model-%s-%d", m.Name, index),
@@ -396,14 +423,7 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, index int32) *cor
 							Exec: &corev1.ExecAction{
 								Command: []string{
 									"bash", "-c",
-									// Pull model and copy to rename it to Model.metadata.name.
-									// See Ollama issue for rename/copy workaround: https://github.com/ollama/ollama/issues/5914
-									// NOTE: The cp command should just create a pointer to the old model, not copy data
-									// (see https://github.com/ollama/ollama/issues/5914#issuecomment-2248168474).
-									// Use `ollama run` to send a single prompt to ollama to load the model into memory
-									// before the Pod becomes Ready. (by default it will load on the first prompt request).
-									fmt.Sprintf("/bin/ollama pull %s && /bin/ollama cp %s %s && /bin/ollama run %s hi",
-										ollamaModelRef, ollamaModelRef, m.Name, m.Name),
+									startupProbeScript,
 								},
 							},
 						},
@@ -543,6 +563,35 @@ func (r *ModelReconciler) applyResourceProfile(model *kubeaiv1.Model) (bool, err
 	return changed, nil
 }
 
+func (r *ModelReconciler) applySelfLabels(model *kubeaiv1.Model) bool {
+	modelFeaturesMap := sliceToMap(model.Spec.Features)
+
+	if model.GetLabels() == nil {
+		model.SetLabels(map[string]string{})
+	}
+
+	var changed bool
+	// Delete not matching feature labels.
+	for key := range model.GetLabels() {
+		if strings.HasPrefix(key, kubeaiv1.ModelFeatureLabelDomain) {
+			feat := strings.TrimPrefix(key, kubeaiv1.ModelFeatureLabelDomain+"/")
+			if _, ok := modelFeaturesMap[feat]; !ok {
+				delete(model.GetLabels(), key)
+				changed = true
+			}
+		}
+	}
+	for feat := range modelFeaturesMap {
+		labelKey := fmt.Sprintf("%s/%s", kubeaiv1.ModelFeatureLabelDomain, feat)
+		if _, ok := model.GetLabels()[labelKey]; !ok {
+			model.GetLabels()[labelKey] = "true"
+			changed = true
+		}
+	}
+
+	return changed
+}
+
 func resourcesEqual(a, b corev1.ResourceList) bool {
 	if len(a) != len(b) {
 		return false
@@ -565,4 +614,12 @@ func selectorsEqual(a, b map[string]string) bool {
 		}
 	}
 	return true
+}
+
+func sliceToMap(slice []string) map[string]struct{} {
+	m := make(map[string]struct{}, len(slice))
+	for _, s := range slice {
+		m[s] = struct{}{}
+	}
+	return m
 }
