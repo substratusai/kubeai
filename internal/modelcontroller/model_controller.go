@@ -381,7 +381,7 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, index int32) *cor
 	// before the Pod becomes Ready. (by default it will load on the first prompt request).
 	startupProbeScript := fmt.Sprintf("/bin/ollama pull %s && /bin/ollama cp %s %s",
 		ollamaModelRef, ollamaModelRef, m.Name)
-	if _, ok := featuresMap["TextGeneration"]; ok {
+	if _, ok := featuresMap[kubeaiv1.ModelFeatureTextEmbedding]; ok {
 		// NOTE: Embedding text models do not support "ollama pull":
 		//
 		// ollama run nomic-embed-text hey
