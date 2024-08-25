@@ -578,7 +578,8 @@ func (r *ModelReconciler) applySelfLabels(model *kubeaiv1.Model) bool {
 	}
 
 	var changed bool
-	// Delete not matching feature labels.
+
+	// Delete non-matching feature labels.
 	for key := range model.GetLabels() {
 		if strings.HasPrefix(key, kubeaiv1.ModelFeatureLabelDomain) {
 			feat := strings.TrimPrefix(key, kubeaiv1.ModelFeatureLabelDomain+"/")
@@ -588,6 +589,8 @@ func (r *ModelReconciler) applySelfLabels(model *kubeaiv1.Model) bool {
 			}
 		}
 	}
+
+	// Add missing feature labels.
 	for feat := range modelFeaturesMap {
 		labelKey := fmt.Sprintf("%s/%s", kubeaiv1.ModelFeatureLabelDomain, feat)
 		if _, ok := model.GetLabels()[labelKey]; !ok {
