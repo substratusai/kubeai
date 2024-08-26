@@ -1,4 +1,4 @@
-# KubeAI: Private Open AI on Kubernetes
+# KubeAI: Private Open Source AI on Kubernetes
 
 The simple AI platform that runs on Kubernetes.
 
