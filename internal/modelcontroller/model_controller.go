@@ -91,12 +91,9 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			shouldUpdate = true
 		}
 	}
-	{
-		// Apply self labels based on features so that we can easily filter models.
-		changed := r.applySelfLabels(model)
-		if changed {
-			shouldUpdate = true
-		}
+	// Apply self labels based on features so that we can easily filter models.
+	if changed := r.applySelfLabels(model); changed {
+		shouldUpdate = true
 	}
 	if shouldUpdate {
 		if err := r.Update(ctx, model); err != nil {
