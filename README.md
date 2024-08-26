@@ -58,7 +58,7 @@ models:
       minReplicas: 1
     qwen2-500m-cpu:
       enabled: true
-    nomic-embed-text-cpu
+    nomic-embed-text-cpu:
       enabled: true
 EOF
 
