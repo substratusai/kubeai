@@ -21,7 +21,7 @@ KubeAI serves an OpenAI compatible HTTP API. Admins can configure Models via `ki
 
 ## Local Quickstart
 
-![kube-ai-local-demo](docs/kubeai-demo.gif)
+![kubeai-demo-scale-from-0](https://github.com/user-attachments/assets/83b9ab40-d2c5-4491-a586-2e22429bd7d4)
 
 Create a local cluster using [kind](https://kind.sigs.k8s.io/) or [minikube](https://minikube.sigs.k8s.io/docs/).
 
