@@ -58,6 +58,8 @@ models:
       minReplicas: 1
     qwen2-500m-cpu:
       enabled: true
+    nomic-embed-text-cpu:
+      enabled: true
 EOF
 
 helm upgrade --install kubeai ./charts/kubeai \

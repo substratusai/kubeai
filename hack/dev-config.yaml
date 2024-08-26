@@ -16,7 +16,7 @@ resourceProfiles:
   CPU:
     requests:
       cpu: 1
-      memory: 2
+      memory: 2Gi
   L4:
     limits:
       nvidia.com/gpu: "1"

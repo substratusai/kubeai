@@ -8,6 +8,7 @@ metadata:
     model-pod-ip: "127.0.0.1"
     model-pod-port: "7000" 
 spec:
+  features: ["TextGeneration"]
   owner: alibaba
   url: "ollama://qwen2:0.5b"
   engine: OLlama

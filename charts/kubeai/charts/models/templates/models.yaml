@@ -6,6 +6,7 @@ kind: Model
 metadata:
   name: {{ $name }}
 spec:
+  features: {{ $model.features }}
   owner: {{ $model.owner }}
   url: {{ $model.url }}
   {{- with $model.engine }}
