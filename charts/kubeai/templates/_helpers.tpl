@@ -60,3 +60,17 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Create the name of the huggingface secret to use
+*/}}
+{{- define "kubeai.huggingfaceSecretName" -}}
+{{- if .Values.secrets.huggingface.create -}}
+{{- default (include "kubeai.fullname" .) .Values.secrets.huggingface.name }}
+{{- else }}
+{{- if not .Values.secrets.huggingface.name -}}
+{{ fail "if secrets.huggingface.create is false, secrets.huggingface.name is required" }}
+{{- end }}
+{{- .Values.secrets.huggingface.name }}
+{{- end }}
+{{- end }}
