@@ -6,7 +6,7 @@ The simple AI platform that runs on Kubernetes.
 > \- Some Google Engineer
 
 ✅️  Drop-in replacement for OpenAI with API compatibility  
-🚀  Serve OSS LLMs on CPUs or GPUs  
+🚀  Serve LLMs on CPUs (Arm & X86) or GPUs  
 ⚖️  Scale from zero, autoscale based on load  
 🛠️  Zero dependencies (no Istio, Knative, etc.)   
 🤖  Operates OSS model servers (vLLM and Ollama)  
