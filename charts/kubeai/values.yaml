@@ -5,6 +5,9 @@
 secrets:
   huggingface:
     token: ""
+    # secretName is used to pass the huggingface token value via an existing k8s secret
+    # the value is pulled from the key, "token".
+    secretName: ""
 
 modelServers:
   vLLM:

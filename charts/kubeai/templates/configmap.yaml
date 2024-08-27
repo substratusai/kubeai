@@ -7,7 +7,7 @@ metadata:
 data:
   system.yaml: |
     secretNames:
-      huggingface: {{ include "kubeai.fullname" . }}-huggingface
+      {{- include "kubeai.huggingfaceSecretName" . | nindent 6 }}
     resourceProfiles:
       {{- .Values.resourceProfiles | toYaml | nindent 6 }}
     modelServers:
