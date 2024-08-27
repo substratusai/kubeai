@@ -202,10 +202,11 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, profile ModelConfig
 		},
 		Spec: corev1.PodSpec{
 			NodeSelector:       profile.NodeSelector,
-			SecurityContext:    r.ModelServerPods.ModelPodSecurityContext,
-			ServiceAccountName: r.ModelServerPods.ModelServiceAccountName,
 			Affinity:           profile.Affinity,
 			Tolerations:        profile.Tolerations,
+			RuntimeClassName:   profile.RuntimeClassName,
+			ServiceAccountName: r.ModelServerPods.ModelServiceAccountName,
+			SecurityContext:    r.ModelServerPods.ModelPodSecurityContext,
 			Containers: []corev1.Container{
 				{
 					Name:            "server",
@@ -355,10 +356,11 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, profile ModelConf
 		},
 		Spec: corev1.PodSpec{
 			NodeSelector:       profile.NodeSelector,
-			SecurityContext:    r.ModelServerPods.ModelPodSecurityContext,
-			ServiceAccountName: r.ModelServerPods.ModelServiceAccountName,
 			Affinity:           profile.Affinity,
 			Tolerations:        profile.Tolerations,
+			RuntimeClassName:   profile.RuntimeClassName,
+			ServiceAccountName: r.ModelServerPods.ModelServiceAccountName,
+			SecurityContext:    r.ModelServerPods.ModelPodSecurityContext,
 			Containers: []corev1.Container{
 				{
 					Name:            "server",
@@ -503,10 +505,11 @@ func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, profile Mo
 		},
 		Spec: corev1.PodSpec{
 			NodeSelector:       profile.NodeSelector,
-			SecurityContext:    r.ModelServerPods.ModelPodSecurityContext,
-			ServiceAccountName: r.ModelServerPods.ModelServiceAccountName,
 			Affinity:           profile.Affinity,
 			Tolerations:        profile.Tolerations,
+			RuntimeClassName:   profile.RuntimeClassName,
+			ServiceAccountName: r.ModelServerPods.ModelServiceAccountName,
+			SecurityContext:    r.ModelServerPods.ModelPodSecurityContext,
 			Containers: []corev1.Container{
 				{
 					Name:            "server",
@@ -656,10 +659,11 @@ func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, profile ModelCo
 			Annotations: ann,
 		},
 		Spec: corev1.PodSpec{
-			ServiceAccountName: r.ModelServerPods.ModelServiceAccountName,
 			NodeSelector:       profile.NodeSelector,
 			Affinity:           profile.Affinity,
 			Tolerations:        profile.Tolerations,
+			RuntimeClassName:   profile.RuntimeClassName,
+			ServiceAccountName: r.ModelServerPods.ModelServiceAccountName,
 			SecurityContext:    r.ModelServerPods.ModelPodSecurityContext,
 			Containers: []corev1.Container{
 				{

@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -44,6 +45,7 @@ func TestModelProfiles(t *testing.T) {
 		// The Pod should have a single container named "server".
 		container := mustFindPodContainerByName(t, pod, "server")
 		assert.Equal(t, expectedResources, container.Resources)
+		assert.Equal(t, ptr.To(cpuRuntimeClassName), pod.Spec.RuntimeClassName)
 		assert.Contains(t, pod.Spec.Tolerations, sysCfg().ResourceProfiles[resourceProfileCPU].Tolerations[0])
 		assert.Equal(t, sysCfg().ResourceProfiles[resourceProfileCPU].Affinity, pod.Spec.Affinity)
 		assert.Equal(t, sysCfg().ResourceProfiles[resourceProfileCPU].NodeSelector, pod.Spec.NodeSelector)
