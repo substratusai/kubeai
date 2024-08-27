@@ -4,10 +4,12 @@
 
 secrets:
   huggingface:
+    create: true
     token: ""
-    # secretName is used to pass the huggingface token value via an existing k8s secret
-    # the value is pulled from the key, "token".
-    secretName: ""
+    # The name of the secret to use. 
+    # If not set, and create is true, the name is generated using the fullname template.
+    # The token value is pulled from the key, "token".
+    name: ""
 
 modelServers:
   vLLM:
