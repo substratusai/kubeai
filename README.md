@@ -104,7 +104,7 @@ Any vLLM or Ollama model can be served by KubeAI. Some examples of popular model
 
 * [Cloud Installation](./docs/cloud-install.md) - Deploy on Kubernetes clusters in the cloud
 
-## OpenAI API Compatiblity
+## OpenAI API Compatibility
 
 ```bash
 # Implemented #
