@@ -15,7 +15,7 @@ The simple AI platform that runs on Kubernetes.
 
 ## Architecture
 
-KubeAI serves an OpenAI compatible HTTP API. Admins can configure Models via `kind: Model` Kubernetes Custom Resources. KubeAI can be thought of as an Model Operator (See [Operator Pattern](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/)) that manages [vLLM](https://github.com/vllm-project/vllm) and [Ollama](https://github.com/ollama/ollama) servers. 
+KubeAI serves an OpenAI compatible HTTP API. Admins can configure ML models via `kind: Model` Kubernetes Custom Resources. KubeAI can be thought of as a Model Operator (See [Operator Pattern](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/)) that manages [vLLM](https://github.com/vllm-project/vllm) and [Ollama](https://github.com/ollama/ollama) servers.
 
 <img src="./docs/diagrams/arch.excalidraw.png"></img>
 
