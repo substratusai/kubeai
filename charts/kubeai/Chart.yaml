@@ -37,3 +37,17 @@ dependencies:
   # These are instances of the Model custom resource.
   - name: models
     condition: models.enabled
+
+
+keywords: ["LLM", "AI"]
+
+# TODO replace with kubeai.org once live
+home: https://www.substratus.ai
+
+maintainers:
+- name: nstogner
+  email: nicholas.stogner@gmail.com
+- name: samos123
+  email: sammiestoel@gmail.com
+  url: https://www.linkedin.com/in/samstoelinga/
+
