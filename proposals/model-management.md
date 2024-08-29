@@ -61,12 +61,22 @@ If a user submits a finetuning request (`POST /v1/fine_tuning/jobs`), they have 
 {
   # Model.metadata.name
   "model": "llama-3.1-8b",
-  # KubeAI-Only: Training file could be specified as URL: "s3://..."
+  # KubeAI-Only: Training file could be specified as URL: "s3://..." (signed URLs could be used for auth)
+  # KubeAI-Only: Some training file sources might require specfying a "training_file_credentials" field.
   "training_file": "<id-of-file-uploaded-via-files-api>",
-  # KubeAI-Only: Location to store parameters
-  # Alternative: "hf://some-user/some-repo"
-  # If not specified, default location determined from KubeAI config.yaml.
+  # KubeAI-Only: Location to store parameters (optional - otherwise default in KubeAI config is used)
   "storage_url": "s3://some-bucket/some-dir/"
+}
+```
+
+Pushing straight to Huggingface could also be supported. Users could push to their private repos by specifying credentials on a job-by-job basis:
+
+```json
+{
+  "model": "llama-3.1-8b",
+  "training_file": "...",
+  "storage_url": "hf://some-user/my-repo"
+  "storage_credentials": "my-huggingface-token"
 }
 ```
 
@@ -90,8 +100,16 @@ Model cache profiles and finetune default storage locations should be defined at
 
 ```yaml
 finetuning:
-  storage:
-    defaultURLTemplate: "s3://my-bucket/finetuning/{model}/{job}"
+  defaultStorage:
+    bucket:
+      urlTemplate: "s3://my-bucket/finetuning/{model_name}/{job_id}"
+  # OR:
+  # sharedFilesystem:
+  #   storageClass: aws-efs
+  #   mode: SharedFilesystem
+  #   dirTemplate: /models/{model_name}/adapters/{job_id}
+  serviceAccount:
+    name: my-finetuning-sa
   
 models:
   cache:
@@ -100,15 +118,16 @@ models:
       # Admins can define their own profile settings (and profile names):
       StandardBucket:
         bucket:
-          url: s3://my-bucket/models/
+          urlTemplate: s3://my-bucket/models/{model_name}
       EFS:
         sharedFilesystem:
           storageClass: aws-efs
           mode: SharedFilesystem
-          baseDir: /models/
+          dirTemplate: /models/{model_name}/cache/
       HyperDisk:
         staticVolume:
           storageClass: gcp-hyperdisk
+          # No dir template b/c there is a 1:1 disk:model relationship here
 ```
 
 Default config set from Helm values might look like:
@@ -120,7 +139,7 @@ models:
     profiles: {}
 ```
 
-### Cache Options
+### Storage Details
 
 #### Bucket Storage
 
