@@ -2,20 +2,12 @@ apiVersion: v2
 name: kubeai
 description: Private Open AI Platform for Kubernetes.
 
-# A chart can be either an 'application' or a 'library' chart.
-#
-# Application charts are a collection of templates that can be packaged into versioned archives
-# to be deployed.
-#
-# Library charts provide useful utilities or functions for the chart developer. They're included as
-# a dependency of application charts to inject those utilities and functions into the rendering
-# pipeline. Library charts do not define any templates and therefore cannot be deployed.
 type: application
 
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.1.2
+version: 0.1.3
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -28,12 +20,28 @@ dependencies:
   # https://docs.openwebui.com/
   - name: openwebui
     condition: openwebui.enabled
+    version: 0.1.0
   # Custom Resource Definitions are cluster scoped. Sometimes cluster admins need to install
   # these resources as a separate step.
   # https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/
   - name: crds
     condition: crds.enabled
+    version: 0.1.0
   # Models are the machine learning models that kubeai will serve.
   # These are instances of the Model custom resource.
   - name: models
     condition: models.enabled
+    version: 0.1.0
+
+
+keywords: ["LLM", "AI"]
+
+# TODO replace with kubeai.org once live
+home: https://www.substratus.ai
+
+maintainers:
+- name: nstogner
+  email: nicholas.stogner@gmail.com
+- name: samos123
+  email: sammiestoel@gmail.com
+  url: https://www.linkedin.com/in/samstoelinga/

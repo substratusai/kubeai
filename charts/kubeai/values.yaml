@@ -6,7 +6,7 @@ secrets:
   huggingface:
     create: true
     token: ""
-    # The name of the secret to use. 
+    # The name of the secret to use.
     # If not set, and create is true, the name is generated using the fullname template.
     # The token value is pulled from the key, "token".
     name: ""
@@ -48,7 +48,7 @@ openwebui:
     value: "False"
   - name: OPENAI_API_KEYS
     value: "not-used"
-  #- name: OPENAI_API_BASE_URL
+  # - name: OPENAI_API_BASE_URL
   #  # TODO: This changes with .fullnameOverride and .service.port, make this more robust.
   #  value: "http://kubeai/openai/v1"
   - name: OPENAI_API_BASE_URLS
@@ -174,4 +174,3 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
-
