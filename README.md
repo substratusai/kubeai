@@ -46,15 +46,14 @@ podman machine start
 kind create cluster # OR: minikube start
 ```
 
-Add the KubeAI Helm repository.
+Add the KubeAI [Helm](https://helm.sh/docs/intro/install/) repository.
 
 ```bash
 helm repo add kubeai https://substratusai.github.io/kubeai/
 helm repo update
 ```
 
-
-Install KubeAI using [Helm](https://helm.sh/docs/intro/install/) and wait for all components to be ready (may take a minute).
+Install KubeAI and wait for all components to be ready (may take a minute).
 
 ```bash
 cat <<EOF > helm-values.yaml
