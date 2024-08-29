@@ -19,63 +19,100 @@ While working within the following constraints:
 
 KubeAI should support configurable storage for both models and adapters.
 
-These settings should be configurable at the `kind: Model` level because the optimum caching technique is relative to the size and frequency-of-use of the model. For example: GCP Hyperdisk ML is relatively expensive compared to other options, however it can be highly performant especially when it comes to loading large models.
+These settings should be configurable on a per Model basis because the optimum caching technique is relative to the size and frequency-of-use of the model. For example: GCP Hyperdisk ML is relatively expensive compared to other options, however it can be highly performant especially when it comes to loading large models. They should also be configurable on a per-finetune-job basis so that users can use KubeAI to publish adapters to their huggingface repos.
+
+### Example Models
+
+```yaml
+# Model configured with adapters from huggingface
+kind: Model
+spec:
+  url: "hf://meta-llama/Meta-Llama-3.1-8B-Instruct"
+  adapters:
+  # Adapter can be requested by name at inference time
+  - name: sarcasm
+    url: "hf://myrepo/sarcastic-lora-adapter-for-llama-3-8b-Instruct"
+
+# Model that explicitly asks for a cache profile
+kind: Model
+spec:
+  url: "hf://meta-llama/Meta-Llama-3.1-405B-Instruct"
+  cacheProfile: HyperDisk
+
+# A Model without any cache specified will use the default set in KubeAI's config.yaml
+kind: Model
+spec:
+  url: "hf://meta-llama/Meta-Llama-3.1-8B-Instruct"
+
+# Model that explicitly wont use a cache
+kind: Model
+spec:
+  url: "hf://meta-llama/Meta-Llama-3.1-8B-Instruct"
+  cacheProfile: None
+```
+
+### Finetuning Example
+
+If a user submits a finetuning request (`POST /v1/fine_tuning/jobs`), they have the option to specify a location to store the adapters:
+
+```json
+# OpenAI-compatible finetune job request
+{
+  # Model.metadata.name
+  "model": "llama-3.1-8b",
+  # KubeAI-Only: Training file could be specified as URL: "s3://..."
+  "training_file": "<id-of-file-uploaded-via-files-api>",
+  # KubeAI-Only: Location to store parameters
+  # Alternative: "hf://some-user/some-repo"
+  # If not specified, default location determined from KubeAI config.yaml.
+  "storage_url": "s3://some-bucket/some-dir/"
+}
+```
+
+After this job completes the base Model would have an adapter appended:
 
 ```yaml
 kind: Model
 spec:
-  storageProfile:
-    model: HyperdiskML
-    adapters: Bucket
+  url: "hf://meta-llama/Meta-Llama-3.1-8B-Instruct"
+  adapters:
+  # +Adapter:
+  - name: "name-of-finetune-job"
+    url: "s3://some-bucket/some-dir/name-of-finetune-job"
 ```
 
-Storage profiles should be defined at the KubeAI config.yaml level:
+Users can specify an adapter by name at inference time.
+
+### KubeAI Config
+
+Model cache profiles and finetune default storage locations should be defined at the KubeAI `config.yaml` level:
 
 ```yaml
-# Set on Model objects if .spec.storageProfile is undefined.
-defaultStorageProfiles:
-  model: None # None is a special storage mode where each server pulls the model from source.
-  adapters: Bucket
-
-storageProfiles:
-  # Bucket could be a default profile that KubeAI installs with.
-  Bucket:
-    object:
-      url: s3://...
-  # Admins can define their own profiles:
-  EFS:
-    volume:
-      storageClass: aws-efs
-      mode: SharedFilesystem
-  HyperdiskML:
-    volume:
-      storageClass: gcp-hyperdisk
-      mode: StaticCache
+finetuning:
+  storage:
+    defaultURLTemplate: "s3://my-bucket/finetuning/{model}/{job}"
+  
+models:
+  cache:
+    defaultProfile: Bucket # Could also be "None"
+    profiles:
+      # Admins can define their own profile settings (and profile names):
+      StandardBucket:
+        bucket:
+          url: s3://my-bucket/models/
+      EFS:
+        sharedFilesystem:
+          storageClass: aws-efs
+          mode: SharedFilesystem
+          baseDir: /models/
+      HyperDisk:
+        staticVolume:
+          storageClass: gcp-hyperdisk
 ```
 
-A storage profile might have a structure like:
+### Cache Options
 
-```go
-type StorageProfile struct {
-    Volume *VolumeStorageProfile `json:"volume,omitempty"`
-    Object *ObjectStorageProfile `json:"object,omitempty"`
-}
-
-type ObjectStorageProfile struct {
-    // URL of bucket ("s3://...")
-    URL string `json:"url"`
-}
-
-type VolumeStorageProfile struct {
-    // StorageClassName to use for Kubernetes Volume.
-    StorageClassName string `json:"storageClassName"`
-
-    // Mode is either StaticCache or SharedFilesystem.
-    Mode VolumeStorageProfileMode `json:"mode"`
-}
-```
-
-### Object storage
+#### Bucket Storage
 
 This mode relies on access to a bucket.
 
@@ -83,24 +120,27 @@ To preserve local deployment as an option this bucket could be provided by a Hel
 
 ![Bucket Mode](./diagrams/model-mgmt-buckets.excalidraw.png)
 
-### Volume storage
+#### Volume Storage
 
-This mode relies on Kubernetes PersistentVolumes for storage.
+##### Shared Filesystem Storage
 
-Two modes could be supported:
+This mode relies on a Kubernetes PersistentVolumes for storage.
 
-* `StaticCache`
-  - How it works: mounted as ReadWriteOnce to initialize, then ReadOnlyMany for serving
-  - Examples: GCP Hyperdisk ML
-  - NOTEs:
-    - Only supported for models, NOT adapters!
-    - Typically provisioned via the k8s API
-* `SharedFilesystem`
-  - How it works: always mounted as ReadWriteMany
-  - Examples:  - NFS, EFS, GCP Filestore
-  - NOTEs:
-    - Works for models and adapaters.
-    - Typically provisioned outside of the k8s API
+- How it works: always mounted as ReadWriteMany
+- Examples:  - NFS, EFS, GCP Filestore
+- NOTEs:
+  - Works for models and adapaters.
+  - Typically provisioned outside of the k8s API
+
+##### Static Volume Storage
+
+This mode relies on a Kubernetes PersistentVolumes for storage.
+
+- How it works: mounted as ReadWriteOnce to initialize, then ReadOnlyMany for serving
+- Examples: GCP Hyperdisk ML
+- NOTEs:
+  - Only supported for models, NOT adapters!
+  - Typically provisioned via the k8s API
 
 ![Volume Mode](./diagrams/model-mgmt-volumes.excalidraw.png)
 
