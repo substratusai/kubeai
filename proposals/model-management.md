@@ -47,6 +47,7 @@ spec:
 # Model that explicitly wont use a cache
 kind: Model
 spec:
+  # NOTE: URL could also be from an location such as "s3://..." (or possibly a shared filesystem like EFS?)
   url: "hf://meta-llama/Meta-Llama-3.1-8B-Instruct"
   cacheProfile: None
 ```
@@ -110,6 +111,15 @@ models:
           storageClass: gcp-hyperdisk
 ```
 
+Default config set from Helm values might look like:
+
+```yaml
+models:
+  cache:
+    defaultProfile: None
+    profiles: {}
+```
+
 ### Cache Options
 
 #### Bucket Storage
@@ -128,19 +138,24 @@ This mode relies on a Kubernetes PersistentVolumes for storage.
 
 - How it works: always mounted as ReadWriteMany
 - Examples:  - NFS, EFS, GCP Filestore
-- NOTEs:
-  - Works for models and adapaters.
-  - Typically provisioned outside of the k8s API
+- Works for models and adapaters.
+- Typically provisioned outside of the k8s API
 
 ##### Static Volume Storage
 
 This mode relies on a Kubernetes PersistentVolumes for storage.
 
 - How it works: mounted as ReadWriteOnce to initialize, then ReadOnlyMany for serving
-- Examples: GCP Hyperdisk ML
-- NOTEs:
-  - Only supported for models, NOT adapters!
-  - Typically provisioned via the k8s API
+- Examples: GCP Hyperdisk ML, GCP PD (see restrictive limits below)
+- Cloud-specific limits on number of VMs that disks can be attached to should be taken into account - see [GCP disk limits](https://cloud.google.com/compute/docs/disks/sharing-disks-between-vms#restrictions_for_sharing_disks_in_read-only_mode).
+- Typically provisioned via the k8s API
+
+NOTE: Only static volume storage would be only supported for models, NOT adapters:
+
+Disks like Hyperdisk ML (and other PDs in GCP) can be mounted as ReadWriteOnce or ReadOnlyMany ... Supporting this type of disk for adapters is complicated:
+
+* A finetune Job would need to output adapters by mounting a new disk in RWO mode (doable - but forces 1:1 adapter-to-disk which is probably not justified based on adapter's being small in size)
+* Model servers need to be able to mount these adapter-specific disks dynamically to swap the adapter that is being used for a given server like vLLM on a request by request basis - see Support dynamic LoRA serving #132 (I dont know of a way of doing this as volumes specified in a Pod spec are not dynamic - require Pod recreation)
 
 ![Volume Mode](./diagrams/model-mgmt-volumes.excalidraw.png)
 
