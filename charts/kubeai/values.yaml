@@ -52,8 +52,15 @@ openwebui:
   - name: OPENAI_API_BASE_URLS
     # TODO: This changes with .fullnameOverride and .service.port, make this more robust.
     value: "http://kubeai/openai/v1"
+  # A good number of features are not compatible with the KubeAI architecture.
   - name: ENABLE_OLLAMA_API
-    value: "False"
+    value: "false"
+  - name: SHOW_ADMIN_DETAILS
+    value: "false"
+  - name: SAFE_MODE
+    value: "true"
+  - name: ENABLE_LITELLM
+    value: "false"
 
 replicaCount: 1
 
