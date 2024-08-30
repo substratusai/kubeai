@@ -4,7 +4,7 @@ Langtrace is an open source tool that helps you with tracing and monitoring
 your AI calls. It includes a self-hosted UI that for example shows you the
 estimated costs of your LLM calls.
 
-KubeAI is used for deploying LLMs with an OpenAI compatible endpoint.
+[KubeAI](https://github.com/substratusai/kubeai) is used for deploying LLMs with an OpenAI compatible endpoint.
 
 In this tutorial you will learn how to deploy KubeAI and Langtrace end-to-end.
 Both KubeAI and Langtrace are installed in your Kubernetes cluster.
