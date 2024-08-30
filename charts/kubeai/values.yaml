@@ -30,8 +30,6 @@ resourceProfiles:
       nvidia.com/gpu: "1"
       cpu: "6"
       memory: "24Gi"
-    nodeSelector:
-      cloud.google.com/gke-accelerator: "nvidia-tesla-t4"
 
 messaging:
   errorMaxBackoff: 30s
