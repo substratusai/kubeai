@@ -55,7 +55,25 @@ models:
         MY_CUSTOM_ENV_VAR: "some-value"
 ```
 
-### Adding Custom Models
+### Adding Custom Models with Helm
+
+If you prefer to add a custom model via the same Helm chart you use for installed KubeAI, you can add your custom model entry into the `.models.catalog` array of your existing Helm values file:
+
+```yaml
+# ...
+models:
+  catalog:
+    my-custom-model-name:
+      enabled: true
+      features: ["TextEmbedding"]
+      owner: me
+      url: "hf://me/my-custom-model"
+      resourceProfile: CPU:1
+```
+
+They you can re-run `helm upgrade` with the same flags you used to install KubeAI.
+
+### Adding Custom Models Directly
 
 You can add your own model by defining a Model yaml file and applying it using `kubectl apply -f model.yaml`.
 
