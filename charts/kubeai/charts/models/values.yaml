@@ -9,6 +9,7 @@ catalog:
     features: ["TextEmbedding"]
     owner: intfloat
     url: "hf://intfloat/e5-mistral-7b-instruct"
+    server: VLLM
     resourceProfile: CPU:1
     args:
     - --gpu-memory-utilization=0.9
@@ -18,7 +19,7 @@ catalog:
     features: ["TextGeneration"]
     owner: google
     url: "ollama://gemma2:2b"
-    engine: OLlama
+    server: OLlama
     resourceProfile: CPU:2
   # Llama #
   llama-3.1-8b-instruct-cpu:
@@ -26,7 +27,7 @@ catalog:
     features: ["TextGeneration"]
     owner: "meta-llama"
     url: "hf://meta-llama/Meta-Llama-3.1-8B-Instruct"
-    engine: VLLM
+    server: VLLM
     resourceProfile: CPU:6
     env:
       VLLM_CPU_KVCACHE_SPACE: "4"
@@ -38,8 +39,8 @@ catalog:
     features: ["TextGeneration"]
     owner: "neuralmagic"
     url: "hf://neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8"
-    engine: VLLM
-    resourceProfile: L4:1
+    server: VLLM
+    resourceProfile: NVIDIA_GPU_L4:1
     args:
     - --max-model-len=16384
     - --max-num-batched-token=16384
@@ -50,7 +51,7 @@ catalog:
     features: ["TextEmbedding"]
     owner: nomic
     url: "ollama://nomic-embed-text"
-    engine: OLlama
+    server: OLlama
     resourceProfile: CPU:1
   # Opt #
   opt-125m-cpu:
@@ -58,21 +59,21 @@ catalog:
     features: ["TextGeneration"]
     owner: facebook
     url: "hf://facebook/opt-125m"
-    engine: VLLM
+    server: VLLM
     resourceProfile: CPU:1
   opt-125m-l4:
     enabled: false
     features: ["TextGeneration"]
     owner: facebook
     url: "hf://facebook/opt-125m"
-    engine: VLLM
-    resourceProfile: L4:1
+    server: VLLM
+    resourceProfile: NVIDIA_GPU_L4:1
   # Qwen #
   qwen2-500m-cpu:
     enabled: false
     features: ["TextGeneration"]
     owner: alibaba
     url: "ollama://qwen2:0.5b"
-    engine: OLlama
+    server: OLlama
     resourceProfile: CPU:1
 

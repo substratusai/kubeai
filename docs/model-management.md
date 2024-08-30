@@ -13,14 +13,14 @@ spec:
   features: ["TextGeneration"]
   owner: neuralmagic
   url: hf://neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8
-  engine: VLLM
+  server: VLLM
   args:
     - --max-model-len=16384
     - --max-num-batched-token=16384
     - --gpu-memory-utilization=0.9
   minReplicas: 0
   maxReplicas: 3
-  resourceProfile: L4:1
+  resourceProfile: NVIDIA_GPU_L4:1
 ```
 
 ### Listing Models
