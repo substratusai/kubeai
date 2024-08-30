@@ -53,9 +53,11 @@ Make sure you have a HuggingFace Hub token set in your environment (`HUGGING_FAC
 Install KubeAI with [Helm](https://helm.sh/docs/intro/install/).
 
 ```bash
-helm upgrade --install kubeai ./charts/kubeai \
+helm repo add kubeai https://substratusai.github.io/kubeai/
+helm repo update
+
+helm upgrade --install kubeai kubeai/kubeai \
     -f ./helm-values.yaml \
     --set secrets.huggingface.token=$HUGGING_FACE_HUB_TOKEN \
-    --wait \
-    --set image.tag=latest
+    --wait
 ```
