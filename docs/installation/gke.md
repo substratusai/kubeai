@@ -45,7 +45,7 @@ models:
       enabled: true
 
 resourceProfiles:
-  L4:
+  nvidia-gpu-l4:
     nodeSelector:
       cloud.google.com/gke-accelerator: "nvidia-l4"
       cloud.google.com/gke-spot: "true"

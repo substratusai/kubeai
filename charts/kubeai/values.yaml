@@ -26,12 +26,12 @@ modelServers:
       default: "ollama/ollama:latest"
 
 resourceProfiles:
-  CPU:
+  cpu:
     imageName: "cpu"
     requests:
       cpu: 1
       memory: "2Gi"
-  NVIDIA_GPU_L4:
+  nvidia-gpu-l4:
     imageName: "nvidia-gpu"
     limits:
       nvidia.com/gpu: "1"
@@ -39,18 +39,16 @@ resourceProfiles:
       nvidia.com/gpu: "1"
       cpu: "6"
       memory: "24Gi"
-  # NVIDIA_GPU_V100:
-    # ...
-  # NVIDIA_GPU_A100:
-    # ...
-  GOOGLE_TPU_V5E:
-    imageName: "google-tpu"
-    requests:
-      google.com/tpu: 4
-    limits:
-      google.com/tpu: 4
-    nodeSelector:
-      cloud.google.com/gke-accelerator-type: tpu-v5-lite-podslice
+  #nvidia-gpu-v100:
+  #nvidia-gpu-a100:
+  #google-tpu-v5e:
+  #  imageName: "google-tpu"
+  #  requests:
+  #    google.com/tpu: 4
+  #  limits:
+  #    google.com/tpu: 4
+  #  nodeSelector:
+  #    cloud.google.com/gke-accelerator-type: tpu-v5-lite-podslice
 
 messaging:
   errorMaxBackoff: 30s

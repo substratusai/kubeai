@@ -12,7 +12,7 @@ metadata:
   name: llama-3.1-8b-instruct-fp8-l4
 spec:
   engine: VLLM
-  resourceProfile: NVIDIA_GPU_L4:1 # Specified at <profile>:<count>
+  resourceProfile: nvidia-gpu-l4:1 # Specified at <profile>:<count>
   # ...
 ```
 A given profile might need to contain slightly different settings based on the cluster/cloud that KubeAI is deployed on.
@@ -22,7 +22,7 @@ Example: A resource profile named `NVIDIA_GPU_L4` might contain the following se
 ```yaml
 # KubeAI config.yaml
 resourceProfiles:
-  NVIDIA_GPU_L4:
+  nvidia-gpu-l4:
     limits:
       # Typical across most Kubernetes clusters:
       nvidia.com/gpu: "1"

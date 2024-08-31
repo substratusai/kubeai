@@ -504,7 +504,7 @@ func (r *ModelReconciler) annotationsForModel(m *kubeaiv1.Model) map[string]stri
 func (r *ModelReconciler) applyResourceProfile(model *kubeaiv1.Model) (bool, error) {
 	split := strings.Split(model.Spec.ResourceProfile, ":")
 	if len(split) != 2 {
-		return false, fmt.Errorf("invalid resource profile: %q, should match <name>:<multiple>, example: L4:2", model.Spec.ResourceProfile)
+		return false, fmt.Errorf("invalid resource profile: %q, should match <name>:<multiple>, example: nvidia-gpu-l4:2", model.Spec.ResourceProfile)
 	}
 	name := split[0]
 	multiple, err := strconv.Atoi(split[1])

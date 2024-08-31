@@ -20,7 +20,7 @@ spec:
     - --gpu-memory-utilization=0.9
   minReplicas: 0
   maxReplicas: 3
-  resourceProfile: NVIDIA_GPU_L4:1
+  resourceProfile: nvidia-gpu-l4:1
 ```
 
 ### Listing Models

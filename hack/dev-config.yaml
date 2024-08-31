@@ -16,11 +16,11 @@ messaging:
   #  responsesURL: gcppubsub://projects/substratus-dev/topics/test-kubeai-responses
   #  maxHandlers: 1
 resourceProfiles:
-  CPU:
+  cpu:
     requests:
       cpu: 1
       memory: 2Gi
-  L4:
+  nvidia-gpu-l4:
     limits:
       nvidia.com/gpu: "1"
     requests:
