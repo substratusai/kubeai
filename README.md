@@ -1,1 +1,0 @@
-# GitHub pages for KubeAI
