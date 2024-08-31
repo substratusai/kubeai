@@ -46,9 +46,14 @@ jobs:
           git checkout main
           mkdir -p docs
           mv /tmp/index.yaml docs/index.yaml
-          git add docs/index.yaml
-          git commit -m "CI: Copy index.yaml from gh-pages to main"
-          git push
+          # check if the file is modified returns exit code 1 if it is
+          git diff --exit-code docs/index.yaml
+          if [ $? -eq 1 ]; then
+            git add docs/index.yaml
+            git commit -m "CI: Copy index.yaml from gh-pages to main"
+            git push
+            exit 0
+          fi
   publish-docs:
     needs: release-charts
     permissions:
