@@ -71,4 +71,4 @@ jobs:
           restore-keys: |
             mkdocs-material-
       - run: pip install -r docs/requirements.txt
-      - run: mkdocs gh-deploy
+      - run: git fetch origin && mkdocs gh-deploy
