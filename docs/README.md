@@ -17,12 +17,12 @@ The simple AI platform that runs on Kubernetes.
 
 KubeAI serves an OpenAI compatible HTTP API. Admins can configure ML models via `kind: Model` Kubernetes Custom Resources. KubeAI can be thought of as a Model Operator (See [Operator Pattern](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/)) that manages [vLLM](https://github.com/vllm-project/vllm) and [Ollama](https://github.com/ollama/ollama) servers.
 
-<img src="./docs/diagrams/arch.excalidraw.png"></img>
+<img src="./diagrams/arch.excalidraw.png"></img>
 
 ## Local Quickstart
 
 
-https://github.com/user-attachments/assets/711d1279-6af9-4c6c-a052-e59e7730b757
+<video controls><source src="https://github.com/user-attachments/assets/711d1279-6af9-4c6c-a052-e59e7730b757"/></video>
 
 Create a local cluster using [kind](https://kind.sigs.k8s.io/) or [minikube](https://minikube.sigs.k8s.io/docs/).
 
@@ -102,7 +102,7 @@ NOTE: Autoscaling after initial scale-from-zero is not yet supported for the Oll
 Any vLLM or Ollama model can be served by KubeAI. Some examples of popular models served on KubeAI include:
 
 * Llama v3.1 (8B, 70B, 405B) 
-* Gemma2 (9B, 27B)
+* Gemma2 (2B, 9B, 27B)
 * Qwen2 (1.5B, 7B, 72B)
 
 ## Guides
