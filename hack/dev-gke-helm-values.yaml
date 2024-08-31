@@ -1,0 +1,10 @@
+models:
+  catalog:
+    llama-3.1-8b-instruct-fp8-l4:
+      enabled: true
+
+resourceProfiles:
+  NVIDIA_GPU_L4:
+    nodeSelector:
+      cloud.google.com/gke-accelerator: "nvidia-l4"
+      cloud.google.com/gke-spot: "true"

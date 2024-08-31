@@ -548,38 +548,44 @@ func (r *ModelReconciler) applyResourceProfile(model *kubeaiv1.Model) (bool, err
 		changed = true
 	}
 
-	if model.Spec.Image == "" {
-		var serverImgs map[string]string
-		switch model.Spec.Engine {
-		case kubeaiv1.OLlamaEngine:
-			serverImgs = r.ModelServers.OLlama.Images
-		default:
-			serverImgs = r.ModelServers.VLLM.Images
-		}
-
-		// If no image name is provided for a profile, use the default image name.
-		const defaultImageName = "default"
-		imageName := defaultImageName
-		if profile.ImageName != "" {
-			imageName = profile.ImageName
-		}
-
-		if img, ok := serverImgs[imageName]; ok {
-			model.Spec.Image = img
-			changed = true
-		} else {
-			// If the specific profile image name does not exist, use the default image name.
-			if img, ok := serverImgs[defaultImageName]; ok {
-				model.Spec.Image = img
-				changed = true
-			} else {
-				return false, fmt.Errorf("missing default server image")
-			}
-		}
-
+	image, err := r.lookupServerImage(model, profile)
+	if err != nil {
+		return false, fmt.Errorf("looking up server image: %w", err)
+	}
+	if model.Spec.Image == "" || model.Spec.Image != image {
+		model.Spec.Image = image
+		changed = true
 	}
 
 	return changed, nil
+}
+
+func (r *ModelReconciler) lookupServerImage(model *kubeaiv1.Model, profile config.ResourceProfile) (string, error) {
+	var serverImgs map[string]string
+	switch model.Spec.Engine {
+	case kubeaiv1.OLlamaEngine:
+		serverImgs = r.ModelServers.OLlama.Images
+	default:
+		serverImgs = r.ModelServers.VLLM.Images
+	}
+
+	// If no image name is provided for a profile, use the default image name.
+	const defaultImageName = "default"
+	imageName := defaultImageName
+	if profile.ImageName != "" {
+		imageName = profile.ImageName
+	}
+
+	if img, ok := serverImgs[imageName]; ok {
+		return img, nil
+	}
+
+	// If the specific profile image name does not exist, use the default image name.
+	if img, ok := serverImgs[defaultImageName]; ok {
+		return img, nil
+	} else {
+		return "", fmt.Errorf("missing default server image")
+	}
 }
 
 func (r *ModelReconciler) applySelfLabels(model *kubeaiv1.Model) bool {

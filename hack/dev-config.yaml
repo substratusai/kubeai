@@ -2,16 +2,19 @@ secretNames:
   huggingface: huggingface
 modelServers:
   vLLM:
-    gpuImage: "vllm/vllm-openai:latest"
-    cpuImage: "us-central1-docker.pkg.dev/substratus-dev/default/vllm-cpu:v0.5.4-118-gfc93e561"
+    images:
+      default: "vllm/vllm-openai:latest"
+      cpu: "us-central1-docker.pkg.dev/substratus-dev/default/vllm-cpu:v0.5.4-118-gfc93e561"
   ollama:
-    image: "ollama/ollama:latest"
+    images:
+      default: "ollama/ollama:latest"
+      cpu: "ollama/ollama:0.3.8"
 messaging:
   errorMaxBackoff: 30s
-  streams:
-  - requestsURL: gcppubsub://projects/substratus-dev/subscriptions/test-kubeai-requests-sub
-    responsesURL: gcppubsub://projects/substratus-dev/topics/test-kubeai-responses
-    maxHandlers: 1
+  streams: []
+  #- requestsURL: gcppubsub://projects/substratus-dev/subscriptions/test-kubeai-requests-sub
+  #  responsesURL: gcppubsub://projects/substratus-dev/topics/test-kubeai-responses
+  #  maxHandlers: 1
 resourceProfiles:
   CPU:
     requests:

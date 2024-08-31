@@ -61,6 +61,11 @@ spec:
                   - TextEmbedding
                   type: string
                 type: array
+              image:
+                description: |-
+                  Image to be used for the server process.
+                  Will be set from the ResourceProfile if provided.
+                type: string
               maxReplicas:
                 format: int32
                 type: integer
