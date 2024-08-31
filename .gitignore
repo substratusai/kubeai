@@ -32,3 +32,4 @@ go.work
 # Ignore python virtual env
 .venv
 *__pycache__
+site

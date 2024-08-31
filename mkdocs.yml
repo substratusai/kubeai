@@ -3,6 +3,15 @@ site_url: https://www.kubeai.org
 repo_url: https://github.com/substratusai/kubeai
 theme:
   name: material
+nav:
+  - Home: README.md
+  - ... | installation/*.md
+  - model-management.md
+  - ... | tutorials/*.md
+  - ...
+plugins:
+    - search
+    - awesome-pages
 markdown_extensions:
   # Python Markdown
   - abbr
