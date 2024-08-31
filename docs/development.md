@@ -1,4 +1,5 @@
 # Development
+This document provides instructions for setting up a development environment for KubeAI.
 
 ## Cloud Setup
 

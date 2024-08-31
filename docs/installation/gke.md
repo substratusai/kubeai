@@ -1,8 +1,10 @@
-# Cloud Install
+---
+title: "GKE Standard and Autopilot"
+---
 
-## GKE Autopilot
+# Install KubeAI on GKE
 
-<details>
+<details markdown="1">
 <summary>TIP: Make sure you have enough quota in your GCP project.</summary>
 Open the cloud console quotas page: https://console.cloud.google.com/iam-admin/quotas. Make sure your project is selected in the top left.
 
@@ -10,20 +12,22 @@ There are 3 critical quotas you will need to verify for this guide. The minimum 
 
 | Quota                      | Location      | Min Value |
 |----------------------------|---------------|-----------|
-| Preemptible NVIDIA L4 GPUs | `<your-region>` | 2         |
+| Preemptible NVIDIA L4 GPUs | `<your-region>` | 2       |
 | GPUs (all regions)         | -             | 2         |
 | CPUs (all regions)         | -             | 24        |
 
 See the following screenshot examples of how these quotas appear in the console:
 
-![Regional Preemptible L4 Quota Screenshot](./screenshots/gcp-quota-preemptible-nvidia-l4-gpus-regional.png)
+![Regional Preemptible L4 Quota Screenshot](../screenshots/gcp-quota-preemptible-nvidia-l4-gpus-regional.png)
 
-![Global GPUs Quota Screenshot](./screenshots/gcp-gpus-all-regions.png)
+![Global GPUs Quota Screenshot](../screenshots/gcp-gpus-all-regions.png)
 
-![Global CPUs Quota Screenshot](./screenshots/gcp-cpus-all-regions.png)
+![Global CPUs Quota Screenshot](../screenshots/gcp-cpus-all-regions.png)
 
 </details>
 
+
+## GKE Autopilot
 Create an Autopilot cluster (replace `us-central1` with a region that you have quota).
 
 ```bash

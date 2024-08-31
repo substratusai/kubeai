@@ -1,4 +1,4 @@
-# Tutorial: Deploying KubeAI with Langtrace
+# Deploying KubeAI with Langtrace
 
 Langtrace is an open source tool that helps you with tracing and monitoring
 your AI calls. It includes a self-hosted UI that for example shows you the
