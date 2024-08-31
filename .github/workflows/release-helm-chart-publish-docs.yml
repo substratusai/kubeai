@@ -7,7 +7,6 @@ on:
   push:
     branches:
       - main
-      - fix-docs-publishing
 
 jobs:
   release-charts:
