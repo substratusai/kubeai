@@ -40,7 +40,9 @@ jobs:
           CR_RELEASE_NAME_TEMPLATE: "kubeai-helm-chart-{{ .Version }}"
       - name: Copy index.yaml from gh-pages branch to main branch docs/index.yaml
         run: |
-          git checkout gh-pages -- index.yaml
+          git checkout gh-pages
+          git pull origin gh-pages
+          cp index.yaml /tmp/index.yaml
           git checkout main
           mkdir -p docs
           mv /tmp/index.yaml docs/index.yaml
