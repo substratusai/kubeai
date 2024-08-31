@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - main
+      - fix-docs-publishing
 
 jobs:
   release-charts:
@@ -37,6 +38,16 @@ jobs:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           CR_SKIP_EXISTING: "true"
           CR_RELEASE_NAME_TEMPLATE: "kubeai-helm-chart-{{ .Version }}"
+      - name: Copy index.yaml from gh-pages branch to main branch docs/index.yaml
+        run: |
+          git fetch origin gh-pages
+          git checkout gh-pages -- /tmp/index.yaml
+          git checkout main
+          mkdir -p docs
+          mv /tmp/index.yaml docs/index.yaml
+          git add docs/index.yaml
+          git commit -m "CI: Copy index.yaml from gh-pages to main"
+          git push
   publish-docs:
     needs: release-charts
     permissions:
