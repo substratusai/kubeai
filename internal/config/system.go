@@ -53,6 +53,7 @@ func (d *Duration) UnmarshalJSON(b []byte) error {
 }
 
 type ResourceProfile struct {
+	ImageName    string              `json:"imageName"`
 	Requests     corev1.ResourceList `json:"requests,omitempty"`
 	Limits       corev1.ResourceList `json:"limits,omitempty"`
 	NodeSelector map[string]string   `json:"nodeSelector,omitempty"`
@@ -65,11 +66,10 @@ type MessageStream struct {
 }
 
 type ModelServers struct {
-	Ollama struct {
-		Image string `json:"image"`
-	} `json:"ollama"`
-	VLLM struct {
-		CPUImage string `json:"cpuImage"`
-		GPUImage string `json:"gpuImage"`
-	}
+	OLlama ModelServer `json:"OLlama"`
+	VLLM   ModelServer `json:"VLLM"`
+}
+
+type ModelServer struct {
+	Images map[string]string `json:"images"`
 }

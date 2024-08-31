@@ -14,21 +14,24 @@ secrets:
 modelServers:
   VLLM:
     images:
-      # The key is the resource profile name (with "*" matching), and the value is the image to use.
-      "*": "vllm/vllm-openai:v0.5.5"
-      "CPU*": "substratusai/vllm-openai-cpu:v0.5.5"
-      "NVIDIA_GPU*": "vllm/vllm-openai:v0.5.5"
-      "GOOGLE_TPU*": "substratusai/vllm-openai-tpu:v0.5.5"
+      # The key is the image name (referenced from resourceProfiles) and the value is the image.
+      # "default" is used when no imageName is specified or if a specific image is not found.
+      default: "vllm/vllm-openai:v0.5.5"
+      cpu: "substratusai/vllm-openai-cpu:v0.5.5"
+      nvidia-gpu: "vllm/vllm-openai:v0.5.5"
+      google-tpu: "substratusai/vllm-openai-tpu:v0.5.5"
   OLlama:
     images:
-      "*": "ollama/ollama:latest"
+      default: "ollama/ollama:latest"
 
 resourceProfiles:
   CPU:
+    imageName: "cpu"
     requests:
       cpu: 1
       memory: "2Gi"
   NVIDIA_GPU_L4:
+    imageName: "nvidia-gpu"
     limits:
       nvidia.com/gpu: "1"
     requests:
@@ -40,6 +43,7 @@ resourceProfiles:
   # NVIDIA_GPU_A100:
     # ...
   GOOGLE_TPU_V5E:
+    imageName: "google-tpu"
     requests:
       google.com/tpu: 4
     limits:

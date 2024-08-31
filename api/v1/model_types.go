@@ -38,6 +38,10 @@ type ModelSpec struct {
 	// ResourceProfile maps to specific pre-configured resources.
 	ResourceProfile string `json:"resourceProfile,omitempty"`
 
+	// Image to be used for the server process.
+	// Will be set from the ResourceProfile if provided.
+	Image string `json:"image,omitempty"`
+
 	// Resources to be allocated to the server process.
 	// Will be set from the ResourceProfile if provided.
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`

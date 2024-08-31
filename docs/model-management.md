@@ -13,7 +13,7 @@ spec:
   features: ["TextGeneration"]
   owner: neuralmagic
   url: hf://neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8
-  server: VLLM
+  engine: VLLM
   args:
     - --max-model-len=16384
     - --max-num-batched-token=16384
