@@ -37,6 +37,23 @@ jobs:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           CR_SKIP_EXISTING: "true"
           CR_RELEASE_NAME_TEMPLATE: "kubeai-helm-chart-{{ .Version }}"
+      - name: Copy index.yaml from gh-pages branch to main branch docs/index.yaml
+        run: |
+          git checkout gh-pages
+          git pull origin gh-pages
+          cp index.yaml /tmp/index.yaml
+          git checkout main
+          mkdir -p docs
+          mv /tmp/index.yaml docs/index.yaml
+          # check if the file is modified returns exit code 1 if it is
+          git diff --exit-code docs/index.yaml
+          if [ $? -eq 1 ]; then
+            git add docs/index.yaml
+            git commit -m "CI: Copy index.yaml from gh-pages to main"
+            git push
+            exit 0
+          fi
+          echo "No changes to index.yaml"
   publish-docs:
     needs: release-charts
     permissions:
@@ -59,4 +76,4 @@ jobs:
           restore-keys: |
             mkdocs-material-
       - run: pip install -r docs/requirements.txt
-      - run: mkdocs gh-deploy
+      - run: git fetch origin && mkdocs gh-deploy
