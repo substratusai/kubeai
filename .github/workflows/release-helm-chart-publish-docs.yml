@@ -54,6 +54,7 @@ jobs:
             git push
             exit 0
           fi
+          echo "No changes to index.yaml"
   publish-docs:
     needs: release-charts
     permissions:
