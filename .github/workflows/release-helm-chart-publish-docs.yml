@@ -30,24 +30,12 @@ jobs:
         uses: azure/setup-helm@v4
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.6.0
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           CR_SKIP_EXISTING: "true"
           CR_RELEASE_NAME_TEMPLATE: "kubeai-helm-chart-{{ .Version }}"
-      - name: Get latest index.yaml
-        run: |
-          git checkout gh-pages
-          git pull origin gh-pages
-          cp index.yaml /tmp/index.yaml
-      - name: Upload index.yaml
-        uses: actions/upload-artifact@v4
-        with:
-          name: index-yaml
-          path: /tmp/index.yaml
-
   publish-docs:
     needs: release-charts
     permissions:
@@ -69,13 +57,15 @@ jobs:
           path: .cache
           restore-keys: |
             mkdocs-material-
-      - run: pip install -r docs/requirements.txt
-      - name: Download index.yaml
-        uses: actions/download-artifact@v4
-        with:
-          name: index-yaml
-          path: docs/index.yaml
       - run: |
          git fetch origin
+         # This is needed because otherwise mkdocs removes the index.yaml file.
+         # Get the latest index.yaml from gh-pages branch.
+         git checkout gh-pages
+         git pull origin gh-pages
+         cp index.yaml /tmp/index.yaml
+         git checkout main
          git pull origin main
-         mkdocs gh-deploy
+         cp /tmp/index.yaml docs/index.yaml
+         pip install -r docs/requirements.txt
+      - run: mkdocs gh-deploy
