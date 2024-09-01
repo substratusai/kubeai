@@ -1,6 +1,6 @@
-# Development
+# How to setup a development environment
 
-This document provides instructions for setting up a development environment for KubeAI.
+This document provides instructions for setting up an environment for developing KubeAI.
 
 ## Optional: Cloud Setup
 
