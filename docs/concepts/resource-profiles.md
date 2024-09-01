@@ -53,4 +53,4 @@ modelServers:
 
 ## Next
 
-Read about [how to manage resource profiles](../guides/how-to-manage-resource-profiles.md).
+Read about [how to manage resource profiles](../how-to/manage-resource-profiles.md).

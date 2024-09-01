@@ -8,7 +8,7 @@ on:
   pull_request:
 
 jobs:
-  unit:
+  mkdocs-build-strict:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
