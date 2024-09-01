@@ -1,8 +1,8 @@
 ---
-title: "How to install KubeAI on GKE"
+title: "Install KubeAI on GKE"
 ---
 
-# How to install KubeAI on GKE
+# Install KubeAI on GKE
 
 <details markdown="1">
 <summary>TIP: Make sure you have enough quota in your GCP project.</summary>
