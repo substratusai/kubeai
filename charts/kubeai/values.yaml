@@ -39,16 +39,16 @@ resourceProfiles:
       nvidia.com/gpu: "1"
       cpu: "6"
       memory: "24Gi"
-  #nvidia-gpu-v100:
-  #nvidia-gpu-a100:
-  #google-tpu-v5e:
-  #  imageName: "google-tpu"
-  #  requests:
-  #    google.com/tpu: 4
-  #  limits:
-  #    google.com/tpu: 4
-  #  nodeSelector:
-  #    cloud.google.com/gke-accelerator-type: tpu-v5-lite-podslice
+  # nvidia-gpu-v100:
+  # nvidia-gpu-a100:
+  # google-tpu-v5e:
+  #   imageName: "google-tpu"
+  #   requests:
+  #     google.com/tpu: 4
+  #   limits:
+  #     google.com/tpu: 4
+  #   nodeSelector:
+  #     cloud.google.com/gke-accelerator-type: tpu-v5-lite-podslice
 
 messaging:
   errorMaxBackoff: 30s
