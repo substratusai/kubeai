@@ -45,15 +45,16 @@ jobs:
           git checkout main
           mkdir -p docs
           mv /tmp/index.yaml docs/index.yaml
-          # check if the file is modified returns exit code 1 if it is
-          git diff --exit-code docs/index.yaml
-          if [ $? -eq 1 ]; then
+          # Check if the file is modified but do not exit the script
+          git diff --exit-code docs/index.yaml || CHANGED=$?
+          if [ "${CHANGED}" == "1" ]; then
+            echo "Changes detected in index.yaml"
             git add docs/index.yaml
             git commit -m "CI: Copy index.yaml from gh-pages to main"
             git push
-            exit 0
+          else
+            echo "No changes to index.yaml"
           fi
-          echo "No changes to index.yaml"
   publish-docs:
     needs: release-charts
     permissions:
