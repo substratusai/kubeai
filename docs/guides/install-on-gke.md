@@ -1,8 +1,8 @@
 ---
-title: "GKE Standard and Autopilot"
+title: "How to install KubeAI on GKE"
 ---
 
-# Install KubeAI on GKE
+# How to install KubeAI on GKE
 
 <details markdown="1">
 <summary>TIP: Make sure you have enough quota in your GCP project.</summary>
@@ -26,14 +26,22 @@ See the following screenshot examples of how these quotas appear in the console:
 
 </details>
 
+## 1. Create a cluster
 
-## GKE Autopilot
+### Option: GKE Autopilot
+
 Create an Autopilot cluster (replace `us-central1` with a region that you have quota).
 
 ```bash
 gcloud container clusters create-auto cluster-1 \
     --location=us-central1
 ```
+
+### Option: GKE Standard
+
+TODO: Reference gcloud commands for creating a GKE standard cluster.
+
+## 2. Install KubeAI
 
 Define the installation values for GKE.
 
