@@ -1,21 +1,30 @@
 # Development
 This document provides instructions for setting up a development environment for KubeAI.
 
-## Cloud Setup
+## Optional: Cloud Setup
+
+### GCP PubSub
+
+If you are develop PubSub messaging integration on GCP, setup test topics and subscriptions and uncomment the `.messaging.streams` in `./hack/dev-config.yaml`.
 
 ```bash
+gcloud auth login --update-adc
+
 gcloud pubsub topics create test-kubeai-requests
 gcloud pubsub subscriptions create test-kubeai-requests-sub --topic test-kubeai-requests
 gcloud pubsub topics create test-kubeai-responses
 gcloud pubsub subscriptions create test-kubeai-responses-sub --topic test-kubeai-responses
 ```
 
-## Local Cluster
+## Run in Local Cluster
 
 ```bash
 kind create cluster
 # OR
 #./hack/create-dev-gke-cluster.yaml
+
+# Generate CRDs from Go code.
+make generate && make manifests
 
 # When CRDs are changed reapply using kubectl:
 kubectl apply -f ./charts/kubeai/charts/crds/crds
@@ -23,21 +32,24 @@ kubectl apply -f ./charts/kubeai/charts/crds/crds
 # Model with special address annotations:
 kubectl apply -f ./hack/dev-model.yaml
 
-# For developing in-cluster features:
+# OPTION A #
+# Run KubeAI inside cluster
+# Change `-f` based on the cluster environment.
 helm upgrade --install kubeai ./charts/kubeai \
     --set openwebui.enabled=true \
     --set image.tag=latest \
     --set image.pullPolicy=Always \
     --set image.repository=us-central1-docker.pkg.dev/substratus-dev/default/kubeai \
-    --set replicaCount=1 # 0 if running out-of-cluster (using "go run")
+    --set secrets.huggingface.token=$HUGGING_FACE_HUB_TOKEN \
+    --set replicaCount=1 -f ./hack/dev-gke-helm-values.yaml
 
-# -f ./helm-values.yaml \
-
-# Run in development mode.
+# OPTION B #
+# For quick local interation (run KubeAI outside of cluster)
 CONFIG_PATH=./hack/dev-config.yaml POD_NAMESPACE=default go run ./cmd/main.go --allow-pod-address-override
 
 # In another terminal:
 while true; do kubectl port-forward service/dev-model 7000:7000; done
+############
 ```
 
 ## Running

@@ -220,13 +220,6 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, index int32) *corev
 	}
 	args = append(args, m.Spec.Args...)
 
-	var image string
-	if usesGPUResources(*m.Spec.Resources) {
-		image = r.ModelServers.VLLM.GPUImage
-	} else {
-		image = r.ModelServers.VLLM.CPUImage
-	}
-
 	env := []corev1.EnvVar{
 		{
 			// TODO: Conditionally set this token based on whether
@@ -266,7 +259,7 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, index int32) *corev
 			Containers: []corev1.Container{
 				{
 					Name:      "server",
-					Image:     image,
+					Image:     m.Spec.Image,
 					Args:      args,
 					Env:       env,
 					Resources: *m.Spec.Resources,
@@ -399,7 +392,7 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, index int32) *cor
 			Containers: []corev1.Container{
 				{
 					Name:      "server",
-					Image:     r.ModelServers.Ollama.Image,
+					Image:     m.Spec.Image,
 					Args:      m.Spec.Args,
 					Env:       env,
 					Resources: *m.Spec.Resources,
@@ -508,16 +501,10 @@ func (r *ModelReconciler) annotationsForModel(m *kubeaiv1.Model) map[string]stri
 	return ann
 }
 
-func usesGPUResources(res corev1.ResourceRequirements) bool {
-	_, gpuLimits := res.Limits[corev1.ResourceName("nvidia.com/gpu")]
-	_, gpuRequests := res.Limits[corev1.ResourceName("nvidia.com/gpu")]
-	return gpuLimits || gpuRequests
-}
-
 func (r *ModelReconciler) applyResourceProfile(model *kubeaiv1.Model) (bool, error) {
 	split := strings.Split(model.Spec.ResourceProfile, ":")
 	if len(split) != 2 {
-		return false, fmt.Errorf("invalid resource profile: %q, should match <name>:<multiple>, example: L4:2", model.Spec.ResourceProfile)
+		return false, fmt.Errorf("invalid resource profile: %q, should match <name>:<multiple>, example: nvidia-gpu-l4:2", model.Spec.ResourceProfile)
 	}
 	name := split[0]
 	multiple, err := strconv.Atoi(split[1])
@@ -561,7 +548,44 @@ func (r *ModelReconciler) applyResourceProfile(model *kubeaiv1.Model) (bool, err
 		changed = true
 	}
 
+	image, err := r.lookupServerImage(model, profile)
+	if err != nil {
+		return false, fmt.Errorf("looking up server image: %w", err)
+	}
+	if model.Spec.Image == "" || model.Spec.Image != image {
+		model.Spec.Image = image
+		changed = true
+	}
+
 	return changed, nil
+}
+
+func (r *ModelReconciler) lookupServerImage(model *kubeaiv1.Model, profile config.ResourceProfile) (string, error) {
+	var serverImgs map[string]string
+	switch model.Spec.Engine {
+	case kubeaiv1.OLlamaEngine:
+		serverImgs = r.ModelServers.OLlama.Images
+	default:
+		serverImgs = r.ModelServers.VLLM.Images
+	}
+
+	// If no image name is provided for a profile, use the default image name.
+	const defaultImageName = "default"
+	imageName := defaultImageName
+	if profile.ImageName != "" {
+		imageName = profile.ImageName
+	}
+
+	if img, ok := serverImgs[imageName]; ok {
+		return img, nil
+	}
+
+	// If the specific profile image name does not exist, use the default image name.
+	if img, ok := serverImgs[defaultImageName]; ok {
+		return img, nil
+	} else {
+		return "", fmt.Errorf("missing default server image")
+	}
 }
 
 func (r *ModelReconciler) applySelfLabels(model *kubeaiv1.Model) bool {

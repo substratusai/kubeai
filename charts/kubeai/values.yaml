@@ -12,24 +12,43 @@ secrets:
     name: ""
 
 modelServers:
-  vLLM:
-    gpuImage: "vllm/vllm-openai:v0.5.5"
-    cpuImage: "substratusai/vllm:v0.5.5-cpu"
-  ollama:
-    image: "ollama/ollama:latest"
+  VLLM:
+    images:
+      # The key is the image name (referenced from resourceProfiles) and the value is the image.
+      # The "default" image should always be specified.
+      # "default" is used when no imageName is specified or if a specific image is not found.
+      default: "vllm/vllm-openai:v0.5.5"
+      cpu: "substratusai/vllm-openai-cpu:v0.5.5"
+      nvidia-gpu: "vllm/vllm-openai:v0.5.5"
+      google-tpu: "substratusai/vllm-openai-tpu:v0.5.5"
+  OLlama:
+    images:
+      default: "ollama/ollama:latest"
 
 resourceProfiles:
-  CPU:
+  cpu:
+    imageName: "cpu"
     requests:
       cpu: 1
       memory: "2Gi"
-  L4:
+  nvidia-gpu-l4:
+    imageName: "nvidia-gpu"
     limits:
       nvidia.com/gpu: "1"
     requests:
       nvidia.com/gpu: "1"
       cpu: "6"
       memory: "24Gi"
+  # nvidia-gpu-v100:
+  # nvidia-gpu-a100:
+  # google-tpu-v5e:
+  #   imageName: "google-tpu"
+  #   requests:
+  #     google.com/tpu: 4
+  #   limits:
+  #     google.com/tpu: 4
+  #   nodeSelector:
+  #     cloud.google.com/gke-accelerator-type: tpu-v5-lite-podslice
 
 messaging:
   errorMaxBackoff: 30s
