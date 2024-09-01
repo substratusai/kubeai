@@ -1,8 +1,8 @@
 # Resource Profiles
 
-A resource profile maps a type of compute resource (i.e. NVIDIA L4 GPU) to a collection of Kubernetes settings that are set on inference server Pods. These profiles are defined in the KubeAI `config.yaml` file (via a ConfigMap). Each model specifies the resource profile that it requires.
+A resource profile maps a type of compute resource (i.e. NVIDIA L4 GPU) to a collection of Kubernetes settings that are configured on inference server Pods. These profiles are defined in the KubeAI `config.yaml` file (via a ConfigMap). Each model specifies the resource profile that it requires.
 
-Kubernetes Model resources specify the resource profile and the count of that resource that they require:
+Kubernetes Model resources specify a resource profile and the count of that resource that they require:
 
 ```yaml
 # model.yaml
@@ -12,12 +12,13 @@ metadata:
   name: llama-3.1-8b-instruct-fp8-l4
 spec:
   engine: VLLM
-  resourceProfile: nvidia-gpu-l4:1 # Specified at <profile>:<count>
+  resourceProfile: nvidia-gpu-l4:1 # Specified as <profile>:<count>
   # ...
 ```
-A given profile might need to contain slightly different settings based on the cluster/cloud that KubeAI is deployed on.
 
-Example: A resource profile named `NVIDIA_GPU_L4` might contain the following settings on a GKE Kubernetes cluster:
+A given profile might need to contain slightly different settings based on the cluster/cloud that KubeAI is deployed in.
+
+Example: A resource profile named `nvidia-gpu-l4` might contain the following settings on a GKE Kubernetes cluster:
 
 ```yaml
 # KubeAI config.yaml
@@ -49,3 +50,7 @@ modelServers:
     images:
       # ...
 ```
+
+## Next
+
+Read about [how to manage resource profiles](../guides/how-to-manage-resource-profiles.md).

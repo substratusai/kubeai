@@ -105,10 +105,15 @@ Any vLLM or Ollama model can be served by KubeAI. Some examples of popular model
 * Gemma2 (2B, 9B, 27B)
 * Qwen2 (1.5B, 7B, 72B)
 
-## Guides
+## Documentation
 
-* [Installation on GKE](./installation/gke.md) - Deploy on Kubernetes clusters in the cloud
-* [Model Management](./model-management.md) - Manage ML models
+Checkout the [docs](https://www.kubeai.org) at [kubeai.org](https://www.kubeai.org) for more information.
+
+The docs have the following content:
+* Environment Installation Guides (e.g. GKE).
+* How to guides (e.g. how to manage models and resource profiles).
+* Concept (e.g. explain how Model and Resource Profile work).
+* Contributor Guide
 
 ## OpenAI API Compatibility
 

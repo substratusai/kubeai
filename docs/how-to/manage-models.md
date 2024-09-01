@@ -1,29 +1,8 @@
-# Model Management
+# How to manage models
 
-KubeAI uses Model [Custom Resources](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) to configure what ML models are available in the system.
+This guide provides instructions on how to perform CRUD operations on KubeAI [Models](../concepts/models.md).
 
-Example:
-
-```yaml
-apiVersion: kubeai.org/v1
-kind: Model
-metadata:
-  name: llama-3.1-8b-instruct-fp8-l4
-spec:
-  features: ["TextGeneration"]
-  owner: neuralmagic
-  url: hf://neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8
-  engine: VLLM
-  args:
-    - --max-model-len=16384
-    - --max-num-batched-token=16384
-    - --gpu-memory-utilization=0.9
-  minReplicas: 0
-  maxReplicas: 3
-  resourceProfile: nvidia-gpu-l4:1
-```
-
-### Listing Models
+## Listing models
 
 You can view all installed models through the Kubernetes API using `kubectl get models` (use the `-o yaml` flag for more details).
 
@@ -33,34 +12,37 @@ You can also list all models via the OpenAI-compatible `/v1/models` endpoint:
 curl http://your-deployed-kubeai-endpoint/openai/v1/models
 ```
 
-### Installing a predefined Model using Helm
+## Installing models with helm
 
-When you are defining your Helm values, you can install a predefined Model by setting `enabled: true`:
+### Preconfigured models with helm
+
+When you are defining KubeAI Helm values, you can install a preconfigured Model by setting `enabled: true`. You can view a list of all preconfigured models [here](https://github.com/substratusai/kubeai/blob/main/charts/kubeai/charts/models/values.yaml). NOTE: When you are installing the KubeAI chart, the catalog is accessed under `.models.catalog.<model-name>`:
 
 ```yaml
+# helm-values.yaml
 models:
   catalog:
     llama-3.1-8b-instruct-fp8-l4:
       enabled: true
 ```
 
-You can also optionally override settings for a given model:
+You can optionally override preconfigured settings, for example, `resourceProfile`:
 
 ```yaml
+# helm-values.yaml
 models:
   catalog:
     llama-3.1-8b-instruct-fp8-l4:
       enabled: true
-      env:
-        MY_CUSTOM_ENV_VAR: "some-value"
+      resourceProfile: nvidia-gpu-l4:2 # Require "2 NVIDIA L4 GPUs"
 ```
 
-### Adding Custom Models with Helm
+### Custom models with helm
 
 If you prefer to add a custom model via the same Helm chart you use for installed KubeAI, you can add your custom model entry into the `.models.catalog` array of your existing Helm values file:
 
 ```yaml
-# ...
+# helm-values.yaml
 models:
   catalog:
     my-custom-model-name:
@@ -71,9 +53,7 @@ models:
       resourceProfile: CPU:1
 ```
 
-They you can re-run `helm upgrade` with the same flags you used to install KubeAI.
-
-### Adding Custom Models Directly
+### Installing models with kubectl
 
 You can add your own model by defining a Model yaml file and applying it using `kubectl apply -f model.yaml`.
 
@@ -85,6 +65,6 @@ kubectl explain models.spec
 kubectl explain models.spec.engine
 ```
 
-### Model Management UI
+## Feedback welcome: A model management UI
 
 We are considering adding a UI for managing models in a running KubeAI instance. Give the [GitHub Issue](https://github.com/substratusai/kubeai/issues/148) a thumbs up if you would be interested in this feature.
