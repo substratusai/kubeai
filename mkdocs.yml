@@ -6,7 +6,8 @@ theme:
 nav:
   - Home: README.md
   - ... | installation/*.md
-  - model-management.md
+  - ... | how-to/*.md
+  - ... | concepts/*.md
   - ... | tutorials/*.md
   - ...
 plugins:
