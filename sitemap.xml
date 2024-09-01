@@ -5,15 +5,23 @@
          <lastmod>2024-09-01</lastmod>
     </url>
     <url>
-         <loc>https://www.kubeai.org/development/</loc>
-         <lastmod>2024-09-01</lastmod>
-    </url>
-    <url>
-         <loc>https://www.kubeai.org/model-management/</loc>
+         <loc>https://www.kubeai.org/concepts/models/</loc>
          <lastmod>2024-09-01</lastmod>
     </url>
     <url>
          <loc>https://www.kubeai.org/concepts/resource-profiles/</loc>
+         <lastmod>2024-09-01</lastmod>
+    </url>
+    <url>
+         <loc>https://www.kubeai.org/contributing/development-environment/</loc>
+         <lastmod>2024-09-01</lastmod>
+    </url>
+    <url>
+         <loc>https://www.kubeai.org/how-to/manage-models/</loc>
+         <lastmod>2024-09-01</lastmod>
+    </url>
+    <url>
+         <loc>https://www.kubeai.org/how-to/manage-resource-profiles/</loc>
          <lastmod>2024-09-01</lastmod>
     </url>
     <url>
