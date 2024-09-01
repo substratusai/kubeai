@@ -1,0 +1,22 @@
+name: Doc linter
+run-name: Run doc linter by @${{ github.actor }}
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  mkdocs-build-strict:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+      - name: Install dependencies
+        run: pip install -r docs/requirements.txt
+      - name: Run mkdocs in strict mode
+        run: mkdocs build --strict

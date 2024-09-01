@@ -41,4 +41,4 @@ Kubernetes Model Custom Resources are the source of truth for models that exist 
 
 ## Next
 
-Read about [how to manage models](../guides/how-to-manage-models.md).
+Read about [how to manage models](../how-to/manage-models.md).
