@@ -10,7 +10,7 @@ if kind get clusters | grep -q ${KIND_CLUSTER_NAME}; then
   kind create cluster --name ${KIND_CLUSTER_NAME}
 fi
 
-# Capture PID and run skaffold devin background
+# Capture PID and run skaffold in background.
 skaffold run --tail --port-forward &
 skaffold_pid=$!
 
@@ -22,7 +22,7 @@ error_handler() {
     echo "Exiting normally. Deleting kind cluster"
     kind delete cluster --name=${KIND_CLUSTER_NAME}
   fi
-  # Send exit signal to skaffold and wait for it to exit
+  # Send exit signal to skaffold and wait for it to exit.
   kill "$skaffold_pid"
   wait "$skaffold_pid"
 }
@@ -44,13 +44,13 @@ function wait_for_pod_ready() {
   kubectl wait --for=condition=ready pod -l "$label" --timeout=1200s
 }
 
-# wait for kubeai pod to be ready
+# wait for kubeai pod to be ready.
 wait_for_pod_ready app.kubernetes.io/name=kubeai
 
-# Ensure the model count is 0
+# Ensure the model count is 0.
 curl -s -X GET "http://localhost:8000/openai/v1/models" | jq '. | length == 0'
 
-
+# Reuse values is needed to ensure the skaffold build image is used.
 helm upgrade --reuse-values --install kubeai charts/kubeai -f - <<EOF
 models:
   catalog:
