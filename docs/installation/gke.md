@@ -1,7 +1,3 @@
----
-nav: GKE
----
-
 # Install on GKE
 
 <details markdown="1">
