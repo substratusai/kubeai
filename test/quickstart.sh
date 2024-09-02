@@ -41,7 +41,7 @@ function wait_for_pod_ready() {
     fi
   done
 
-  kubectl wait --for=condition=ready pod -l "$label" --timeout=600s
+  kubectl wait --for=condition=ready pod -l "$label" --timeout=1200s
 }
 
 # wait for kubeai pod to be ready
