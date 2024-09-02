@@ -11,7 +11,7 @@ if kind get clusters | grep -q ${KIND_CLUSTER_NAME}; then
 fi
 
 # Capture PID and run skaffold devin background
-skaffold dev &
+skaffold run --tail --port-forward &
 skaffold_pid=$!
 
 error_handler() {
@@ -29,20 +29,23 @@ error_handler() {
 
 trap 'error_handler' ERR EXIT
 
-# Get the helm release name
-release_name=$(helm list -n default | grep substratus | awk '{print $1}')
+function wait_for_pod_ready() {
+  local label="$1"
+  local start_time=$SECONDS
+
+  while ! kubectl get pod -l "$label" | grep -q Running; do
+    sleep 5
+    if (( SECONDS - start_time >= 300 )); then
+      echo "Pods with label $label did not start in time."
+      exit 1
+    fi
+  done
+
+  kubectl wait --for=condition=ready pod -l "$label" --timeout=600s
+}
 
 # wait for kubeai pod to be ready
-while ! kubectl get pod -l app.kubernetes.io/name=kubeai | grep -q Running; do
-  sleep 5
-  if (( SECONDS >= 900 )); then
-    echo "kubeai pod did not start in time"
-    exit 1
-  fi
-done
-kubectl wait --for=condition=ready pod \
-  -l app.kubernetes.io/name=kubeai \
-  --timeout=300s
+wait_for_pod_ready app.kubernetes.io/name=kubeai
 
 # Ensure the model count is 0
 curl -s -X GET "http://localhost:8000/openai/v1/models" | jq '. | length == 0'
@@ -60,17 +63,7 @@ models:
       enabled: true
 EOF
 
-
-while ! kubectl get pod -l model=gemma2-2b-cpu | grep -q Running; do
-  sleep 5
-  if (( SECONDS >= 600 )); then
-    echo "gemma 2 2b pod did not start in time"
-    exit 1
-  fi
-done
-kubectl wait --for=condition=ready pod \
-  -l model=gemma2-2b-cpu \
-  --timeout=600s
+wait_for_pod_ready model=gemma2-2b-cpu
 
 curl -s -X GET "http://localhost:8000/openai/v1/models" | jq '. | length == 3'
 
