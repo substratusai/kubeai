@@ -139,7 +139,7 @@ Checkout our documenation on [kubeai.org](https://www.kubeai.org) to find info o
 
 *NOTE:* KubeAI was born out of a project called Lingo which was a simple Kubernetes LLM proxy with basic autoscaling. We relaunched the project as KubeAI (late August 2024) and expanded the roadmap to what it is today.
 
-Don't forget to drop us a star on GitHub and follow the repo to stay up to date!
+🌟 Don't forget to drop us a star on GitHub and follow the repo to stay up to date!
 
 [![KubeAI Star history Chart](https://api.star-history.com/svg?repos=substratusai/kubeai&type=Date)](https://star-history.com/#substratusai/kubeai&Date)
 
