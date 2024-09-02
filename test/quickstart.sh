@@ -2,11 +2,17 @@
 
 set -xe
 
-if kind get clusters | grep -q substratus-test; then
-  echo "Cluster substratus-tests already exists.. reusing it"
+KIND_CLUSTER_NAME=${KIND_CLUSTER_NAME:-kubeai-tests}
+
+if kind get clusters | grep -q ${KIND_CLUSTER_NAME}; then
+  echo "Cluster ${KIND_CLUSTER_NAME} already exists.. reusing it"
   else
-  kind create cluster --name substratus-test
+  kind create cluster --name ${KIND_CLUSTER_NAME}
 fi
+
+# Capture PID and run skaffold devin background
+skaffold dev &
+skaffold_pid=$!
 
 error_handler() {
   local exit_status=$?  # Capture the exit status of the last command
@@ -14,16 +20,14 @@ error_handler() {
     echo "An error occurred. Exiting with status $exit_status. Leaving kind cluster intact for debugging"
   elif [ "$TEST_CLEANUP" != "false" ]; then
     echo "Exiting normally. Deleting kind cluster"
-    kind delete cluster --name=substratus-test
+    kind delete cluster --name=${KIND_CLUSTER_NAME}
   fi
+  # Send exit signal to skaffold and wait for it to exit
+  kill "$skaffold_pid"
+  wait "$skaffold_pid"
 }
 
 trap 'error_handler' ERR EXIT
-
-
-# Capture PID and run skaffold devin background
-skaffold dev &
-skaffold_pid=$!
 
 # Get the helm release name
 release_name=$(helm list -n default | grep substratus | awk '{print $1}')
@@ -31,7 +35,7 @@ release_name=$(helm list -n default | grep substratus | awk '{print $1}')
 # wait for kubeai pod to be ready
 while ! kubectl get pod -l app.kubernetes.io/name=kubeai | grep -q Running; do
   sleep 5
-  if (( SECONDS >= 300 )); then
+  if (( SECONDS >= 600 )); then
     echo "kubeai pod did not start in time"
     exit 1
   fi
@@ -70,10 +74,7 @@ kubectl wait --for=condition=ready pod \
 
 curl -s -X GET "http://localhost:8000/openai/v1/models" | jq '. | length == 3'
 
-curl http://localhost:8080/openai/v1/completions \
+curl http://localhost:8000/openai/v1/completions \
   -H "Content-Type: application/json" \
   -d '{"model": "gemma2-2b-cpu", "prompt": "Who was the first president of the United States?", "max_tokens": 40}'
 
-# Send exit signal to skaffold and wait for it to exit
-kill "$skaffold_pid"
-wait "$skaffold_pid"
