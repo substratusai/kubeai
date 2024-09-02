@@ -50,7 +50,9 @@ wait_for_pod_ready app.kubernetes.io/name=kubeai
 # Ensure the model count is 0.
 curl -s -X GET "http://localhost:8000/openai/v1/models" | jq '. | length == 0'
 
-# Reuse values is needed to ensure the skaffold build image is used.
+# By using the --reuse-values flag we can just append models to the previous install
+# while avoiding overriding the image that skaffold originally built and set in the
+# first install.
 helm upgrade --reuse-values --install kubeai charts/kubeai -f - <<EOF
 models:
   catalog:
