@@ -28,6 +28,7 @@ go.work
 
 # Files that might be committed from running guides
 /helm-values.yaml
+Chart.lock
 
 # Ignore python virtual env
 .venv

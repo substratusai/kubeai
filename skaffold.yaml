@@ -1,0 +1,24 @@
+apiVersion: skaffold/v2beta21
+kind: Config
+metadata:
+  name: kubeai-project
+build:
+  artifacts:
+  - image: substratusai/kubeai
+  local:
+    push: false
+deploy:
+  helm:
+    releases:
+    - name: kubeai
+      chartPath: charts/kubeai
+      valuesFiles:
+      - charts/kubeai/values.yaml
+      setValueTemplates:
+        image.tag: "{{.DIGEST_HEX}}"
+portForward:
+- resourceType: service
+  resourceName: kubeai
+  namespace: default
+  port: 80
+  localPort: 8000
