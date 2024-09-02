@@ -1,4 +1,4 @@
-# Model Management
+# Model Storage
 
 ## Problem
 
@@ -37,7 +37,7 @@ spec:
 kind: Model
 spec:
   url: "hf://meta-llama/Meta-Llama-3.1-405B-Instruct"
-  cacheProfile: HyperDisk
+  cacheProfile: premium
 
 # A Model without any cache specified will use the default set in KubeAI's config.yaml
 kind: Model
@@ -49,7 +49,7 @@ kind: Model
 spec:
   # NOTE: URL could also be from an location such as "s3://..." (or possibly a shared filesystem like EFS?)
   url: "hf://meta-llama/Meta-Llama-3.1-8B-Instruct"
-  cacheProfile: None
+  cacheProfile: none
 ```
 
 ### Finetuning Example
@@ -111,32 +111,28 @@ finetuning:
   serviceAccount:
     name: my-finetuning-sa
   
-models:
-  cache:
-    defaultProfile: Bucket # Could also be "None"
-    profiles:
-      # Admins can define their own profile settings (and profile names):
-      StandardBucket:
-        bucket:
-          urlTemplate: s3://my-bucket/models/{model_name}
-      EFS:
-        sharedFilesystem:
-          storageClass: aws-efs
-          mode: SharedFilesystem
-          dirTemplate: /models/{model_name}/cache/
-      HyperDisk:
-        staticVolume:
-          storageClass: gcp-hyperdisk
-          # No dir template b/c there is a 1:1 disk:model relationship here
+cacheProfiles:
+  # Admins can define their own profile settings (and profile names):
+  default: {} # i.e. No caching
+  standard:
+    bucket:
+      urlTemplate: s3://my-bucket/models/{model_name}
+  # OR:
+  # sharedFilesystem:
+  #   storageClass: aws-efs
+  #   mode: SharedFilesystem
+  #   dirTemplate: /models/{model_name}/cache/
+  premium:
+    staticVolume:
+      storageClass: gcp-hyperdisk
+      # No dir template b/c there is a 1:1 disk:model relationship here
 ```
 
 Default config set from Helm values might look like:
 
 ```yaml
-models:
-  cache:
-    defaultProfile: None
-    profiles: {}
+cacheProfiles:
+  default: {} # i.e. No caching
 ```
 
 ### Storage Details
