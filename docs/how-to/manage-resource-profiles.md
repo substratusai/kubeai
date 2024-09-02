@@ -1,4 +1,4 @@
-# How to manage resource profiles
+# Manage resource profiles
 
 This guide will cover modifying preconfigured [resource profiles](../concepts/resource-profiles.md) and adding your own.
 

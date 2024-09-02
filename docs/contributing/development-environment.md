@@ -1,4 +1,4 @@
-# How to setup a development environment
+# Development environment
 
 This document provides instructions for setting up an environment for developing KubeAI.
 

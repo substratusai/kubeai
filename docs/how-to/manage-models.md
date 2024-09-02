@@ -1,4 +1,4 @@
-# How to manage models
+# Manage models
 
 This guide provides instructions on how to perform CRUD operations on KubeAI [Models](../concepts/models.md).
 
