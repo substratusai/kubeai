@@ -107,13 +107,12 @@ Any vLLM or Ollama model can be served by KubeAI. Some examples of popular model
 
 ## Documentation
 
-Checkout the [docs](https://www.kubeai.org) at [kubeai.org](https://www.kubeai.org) for more information.
+Checkout the our documenation on [kubeai.org](https://www.kubeai.org) to find info on:
 
-The docs have the following content:
-* Environment Installation Guides (e.g. GKE).
+* Installing KubeAI in the cloud
 * How to guides (e.g. how to manage models and resource profiles).
-* Concept (e.g. explain how Model and Resource Profile work).
-* Contributor Guide
+* Concepts (how the components of KubeAI work).
+* How to contribute
 
 ## OpenAI API Compatibility
 
