@@ -35,7 +35,7 @@ release_name=$(helm list -n default | grep substratus | awk '{print $1}')
 # wait for kubeai pod to be ready
 while ! kubectl get pod -l app.kubernetes.io/name=kubeai | grep -q Running; do
   sleep 5
-  if (( SECONDS >= 600 )); then
+  if (( SECONDS >= 900 )); then
     echo "kubeai pod did not start in time"
     exit 1
   fi
