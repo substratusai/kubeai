@@ -1,8 +1,12 @@
 site_name: KubeAI
 site_url: https://www.kubeai.org
 repo_url: https://github.com/substratusai/kubeai
+
 theme:
   name: material
+  palette:
+    primary: black
+
 nav:
   - Home: README.md
   - ... | installation/*.md
