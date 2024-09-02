@@ -5,6 +5,8 @@ metadata:
 build:
   artifacts:
   - image: substratusai/kubeai
+  local:
+    push: false
 deploy:
   helm:
     releases:
