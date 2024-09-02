@@ -22,11 +22,14 @@
     
     
       
-        <title>Install KubeAI on GKE - KubeAI</title>
+        <title>Install on GKE - KubeAI</title>
       
     
     
       <link rel="stylesheet" href="../../assets/stylesheets/main.35f28582.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -55,7 +58,12 @@
   </head>
   
   
-    <body dir="ltr">
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="blue">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -64,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#install-kubeai-on-gke" class="md-skip">
+        <a href="#install-on-gke" class="md-skip">
           Skip to content
         </a>
       
@@ -100,15 +108,15 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Install KubeAI on GKE
+              Install on GKE
             
           </span>
         </div>
       </div>
     </div>
     
+      
     
-      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
     
     
@@ -287,7 +295,7 @@
           
   
   <span class="md-ellipsis">
-    Install KubeAI on GKE
+    Install on GKE
   </span>
   
 
@@ -298,7 +306,7 @@
         
   
   <span class="md-ellipsis">
-    Install KubeAI on GKE
+    Install on GKE
   </span>
   
 
@@ -423,7 +431,7 @@
         
   
   <span class="md-ellipsis">
-    How to manage models
+    Manage models
   </span>
   
 
@@ -444,7 +452,7 @@
         
   
   <span class="md-ellipsis">
-    How to manage resource profiles
+    Manage resource profiles
   </span>
   
 
@@ -654,7 +662,28 @@
         
   
   <span class="md-ellipsis">
-    How to setup a development environment
+    Development environment
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/documentation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Documentation
   </span>
   
 
@@ -757,7 +786,7 @@
   
 
 
-<h1 id="install-kubeai-on-gke">Install KubeAI on GKE<a class="headerlink" href="#install-kubeai-on-gke" title="Permanent link">&para;</a></h1>
+<h1 id="install-on-gke">Install on GKE<a class="headerlink" href="#install-on-gke" title="Permanent link">&para;</a></h1>
 <details>
 <summary>TIP: Make sure you have enough quota in your GCP project.</summary>
 <p>Open the cloud console quotas page: https://console.cloud.google.com/iam-admin/quotas. Make sure your project is selected in the top left.</p>
@@ -832,9 +861,6 @@ helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class=
 
 
 
-
-  
-  
 
 
 

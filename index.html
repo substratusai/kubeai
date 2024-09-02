@@ -26,6 +26,9 @@
     
       <link rel="stylesheet" href="assets/stylesheets/main.35f28582.min.css">
       
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.06af60db.min.css">
+      
       
 
 
@@ -53,7 +56,12 @@
   </head>
   
   
-    <body dir="ltr">
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="blue">
   
     
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
@@ -105,8 +113,8 @@
       </div>
     </div>
     
+      
     
-      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
     
     
@@ -401,7 +409,7 @@
         
   
   <span class="md-ellipsis">
-    Install KubeAI on GKE
+    Install on GKE
   </span>
   
 
@@ -464,7 +472,7 @@
         
   
   <span class="md-ellipsis">
-    How to manage models
+    Manage models
   </span>
   
 
@@ -485,7 +493,7 @@
         
   
   <span class="md-ellipsis">
-    How to manage resource profiles
+    Manage resource profiles
   </span>
   
 
@@ -695,7 +703,28 @@
         
   
   <span class="md-ellipsis">
-    How to setup a development environment
+    Development environment
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="contributing/documentation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Documentation
   </span>
   
 
@@ -920,12 +949,13 @@ helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class=
 <li>Qwen2 (1.5B, 7B, 72B)</li>
 </ul>
 <h2 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h2>
-<p>Checkout the <a href="https://www.kubeai.org">docs</a> at <a href="https://www.kubeai.org">kubeai.org</a> for more information.</p>
-<p>The docs have the following content:
-* Environment Installation Guides (e.g. GKE).
-* How to guides (e.g. how to manage models and resource profiles).
-* Concept (e.g. explain how Model and Resource Profile work).
-* Contributor Guide</p>
+<p>Checkout our documenation on <a href="https://www.kubeai.org">kubeai.org</a> to find info on:</p>
+<ul>
+<li>Installing KubeAI in the cloud</li>
+<li>How to guides (e.g. how to manage models and resource profiles).</li>
+<li>Concepts (how the components of KubeAI work).</li>
+<li>How to contribute</li>
+</ul>
 <h2 id="openai-api-compatibility">OpenAI API Compatibility<a class="headerlink" href="#openai-api-compatibility" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="c1"># Implemented #</span>
 /v1/chat/completions
