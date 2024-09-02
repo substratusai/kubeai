@@ -137,6 +137,12 @@ Checkout our documenation on [kubeai.org](https://www.kubeai.org) to find info o
 * LoRA finetuning (compatible with OpenAI finetuning API)
 * Image generation (compatible with OpenAI images API)
 
+*NOTE:* KubeAI was born out of a project called Lingo which was a simple Kubernetes LLM proxy with basic autoscaling. We relaunched the project as KubeAI (late August 2024) and expanded the roadmap to what it is today.
+
+Don't forget to drop us a star on GitHub and follow the repo to stay up to date!
+
+[![KubeAI Star history Chart](https://api.star-history.com/svg?repos=substratusai/kubeai&type=Date)](https://star-history.com/#substratusai/kubeai&Date)
+
 ## Contact
 
 Let us know about features you are interested in seeing or reach out with questions. [Visit our Discord channel](https://discord.gg/JeXhcmjZVm) to join the discussion!
