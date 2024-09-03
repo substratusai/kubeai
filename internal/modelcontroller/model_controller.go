@@ -272,8 +272,8 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, index int32) *corev
 					},
 					StartupProbe: &corev1.Probe{
 						// Give the model 30 minutes to start up.
-						FailureThreshold: 180,
-						PeriodSeconds:    10,
+						FailureThreshold: 900,
+						PeriodSeconds:    2,
 						TimeoutSeconds:   2,
 						SuccessThreshold: 1,
 						ProbeHandler: corev1.ProbeHandler{
