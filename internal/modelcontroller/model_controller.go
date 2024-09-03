@@ -270,12 +270,24 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, index int32) *corev
 							Name:          "http",
 						},
 					},
+					StartupProbe: &corev1.Probe{
+						// Give the model 30 minutes to start up.
+						FailureThreshold: 180,
+						PeriodSeconds:    10,
+						TimeoutSeconds:   2,
+						SuccessThreshold: 1,
+						ProbeHandler: corev1.ProbeHandler{
+							HTTPGet: &corev1.HTTPGetAction{
+								Path: "/health",
+								Port: intstr.FromString("http"),
+							},
+						},
+					},
 					ReadinessProbe: &corev1.Probe{
-						FailureThreshold:    3,
-						InitialDelaySeconds: 20,
-						PeriodSeconds:       10,
-						TimeoutSeconds:      2,
-						SuccessThreshold:    1,
+						FailureThreshold: 3,
+						PeriodSeconds:    10,
+						TimeoutSeconds:   2,
+						SuccessThreshold: 1,
 						ProbeHandler: corev1.ProbeHandler{
 							HTTPGet: &corev1.HTTPGetAction{
 								Path: "/health",
@@ -284,11 +296,10 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, index int32) *corev
 						},
 					},
 					LivenessProbe: &corev1.Probe{
-						FailureThreshold:    3,
-						InitialDelaySeconds: 900,
-						PeriodSeconds:       30,
-						TimeoutSeconds:      3,
-						SuccessThreshold:    1,
+						FailureThreshold: 3,
+						PeriodSeconds:    30,
+						TimeoutSeconds:   3,
+						SuccessThreshold: 1,
 						ProbeHandler: corev1.ProbeHandler{
 							HTTPGet: &corev1.HTTPGetAction{
 								Path: "/health",
