@@ -141,7 +141,7 @@ Checkout our documenation on [kubeai.org](https://www.kubeai.org) to find info o
 
 🌟 Don't forget to drop us a star on GitHub and follow the repo to stay up to date!
 
-![KubeAI Star history Chart](https://api.star-history.com/svg?repos=substratusai/kubeai&type=Date)
+[![KubeAI Star history Chart](https://api.star-history.com/svg?repos=substratusai/kubeai&type=Date)](https://star-history.com/#substratusai/kubeai&Date)
 
 ## Contact
 
