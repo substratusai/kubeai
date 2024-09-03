@@ -51,12 +51,6 @@ type ModelReconciler struct {
 	ModelServers            config.ModelServers
 }
 
-type ServerImages struct {
-	Ollama  string
-	VLLMCPU string
-	VLLMGPU string
-}
-
 // +kubebuilder:rbac:groups=kubeai.org,resources=models,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=kubeai.org,resources=models/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=kubeai.org,resources=models/scale,verbs=get;update;patch
