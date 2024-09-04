@@ -79,7 +79,8 @@ curl http://localhost:8000/openai/v1/completions \
 curl -L -o kubeai.mp4 https://github.com/user-attachments/assets/711d1279-6af9-4c6c-a052-e59e7730b757
 result=$(curl http://localhost:8000/openai/v1/audio/transcriptions \
   -F "file=@kubeai.mp4" \
-  -F "language=en" | jq '.text | ascii_downcase | contains("kubernetes")')
+  -F "language=en" \
+  -F "model=faster-whisper-medium-en-cpu" | jq '.text | ascii_downcase | contains("kubernetes")')
 if [ "$result" = "true" ]; then
   echo "The transcript contains 'kubernetes'."
 else
