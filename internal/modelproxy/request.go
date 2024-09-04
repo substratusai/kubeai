@@ -79,6 +79,7 @@ func (pr *proxyRequest) parseModel() error {
 		if err != nil {
 			return fmt.Errorf("read form: %w", err)
 		}
+		defer form.RemoveAll()
 		if len(form.Value["model"]) == 0 {
 			return fmt.Errorf("no model specified")
 		}
