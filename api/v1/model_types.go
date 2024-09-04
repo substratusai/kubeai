@@ -28,7 +28,7 @@ type ModelSpec struct {
 
 	Features []ModelFeature `json:"features"`
 
-	// +kubebuilder:validation:Enum=OLlama;VLLM
+	// +kubebuilder:validation:Enum=OLlama;VLLM;FasterWhisper
 	Engine string `json:"engine"`
 
 	Replicas    *int32 `json:"replicas,omitempty"`
@@ -57,7 +57,7 @@ type ModelSpec struct {
 	Env map[string]string `json:"env,omitempty"`
 }
 
-// +kubebuilder:validation:Enum=TextGeneration;TextEmbedding
+// +kubebuilder:validation:Enum=TextGeneration;TextEmbedding;SpeechToText
 type ModelFeature string
 
 const (

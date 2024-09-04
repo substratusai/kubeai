@@ -48,6 +48,7 @@ spec:
                 enum:
                 - OLlama
                 - VLLM
+                - FasterWhisper
                 type: string
               env:
                 additionalProperties:
@@ -59,6 +60,7 @@ spec:
                   enum:
                   - TextGeneration
                   - TextEmbedding
+                  - SpeechToText
                   type: string
                 type: array
               image:
