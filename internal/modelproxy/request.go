@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"strconv"
 
@@ -65,21 +66,40 @@ func (pr *proxyRequest) parseModel() error {
 	}
 
 	var err error
+	// TODO (samos123): Improve this to not read the entire body into memory for files.
 	pr.body, err = io.ReadAll(pr.r.Body)
 	if err != nil {
 		return fmt.Errorf("read: %w", err)
 	}
 
-	var payload struct {
-		Model string `json:"model"`
-	}
-	if err := json.Unmarshal(pr.body, &payload); err != nil {
-		return fmt.Errorf("unmarshal json: %w", err)
-	}
-	pr.model = payload.Model
+	if pr.r.Header.Get("Content-Type") == "multipart/form-data" {
+		// Parse the form data to get the model.
+		mpReader := multipart.NewReader(bytes.NewReader(pr.body), pr.r.Header.Get("Content-Type"))
+		form, err := mpReader.ReadForm(1 << 20)
+		if err != nil {
+			return fmt.Errorf("read form: %w", err)
+		}
+		if len(form.Value["model"]) == 0 {
+			return fmt.Errorf("no model specified")
+		}
+		pr.model = form.Value["model"][0]
+		if pr.model == "" {
+			return fmt.Errorf("model was empty")
+		}
+		return nil
+	} else {
+		// Default to parsing model from JSON body.
+		var payload struct {
+			Model string `json:"model"`
+		}
+		if err := json.Unmarshal(pr.body, &payload); err != nil {
+			return fmt.Errorf("unmarshal json: %w", err)
+		}
+		pr.model = payload.Model
 
-	if pr.model == "" {
-		return fmt.Errorf("no model specified")
+		if pr.model == "" {
+			return fmt.Errorf("no model specified")
+		}
 	}
 
 	return nil

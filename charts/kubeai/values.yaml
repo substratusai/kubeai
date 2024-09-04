@@ -25,6 +25,10 @@ modelServers:
   OLlama:
     images:
       default: "ollama/ollama:latest"
+  FasterWhisper:
+    images:
+      default: "fedirz/faster-whisper-server:latest-cpu"
+      nvidia-gpu: "fedirz/faster-whisper-server:latest-cuda"
 
 resourceProfiles:
   cpu:

@@ -63,11 +63,14 @@ type ModelFeature string
 const (
 	ModelFeatureTextGeneration = "TextGeneration"
 	ModelFeatureTextEmbedding  = "TextEmbedding"
+	// TODO (samos123): Add validation that Speech to Text only supports Faster Whisper.
+	ModelFeatureSpeechToText = "SpeechToText"
 )
 
 const (
-	OLlamaEngine = "OLlama"
-	VLLMEngine   = "VLLM"
+	OLlamaEngine        = "OLlama"
+	VLLMEngine          = "VLLM"
+	FasterWhisperEngine = "FasterWhisper"
 )
 
 // ModelStatus defines the observed state of Model
