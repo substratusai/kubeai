@@ -76,4 +76,11 @@ catalog:
     url: "ollama://qwen2:0.5b"
     engine: OLlama
     resourceProfile: cpu:1
+  faster-whisper-medium-en-cpu:
+    enabled: false
+    features: ["SpeechToText"]
+    owner: Systran
+    url: "hf://Systran/faster-whisper-medium.en"
+    engine: FasterWhisper
+    resourceProfile: cpu:1
 

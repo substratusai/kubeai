@@ -31,7 +31,7 @@ dependencies:
   # These are instances of the Model custom resource.
   - name: models
     condition: models.enabled
-    version: 0.1.0
+    version: 0.1.1
 
 
 keywords: ["LLM", "AI"]
