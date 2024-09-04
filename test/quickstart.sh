@@ -65,6 +65,7 @@ models:
       enabled: true
     faster-whisper-medium-en-cpu:
       enabled: true
+      minReplicas: 1
 EOF
 
 wait_for_pod_ready model=gemma2-2b-cpu
