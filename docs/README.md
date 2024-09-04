@@ -6,12 +6,13 @@ The simple AI platform that runs on Kubernetes.
 > \- Some Google Engineer
 
 ✅️  Drop-in replacement for OpenAI with API compatibility  
-🚀  Serve OSS LLMs on CPUs or GPUs  
 ⚖️  Scale from zero, autoscale based on load  
+🚀  Serve OSS LLMs on CPUs or GPUs  
+💬  Fast speed to text on CPU or GPU  
 🛠️  Zero dependencies (no Istio, Knative, etc.)   
-🤖  Operates OSS model servers (vLLM and Ollama)  
-🔋  Additional OSS addons included ([OpenWebUI](https://github.com/open-webui/open-webui) i.e. ChatGPT UI)  
-✉️  Plug-n-play with cloud messaging systems (Kafka, PubSub, etc.)
+🤖  Operates OSS model servers (vLLM, Ollama, FasterWhisper)  
+🔋  Chat UI included ([OpenWebUI](https://github.com/open-webui/open-webui)  
+✉️  Batch inference with messaging systems (Kafka, PubSub, etc.)
 
 ## Architecture
 
@@ -122,6 +123,7 @@ Checkout our documenation on [kubeai.org](https://www.kubeai.org) to find info o
 /v1/completions
 /v1/embeddings
 /v1/models
+/v1/audio/transcriptions
 
 # Planned #
 # /v1/assistants/*
