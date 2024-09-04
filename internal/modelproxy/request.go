@@ -81,7 +81,7 @@ func (pr *proxyRequest) parseModel() error {
 			return fmt.Errorf("no boundary specified in multipart form data")
 		}
 		mpReader := multipart.NewReader(bytes.NewReader(pr.body), params["boundary"])
-		form, err := mpReader.ReadForm(1 << 20)
+		form, err := mpReader.ReadForm(25 * 1024 * 1024)
 		if err != nil {
 			return fmt.Errorf("read form: %w", err)
 		}
@@ -93,7 +93,50 @@ func (pr *proxyRequest) parseModel() error {
 		if pr.model == "" {
 			return fmt.Errorf("model was empty")
 		}
-		return nil
+		// Remove the "model" field from the form after processing.
+		// This is needed because Faster Whisper does strong validation
+		// on the model field. See https://github.com/fedirz/faster-whisper-server/issues/71
+		delete(form.Value, "model")
+
+		// Re-add the form fields back, without "model".
+		var buffer bytes.Buffer
+		writer := multipart.NewWriter(&buffer)
+		for key, values := range form.Value {
+			for _, value := range values {
+				if err := writer.WriteField(key, value); err != nil {
+					return fmt.Errorf("write field: %w", err)
+				}
+			}
+		}
+
+		// Re-add the files back into the form.
+		for key, files := range form.File {
+			for _, fileHeader := range files {
+				// Open the file
+				file, err := fileHeader.Open()
+				if err != nil {
+					return fmt.Errorf("file open: %w", err)
+				}
+				defer file.Close()
+
+				// Create a new form file in the writer
+				part, err := writer.CreateFormFile(key, fileHeader.Filename)
+				if err != nil {
+					return fmt.Errorf("create form file: %w", err)
+				}
+
+				// Copy the file content into the form
+				if _, err = io.Copy(part, file); err != nil {
+					return fmt.Errorf("copy file: %w", err)
+				}
+			}
+		}
+		writer.Close()
+		pr.body = buffer.Bytes()
+		// Update the Content-Type header to reflect the new boundary.
+		pr.r.Header.Set("Content-Type", writer.FormDataContentType())
+		// The Content-Length header must be updated to reflect the new body length.
+		pr.r.ContentLength = int64(buffer.Len())
 	} else {
 		// Default to parsing model from JSON body.
 		var payload struct {
