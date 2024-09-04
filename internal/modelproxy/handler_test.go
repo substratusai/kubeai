@@ -86,6 +86,22 @@ func TestHandler(t *testing.T) {
 			},
 			expBackendRequestCount: 1,
 		},
+		"happy 200 model in form data": {
+			reqHeaders: map[string]string{"Content-Type": "multipart/form-data; boundary=12345"},
+			reqBody: fmt.Sprintf(
+				"--12345\r\nContent-Disposition: form-data; name=\"model\"\r\n\r\n%s\r\n--12345--\r\n",
+				model1,
+			),
+			backendCode: http.StatusOK,
+			backendBody: `{"result":"ok"}`,
+			expCode:     http.StatusOK,
+			expBody:     `{"result":"ok"}`,
+			expLabels: map[string]string{
+				"model":       model1,
+				"status_code": "200",
+			},
+			expBackendRequestCount: 1,
+		},
 		"retryable 500": {
 			reqBody:     fmt.Sprintf(`{"model":%q}`, model1),
 			backendCode: http.StatusInternalServerError,

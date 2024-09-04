@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"mime"
 	"mime/multipart"
 	"net/http"
 	"strconv"
@@ -72,9 +73,14 @@ func (pr *proxyRequest) parseModel() error {
 		return fmt.Errorf("read: %w", err)
 	}
 
-	if pr.r.Header.Get("Content-Type") == "multipart/form-data" {
+	// Error is ignored because we default to JSON handling if content-type is not set.
+	mediaType, params, _ := mime.ParseMediaType(pr.r.Header.Get("Content-Type"))
+	if mediaType == "multipart/form-data" {
 		// Parse the form data to get the model.
-		mpReader := multipart.NewReader(bytes.NewReader(pr.body), pr.r.Header.Get("Content-Type"))
+		if params["boundary"] == "" {
+			return fmt.Errorf("no boundary specified in multipart form data")
+		}
+		mpReader := multipart.NewReader(bytes.NewReader(pr.body), params["boundary"])
 		form, err := mpReader.ReadForm(1 << 20)
 		if err != nil {
 			return fmt.Errorf("read form: %w", err)
