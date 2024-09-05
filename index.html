@@ -895,10 +895,6 @@
 
 <h1 id="kubeai-private-open-ai-on-kubernetes">KubeAI: Private Open AI on Kubernetes<a class="headerlink" href="#kubeai-private-open-ai-on-kubernetes" title="Permanent link">&para;</a></h1>
 <p>Get inferencing running on Kubernetes: LLMs, Embeddings, Speech-to-Text.</p>
-<blockquote>
-<p>"KubeAI is highly scalable, yet compact enough to fit on my old laptop."
-- Some Google Engineer</p>
-</blockquote>
 <p>✅️  Drop-in replacement for OpenAI with API compatibility<br />
 ⚖️  Scale from zero, autoscale based on load<br />
 🚀  Serve OSS LLMs on CPUs or GPUs<br />
@@ -907,6 +903,10 @@
 🤖  Operates OSS model servers (vLLM, Ollama, FasterWhisper)<br />
 🔋  Chat UI included (<a href="https://github.com/open-webui/open-webui">OpenWebUI</a><br />
 ✉️  Batch inference with messaging systems (Kafka, PubSub, etc.)</p>
+<p>Quotes from the community:</p>
+<blockquote>
+<p>reusable, well abstracted solution to run LLMs - <a href="https://www.linkedin.com/posts/mikeensor_gcp-solutions-public-retail-edge-available-cluster-traits-activity-7237515920259104769-vBs9?utm_source=share&amp;utm_medium=member_desktop">Mike Ensor</a></p>
+</blockquote>
 <h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
 <p>KubeAI serves an OpenAI compatible HTTP API. Admins can configure ML models via <code>kind: Model</code> Kubernetes Custom Resources. KubeAI can be thought of as a Model Operator (See <a href="https://kubernetes.io/docs/concepts/extend-kubernetes/operator/">Operator Pattern</a>) that manages <a href="https://github.com/vllm-project/vllm">vLLM</a> and <a href="https://github.com/ollama/ollama">Ollama</a> servers.</p>
 <p><img src="./diagrams/arch.excalidraw.png"></img></p>
