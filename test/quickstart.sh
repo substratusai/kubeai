@@ -54,6 +54,9 @@ function wait_for_pod_ready() {
 # wait for kubeai pod to be ready.
 wait_for_pod_ready app.kubernetes.io/name=kubeai
 
+kubectl get pods -w &
+kubectl get events -w &
+
 # Ensure the model count is 0.
 curl -s -X GET "http://localhost:8000/openai/v1/models" | jq '. | length == 0'
 
