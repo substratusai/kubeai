@@ -25,6 +25,7 @@ func NewHandler(k8sClient client.Client, modelProxy *modelproxy.Handler) *Handle
 	h.mux.Handle("/openai/v1/chat/completions", http.StripPrefix("/openai", modelProxy))
 	h.mux.Handle("/openai/v1/completions", http.StripPrefix("/openai", modelProxy))
 	h.mux.Handle("/openai/v1/embeddings", http.StripPrefix("/openai", modelProxy))
+	h.mux.Handle("/openai/v1/audio/transcriptions", http.StripPrefix("/openai", modelProxy))
 	h.mux.HandleFunc("/openai/v1/models", h.getModels)
 
 	return h

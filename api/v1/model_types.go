@@ -28,7 +28,7 @@ type ModelSpec struct {
 
 	Features []ModelFeature `json:"features"`
 
-	// +kubebuilder:validation:Enum=OLlama;VLLM
+	// +kubebuilder:validation:Enum=OLlama;VLLM;FasterWhisper
 	Engine string `json:"engine"`
 
 	Replicas    *int32 `json:"replicas,omitempty"`
@@ -57,17 +57,20 @@ type ModelSpec struct {
 	Env map[string]string `json:"env,omitempty"`
 }
 
-// +kubebuilder:validation:Enum=TextGeneration;TextEmbedding
+// +kubebuilder:validation:Enum=TextGeneration;TextEmbedding;SpeechToText
 type ModelFeature string
 
 const (
 	ModelFeatureTextGeneration = "TextGeneration"
 	ModelFeatureTextEmbedding  = "TextEmbedding"
+	// TODO (samos123): Add validation that Speech to Text only supports Faster Whisper.
+	ModelFeatureSpeechToText = "SpeechToText"
 )
 
 const (
-	OLlamaEngine = "OLlama"
-	VLLMEngine   = "VLLM"
+	OLlamaEngine        = "OLlama"
+	VLLMEngine          = "VLLM"
+	FasterWhisperEngine = "FasterWhisper"
 )
 
 // ModelStatus defines the observed state of Model

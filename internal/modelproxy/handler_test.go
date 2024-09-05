@@ -36,6 +36,7 @@ func TestHandler(t *testing.T) {
 		backendCode  int
 		backendBody  string
 
+		expRewrittenReqBody    string
 		expCode                int
 		expBody                string
 		expLabels              map[string]string
@@ -76,6 +77,45 @@ func TestHandler(t *testing.T) {
 		"happy 200 model in header": {
 			reqBody:     "{}",
 			reqHeaders:  map[string]string{"X-Model": model1},
+			backendCode: http.StatusOK,
+			backendBody: `{"result":"ok"}`,
+			expCode:     http.StatusOK,
+			expBody:     `{"result":"ok"}`,
+			expLabels: map[string]string{
+				"model":       model1,
+				"status_code": "200",
+			},
+			expBackendRequestCount: 1,
+		},
+		"happy 200 only model in form data": {
+			reqHeaders: map[string]string{"Content-Type": "multipart/form-data; boundary=12345"},
+			reqBody: fmt.Sprintf(
+				"--12345\r\nContent-Disposition: form-data; name=\"model\"\r\n\r\n%s\r\n--12345--\r\n",
+				model1,
+			),
+			// Proxied request should have the model omitted from the body.
+			expRewrittenReqBody: "\r\n--12345--\r\n",
+			backendCode:         http.StatusOK,
+			backendBody:         `{"result":"ok"}`,
+			expCode:             http.StatusOK,
+			expBody:             `{"result":"ok"}`,
+			expLabels: map[string]string{
+				"model":       model1,
+				"status_code": "200",
+			},
+			expBackendRequestCount: 1,
+		},
+		"happy 200 model with other content in form data": {
+			reqHeaders: map[string]string{"Content-Type": "multipart/form-data; boundary=12345"},
+			reqBody: fmt.Sprintf(""+
+				"--12345\r\nContent-Disposition: form-data; name=\"model\"\r\n\r\n%s\r\n"+
+				"--12345\r\nContent-Disposition: form-data; name=\"otherField\"\r\n\r\notherFieldValue\r\n--12345--\r\n",
+				model1,
+			),
+			// Proxied request should have the model omitted from the body.
+			expRewrittenReqBody: fmt.Sprintf("" +
+				"--12345\r\nContent-Disposition: form-data; name=\"otherField\"\r\n\r\notherFieldValue\r\n--12345--\r\n",
+			),
 			backendCode: http.StatusOK,
 			backendBody: `{"result":"ok"}`,
 			expCode:     http.StatusOK,
@@ -135,8 +175,13 @@ func TestHandler(t *testing.T) {
 				backendRequestCount++
 
 				bdy, err := io.ReadAll(r.Body)
-				assert.NoError(t, err)
-				assert.Equal(t, spec.reqBody, string(bdy), "The request body should reach the backend")
+				assert.NoError(t, err, "The request body should be readable")
+
+				if spec.expRewrittenReqBody != "" {
+					assert.Equal(t, spec.expRewrittenReqBody, string(bdy), "The rewritten request body should reach the backend")
+				} else {
+					assert.Equal(t, spec.reqBody, string(bdy), "The exact request body should reach the backend")
+				}
 
 				if spec.backendPanic {
 					// Panic should close connection.

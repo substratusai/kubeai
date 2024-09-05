@@ -66,8 +66,9 @@ type MessageStream struct {
 }
 
 type ModelServers struct {
-	OLlama ModelServer `json:"OLlama"`
-	VLLM   ModelServer `json:"VLLM"`
+	OLlama        ModelServer `json:"OLlama"`
+	VLLM          ModelServer `json:"VLLM"`
+	FasterWhisper ModelServer `json:"FasterWhisper"`
 }
 
 type ModelServer struct {
