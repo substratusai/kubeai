@@ -2,9 +2,6 @@
 
 Get inferencing running on Kubernetes: LLMs, Embeddings, Speech-to-Text.
 
-> "KubeAI is highly scalable, yet compact enough to fit on my old laptop."
-> \- Some Google Engineer
-
 ✅️  Drop-in replacement for OpenAI with API compatibility  
 ⚖️  Scale from zero, autoscale based on load  
 🚀  Serve OSS LLMs on CPUs or GPUs  
@@ -13,6 +10,10 @@ Get inferencing running on Kubernetes: LLMs, Embeddings, Speech-to-Text.
 🤖  Operates OSS model servers (vLLM, Ollama, FasterWhisper)  
 🔋  Chat UI included ([OpenWebUI](https://github.com/open-webui/open-webui)  
 ✉️  Batch inference with messaging systems (Kafka, PubSub, etc.)
+
+Quotes from the community:
+
+> reusable, well abstracted solution to run LLMs - [Mike Ensor](https://www.linkedin.com/posts/mikeensor_gcp-solutions-public-retail-edge-available-cluster-traits-activity-7237515920259104769-vBs9?utm_source=share&utm_medium=member_desktop)
 
 ## Architecture
 
