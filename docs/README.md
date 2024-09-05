@@ -1,6 +1,6 @@
 # KubeAI: Private Open AI on Kubernetes
 
-The simple AI platform that runs on Kubernetes.
+Get inferencing running on Kubernetes: LLMs, Embeddings, Speech-to-Text.
 
 > "KubeAI is highly scalable, yet compact enough to fit on my old laptop."
 > \- Some Google Engineer
