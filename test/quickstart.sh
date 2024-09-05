@@ -77,6 +77,7 @@ curl http://localhost:8000/openai/v1/completions \
   -d '{"model": "gemma2-2b-cpu", "prompt": "Who was the first president of the United States?", "max_tokens": 40}'
 
 # Test the speech to text endpoint
+wait_for_pod_ready model=faster-whisper-medium-en-cpu
 curl -L -o kubeai.mp4 https://github.com/user-attachments/assets/711d1279-6af9-4c6c-a052-e59e7730b757
 result=$(curl http://localhost:8000/openai/v1/audio/transcriptions \
   -F "file=@kubeai.mp4" \
