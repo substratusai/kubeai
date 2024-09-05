@@ -37,6 +37,8 @@ function wait_for_pod_ready() {
     sleep 5
     if (( SECONDS - start_time >= 300 )); then
       echo "Pods with label $label did not start in time."
+      kubectl describe pod -l "$label" || true
+      kubectl logs -l "$label" || true
       exit 1
     fi
   done
