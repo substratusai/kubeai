@@ -73,11 +73,14 @@ models:
       enabled: true
     nomic-embed-text-cpu:
       enabled: true
+    faster-whisper-medium-en-cpu:
+      enabled: true
+      minReplicas: 1
 EOF
 
 wait_for_pod_ready model=gemma2-2b-cpu
 
-curl -s -X GET "http://localhost:8000/openai/v1/models" | jq '. | length == 3'
+curl -s -X GET "http://localhost:8000/openai/v1/models" | jq '. | length == 4'
 
 curl http://localhost:8000/openai/v1/completions \
   -H "Content-Type: application/json" \
