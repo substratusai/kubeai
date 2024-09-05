@@ -511,7 +511,8 @@ func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, index int3
 					LocalObjectReference: corev1.LocalObjectReference{
 						Name: r.HuggingfaceSecretName,
 					},
-					Key: "token",
+					Key:      "token",
+					Optional: ptr.To(true),
 				},
 			},
 		},
