@@ -36,14 +36,19 @@ function wait_for_pod_ready() {
   while ! kubectl get pod -l "$label" | grep -q Running; do
     sleep 5
     if (( SECONDS - start_time >= 300 )); then
-      kubectl describe pod -l "$label"
-      kubectl logs -l "$label"
       echo "Pods with label $label did not start in time."
       exit 1
     fi
   done
 
   kubectl wait --for=condition=ready pod -l "$label" --timeout=1200s
+  exit_code=$?
+  if [ $exit_code -ne 0 ]; then
+    kubectl describe pod -l "$label"
+    kubectl logs -l "$label"
+    echo "Pods with label $label did not get ready in time."
+    exit 1
+  fi
 }
 
 # wait for kubeai pod to be ready.
