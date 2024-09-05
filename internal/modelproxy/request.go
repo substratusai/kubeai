@@ -155,7 +155,6 @@ func (pr *proxyRequest) parseModel() error {
 		}
 		pr.body = body
 
-		// Use a streaming approach for JSON handling
 		var payload struct {
 			Model string `json:"model"`
 		}
