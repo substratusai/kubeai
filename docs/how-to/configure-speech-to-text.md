@@ -2,10 +2,6 @@
 
 KubeAI provides a Speech to Text endpoint that can be used to transcribe audio files. This guide will walk you through the steps to enable this feature.
 
-## Prerequisites
-An existing K8s cluster.
-
-
 ## Enable Speech to Text model
 You can create neew models by creating a Model CRD object or by enabling a model from the model catalog.
 
