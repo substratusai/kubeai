@@ -36,6 +36,8 @@ function wait_for_pod_ready() {
   while ! kubectl get pod -l "$label" | grep -q Running; do
     sleep 5
     if (( SECONDS - start_time >= 300 )); then
+      kubectl describe pod -l "$label"
+      kubectl logs -l "$label"
       echo "Pods with label $label did not start in time."
       exit 1
     fi
@@ -74,15 +76,15 @@ curl http://localhost:8000/openai/v1/completions \
   -d '{"model": "gemma2-2b-cpu", "prompt": "Who was the first president of the United States?", "max_tokens": 40}'
 
 # Test the speech to text endpoint
-# wait_for_pod_ready model=faster-whisper-medium-en-cpu
-# curl -L -o kubeai.mp4 https://github.com/user-attachments/assets/711d1279-6af9-4c6c-a052-e59e7730b757
-# result=$(curl http://localhost:8000/openai/v1/audio/transcriptions \
-#   -F "file=@kubeai.mp4" \
-#   -F "language=en" \
-#   -F "model=faster-whisper-medium-en-cpu" | jq '.text | ascii_downcase | contains("kubernetes")')
-# if [ "$result" = "true" ]; then
-#   echo "The transcript contains 'kubernetes'."
-# else
-#   echo "The text does not contain 'kubernetes'."
-#   exit 1
-# fi
+wait_for_pod_ready model=faster-whisper-medium-en-cpu
+curl -L -o kubeai.mp4 https://github.com/user-attachments/assets/711d1279-6af9-4c6c-a052-e59e7730b757
+result=$(curl http://localhost:8000/openai/v1/audio/transcriptions \
+  -F "file=@kubeai.mp4" \
+  -F "language=en" \
+  -F "model=faster-whisper-medium-en-cpu" | jq '.text | ascii_downcase | contains("kubernetes")')
+if [ "$result" = "true" ]; then
+  echo "The transcript contains 'kubernetes'."
+else
+  echo "The text does not contain 'kubernetes'."
+  exit 1
+fi
