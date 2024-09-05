@@ -61,31 +61,33 @@ func (pr *proxyRequest) done() {
 // attempts to unmarshal the request body as JSON and extract the
 // .model field.
 func (pr *proxyRequest) parseModel() error {
+	var bodyBuffer bytes.Buffer
+	// Create a TeeReader to read the body content and save it in bodyBuffer.
+	multiReader := io.TeeReader(pr.r.Body, &bodyBuffer)
+
+	// Try to get the model from the header first
 	pr.model = pr.r.Header.Get("X-Model")
 	if pr.model != "" {
+		// Save the body content
+		pr.body = bodyBuffer.Bytes()
 		return nil
-	}
-
-	var err error
-	// TODO (samos123): Improve this to not read the entire body into memory for files.
-	pr.body, err = io.ReadAll(pr.r.Body)
-	if err != nil {
-		return fmt.Errorf("read: %w", err)
 	}
 
 	// Error is ignored because we default to JSON handling if content-type is not set.
 	mediaType, params, _ := mime.ParseMediaType(pr.r.Header.Get("Content-Type"))
 	if mediaType == "multipart/form-data" {
-		// Parse the form data to get the model.
 		if params["boundary"] == "" {
 			return fmt.Errorf("no boundary specified in multipart form data")
 		}
-		mpReader := multipart.NewReader(bytes.NewReader(pr.body), params["boundary"])
+
+		// Parse multipart form data while streaming and saving the body content
+		mpReader := multipart.NewReader(multiReader, params["boundary"])
 		form, err := mpReader.ReadForm(25 * 1024 * 1024)
 		if err != nil {
 			return fmt.Errorf("read form: %w", err)
 		}
 		defer form.RemoveAll()
+
 		if len(form.Value["model"]) == 0 {
 			return fmt.Errorf("no model specified")
 		}
@@ -93,52 +95,26 @@ func (pr *proxyRequest) parseModel() error {
 		if pr.model == "" {
 			return fmt.Errorf("model was empty")
 		}
-		// Remove the "model" field from the form after processing.
-		// This is needed because Faster Whisper does strong validation
-		// on the model field. See https://github.com/fedirz/faster-whisper-server/issues/71
+
+		// Remove the "model" field after processing to avoid validation issues.
+		// This is a workaround for Faster Whisper.
+		// See https://github.com/fedirz/faster-whisper-server/issues/71.
 		delete(form.Value, "model")
+		pr.body = pr.rebuildMultipartForm(form, params["boundary"]).Bytes()
 
-		// Re-add the form fields back, without "model".
-		var buffer bytes.Buffer
-		writer := multipart.NewWriter(&buffer)
-		for key, values := range form.Value {
-			for _, value := range values {
-				if err := writer.WriteField(key, value); err != nil {
-					return fmt.Errorf("write field: %w", err)
-				}
-			}
-		}
-
-		// Re-add the files back into the form.
-		for key, files := range form.File {
-			for _, fileHeader := range files {
-				// Open the file
-				file, err := fileHeader.Open()
-				if err != nil {
-					return fmt.Errorf("file open: %w", err)
-				}
-				defer file.Close()
-
-				// Create a new form file in the writer
-				part, err := writer.CreateFormFile(key, fileHeader.Filename)
-				if err != nil {
-					return fmt.Errorf("create form file: %w", err)
-				}
-
-				// Copy the file content into the form
-				if _, err = io.Copy(part, file); err != nil {
-					return fmt.Errorf("copy file: %w", err)
-				}
-			}
-		}
-		writer.Close()
-		pr.body = buffer.Bytes()
-		// Update the Content-Type header to reflect the new boundary.
-		pr.r.Header.Set("Content-Type", writer.FormDataContentType())
-		// The Content-Length header must be updated to reflect the new body length.
-		pr.r.ContentLength = int64(buffer.Len())
+		// Set the new body and headers
+		pr.r.Body = io.NopCloser(bytes.NewReader(pr.body))
+		pr.r.Header.Set("Content-Type", fmt.Sprintf("multipart/form-data; boundary=%s", params["boundary"]))
+		pr.r.ContentLength = int64(len(pr.body))
 	} else {
-		// Default to parsing model from JSON body.
+		// Stream the body content to save it in pr.body
+		bodyContent, err := io.ReadAll(multiReader)
+		if err != nil {
+			return fmt.Errorf("read: %w", err)
+		}
+		pr.body = bodyContent
+
+		// Use a streaming approach for JSON handling
 		var payload struct {
 			Model string `json:"model"`
 		}
@@ -153,6 +129,40 @@ func (pr *proxyRequest) parseModel() error {
 	}
 
 	return nil
+}
+
+// Helper function to rebuild the multipart form and return a byte buffer
+func (pr *proxyRequest) rebuildMultipartForm(form *multipart.Form, boundary string) *bytes.Buffer {
+	prBuffer := new(bytes.Buffer)
+	writer := multipart.NewWriter(prBuffer)
+	writer.SetBoundary(boundary)
+
+	// Re-add form fields without "model"
+	for key, values := range form.Value {
+		for _, value := range values {
+			writer.WriteField(key, value)
+		}
+	}
+
+	// Re-add files
+	for key, files := range form.File {
+		for _, fileHeader := range files {
+			file, err := fileHeader.Open()
+			if err != nil {
+				continue // Handle error as needed
+			}
+			defer file.Close()
+
+			part, err := writer.CreateFormFile(key, fileHeader.Filename)
+			if err != nil {
+				continue // Handle error as needed
+			}
+			io.Copy(part, file) // Stream file content
+		}
+	}
+	writer.Close()
+
+	return prBuffer
 }
 
 // sendErrorResponse sends an error response to the client and
