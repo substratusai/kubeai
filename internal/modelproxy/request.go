@@ -61,58 +61,99 @@ func (pr *proxyRequest) done() {
 // attempts to unmarshal the request body as JSON and extract the
 // .model field.
 func (pr *proxyRequest) parseModel() error {
-	var bodyBuffer bytes.Buffer
-	// Create a TeeReader to read the body content and save it in bodyBuffer.
-	multiReader := io.TeeReader(pr.r.Body, &bodyBuffer)
-
 	// Try to get the model from the header first
-	pr.model = pr.r.Header.Get("X-Model")
-	if pr.model != "" {
-		// Save the body content
-		pr.body = bodyBuffer.Bytes()
+	if headerModel := pr.r.Header.Get("X-Model"); headerModel != "" {
+		pr.model = headerModel
+		// Save the body content (required to support retries of the proxy request)
+		body, err := io.ReadAll(pr.r.Body)
+		if err != nil {
+			return fmt.Errorf("reading body: %w", err)
+		}
+		pr.body = body
 		return nil
 	}
 
-	// Error is ignored because we default to JSON handling if content-type is not set.
-	mediaType, params, _ := mime.ParseMediaType(pr.r.Header.Get("Content-Type"))
-	if mediaType == "multipart/form-data" {
-		if params["boundary"] == "" {
+	// Parse media type (with params - which are used for multipart form data)
+	var (
+		contentType = pr.r.Header.Get("Content-Type")
+		mediaType   string
+		mediaParams map[string]string
+	)
+	if contentType == "" {
+		mediaType = "application/json"
+		mediaParams = map[string]string{}
+	} else {
+		var err error
+		mediaType, mediaParams, err = mime.ParseMediaType(contentType)
+		if err != nil {
+			return fmt.Errorf("parse media type: %w", err)
+		}
+	}
+
+	switch mediaType {
+	// Multipart form data is used for endpoints that accept file uploads:
+	case "multipart/form-data":
+		boundary := mediaParams["boundary"]
+		if boundary == "" {
 			return fmt.Errorf("no boundary specified in multipart form data")
 		}
 
-		// Parse multipart form data while streaming and saving the body content
-		mpReader := multipart.NewReader(multiReader, params["boundary"])
-		form, err := mpReader.ReadForm(25 * 1024 * 1024)
-		if err != nil {
-			return fmt.Errorf("read form: %w", err)
-		}
-		defer form.RemoveAll()
+		var buf bytes.Buffer
+		mw := multipart.NewWriter(&buf)
+		// Keep the same boundary as the initial request (probably not necessary)
+		mw.SetBoundary(boundary)
 
-		if len(form.Value["model"]) == 0 {
-			return fmt.Errorf("no model specified")
-		}
-		pr.model = form.Value["model"][0]
-		if pr.model == "" {
-			return fmt.Errorf("model was empty")
+		// Iterate over the parts of the multipart form data:
+		// - If the part is named "model", save the value to the proxy request.
+		// - Otherwise, just copy the part to the new multipart writer.
+		mr := multipart.NewReader(pr.r.Body, boundary)
+		for {
+			p, err := mr.NextPart()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				return fmt.Errorf("interating over multipart form: %w", err)
+			}
+
+			if p.FormName() == "model" {
+				value, err := io.ReadAll(p)
+				if err != nil {
+					return fmt.Errorf("reading multipart form value: %w", err)
+				}
+				pr.model = string(value)
+				// WORKAROUND ALERT:
+				// Omit the "model" field from the proxy request to avoid FasterWhisper validation issues:
+				// See https://github.com/fedirz/faster-whisper-server/issues/71
+				continue
+			}
+
+			// Copy the part to the new multipart writer.
+			pp, err := mw.CreatePart(p.Header)
+			if err != nil {
+				return fmt.Errorf("creating part: %w", err)
+			}
+			if _, err := io.Copy(pp, p); err != nil {
+				return fmt.Errorf("copying part: %w", err)
+			}
 		}
 
-		// Remove the "model" field after processing to avoid validation issues.
-		// This is a workaround for Faster Whisper.
-		// See https://github.com/fedirz/faster-whisper-server/issues/71.
-		delete(form.Value, "model")
-		pr.body = pr.rebuildMultipartForm(form, params["boundary"]).Bytes()
-
-		// Set the new body and headers
-		pr.r.Body = io.NopCloser(bytes.NewReader(pr.body))
-		pr.r.Header.Set("Content-Type", fmt.Sprintf("multipart/form-data; boundary=%s", params["boundary"]))
+		// Fully write to buffer.
+		if err := mw.Close(); err != nil {
+			return fmt.Errorf("closing multipart writer: %w", err)
+		}
+		pr.body = buf.Bytes()
+		fmt.Println("pr.body:", string(pr.body))
+		// Set a new content length based on the new body - which had the "model" field removed.
 		pr.r.ContentLength = int64(len(pr.body))
-	} else {
-		// Stream the body content to save it in pr.body
-		bodyContent, err := io.ReadAll(multiReader)
+
+	// Assume "application/json":
+	default:
+		body, err := io.ReadAll(pr.r.Body)
 		if err != nil {
 			return fmt.Errorf("read: %w", err)
 		}
-		pr.body = bodyContent
+		pr.body = body
 
 		// Use a streaming approach for JSON handling
 		var payload struct {
@@ -129,40 +170,6 @@ func (pr *proxyRequest) parseModel() error {
 	}
 
 	return nil
-}
-
-// Helper function to rebuild the multipart form and return a byte buffer
-func (pr *proxyRequest) rebuildMultipartForm(form *multipart.Form, boundary string) *bytes.Buffer {
-	prBuffer := new(bytes.Buffer)
-	writer := multipart.NewWriter(prBuffer)
-	writer.SetBoundary(boundary)
-
-	// Re-add form fields without "model"
-	for key, values := range form.Value {
-		for _, value := range values {
-			writer.WriteField(key, value)
-		}
-	}
-
-	// Re-add files
-	for key, files := range form.File {
-		for _, fileHeader := range files {
-			file, err := fileHeader.Open()
-			if err != nil {
-				continue // Handle error as needed
-			}
-			defer file.Close()
-
-			part, err := writer.CreateFormFile(key, fileHeader.Filename)
-			if err != nil {
-				continue // Handle error as needed
-			}
-			io.Copy(part, file) // Stream file content
-		}
-	}
-	writer.Close()
-
-	return prBuffer
 }
 
 // sendErrorResponse sends an error response to the client and
