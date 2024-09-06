@@ -3,13 +3,13 @@
 Get inferencing running on Kubernetes: LLMs, Embeddings, Speech-to-Text.
 
 ✅️  Drop-in replacement for OpenAI with API compatibility  
+🧠  Serve top OSS models (LLMs, Whisper, etc.)  
+🚀  Multi-platform: CPU-only, GPU, coming soon: TPU  
 ⚖️  Scale from zero, autoscale based on load  
-🚀  Serve OSS LLMs on CPUs or GPUs  
-☏  Fast Speech to Text on CPU or GPU  
 🛠️  Zero dependencies (no Istio, Knative, etc.)   
-🤖  Operates OSS model servers (vLLM, Ollama, FasterWhisper)  
 💬  Chat UI included ([OpenWebUI](https://github.com/open-webui/open-webui))  
-✉  Streaming inference via messaging integrations (Kafka, PubSub, etc.)
+🤖  Operates OSS model servers (vLLM, Ollama, FasterWhisper)  
+✉  Stream/batch inference via messaging integrations (Kafka, PubSub, etc.)  
 
 Quotes from the community:
 
