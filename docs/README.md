@@ -51,7 +51,7 @@ kind create cluster # OR: minikube start
 Add the KubeAI [Helm](https://helm.sh/docs/intro/install/) repository.
 
 ```bash
-helm repo add kubeai https://substratusai.github.io/kubeai/
+helm repo add kubeai https://www.kubeai.or
 helm repo update
 ```
 
