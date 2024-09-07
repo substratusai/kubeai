@@ -3,7 +3,7 @@
 KubeAI provides a Speech to Text endpoint that can be used to transcribe audio files. This guide will walk you through the steps to enable this feature.
 
 ## Enable Speech to Text model
-You can create neew models by creating a Model CRD object or by enabling a model from the model catalog.
+You can create new models by creating a Model CRD object or by enabling a model from the model catalog.
 
 ### Enable from model catalog
 KubeAI provides predefined models in the model catalog. To enable the Speech to Text model, you can set the `enabled` flag to `true` in the `helm-values.yaml` file.
