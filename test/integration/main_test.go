@@ -32,6 +32,9 @@ const (
 )
 
 var sysCfg = config.System{
+	SecretNames: config.SecretNames{
+		Huggingface: "huggingface",
+	},
 	ModelServers: config.ModelServers{
 		VLLM: config.ModelServer{
 			Images: map[string]string{

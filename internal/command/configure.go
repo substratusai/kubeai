@@ -1,7 +1,6 @@
 package command
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/substratusai/kubeai/internal/config"
@@ -18,8 +17,5 @@ func LoadConfigFile(path string) (config.System, error) {
 		return config.System{}, err
 	}
 
-	if err := cfg.DefaultAndValidate(); err != nil {
-		return config.System{}, fmt.Errorf("invalid config: %w", err)
-	}
 	return cfg, nil
 }

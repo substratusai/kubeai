@@ -5,15 +5,14 @@ import (
 	"errors"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	corev1 "k8s.io/api/core/v1"
 )
 
 type System struct {
-	SecretNames struct {
-		Huggingface string `json:"huggingface"`
-	} `json:"secretNames"`
+	SecretNames SecretNames `json:"secretNames" validate:"required"`
 
-	ModelServers ModelServers `json:"modelServers"`
+	ModelServers ModelServers `json:"modelServers" validate:"required"`
 
 	ResourceProfiles map[string]ResourceProfile `json:"resourceProfiles"`
 
@@ -30,16 +29,25 @@ type System struct {
 }
 
 func (s *System) DefaultAndValidate() error {
+	if s.Messaging.ErrorMaxBackoff.Duration == 0 {
+		s.Messaging.ErrorMaxBackoff.Duration = time.Minute
+	}
 	if s.MetricsAddr == "" {
 		s.MetricsAddr = ":8080"
 	}
 	if s.HealthAddress == "" {
 		s.HealthAddress = ":8081"
 	}
-	return nil
+	return validator.New(validator.WithRequiredStructEnabled()).Struct(s)
+}
+
+type SecretNames struct {
+	Huggingface string `json:"huggingface" validate:"required"`
 }
 
 type Messaging struct {
+	// ErrorMaxBackoff is the maximum backoff time that will be applied when
+	// consecutive errors are encountered. Default is 1 minute.
 	ErrorMaxBackoff Duration        `json:"errorMaxBackoff"`
 	Streams         []MessageStream `json:"streams"`
 }

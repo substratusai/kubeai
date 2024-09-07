@@ -61,6 +61,10 @@ func init() {
 }
 
 func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
+	if err := cfg.DefaultAndValidate(); err != nil {
+		return fmt.Errorf("invalid config: %w", err)
+	}
+
 	opts := zap.Options{
 		Development: true,
 	}
