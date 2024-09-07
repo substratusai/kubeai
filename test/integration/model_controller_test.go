@@ -66,4 +66,16 @@ func TestModelScaling(t *testing.T) {
 		assert.Equal(t, sysCfg.ResourceProfiles[resourceProfileCPU].NodeSelector, m.Spec.NodeSelector)
 		assert.Equal(t, testVLLMCPUImage, m.Spec.Image)
 	}, 2*time.Second, time.Second/10, "Resource profile should be applied to the Model object")
+
+	// Update the Model object to set MinReplicas to 1.
+	m.Spec.MinReplicas = 1
+	require.NoError(t, testK8sClient.Update(testCtx, &m))
+
+	require.EventuallyWithT(t, func(t *assert.CollectT) {
+		// Retrieve the Model object from the Kubernetes cluster.
+		assert.NoError(t, testK8sClient.Get(testCtx, client.ObjectKeyFromObject(&m), &m))
+
+		assert.NotNil(t, m.Spec.Replicas)
+		assert.Equal(t, int32(1), *m.Spec.Replicas)
+	}, 2*time.Second, time.Second/10, "Model should scale up to MinReplicas after update")
 }
