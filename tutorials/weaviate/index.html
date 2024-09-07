@@ -938,16 +938,20 @@
 
 <h1 id="weaviate-with-local-autoscaling-embedding-and-generative-models">Weaviate with local autoscaling embedding and generative models<a class="headerlink" href="#weaviate-with-local-autoscaling-embedding-and-generative-models" title="Permanent link">&para;</a></h1>
 <p>Weaviate is a vector search engine that can integrate seamlessly with KubeAI's embedding and generative models. This tutorial demonstrates how to deploy both KubeAI and Weaviate in a Kubernetes cluster, using KubeAI as the OpenAI endpoint for Weaviate.</p>
-<p>Why use KubeAI with Weaviate?
-- Security and privacy: KubeAI runs locally in your Kubernetes cluster, so your data never leaves your infrastructure.
-- Cost savings: KubeAI can run on your existing hardware, reducing the need for paying for embeddings and generative models.</p>
+<p>Why use KubeAI with Weaviate?</p>
+<ul>
+<li>Security and privacy: KubeAI runs locally in your Kubernetes cluster, so your data never leaves your infrastructure.</li>
+<li>Cost savings: KubeAI can run on your existing hardware, reducing the need for paying for embeddings and generative models.</li>
+</ul>
 <p>This tutorial uses CPU only models, so it should work even on your laptop.</p>
-<p>As you go go through this tutorial, you will learn how to:
-- Deploy KubeAI with embedding and generative models
-- Install Weaviate and connect it to KubeAI
-- Import data into Weaviate
-- Perform semantic search using the embedding model
-- Perform generative search using the generative model</p>
+<p>As you go go through this tutorial, you will learn how to:</p>
+<ul>
+<li>Deploy KubeAI with embedding and generative models</li>
+<li>Install Weaviate and connect it to KubeAI</li>
+<li>Import data into Weaviate</li>
+<li>Perform semantic search using the embedding model</li>
+<li>Perform generative search using the generative model</li>
+</ul>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
 <p>A Kubernetes cluster. You can use <a href="https://kind.sigs.k8s.io/">kind</a> or <a href="https://minikube.sigs.k8s.io/docs/start/">minikube</a>.</p>
 <div class="highlight"><pre><span></span><code>kind<span class="w"> </span>create<span class="w"> </span>cluster
