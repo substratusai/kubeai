@@ -379,8 +379,8 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, index int32) *cor
 	// before the Pod becomes Ready. (by default it will load on the first prompt request).
 	startupProbeScript := fmt.Sprintf("/bin/ollama pull %s && /bin/ollama cp %s %s",
 		ollamaModelRef, ollamaModelRef, m.Name)
-	if _, ok := featuresMap[kubeaiv1.ModelFeatureTextEmbedding]; ok {
-		// NOTE: Embedding text models do not support "ollama pull":
+	if _, ok := featuresMap[kubeaiv1.ModelFeatureTextGeneration]; ok {
+		// NOTE: Embedding text models do not support "ollama run":
 		//
 		// ollama run nomic-embed-text hey
 		// Error: "nomic-embed-text" does not support generate
@@ -419,8 +419,8 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, index int32) *cor
 						InitialDelaySeconds: 1,
 						PeriodSeconds:       3,
 						FailureThreshold:    10,
-						// Give the model pull 10 minutes to complete.
-						TimeoutSeconds: 600,
+						// Give the model pull 180 minutes to complete.
+						TimeoutSeconds: 60 * 180,
 						ProbeHandler: corev1.ProbeHandler{
 							Exec: &corev1.ExecAction{
 								Command: []string{
