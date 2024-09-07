@@ -35,8 +35,8 @@ var sysCfg = config.System{
 	ModelServers: config.ModelServers{
 		VLLM: config.ModelServer{
 			Images: map[string]string{
-				"default":          testVLLMDefualtImage,
-				resourceProfileCPU: testVLLMCPUImage,
+				"default":  testVLLMDefualtImage,
+				"cpu-only": testVLLMCPUImage,
 			},
 		},
 	},
@@ -52,6 +52,7 @@ var sysCfg = config.System{
 			NodeSelector: map[string]string{
 				"compute-type": "cpu",
 			},
+			ImageName: "cpu-only",
 		},
 		resourceProfileNvidiaGPU: {
 			Requests: corev1.ResourceList{
