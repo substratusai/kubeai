@@ -2,6 +2,10 @@
 
 Weaviate is a vector search engine that can integrate seamlessly with KubeAI's embedding and generative models. This tutorial demonstrates how to deploy both KubeAI and Weaviate in a Kubernetes cluster, using KubeAI as the OpenAI endpoint for Weaviate.
 
+Why use KubeAI with Weaviate?
+- Security and privacy: KubeAI runs locally in your Kubernetes cluster, so your data never leaves your infrastructure.
+- Cost savings: KubeAI can run on your existing hardware, reducing the need for paying for embeddings and generative models.
+
 This tutorial uses CPU only models, so it should work even on your laptop.
 
 As you go go through this tutorial, you will learn how to:
@@ -10,6 +14,7 @@ As you go go through this tutorial, you will learn how to:
 - Import data into Weaviate
 - Perform semantic search using the embedding model
 - Perform generative search using the generative model
+
 
 ## Prerequisites
 A Kubernetes cluster. You can use [kind](https://kind.sigs.k8s.io/) or [minikube](https://minikube.sigs.k8s.io/docs/start/).
