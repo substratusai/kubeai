@@ -46,7 +46,7 @@ helm upgrade --install kubeai ./charts/kubeai \
 
 # OPTION B #
 # For quick local interation (run KubeAI outside of cluster)
-CONFIG_PATH=./hack/dev-config.yaml POD_NAMESPACE=default go run ./cmd/main.go --allow-pod-address-override
+CONFIG_PATH=./hack/dev-config.yaml POD_NAMESPACE=default go run ./cmd/main.go
 
 # In another terminal:
 while true; do kubectl port-forward service/dev-model 7000:7000; done

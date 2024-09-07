@@ -17,10 +17,31 @@ type System struct {
 
 	ResourceProfiles map[string]ResourceProfile `json:"resourceProfiles"`
 
-	Messaging struct {
-		ErrorMaxBackoff Duration        `json:"errorMaxBackoff"`
-		Streams         []MessageStream `json:"streams"`
-	} `json:"messaging"`
+	Messaging Messaging `json:"messaging"`
+
+	// MetricsAddr is the address the metric endpoint binds to. Default is ":8080".
+	MetricsAddr string `json:"metricsAddr"`
+
+	// HealthAddr is the address the health probe endpoint binds to. Default is ":8081".
+	HealthAddress string `json:"healthAddress"`
+
+	// AllowPodAddressOverride will allow the pod address to be overridden by the Model objects. This is useful for development purposes.
+	AllowPodAddressOverride bool `json:"allowPodAddressOverride"`
+}
+
+func (s *System) DefaultAndValidate() error {
+	if s.MetricsAddr == "" {
+		s.MetricsAddr = ":8080"
+	}
+	if s.HealthAddress == "" {
+		s.HealthAddress = ":8081"
+	}
+	return nil
+}
+
+type Messaging struct {
+	ErrorMaxBackoff Duration        `json:"errorMaxBackoff"`
+	Streams         []MessageStream `json:"streams"`
 }
 
 type Duration struct {
