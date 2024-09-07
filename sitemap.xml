@@ -40,4 +40,8 @@
          <loc>https://www.kubeai.org/tutorials/langtrace/</loc>
          <lastmod>2024-09-07</lastmod>
     </url>
+    <url>
+         <loc>https://www.kubeai.org/tutorials/weaviate/</loc>
+         <lastmod>2024-09-07</lastmod>
+    </url>
 </urlset>
