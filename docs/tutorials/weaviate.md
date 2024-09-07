@@ -55,8 +55,8 @@ Note: It's important that you name the models as `text-embedding-ada-002` and `g
 
 Run the following command to deploy KubeAI:
 ```bash
-helm upgrade --install kubeai kubeai/kubeai \
-    -f ./kubeai-values.yaml --reuse-values
+helm install kubeai kubeai/kubeai \
+    -f ./kubeai-values.yaml
 ```
 
 ## Weaviate Installation
