@@ -27,7 +27,7 @@ spec:
 
 ## Server Settings
 
-In a Model manifest you can define what server to use for inference (`VLLM`, `OLlama`). Any model-specific settings can be passed to the server process via the `args` and `env` fields.
+In a Model manifest you can define what server to use for inference (`VLLM`, `OLlama`, `FasterWhisper`, `Infinity`). Any model-specific settings can be passed to the server process via the `args` and `env` fields.
 
 ## Autoscaling
 

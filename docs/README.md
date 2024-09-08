@@ -8,7 +8,7 @@ Get inferencing running on Kubernetes: LLMs, Embeddings, Speech-to-Text.
 ⚖️  Scale from zero, autoscale based on load  
 🛠️  Zero dependencies (no Istio, Knative, etc.)   
 💬  Chat UI included ([OpenWebUI](https://github.com/open-webui/open-webui))  
-🤖  Operates OSS model servers (vLLM, Ollama, FasterWhisper)  
+🤖  Operates OSS model servers (vLLM, Ollama, FasterWhisper, Infinity)  
 ✉  Stream/batch inference via messaging integrations (Kafka, PubSub, etc.)  
 
 Quotes from the community:
@@ -106,6 +106,8 @@ Any vLLM or Ollama model can be served by KubeAI. Some examples of popular model
 * Llama v3.1 (8B, 70B, 405B) 
 * Gemma2 (2B, 9B, 27B)
 * Qwen2 (1.5B, 7B, 72B)
+
+Infinity supports models listed as text-embedding [models, reranking or clip models on huggingface](https://huggingface.co/models?other=text-embeddings-inference&sort=trending).
 
 ## Documentation
 

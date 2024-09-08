@@ -53,6 +53,13 @@ catalog:
     url: "ollama://nomic-embed-text"
     engine: OLlama
     resourceProfile: cpu:1
+  bge-embed-text-cpu:
+    enabled: false
+    features: ["TextEmbedding"]
+    owner: baai
+    url: "hf://BAAI/bge-small-en-v1.5"
+    engine: Infinity
+    resourceProfile: cpu:1
   # Opt #
   opt-125m-cpu:
     enabled: false

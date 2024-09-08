@@ -28,7 +28,7 @@ type ModelSpec struct {
 
 	Features []ModelFeature `json:"features"`
 
-	// +kubebuilder:validation:Enum=OLlama;VLLM;FasterWhisper
+	// +kubebuilder:validation:Enum=OLlama;VLLM;FasterWhisper;Infinity;
 	Engine string `json:"engine"`
 
 	Replicas    *int32 `json:"replicas,omitempty"`
@@ -71,6 +71,7 @@ const (
 	OLlamaEngine        = "OLlama"
 	VLLMEngine          = "VLLM"
 	FasterWhisperEngine = "FasterWhisper"
+	InfinityEngine      = "Infinity"
 )
 
 // ModelStatus defines the observed state of Model

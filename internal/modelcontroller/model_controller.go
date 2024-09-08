@@ -115,6 +115,8 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		podForModel = r.oLlamaPodForModel
 	case kubeaiv1.FasterWhisperEngine:
 		podForModel = r.fasterWhisperPodForModel
+	case kubeaiv1.InfinityEngine:
+		podForModel = r.infinityPodForModel
 	default:
 		podForModel = r.vLLMPodForModel
 	}
@@ -220,7 +222,7 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, index int32) *corev
 		{
 			// TODO: Conditionally set this token based on whether
 			// huggingface is the model source.
-			Name: "HUGGING_FACE_HUB_TOKEN",
+			Name: "HF_TOKEN",
 			ValueFrom: &corev1.EnvVarSource{
 				SecretKeyRef: &corev1.SecretKeySelector{
 					LocalObjectReference: corev1.LocalObjectReference{
@@ -505,7 +507,7 @@ func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, index int3
 		{
 			// TODO: Conditionally set this token based on whether
 			// huggingface is the model source.
-			Name: "HUGGING_FACE_HUB_TOKEN",
+			Name: "HF_TOKEN",
 			ValueFrom: &corev1.EnvVarSource{
 				SecretKeyRef: &corev1.SecretKeySelector{
 					LocalObjectReference: corev1.LocalObjectReference{
@@ -613,6 +615,143 @@ func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, index int3
 	return pod
 }
 
+func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, index int32) *corev1.Pod {
+	lbs := labelsForModel(m)
+	ann := r.annotationsForModel(m)
+
+	if _, ok := ann[kubeaiv1.ModelPodPortAnnotation]; !ok {
+		// Set port to 8000 (vLLM) if not overwritten.
+		ann[kubeaiv1.ModelPodPortAnnotation] = "8000"
+	}
+
+	env := []corev1.EnvVar{
+		{
+			Name:  "INFINITY_MODEL_ID",
+			// TODO: infinity supports multiple models, separate by comma.
+			Value: strings.TrimPrefix(m.Spec.URL, "hf://"),
+		},
+		{
+			Name:  "INFINITY_ENGINE",
+			// TODO: switch between optimum backend (cpu), nvidia/amd (torch), inf2 (inferentia) based on what is available.
+			Value: "torch",
+		},
+		{
+			Name:  "INFINITY_PORT",
+			Value: "8000",
+		},
+		{
+			// TODO: Conditionally set this token based on whether
+			// huggingface is the model source.
+			Name: "HF_TOKEN",
+			ValueFrom: &corev1.EnvVarSource{
+				SecretKeyRef: &corev1.SecretKeySelector{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: r.HuggingfaceSecretName,
+					},
+					Key:      "token",
+					Optional: ptr.To(true),
+				},
+			},
+		},
+	}
+	var envKeys []string
+	for key := range m.Spec.Env {
+		envKeys = append(envKeys, key)
+	}
+	sort.Strings(envKeys)
+	for _, key := range envKeys {
+		env = append(env, corev1.EnvVar{
+			Name:  key,
+			Value: m.Spec.Env[key],
+		})
+	}
+
+	pod := &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        fmt.Sprintf("model-%s-%d", m.Name, index),
+			Namespace:   m.Namespace,
+			Labels:      lbs,
+			Annotations: ann,
+		},
+		Spec: corev1.PodSpec{
+			NodeSelector: m.Spec.NodeSelector,
+			Containers: []corev1.Container{
+				{
+					Name:      "server",
+					Image:     m.Spec.Image,
+					Args:      args,
+					Env:       env,
+					Resources: *m.Spec.Resources,
+					Ports: []corev1.ContainerPort{
+						{
+							ContainerPort: 8000,
+							Protocol:      corev1.ProtocolTCP,
+							Name:          "http",
+						},
+					},
+					StartupProbe: &corev1.Probe{
+						// TODO: Decrease the default and make it configurable.
+						// Give the model 20 minutes to start up.
+						FailureThreshold: 600,
+						PeriodSeconds:    2,
+						TimeoutSeconds:   2,
+						SuccessThreshold: 1,
+						ProbeHandler: corev1.ProbeHandler{
+							HTTPGet: &corev1.HTTPGetAction{
+								Path: "/health",
+								Port: intstr.FromString("http"),
+							},
+						},
+					},
+					ReadinessProbe: &corev1.Probe{
+						FailureThreshold: 3,
+						PeriodSeconds:    10,
+						TimeoutSeconds:   2,
+						SuccessThreshold: 1,
+						ProbeHandler: corev1.ProbeHandler{
+							HTTPGet: &corev1.HTTPGetAction{
+								Path: "/health",
+								Port: intstr.FromString("http"),
+							},
+						},
+					},
+					LivenessProbe: &corev1.Probe{
+						FailureThreshold: 3,
+						PeriodSeconds:    30,
+						TimeoutSeconds:   3,
+						SuccessThreshold: 1,
+						ProbeHandler: corev1.ProbeHandler{
+							HTTPGet: &corev1.HTTPGetAction{
+								Path: "/health",
+								Port: intstr.FromString("http"),
+							},
+						},
+					},
+					VolumeMounts: []corev1.VolumeMount{
+						{
+							Name:      "dshm",
+							MountPath: "/dev/shm",
+						},
+					},
+				},
+			},
+			Volumes: []corev1.Volume{
+				{
+					Name: "dshm",
+					VolumeSource: corev1.VolumeSource{
+						EmptyDir: &corev1.EmptyDirVolumeSource{
+							Medium: corev1.StorageMediumMemory,
+							// TODO: Set size limit
+						},
+					},
+				},
+			},
+		},
+	}
+
+	return pod
+}
+
 func labelsForModel(m *kubeaiv1.Model) map[string]string {
 	return map[string]string{"app": "model", "model": m.Name}
 }
@@ -705,6 +844,8 @@ func (r *ModelReconciler) lookupServerImage(model *kubeaiv1.Model, profile confi
 		serverImgs = r.ModelServers.OLlama.Images
 	case kubeaiv1.FasterWhisperEngine:
 		serverImgs = r.ModelServers.FasterWhisper.Images
+	case kubeaiv1.InfinityEngine:
+		serverImgs = r.ModelServers.Infinity.Images
 	default:
 		serverImgs = r.ModelServers.VLLM.Images
 	}
