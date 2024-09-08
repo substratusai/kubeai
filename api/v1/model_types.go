@@ -28,7 +28,7 @@ type ModelSpec struct {
 
 	Features []ModelFeature `json:"features"`
 
-	// +kubebuilder:validation:Enum=OLlama;VLLM;FasterWhisper;Infinity;
+	// +kubebuilder:validation:Enum=OLlama;VLLM;FasterWhisper;Infinity
 	Engine string `json:"engine"`
 
 	Replicas    *int32 `json:"replicas,omitempty"`
