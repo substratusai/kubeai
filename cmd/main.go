@@ -20,7 +20,7 @@ import (
 	"flag"
 	"os"
 
-	"github.com/substratusai/kubeai/internal/command"
+	"github.com/substratusai/kubeai/internal/manager"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
@@ -40,14 +40,14 @@ func main() {
 		configPath = "./config.yaml"
 	}
 
-	sysCfg, err := command.LoadConfigFile(configPath)
+	sysCfg, err := manager.LoadConfigFile(configPath)
 	if err != nil {
-		command.Log.Error(err, "failed to load config file", "path", configPath)
+		manager.Log.Error(err, "failed to load config file", "path", configPath)
 		os.Exit(1)
 	}
 
-	if err := command.Run(ctrl.SetupSignalHandler(), ctrl.GetConfigOrDie(), sysCfg); err != nil {
-		command.Log.Error(err, "failed to run command")
+	if err := manager.Run(ctrl.SetupSignalHandler(), ctrl.GetConfigOrDie(), sysCfg); err != nil {
+		manager.Log.Error(err, "failed to run command")
 		os.Exit(1)
 	}
 }

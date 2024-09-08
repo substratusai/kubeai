@@ -1,4 +1,4 @@
-package command
+package manager
 
 import (
 	"context"
@@ -48,7 +48,7 @@ import (
 )
 
 var (
-	Log    = ctrl.Log.WithName("command")
+	Log    = ctrl.Log.WithName("manager")
 	Scheme = runtime.NewScheme()
 )
 

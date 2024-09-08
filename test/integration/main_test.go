@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/substratusai/kubeai/internal/command"
 	"github.com/substratusai/kubeai/internal/config"
+	"github.com/substratusai/kubeai/internal/manager"
 	"gocloud.dev/pubsub"
 	_ "gocloud.dev/pubsub/mempubsub"
 	corev1 "k8s.io/api/core/v1"
@@ -118,20 +118,20 @@ func TestMain(m *testing.M) {
 	k8sCfg, err := testEnv.Start()
 	requireNoError(err)
 
-	testK8sClient, err = client.New(k8sCfg, client.Options{Scheme: command.Scheme})
+	testK8sClient, err = client.New(k8sCfg, client.Options{Scheme: manager.Scheme})
 	requireNoError(err)
 
 	// Setup messenger requests.
 	testRequestsTopic, err = pubsub.OpenTopic(testCtx, memRequestsURL)
 	requireNoError(err)
 
-	// Run the system.
+	// Run the manager.
 	os.Setenv("POD_NAMESPACE", testNS)
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		if err := command.Run(testCtx, k8sCfg, sysCfg()); err != nil && !errors.Is(err, context.Canceled) {
+		if err := manager.Run(testCtx, k8sCfg, sysCfg()); err != nil && !errors.Is(err, context.Canceled) {
 			log.Fatal(err)
 		}
 	}()
