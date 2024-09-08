@@ -11,6 +11,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// TestModelProfiles tests that resource profiles are applied as expected.
 func TestModelProfiles(t *testing.T) {
 	// Construct a Model object with MinReplicas set to 0.
 	m := modelForTest(t)

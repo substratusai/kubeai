@@ -11,6 +11,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// TestModelScalingBounds tests whether the Model controller respects the
+// MinReplicas and MaxReplicas set in the Model spec.
+// NOTE: This does not test scale-from-zero or autoscaling code paths!
 func TestModelScalingBounds(t *testing.T) {
 	// Construct a Model object with MinReplicas set to 0.
 	m := modelForTest(t)

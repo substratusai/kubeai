@@ -15,6 +15,9 @@ import (
 	"gocloud.dev/pubsub"
 )
 
+// TestMessenger tests the messenger integration using an in-memory pubsub implementation.
+// The test spins up a test backend server that emulates teh expected behavior of a model Pod
+// (NOTE: Pod containers are never actually run in integration tests).
 func TestMessenger(t *testing.T) {
 	m := modelForTest(t)
 	require.NoError(t, testK8sClient.Create(testCtx, m))
@@ -49,7 +52,7 @@ func TestMessenger(t *testing.T) {
 	updateModel(t, m, func() {
 		m.ObjectMeta.Annotations[v1.ModelPodIPAnnotation] = u.Hostname()
 		m.ObjectMeta.Annotations[v1.ModelPodPortAnnotation] = u.Port()
-	}, "Set model IP/port annotations to direct requests to testBackend")
+	}, "Set model IP/port annotations to direct requests to testBackend instead of the Pod's (non-existant) IP")
 
 	// Wait for controller cache to sync.
 	time.Sleep(3 * time.Second)

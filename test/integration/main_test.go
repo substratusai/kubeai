@@ -105,6 +105,8 @@ func sysCfg() config.System {
 	}
 }
 
+// TestMain performs setup and teardown for integration tests - i.e. all Test*()
+// functions in this package.
 func TestMain(m *testing.M) {
 	testCtx, testCancel = context.WithCancel(ctrl.SetupSignalHandler())
 

@@ -8,7 +8,7 @@ on:
   pull_request:
 
 jobs:
-  unit:
+  unit-integration:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -19,7 +19,7 @@ jobs:
         with:
           go-version: ">=1.21.0"
 
-      - name: Run unit tests
+      - name: Run unit & integration tests
         run: make test
   e2e-quickstart:
     runs-on: ubuntu-latest
