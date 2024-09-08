@@ -8,13 +8,11 @@
       
       
       
-        <link rel="canonical" href="https://www.kubeai.org/how-to/configure-speech-to-text/">
+        <link rel="canonical" href="https://www.kubeai.org/contributing/release-process/">
       
       
-        <link rel="prev" href="../../installation/gke/">
+        <link rel="prev" href="../documentation/">
       
-      
-        <link rel="next" href="../manage-models/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +20,7 @@
     
     
       
-        <title>Configure Speech To Text - KubeAI</title>
+        <title>Release Process - KubeAI</title>
       
     
     
@@ -72,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#configure-speech-to-text" class="md-skip">
+        <a href="#release-process" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +106,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Configure Speech To Text
+              Release Process
             
           </span>
         </div>
@@ -305,19 +303,17 @@
       
   
   
-    
   
   
-  
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -331,7 +327,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             How to
@@ -342,30 +338,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Configure Speech To Text
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../how-to/configure-speech-to-text/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -374,68 +350,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#enable-speech-to-text-model" class="md-nav__link">
-    <span class="md-ellipsis">
-      Enable Speech to Text model
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Enable Speech to Text model">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#enable-from-model-catalog" class="md-nav__link">
-    <span class="md-ellipsis">
-      Enable from model catalog
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#enable-by-creating-model-crd" class="md-nav__link">
-    <span class="md-ellipsis">
-      Enable by creating Model CRD
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
-    <span class="md-ellipsis">
-      Usage
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -448,7 +362,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../manage-models/" class="md-nav__link">
+      <a href="../../how-to/manage-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -469,7 +383,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../manage-resource-profiles/" class="md-nav__link">
+      <a href="../../how-to/manage-resource-profiles/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -662,17 +576,19 @@
       
   
   
+    
   
   
+  
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
           <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
@@ -686,7 +602,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             Contributing
@@ -700,7 +616,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contributing/development-environment/" class="md-nav__link">
+      <a href="../development-environment/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -721,7 +637,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contributing/documentation/" class="md-nav__link">
+      <a href="../documentation/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -739,10 +655,30 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../contributing/release-process/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Release Process
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -751,6 +687,53 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#docs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Docs
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docker-images" class="md-nav__link">
+    <span class="md-ellipsis">
+      Docker images
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#helm-chart" class="md-nav__link">
+    <span class="md-ellipsis">
+      Helm Chart
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -790,42 +773,27 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#enable-speech-to-text-model" class="md-nav__link">
+  <a href="#docs" class="md-nav__link">
     <span class="md-ellipsis">
-      Enable Speech to Text model
+      Docs
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Enable Speech to Text model">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#enable-from-model-catalog" class="md-nav__link">
-    <span class="md-ellipsis">
-      Enable from model catalog
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#enable-by-creating-model-crd" class="md-nav__link">
-    <span class="md-ellipsis">
-      Enable by creating Model CRD
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
+  <a href="#docker-images" class="md-nav__link">
     <span class="md-ellipsis">
-      Usage
+      Docker images
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#helm-chart" class="md-nav__link">
+    <span class="md-ellipsis">
+      Helm Chart
     </span>
   </a>
   
@@ -849,42 +817,23 @@
   
 
 
-<h1 id="configure-speech-to-text">Configure Speech To Text<a class="headerlink" href="#configure-speech-to-text" title="Permanent link">&para;</a></h1>
-<p>KubeAI provides a Speech to Text endpoint that can be used to transcribe audio files. This guide will walk you through the steps to enable this feature.</p>
-<h2 id="enable-speech-to-text-model">Enable Speech to Text model<a class="headerlink" href="#enable-speech-to-text-model" title="Permanent link">&para;</a></h2>
-<p>You can create new models by creating a Model CRD object or by enabling a model from the model catalog.</p>
-<h3 id="enable-from-model-catalog">Enable from model catalog<a class="headerlink" href="#enable-from-model-catalog" title="Permanent link">&para;</a></h3>
-<p>KubeAI provides predefined models in the model catalog. To enable the Speech to Text model, you can set the <code>enabled</code> flag to <code>true</code> in the <code>helm-values.yaml</code> file.</p>
-<div class="highlight"><pre><span></span><code><span class="nt">models</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">catalog</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">faster-whisper-medium-en-cpu</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">      </span><span class="nt">minReplicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
-</code></pre></div>
-<h3 id="enable-by-creating-model-crd">Enable by creating Model CRD<a class="headerlink" href="#enable-by-creating-model-crd" title="Permanent link">&para;</a></h3>
-<p>You can also create a Model CRD object to enable the Speech to Text model. Here is an example of a Model CRD object for the Speech to Text model:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubeai.org/v1</span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Model</span>
-<span class="nt">metadata</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">faster-whisper-medium-en-cpu</span>
-<span class="nt">spec</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">features</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">SpeechToText</span><span class="p p-Indicator">]</span>
-<span class="w">  </span><span class="nt">owner</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Systran</span>
-<span class="w">  </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hf://Systran/faster-whisper-medium.en</span>
-<span class="w">  </span><span class="nt">engine</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FasterWhisper</span>
-<span class="w">  </span><span class="nt">minReplicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
-<span class="w">  </span><span class="nt">maxReplicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
-<span class="w">  </span><span class="nt">resourceProfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cpu:1</span>
-</code></pre></div>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
-<p>The Speech to Text endpoint is available at <code>/openai/v1/transcriptions</code>.</p>
-<p>Example usage using curl:</p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-L<span class="w"> </span>-o<span class="w"> </span>kubeai.mp4<span class="w"> </span>https://github.com/user-attachments/assets/711d1279-6af9-4c6c-a052-e59e7730b757
-curl<span class="w"> </span>http://localhost:8000/openai/v1/audio/transcriptions<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-F<span class="w"> </span><span class="s2">&quot;file=@kubeai.mp4&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-F<span class="w"> </span><span class="s2">&quot;language=en&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-F<span class="w"> </span><span class="s2">&quot;model=faster-whisper-medium-en-cpu&quot;</span>
-</code></pre></div>
+<h1 id="release-process">Release Process<a class="headerlink" href="#release-process" title="Permanent link">&para;</a></h1>
+<p>This document describes the process for releasing a new version of the project.</p>
+<h2 id="docs">Docs<a class="headerlink" href="#docs" title="Permanent link">&para;</a></h2>
+<p>The docs are automatically published whenever a PR updates the docs and the PR is merged into the main branch. The docs are published to the <code>gh-pages</code> branch, which is the source for the Github Pages site.</p>
+<h2 id="docker-images">Docker images<a class="headerlink" href="#docker-images" title="Permanent link">&para;</a></h2>
+<p>The Docker image latest tag always points to the latest released version.
+The <code>main</code> tag points to the latest commit on the main branch.</p>
+<p>If you push a tag <code>vX.Y.Z</code> to the repository, the Docker image with the tag <code>vX.Y.Z</code>
+is built and pushed to Docker Hub. Afterwards, the <code>latest</code> tag is updated to point to the new version.</p>
+<h2 id="helm-chart">Helm Chart<a class="headerlink" href="#helm-chart" title="Permanent link">&para;</a></h2>
+<p>The Helm chart is automatically published whenever a PR updates the chart version
+and the PR is merged into the main branch. This triggers the Github action
+workflow defined in <code>.github/workflows/release-helm-chart-publish-docs.yml</code>.</p>
+<p>The appVersion in the Helm chart does not have to point to the latest released version. This allows us to first publish a new version of the Docker image without updating the Helm chart. The Helm chart is updated when we are ready to release a new version.</p>
+<p>This is important when a new appVersion isn't compatible with the current Helm chart.
+In those cases, we can first merge the PR, thoroughly test, release new container image, and then in a separate PR update the Helm chart and the appVersion.</p>
+<p>So merging PRs that update the Helm chart version should be done with care.</p>
 
 
 
