@@ -619,6 +619,11 @@ func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, index int32) *c
 	lbs := labelsForModel(m)
 	ann := r.annotationsForModel(m)
 
+	args := []string{
+		"v2",
+	}
+	args = append(args, m.Spec.Args...)
+
 	if _, ok := ann[kubeaiv1.ModelPodPortAnnotation]; !ok {
 		// Set port to 8000 (vLLM) if not overwritten.
 		ann[kubeaiv1.ModelPodPortAnnotation] = "8000"
