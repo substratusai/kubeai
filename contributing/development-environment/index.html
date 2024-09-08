@@ -936,7 +936,7 @@ helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class=
 
 <span class="c1"># OPTION B #</span>
 <span class="c1"># For quick local interation (run KubeAI outside of cluster)</span>
-<span class="nv">CONFIG_PATH</span><span class="o">=</span>./hack/dev-config.yaml<span class="w"> </span><span class="nv">POD_NAMESPACE</span><span class="o">=</span>default<span class="w"> </span>go<span class="w"> </span>run<span class="w"> </span>./cmd/main.go<span class="w"> </span>--allow-pod-address-override
+<span class="nv">CONFIG_PATH</span><span class="o">=</span>./hack/dev-config.yaml<span class="w"> </span><span class="nv">POD_NAMESPACE</span><span class="o">=</span>default<span class="w"> </span>go<span class="w"> </span>run<span class="w"> </span>./cmd/main.go
 
 <span class="c1"># In another terminal:</span>
 <span class="k">while</span><span class="w"> </span>true<span class="p">;</span><span class="w"> </span><span class="k">do</span><span class="w"> </span>kubectl<span class="w"> </span>port-forward<span class="w"> </span>service/dev-model<span class="w"> </span><span class="m">7000</span>:7000<span class="p">;</span><span class="w"> </span><span class="k">done</span>
