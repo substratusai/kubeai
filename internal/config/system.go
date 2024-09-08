@@ -5,22 +5,56 @@ import (
 	"errors"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	corev1 "k8s.io/api/core/v1"
 )
 
 type System struct {
-	SecretNames struct {
-		Huggingface string `json:"huggingface"`
-	} `json:"secretNames"`
+	SecretNames SecretNames `json:"secretNames" validate:"required"`
 
-	ModelServers ModelServers `json:"modelServers"`
+	ModelServers ModelServers `json:"modelServers" validate:"required"`
 
 	ResourceProfiles map[string]ResourceProfile `json:"resourceProfiles"`
 
-	Messaging struct {
-		ErrorMaxBackoff Duration        `json:"errorMaxBackoff"`
-		Streams         []MessageStream `json:"streams"`
-	} `json:"messaging"`
+	Messaging Messaging `json:"messaging"`
+
+	// MetricsAddr is the address the metric endpoint binds to. Default is ":8080".
+	MetricsAddr string `json:"metricsAddr"`
+
+	// HealthAddr is the address the health probe endpoint binds to. Default is ":8081".
+	HealthAddress string `json:"healthAddress"`
+
+	// AllowPodAddressOverride will allow the pod address to be overridden by the Model objects. This is useful for development purposes.
+	AllowPodAddressOverride bool `json:"allowPodAddressOverride"`
+}
+
+func (s *System) DefaultAndValidate() error {
+	if s.Messaging.ErrorMaxBackoff.Duration == 0 {
+		s.Messaging.ErrorMaxBackoff.Duration = time.Minute
+	}
+	if s.MetricsAddr == "" {
+		s.MetricsAddr = ":8080"
+	}
+	if s.HealthAddress == "" {
+		s.HealthAddress = ":8081"
+	}
+	for i := range s.Messaging.Streams {
+		if s.Messaging.Streams[i].MaxHandlers == 0 {
+			s.Messaging.Streams[i].MaxHandlers = 1
+		}
+	}
+	return validator.New(validator.WithRequiredStructEnabled()).Struct(s)
+}
+
+type SecretNames struct {
+	Huggingface string `json:"huggingface" validate:"required"`
+}
+
+type Messaging struct {
+	// ErrorMaxBackoff is the maximum backoff time that will be applied when
+	// consecutive errors are encountered. Default is 1 minute.
+	ErrorMaxBackoff Duration        `json:"errorMaxBackoff"`
+	Streams         []MessageStream `json:"streams"`
 }
 
 type Duration struct {
@@ -62,7 +96,9 @@ type ResourceProfile struct {
 type MessageStream struct {
 	RequestsURL  string `json:"requestsURL"`
 	ResponsesURL string `json:"responsesURL"`
-	MaxHandlers  int    `json:"maxHandlers"`
+	// MaxHandlers is the maximum number of handlers that will be started for this stream.
+	// Must be greater than 0. Defaults to 1.
+	MaxHandlers int `json:"maxHandlers" validate:"min=1"`
 }
 
 type ModelServers struct {

@@ -86,9 +86,9 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 	}
 	// Apply self labels based on features so that we can easily filter models.
-	if changed := r.applySelfLabels(model); changed {
-		shouldUpdate = true
-	}
+	shouldUpdate = r.applySelfLabels(model) || shouldUpdate
+	// Apply replica bounds to handle cases where min/max replicas were updated but a scale event was not triggered.
+	shouldUpdate = r.applyReplicaBounds(model) || shouldUpdate
 	if shouldUpdate {
 		if err := r.Update(ctx, model); err != nil {
 			return ctrl.Result{}, fmt.Errorf("updating model: %w", err)
@@ -726,6 +726,25 @@ func (r *ModelReconciler) lookupServerImage(model *kubeaiv1.Model, profile confi
 	} else {
 		return "", fmt.Errorf("missing default server image")
 	}
+}
+
+func (r *ModelReconciler) applyReplicaBounds(model *kubeaiv1.Model) bool {
+	var replicas int32
+	if model.Spec.Replicas != nil {
+		replicas = *model.Spec.Replicas
+	}
+
+	if replicas < model.Spec.MinReplicas {
+		model.Spec.Replicas = ptr.To(model.Spec.MinReplicas)
+		return true
+	}
+
+	if replicas > model.Spec.MaxReplicas {
+		model.Spec.Replicas = ptr.To(model.Spec.MaxReplicas)
+		return true
+	}
+
+	return false
 }
 
 func (r *ModelReconciler) applySelfLabels(model *kubeaiv1.Model) bool {

@@ -101,10 +101,7 @@ fullnameOverride: "kubeai"
 command:
 - /app/manager
 
-args:
-- --metrics-bind-address=:8080
-- --leader-elect
-- --health-probe-bind-address=:8081
+args: []
 
 serviceAccount:
   # Specifies whether a service account should be created
