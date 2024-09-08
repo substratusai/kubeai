@@ -1,4 +1,4 @@
-name: Release Charts and publish docs
+name: Publish docs
 
 on:
   push:
