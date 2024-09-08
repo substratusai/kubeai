@@ -827,13 +827,11 @@ The <code>main</code> tag points to the latest commit on the main branch.</p>
 <p>If you push a tag <code>vX.Y.Z</code> to the repository, the Docker image with the tag <code>vX.Y.Z</code>
 is built and pushed to Docker Hub. Afterwards, the <code>latest</code> tag is updated to point to the new version.</p>
 <h2 id="helm-chart">Helm Chart<a class="headerlink" href="#helm-chart" title="Permanent link">&para;</a></h2>
-<p>The Helm chart is automatically published whenever a PR updates the chart version
-and the PR is merged into the main branch. This triggers the Github action
-workflow defined in <code>.github/workflows/release-helm-chart-publish-docs.yml</code>.</p>
+<p>The Helm chart only gets released when a git tag is pushed to the repository with
+the format <code>helm-v*</code>.</p>
 <p>The appVersion in the Helm chart does not have to point to the latest released version. This allows us to first publish a new version of the Docker image without updating the Helm chart. The Helm chart is updated when we are ready to release a new version.</p>
 <p>This is important when a new appVersion isn't compatible with the current Helm chart.
 In those cases, we can first merge the PR, thoroughly test, release new container image, and then in a separate PR update the Helm chart and the appVersion.</p>
-<p>So merging PRs that update the Helm chart version should be done with care.</p>
 
 
 
