@@ -52,7 +52,7 @@ const (
 )
 
 // sysCfg returns the System configuration for testing.
-// A function is used to avoid accidental modification of the configuration in test cases
+// A function is used to avoid test cases accidentally modifying a global configuration variable
 // which would be tricky to debug.
 func sysCfg() config.System {
 	return config.System{

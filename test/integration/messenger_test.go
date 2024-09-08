@@ -16,7 +16,7 @@ import (
 )
 
 // TestMessenger tests the messenger integration using an in-memory pubsub implementation.
-// The test spins up a test backend server that emulates teh expected behavior of a model Pod
+// The test spins up a test backend server that emulates the expected behavior of a model Pod
 // (NOTE: Pod containers are never actually run in integration tests).
 func TestMessenger(t *testing.T) {
 	m := modelForTest(t)
@@ -26,7 +26,7 @@ func TestMessenger(t *testing.T) {
 	time.Sleep(3 * time.Second)
 
 	backendComplete := make(chan struct{})
-	testBackend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	testModelBackend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Ignore non-POST requests (i.e. metrics requests from autoscaler).
 		if r.Method != http.MethodPost {
 			t.Logf("Received non-POST request: %s %s", r.Method, r.URL)
@@ -44,9 +44,9 @@ func TestMessenger(t *testing.T) {
 
 		w.Write([]byte(fmt.Sprintf(`{"model": %q, "choices": [{"text": "hey"}]}`, reqBody.Model)))
 	}))
-	t.Logf("testBackend URL: %s", testBackend.URL)
+	t.Logf("testBackend URL: %s", testModelBackend.URL)
 
-	u, err := url.Parse(testBackend.URL)
+	u, err := url.Parse(testModelBackend.URL)
 	require.NoError(t, err)
 
 	updateModel(t, m, func() {

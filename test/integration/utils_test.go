@@ -85,3 +85,13 @@ func completeBackendRequests(c chan struct{}, n int) {
 		c <- struct{}{}
 	}
 }
+
+func mustFindPodContainerByName(t assert.TestingT, pod *corev1.Pod, name string) corev1.Container {
+	for _, c := range pod.Spec.Containers {
+		if c.Name == name {
+			return c
+		}
+	}
+	assert.Fail(t, "Container not found: "+name)
+	return corev1.Container{}
+}
