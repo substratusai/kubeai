@@ -32,7 +32,7 @@ func TestModelProfiles(t *testing.T) {
 				"memory": resource.MustParse("12Gi"),
 			},
 		})
-		assert.Equal(t, sysCfg.ResourceProfiles[resourceProfileCPU].NodeSelector, m.Spec.NodeSelector)
+		assert.Equal(t, sysCfg().ResourceProfiles[resourceProfileCPU].NodeSelector, m.Spec.NodeSelector)
 		assert.Equal(t, testVLLMCPUImage, m.Spec.Image)
 	}, 2*time.Second, time.Second/10, "Resource profile should be applied to the Model object")
 }

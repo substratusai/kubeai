@@ -59,6 +59,10 @@ func init() {
 
 }
 
+// Run starts all components of the system and blocks until they complete.
+// The context is used to signal the system to stop.
+// Returns an error if setup fails.
+// Exits the program if any of the components stop with an error.
 func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 	if err := cfg.DefaultAndValidate(); err != nil {
 		return fmt.Errorf("invalid config: %w", err)
@@ -214,9 +218,9 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 		}
 		msgrs = append(msgrs, msgr)
 	}
-	// TODO: Start messgers
 
 	var wg sync.WaitGroup
+
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -230,7 +234,9 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 			}
 		}
 	}()
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		Log.Info("starting leader election")
 		err := leaderElection.Start(ctx)
 		if err != nil {
@@ -243,7 +249,9 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 		}
 	}()
 	for i := range msgrs {
+		wg.Add(1)
 		go func() {
+			defer wg.Done()
 			Log.Info("Starting messenger", "index", i)
 			err := msgrs[i].Start(ctx)
 			if err != nil {
@@ -258,18 +266,21 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 	}
 
 	Log.Info("starting manager")
-	if err := mgr.Start(ctx); err != nil {
-		if errors.Is(err, context.Canceled) {
-			return nil
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		if err := mgr.Start(ctx); err != nil {
+			if !errors.Is(err, context.Canceled) {
+				Log.Error(err, "running manager")
+				os.Exit(1)
+			}
 		}
-		return fmt.Errorf("running manager: %w", err)
-	}
+		apiServer.Shutdown(context.Background())
+	}()
 
-	apiServer.Shutdown(context.Background())
-
-	Log.Info("waiting for all servers to shutdown")
+	Log.Info("run launched all goroutines")
 	wg.Wait()
-	Log.Info("exiting")
+	Log.Info("run goroutines finished")
 
 	return nil
 }

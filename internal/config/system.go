@@ -38,6 +38,11 @@ func (s *System) DefaultAndValidate() error {
 	if s.HealthAddress == "" {
 		s.HealthAddress = ":8081"
 	}
+	for i := range s.Messaging.Streams {
+		if s.Messaging.Streams[i].MaxHandlers == 0 {
+			s.Messaging.Streams[i].MaxHandlers = 1
+		}
+	}
 	return validator.New(validator.WithRequiredStructEnabled()).Struct(s)
 }
 
@@ -91,7 +96,9 @@ type ResourceProfile struct {
 type MessageStream struct {
 	RequestsURL  string `json:"requestsURL"`
 	ResponsesURL string `json:"responsesURL"`
-	MaxHandlers  int    `json:"maxHandlers"`
+	// MaxHandlers is the maximum number of handlers that will be started for this stream.
+	// Must be greater than 0. Defaults to 1.
+	MaxHandlers int `json:"maxHandlers" validate:"min=1"`
 }
 
 type ModelServers struct {

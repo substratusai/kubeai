@@ -81,6 +81,7 @@ func (m *Messenger) Start(ctx context.Context) error {
 	const maxRestartAttempts = 20
 	const maxRestartBackoff = 10 * time.Second
 
+	log.Printf("Messenger starting receive loop for requests subscription %q", m.requestsURL)
 recvLoop:
 	for {
 		msg, err := m.requests.Receive(ctx)
