@@ -10,7 +10,7 @@ The Docker image latest tag always points to the latest released version.
 The `main` tag points to the latest commit on the main branch.
 
 If you push a tag `vX.Y.Z` to the repository, the Docker image with the tag `vX.Y.Z`
-is built and pushed to the Docker Hub. Afterwards, the `latest` tag is updated to point to the new version.
+is built and pushed to Docker Hub. Afterwards, the `latest` tag is updated to point to the new version.
 
 ## Helm Chart
 The Helm chart is automatically published whenever a PR updates the chart version
