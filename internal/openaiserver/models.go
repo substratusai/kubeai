@@ -48,7 +48,16 @@ func (h *Handler) getModels(w http.ResponseWriter, r *http.Request) {
 		models[i] = model
 	}
 
-	if err := json.NewEncoder(w).Encode(models); err != nil {
+	// Wrapper struct to match the desired output format
+	response := struct {
+		Object string  `json:"object"`
+		Data   []Model `json:"data"`
+	}{
+		Object: "list",
+		Data:   models,
+	}
+
+	if err := json.NewEncoder(w).Encode(response); err != nil {
 		sendErrorResponse(w, http.StatusInternalServerError, "failed to encode response: %v", err)
 		return
 	}
