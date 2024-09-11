@@ -80,6 +80,10 @@ models:
       minReplicas: 1
 EOF
 
+
+# wait for kubeai pod to be ready after helm upgrade.
+sleep 10
+wait_for_pod_ready app.kubernetes.io/name=kubeai
 wait_for_pod_ready model=gemma2-2b-cpu
 
 curl -s -X GET "http://localhost:8000/openai/v1/models" | jq '. | length == 4'
