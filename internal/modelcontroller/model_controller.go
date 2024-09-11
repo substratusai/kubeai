@@ -702,12 +702,14 @@ func (r *ModelReconciler) applyResourceProfile(model *kubeaiv1.Model) (bool, err
 		changed = true
 	}
 
-	if !reflect.DeepEqual(profile.Affinity, model.Spec.Affinity) {
+	if model.Spec.Affinity == nil || (!reflect.DeepEqual(profile.Affinity, model.Spec.Affinity) &&
+		k8sutils.ManagesField(managedFields, "spec", "affinity")) {
 		model.Spec.Affinity = profile.Affinity
 		changed = true
 	}
 
-	if !reflect.DeepEqual(profile.Tolerations, model.Spec.Tolerations) {
+	if model.Spec.Tolerations == nil || (!reflect.DeepEqual(profile.Tolerations, model.Spec.Tolerations) &&
+		k8sutils.ManagesField(managedFields, "spec", "tolerations")) {
 		model.Spec.Tolerations = profile.Tolerations
 		changed = true
 	}

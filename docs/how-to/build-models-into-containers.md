@@ -1,6 +1,6 @@
 # Build models into containers
 
-This guide assumes you are in the `kubeai.git` repo. In this guide we will preload a LLM into a custom built Ollama serving image. You can follow the same steps for other models and other serving engines.
+In this guide we will preload a LLM into a custom built Ollama serving image. You can follow the same steps for other models and other serving engines.
 
 Define some values
 ```bash
@@ -13,8 +13,8 @@ export IMAGE=us-central1-docker.pkg.dev/substratus-dev/default/ollama-builtin-qw
 Build and push image. Note: building (downloading base image & model) and pushing (uploading image & model) can take a while depending on the size of the model.
 
 ```bash
-# Within kubeai.git...
-cd ./images/ollama-builtin
+git clone https://github.com/substratusai/kubeai
+cd ./kubeai/images/ollama-builtin
 
 docker build --build-arg MODEL_URL=$MODEL_URL -t $IMAGE .
 docker push $IMAGE

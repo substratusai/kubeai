@@ -12,7 +12,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// TestModelProfiles tests that resource profiles are applied as expected.
+// TestModelResourceProfile tests that resource profiles are applied as expected.
 func TestModelResourceProfile(t *testing.T) {
 	// Construct a Model object with MinReplicas set to 0.
 	m := modelForTest(t)
@@ -58,7 +58,7 @@ func TestModelResourceProfile(t *testing.T) {
 	}, 2*time.Second, time.Second/10, "Resource profile should be applied to the model Pod object")
 }
 
-// TestModelProfiles tests that resource profiles are applied as expected.
+// TestModelResourceProfileWithUserSetValues tests that user-set values are not overridden by resource profiles.
 func TestModelResourceProfileWithUserSetValues(t *testing.T) {
 	// Construct a Model object with MinReplicas set to 0.
 	m := modelForTest(t)
@@ -81,6 +81,34 @@ func TestModelResourceProfileWithUserSetValues(t *testing.T) {
 	}
 	m.Spec.NodeSelector = userSetNodeSelector
 
+	userSetTolerations := []corev1.Toleration{
+		{
+			Key:      "foo",
+			Operator: corev1.TolerationOpExists,
+			Effect:   corev1.TaintEffectNoSchedule,
+		},
+	}
+	m.Spec.Tolerations = userSetTolerations
+
+	userSetAffinity := &corev1.Affinity{
+		NodeAffinity: &corev1.NodeAffinity{
+			RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
+				NodeSelectorTerms: []corev1.NodeSelectorTerm{
+					{
+						MatchExpressions: []corev1.NodeSelectorRequirement{
+							{
+								Key:      "foo-user",
+								Operator: corev1.NodeSelectorOpIn,
+								Values:   []string{"bar-user"},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	m.Spec.Affinity = userSetAffinity
+
 	const userSetImage = "users-repo.com/users-image:latest"
 	m.Spec.Image = userSetImage
 
@@ -97,6 +125,8 @@ func TestModelResourceProfileWithUserSetValues(t *testing.T) {
 		require.Equal(t, &userSetResources, m.Spec.Resources)
 		require.Equal(t, userSetNodeSelector, m.Spec.NodeSelector)
 		require.Equal(t, userSetImage, m.Spec.Image)
+		require.Equal(t, userSetTolerations, m.Spec.Tolerations)
+		require.Equal(t, userSetAffinity, m.Spec.Affinity)
 
 		time.Sleep(time.Second / 10)
 	}

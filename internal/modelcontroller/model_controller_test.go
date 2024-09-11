@@ -9,6 +9,7 @@ import (
 	"github.com/substratusai/kubeai/internal/config"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func Test_applyResourceProfile(t *testing.T) {
@@ -134,6 +135,25 @@ func Test_applyResourceProfile(t *testing.T) {
 		{
 			name: "unchanged",
 			input: &v1.Model{
+				ObjectMeta: metav1.ObjectMeta{
+					ManagedFields: []metav1.ManagedFieldsEntry{
+						{
+							Manager:    "kubeai-manager",
+							FieldsType: "FieldsV1",
+							FieldsV1: &metav1.FieldsV1{
+								Raw: []byte(`{
+                            "f:spec": {
+                                "f:image": {},
+                                "f:tolerations": {},
+                                "f:resources": {},
+                                "f:affinity": {},
+                                "f:nodeSelector": {}
+                            }
+                        }`),
+							},
+						},
+					},
+				},
 				Spec: v1.ModelSpec{
 					ResourceProfile: "my-gpu:1",
 					Engine:          v1.VLLMEngine,
@@ -178,8 +198,70 @@ func Test_applyResourceProfile(t *testing.T) {
 			expectChanged: false,
 		},
 		{
+			name: "should not change",
+			input: &v1.Model{
+				Spec: v1.ModelSpec{
+					ResourceProfile: "my-gpu:1",
+					Engine:          v1.VLLMEngine,
+					Resources: &corev1.ResourceRequirements{
+						Limits: corev1.ResourceList{
+							"custom.com/gpu": resource.MustParse("3"),
+						},
+						Requests: corev1.ResourceList{
+							"memory": resource.MustParse("26Gi"),
+						},
+					},
+					NodeSelector: map[string]string{
+						"my-user-specified": "val",
+					},
+					Image: "default-vllm-image",
+					Affinity: &corev1.Affinity{
+						NodeAffinity: &corev1.NodeAffinity{
+							RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
+								NodeSelectorTerms: []corev1.NodeSelectorTerm{
+									{
+										MatchExpressions: []corev1.NodeSelectorRequirement{
+											{
+												Key:      "my-user-key",
+												Operator: corev1.NodeSelectorOpIn,
+												Values:   []string{"my-user-val"},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					Tolerations: []corev1.Toleration{
+						{
+							Key:      "my-user-toleration",
+							Operator: corev1.TolerationOpExists,
+							Effect:   corev1.TaintEffectNoSchedule,
+						},
+					},
+				},
+			},
+			expectChanged: false,
+		},
+		{
 			name: "toleration-addition",
 			input: &v1.Model{
+				ObjectMeta: metav1.ObjectMeta{
+					ManagedFields: []metav1.ManagedFieldsEntry{
+						{
+							Manager:    "kubeai-manager",
+							FieldsType: "FieldsV1",
+							FieldsV1: &metav1.FieldsV1{
+								Raw: []byte(`{
+                            "f:spec": {
+                                "f:image": {},
+                                "f:tolerations": {}
+                            }
+                        }`),
+							},
+						},
+					},
+				},
 				Spec: v1.ModelSpec{
 					ResourceProfile: "tolerations-only:1",
 					Engine:          v1.VLLMEngine,
@@ -218,6 +300,22 @@ func Test_applyResourceProfile(t *testing.T) {
 		{
 			name: "toleration-changed",
 			input: &v1.Model{
+				ObjectMeta: metav1.ObjectMeta{
+					ManagedFields: []metav1.ManagedFieldsEntry{
+						{
+							Manager:    "kubeai-manager",
+							FieldsType: "FieldsV1",
+							FieldsV1: &metav1.FieldsV1{
+								Raw: []byte(`{
+                            "f:spec": {
+                                "f:image": {},
+                                "f:tolerations": {}
+                            }
+                        }`),
+							},
+						},
+					},
+				},
 				Spec: v1.ModelSpec{
 					ResourceProfile: "tolerations-only:1",
 					Engine:          v1.VLLMEngine,
@@ -267,16 +365,24 @@ func Test_applyResourceProfile(t *testing.T) {
 			changed, err := r.applyResourceProfile(model)
 			require.NoError(t, err)
 			if c.expectChanged {
-				requireEqualJSON(t, c.expected, model)
+				requireEqualProfileFields(t, c.expected, model)
 			} else {
-				requireEqualJSON(t, clone, model)
+				requireEqualProfileFields(t, clone, model)
 			}
 			require.Equal(t, c.expectChanged, changed)
 		})
 	}
 }
 
-func requireEqualJSON(t *testing.T, a, b *v1.Model) {
+func requireEqualProfileFields(t *testing.T, a, b *v1.Model) {
+	requireEqualJSON(t, a.Spec.ResourceProfile, b.Spec.ResourceProfile)
+	requireEqualJSON(t, a.Spec.Resources, b.Spec.Resources)
+	requireEqualJSON(t, a.Spec.NodeSelector, b.Spec.NodeSelector)
+	requireEqualJSON(t, a.Spec.Affinity, b.Spec.Affinity)
+	requireEqualJSON(t, a.Spec.Tolerations, b.Spec.Tolerations)
+}
+
+func requireEqualJSON(t *testing.T, a, b interface{}) {
 	jsonA, err := json.Marshal(a)
 	require.NoError(t, err)
 	jsonB, err := json.Marshal(b)

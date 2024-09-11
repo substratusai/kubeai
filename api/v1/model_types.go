@@ -39,23 +39,23 @@ type ModelSpec struct {
 	ResourceProfile string `json:"resourceProfile,omitempty"`
 
 	// Image to be used for the server process.
-	// Will be set from the ResourceProfile if provided.
+	// Will be set from the ResourceProfile if not specified.
 	Image string `json:"image,omitempty"`
 
 	// Resources to be allocated to the server process.
-	// Will be set from the ResourceProfile if provided.
+	// Will be set from the ResourceProfile if not specified.
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 
 	// NodeSelector to be added to the server process.
-	// Will be set from the ResourceProfile if provided.
+	// Will be set from the ResourceProfile if not specified.
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 
 	// Affinity to be added to the server process.
-	// +optional
+	// Will be set from the ResourceProfile if not specified.
 	Affinity *corev1.Affinity `json:"affinity,omitempty"`
 
 	// Tolerations to be added to the server process.
-	// +optional
+	// Will be set from the ResourceProfile if not specified.
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
 
 	// Args to be added to the server process.
