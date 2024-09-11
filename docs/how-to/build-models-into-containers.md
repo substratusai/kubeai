@@ -23,7 +23,7 @@ docker push $IMAGE
 Create a model manifest & apply into a cluster with KubeAI installed. NOTE: The only difference between an built-in model image and otherwise is the addition of the `image:` field.
 
 ```bash
-cat <<EOF | envsubst > builtin-model.yaml
+kubectl apply -f - << EOF
 apiVersion: kubeai.org/v1
 kind: Model
 metadata:
@@ -38,6 +38,4 @@ spec:
   minReplicas: 1
   maxReplicas: 3
 EOF
-
-kubectl apply -f ./builtin-model.yaml
 ```
