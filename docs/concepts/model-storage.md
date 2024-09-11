@@ -7,7 +7,7 @@ The best caching technique may very depending on your environment:
 * What cloud features are available?
 * Is your cluster deployed in an air-gapped environment?
 
-## A. Model embedded in container
+## A. Model built into container
 
 **Status:** Supported
 
@@ -24,7 +24,7 @@ Building a model into a container image can provide a simple way to take advanta
 
 **Guides:**
 
-* [How to preload model container images](../how-to/preload-model-container-images.md)
+* [How to build models into container images](../how-to/build-models-into-containers.md)
 
 ## B. Model on shared filesystem (read-write-many)
 
