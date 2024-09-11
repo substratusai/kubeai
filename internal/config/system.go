@@ -56,10 +56,12 @@ func (s *System) DefaultAndValidate() error {
 }
 
 type Autoscaling struct {
-	// Interval is the time between each autoscaling check. Default is 10 seconds.
+	// Interval is the time between each autoscaling check.
+	// Default is 10 seconds.
 	Interval Duration `json:"interval"`
 	// ScaleDownDelay is the minimum time before a deployment is scaled down after
-	// the autoscaling algorithm determines that it should be scaled down. Default is 3 minutes.
+	// the autoscaling algorithm determines that it should be scaled down.
+	// Default is 3 minutes.
 	ScaleDownDelay Duration `json:"scaleDownDelay"`
 }
 
