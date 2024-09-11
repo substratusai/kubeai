@@ -1,88 +1,285 @@
-/*
-Copyright 2024.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package modelcontroller
 
-/*
-// TODO: Implement model controller tests
-
 import (
-	"context"
+	"encoding/json"
+	"testing"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
+	"github.com/stretchr/testify/require"
+	v1 "github.com/substratusai/kubeai/api/v1"
+	"github.com/substratusai/kubeai/internal/config"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
-var _ = Describe("Model Controller", func() {
-	Context("When reconciling a resource", func() {
-		const resourceName = "test-resource"
-
-		ctx := context.Background()
-
-		typeNamespacedName := types.NamespacedName{
-			Name:      resourceName,
-			Namespace: "default", // TODO(user):Modify as needed
-		}
-		model := &kubeaiv1.Model{}
-
-		BeforeEach(func() {
-			By("creating the custom resource for the Kind Model")
-			err := k8sClient.Get(ctx, typeNamespacedName, model)
-			if err != nil && errors.IsNotFound(err) {
-				resource := &kubeaiv1.Model{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      resourceName,
-						Namespace: "default",
+func Test_applyResourceProfile(t *testing.T) {
+	r := ModelReconciler{
+		ResourceProfiles: map[string]config.ResourceProfile{
+			"my-gpu": {
+				Limits: corev1.ResourceList{
+					"nvidia.com/gpu": resource.MustParse("1"),
+				},
+				Requests: corev1.ResourceList{
+					"memory": resource.MustParse("24Gi"),
+				},
+				NodeSelector: map[string]string{
+					"my-gpu": "true",
+				},
+				Affinity: &corev1.Affinity{
+					NodeAffinity: &corev1.NodeAffinity{
+						RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
+							NodeSelectorTerms: []corev1.NodeSelectorTerm{
+								{
+									MatchExpressions: []corev1.NodeSelectorRequirement{
+										{
+											Key:      "my-gpu-key",
+											Operator: corev1.NodeSelectorOpIn,
+											Values:   []string{"my-gpu-val"},
+										},
+									},
+								},
+							},
+						},
 					},
-					// TODO(user): Specify other spec details if needed.
-				}
-				Expect(k8sClient.Create(ctx, resource)).To(Succeed())
+				},
+				Tolerations: []corev1.Toleration{
+					{
+						Key:      "my-gpu-toleration",
+						Operator: corev1.TolerationOpExists,
+						Effect:   corev1.TaintEffectNoSchedule,
+					},
+				},
+			},
+			"tolerations-only": {
+				Tolerations: []corev1.Toleration{
+					{
+						Key:      "toleration1",
+						Operator: corev1.TolerationOpExists,
+						Effect:   corev1.TaintEffectNoSchedule,
+					},
+					{
+						Key:      "toleration2",
+						Operator: corev1.TolerationOpExists,
+						Effect:   corev1.TaintEffectNoSchedule,
+					},
+				},
+			},
+		},
+		ModelServers: config.ModelServers{
+			VLLM: config.ModelServer{
+				Images: map[string]string{
+					"default": "default-vllm-image",
+				},
+			},
+		},
+	}
+
+	cases := []struct {
+		name          string
+		input         *v1.Model
+		expectChanged bool
+		expected      *v1.Model
+	}{
+		{
+			name: "basic",
+			input: &v1.Model{
+				Spec: v1.ModelSpec{
+					ResourceProfile: "my-gpu:1",
+					Engine:          v1.VLLMEngine,
+				},
+			},
+			expectChanged: true,
+			expected: &v1.Model{
+				Spec: v1.ModelSpec{
+					ResourceProfile: "my-gpu:1",
+					Engine:          v1.VLLMEngine,
+					Resources: &corev1.ResourceRequirements{
+						Limits: corev1.ResourceList{
+							"nvidia.com/gpu": resource.MustParse("1"),
+						},
+						Requests: corev1.ResourceList{
+							"memory": resource.MustParse("24Gi"),
+						},
+					},
+					NodeSelector: map[string]string{
+						"my-gpu": "true",
+					},
+					Image: "default-vllm-image",
+					Affinity: &corev1.Affinity{
+						NodeAffinity: &corev1.NodeAffinity{
+							RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
+								NodeSelectorTerms: []corev1.NodeSelectorTerm{
+									{
+										MatchExpressions: []corev1.NodeSelectorRequirement{
+											{
+												Key:      "my-gpu-key",
+												Operator: corev1.NodeSelectorOpIn,
+												Values:   []string{"my-gpu-val"},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					Tolerations: []corev1.Toleration{
+						{
+							Key:      "my-gpu-toleration",
+							Operator: corev1.TolerationOpExists,
+							Effect:   corev1.TaintEffectNoSchedule,
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "unchanged",
+			input: &v1.Model{
+				Spec: v1.ModelSpec{
+					ResourceProfile: "my-gpu:1",
+					Engine:          v1.VLLMEngine,
+					Resources: &corev1.ResourceRequirements{
+						Limits: corev1.ResourceList{
+							"nvidia.com/gpu": resource.MustParse("1"),
+						},
+						Requests: corev1.ResourceList{
+							"memory": resource.MustParse("24Gi"),
+						},
+					},
+					NodeSelector: map[string]string{
+						"my-gpu": "true",
+					},
+					Image: "default-vllm-image",
+					Affinity: &corev1.Affinity{
+						NodeAffinity: &corev1.NodeAffinity{
+							RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
+								NodeSelectorTerms: []corev1.NodeSelectorTerm{
+									{
+										MatchExpressions: []corev1.NodeSelectorRequirement{
+											{
+												Key:      "my-gpu-key",
+												Operator: corev1.NodeSelectorOpIn,
+												Values:   []string{"my-gpu-val"},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					Tolerations: []corev1.Toleration{
+						{
+							Key:      "my-gpu-toleration",
+							Operator: corev1.TolerationOpExists,
+							Effect:   corev1.TaintEffectNoSchedule,
+						},
+					},
+				},
+			},
+			expectChanged: false,
+		},
+		{
+			name: "toleration-addition",
+			input: &v1.Model{
+				Spec: v1.ModelSpec{
+					ResourceProfile: "tolerations-only:1",
+					Engine:          v1.VLLMEngine,
+					Tolerations: []corev1.Toleration{
+						{
+							Key:      "toleration1",
+							Operator: corev1.TolerationOpExists,
+							Effect:   corev1.TaintEffectNoSchedule,
+						},
+					},
+					Image: "default-vllm-image",
+				},
+			},
+			expectChanged: true,
+			expected: &v1.Model{
+				Spec: v1.ModelSpec{
+					ResourceProfile: "tolerations-only:1",
+					Engine:          v1.VLLMEngine,
+					Resources:       &corev1.ResourceRequirements{},
+					Tolerations: []corev1.Toleration{
+						{
+							Key:      "toleration1",
+							Operator: corev1.TolerationOpExists,
+							Effect:   corev1.TaintEffectNoSchedule,
+						},
+						{
+							Key:      "toleration2",
+							Operator: corev1.TolerationOpExists,
+							Effect:   corev1.TaintEffectNoSchedule,
+						},
+					},
+					Image: "default-vllm-image",
+				},
+			},
+		},
+		{
+			name: "toleration-changed",
+			input: &v1.Model{
+				Spec: v1.ModelSpec{
+					ResourceProfile: "tolerations-only:1",
+					Engine:          v1.VLLMEngine,
+					Tolerations: []corev1.Toleration{
+						{
+							Key:      "toleration1",
+							Operator: corev1.TolerationOpExists,
+							Effect:   corev1.TaintEffectNoSchedule,
+						},
+						{
+							Key:      "toleration3",
+							Operator: corev1.TolerationOpExists,
+							Effect:   corev1.TaintEffectNoSchedule,
+						},
+					},
+					Image: "default-vllm-image",
+				},
+			},
+			expectChanged: true,
+			expected: &v1.Model{
+				Spec: v1.ModelSpec{
+					ResourceProfile: "tolerations-only:1",
+					Engine:          v1.VLLMEngine,
+					Resources:       &corev1.ResourceRequirements{},
+					Tolerations: []corev1.Toleration{
+						{
+							Key:      "toleration1",
+							Operator: corev1.TolerationOpExists,
+							Effect:   corev1.TaintEffectNoSchedule,
+						},
+						{
+							Key:      "toleration2",
+							Operator: corev1.TolerationOpExists,
+							Effect:   corev1.TaintEffectNoSchedule,
+						},
+					},
+					Image: "default-vllm-image",
+				},
+			},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			model := c.input
+			clone := model.DeepCopy()
+			changed, err := r.applyResourceProfile(model)
+			require.NoError(t, err)
+			if c.expectChanged {
+				requireEqualJSON(t, c.expected, model)
+			} else {
+				requireEqualJSON(t, clone, model)
 			}
+			require.Equal(t, c.expectChanged, changed)
 		})
+	}
+}
 
-		AfterEach(func() {
-			// TODO(user): Cleanup logic after each test, like removing the resource instance.
-			resource := &kubeaiv1.Model{}
-			err := k8sClient.Get(ctx, typeNamespacedName, resource)
-			Expect(err).NotTo(HaveOccurred())
-
-			By("Cleanup the specific resource instance Model")
-			Expect(k8sClient.Delete(ctx, resource)).To(Succeed())
-		})
-		It("should successfully reconcile the resource", func() {
-			By("Reconciling the created resource")
-			controllerReconciler := &ModelReconciler{
-				Client: k8sClient,
-				Scheme: k8sClient.Scheme(),
-			}
-
-			_, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
-				NamespacedName: typeNamespacedName,
-			})
-			Expect(err).NotTo(HaveOccurred())
-			// TODO(user): Add more specific assertions depending on your controller's reconciliation logic.
-			// Example: If you expect a certain status condition after reconciliation, verify it here.
-		})
-	})
-})
-*/
+func requireEqualJSON(t *testing.T, a, b *v1.Model) {
+	jsonA, err := json.Marshal(a)
+	require.NoError(t, err)
+	jsonB, err := json.Marshal(b)
+	require.NoError(t, err)
+	require.JSONEq(t, string(jsonA), string(jsonB))
+}
