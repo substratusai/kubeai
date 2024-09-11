@@ -34,6 +34,7 @@ import (
 
 	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
 	"github.com/substratusai/kubeai/internal/config"
+	"github.com/substratusai/kubeai/internal/k8sutils"
 	utils "github.com/substratusai/kubeai/internal/k8sutils"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -91,7 +92,7 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	// Apply replica bounds to handle cases where min/max replicas were updated but a scale event was not triggered.
 	shouldUpdate = r.applyReplicaBounds(model) || shouldUpdate
 	if shouldUpdate {
-		if err := r.Update(ctx, model); err != nil {
+		if err := r.Update(ctx, model, k8sutils.DefaultUpdateOptions()); err != nil {
 			return ctrl.Result{}, fmt.Errorf("updating model: %w", err)
 		}
 	}
@@ -137,7 +138,7 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			if err := ctrl.SetControllerReference(model, pod, r.Scheme); err != nil {
 				return ctrl.Result{}, fmt.Errorf("setting controller reference: %w", err)
 			}
-			if err := r.Client.Create(ctx, pod); err != nil {
+			if err := r.Client.Create(ctx, pod, k8sutils.DefaultCreateOptions()); err != nil {
 				return ctrl.Result{}, fmt.Errorf("creating pod: %w", err)
 			}
 		}
@@ -647,6 +648,11 @@ func (r *ModelReconciler) annotationsForModel(m *kubeaiv1.Model) map[string]stri
 }
 
 func (r *ModelReconciler) applyResourceProfile(model *kubeaiv1.Model) (bool, error) {
+	managedFields, err := k8sutils.KubeAIManagedFields(model)
+	if err != nil {
+		return false, fmt.Errorf("getting managed fields: %w", err)
+	}
+
 	split := strings.Split(model.Spec.ResourceProfile, ":")
 	if len(split) != 2 {
 		return false, fmt.Errorf("invalid resource profile: %q, should match <name>:<multiple>, example: nvidia-gpu-l4:2", model.Spec.ResourceProfile)
@@ -682,13 +688,16 @@ func (r *ModelReconciler) applyResourceProfile(model *kubeaiv1.Model) (bool, err
 		Requests: requests,
 		Limits:   limits,
 	}
-	if model.Spec.Resources == nil || !resourcesEqual(model.Spec.Resources.Requests, requests) || !resourcesEqual(model.Spec.Resources.Limits, limits) {
+	if model.Spec.Resources == nil ||
+		((!resourcesEqual(model.Spec.Resources.Requests, requests) || !resourcesEqual(model.Spec.Resources.Limits, limits)) &&
+			k8sutils.ManagesField(managedFields, "spec", "resources")) {
 		model.Spec.Resources = &resources
 		changed = true
 	}
 
 	nodeSelector := profile.NodeSelector
-	if !selectorsEqual(nodeSelector, model.Spec.NodeSelector) {
+	if model.Spec.NodeSelector == nil ||
+		(!selectorsEqual(nodeSelector, model.Spec.NodeSelector) && k8sutils.ManagesField(managedFields, "spec", "nodeSelector")) {
 		model.Spec.NodeSelector = nodeSelector
 		changed = true
 	}
@@ -707,7 +716,8 @@ func (r *ModelReconciler) applyResourceProfile(model *kubeaiv1.Model) (bool, err
 	if err != nil {
 		return false, fmt.Errorf("looking up server image: %w", err)
 	}
-	if model.Spec.Image == "" || model.Spec.Image != image {
+	if model.Spec.Image == "" ||
+		(model.Spec.Image != image && k8sutils.ManagesField(managedFields, "spec", "image")) {
 		model.Spec.Image = image
 		changed = true
 	}
