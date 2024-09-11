@@ -693,7 +693,7 @@ func (r *ModelReconciler) applyResourceProfile(model *kubeaiv1.Model) (bool, err
 		changed = true
 	}
 
-	if !affinitiesEqual(profile.Affinity, model.Spec.Affinity) {
+	if !reflect.DeepEqual(profile.Affinity, model.Spec.Affinity) {
 		model.Spec.Affinity = profile.Affinity
 		changed = true
 	}
@@ -799,16 +799,8 @@ func (r *ModelReconciler) applySelfLabels(model *kubeaiv1.Model) bool {
 	return changed
 }
 
-func affinitiesEqual(a, b []corev1.Affinity) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if !reflect.DeepEqual(a[i], b[i]) {
-			return false
-		}
-	}
-	return true
+func affinitiesEqual(a, b *corev1.Affinity) bool {
+	return reflect.DeepEqual(a, b)
 }
 
 func tolerationsEqual(a, b []corev1.Toleration) bool {
