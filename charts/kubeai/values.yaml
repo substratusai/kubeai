@@ -44,6 +44,22 @@ resourceProfiles:
       nvidia.com/gpu: "1"
       cpu: "6"
       memory: "24Gi"
+    nodeSelector:
+      cloud.google.com/gke-accelerator: "nvidia-l4"
+    tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Equal"
+        value: "present"
+        effect: "NoSchedule"
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: cloud.google.com/gke-accelerator
+              operator: In
+              values:
+              - nvidia-l4
   # nvidia-gpu-v100:
   # nvidia-gpu-a100:
   # google-tpu-v5e:

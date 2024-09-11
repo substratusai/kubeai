@@ -50,6 +50,14 @@ type ModelSpec struct {
 	// Will be set from the ResourceProfile if provided.
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 
+	// Affinity to be added to the server process.
+	// +optional
+	Affinity *corev1.Affinity `json:"affinity,omitempty"`
+
+	// Tolerations to be added to the server process.
+	// +optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+
 	// Args to be added to the server process.
 	Args []string `json:"args,omitempty"`
 

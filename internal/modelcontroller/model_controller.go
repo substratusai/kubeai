@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -252,6 +253,8 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, index int32) *corev
 		},
 		Spec: corev1.PodSpec{
 			NodeSelector: m.Spec.NodeSelector,
+			Affinity:     m.Spec.Affinity,
+			Tolerations:  m.Spec.Tolerations,
 			Containers: []corev1.Container{
 				{
 					Name:      "server",
@@ -397,6 +400,8 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, index int32) *cor
 		},
 		Spec: corev1.PodSpec{
 			NodeSelector: m.Spec.NodeSelector,
+			Affinity:     m.Spec.Affinity,
+			Tolerations:  m.Spec.Tolerations,
 			Containers: []corev1.Container{
 				{
 					Name:      "server",
@@ -538,6 +543,8 @@ func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, index int3
 		},
 		Spec: corev1.PodSpec{
 			NodeSelector: m.Spec.NodeSelector,
+			Affinity:     m.Spec.Affinity,
+			Tolerations:  m.Spec.Tolerations,
 			Containers: []corev1.Container{
 				{
 					Name:      "server",
@@ -686,6 +693,16 @@ func (r *ModelReconciler) applyResourceProfile(model *kubeaiv1.Model) (bool, err
 		changed = true
 	}
 
+	if !affinitiesEqual(profile.Affinity, model.Spec.Affinity) {
+		model.Spec.Affinity = profile.Affinity
+		changed = true
+	}
+
+	if !tolerationsEqual(profile.Tolerations, model.Spec.Tolerations) {
+		model.Spec.Tolerations = profile.Tolerations
+		changed = true
+	}
+
 	image, err := r.lookupServerImage(model, profile)
 	if err != nil {
 		return false, fmt.Errorf("looking up server image: %w", err)
@@ -780,6 +797,30 @@ func (r *ModelReconciler) applySelfLabels(model *kubeaiv1.Model) bool {
 	}
 
 	return changed
+}
+
+func affinitiesEqual(a, b []corev1.Affinity) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if !reflect.DeepEqual(a[i], b[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+func tolerationsEqual(a, b []corev1.Toleration) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if !reflect.DeepEqual(a[i], b[i]) {
+			return false
+		}
+	}
+	return true
 }
 
 func resourcesEqual(a, b corev1.ResourceList) bool {

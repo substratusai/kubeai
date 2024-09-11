@@ -91,6 +91,8 @@ type ResourceProfile struct {
 	Requests     corev1.ResourceList `json:"requests,omitempty"`
 	Limits       corev1.ResourceList `json:"limits,omitempty"`
 	NodeSelector map[string]string   `json:"nodeSelector,omitempty"`
+	Affinity     *corev1.Affinity    `json:"affinity,omitempty"`
+	Tolerations  []corev1.Toleration `json:"tolerations,omitempty"`
 }
 
 type MessageStream struct {
