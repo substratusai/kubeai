@@ -36,6 +36,8 @@ func TestModelProfiles(t *testing.T) {
 
 		// Account for the 3x multiple set in the test Model.
 		assert.Equal(t, &expectedResources, m.Spec.Resources)
+		assert.Equal(t, sysCfg().ResourceProfiles[resourceProfileCPU].Tolerations, m.Spec.Tolerations)
+		assert.Equal(t, sysCfg().ResourceProfiles[resourceProfileCPU].Affinity, m.Spec.Affinity)
 		assert.Equal(t, sysCfg().ResourceProfiles[resourceProfileCPU].NodeSelector, m.Spec.NodeSelector)
 		assert.Equal(t, testVLLMCPUImage, m.Spec.Image)
 	}, 2*time.Second, time.Second/10, "Resource profile should be applied to the Model object")
@@ -49,6 +51,8 @@ func TestModelProfiles(t *testing.T) {
 		// The Pod should have a single container named "server".
 		container := mustFindPodContainerByName(t, pod, "server")
 		assert.Equal(t, expectedResources, container.Resources)
+		assert.Contains(t, pod.Spec.Tolerations, sysCfg().ResourceProfiles[resourceProfileCPU].Tolerations[0])
+		assert.Equal(t, sysCfg().ResourceProfiles[resourceProfileCPU].Affinity, pod.Spec.Affinity)
 		assert.Equal(t, sysCfg().ResourceProfiles[resourceProfileCPU].NodeSelector, pod.Spec.NodeSelector)
 	}, 2*time.Second, time.Second/10, "Resource profile should be applied to the model Pod object")
 }

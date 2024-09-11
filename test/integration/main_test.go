@@ -88,6 +88,30 @@ func sysCfg() config.System {
 					"compute-type": "cpu",
 				},
 				ImageName: "cpu-only",
+				Tolerations: []corev1.Toleration{
+					{
+						Key:      "some-toleration",
+						Operator: corev1.TolerationOpExists,
+						Effect:   corev1.TaintEffectNoSchedule,
+					},
+				},
+				Affinity: &corev1.Affinity{
+					NodeAffinity: &corev1.NodeAffinity{
+						RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
+							NodeSelectorTerms: []corev1.NodeSelectorTerm{
+								{
+									MatchExpressions: []corev1.NodeSelectorRequirement{
+										{
+											Key:      "my-affinity-key",
+											Operator: corev1.NodeSelectorOpIn,
+											Values:   []string{"my-affinity-val"},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 			resourceProfileNvidiaGPU: {
 				Requests: corev1.ResourceList{

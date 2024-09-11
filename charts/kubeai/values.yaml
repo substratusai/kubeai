@@ -44,6 +44,11 @@ resourceProfiles:
       nvidia.com/gpu: "1"
       cpu: "6"
       memory: "24Gi"
+    tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Equal"
+        value: "present"
+        effect: "NoSchedule"
   # nvidia-gpu-v100:
   # nvidia-gpu-a100:
   # google-tpu-v5e:

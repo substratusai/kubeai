@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -252,6 +253,8 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, index int32) *corev
 		},
 		Spec: corev1.PodSpec{
 			NodeSelector: m.Spec.NodeSelector,
+			Affinity:     m.Spec.Affinity,
+			Tolerations:  m.Spec.Tolerations,
 			Containers: []corev1.Container{
 				{
 					Name:      "server",
@@ -397,6 +400,8 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, index int32) *cor
 		},
 		Spec: corev1.PodSpec{
 			NodeSelector: m.Spec.NodeSelector,
+			Affinity:     m.Spec.Affinity,
+			Tolerations:  m.Spec.Tolerations,
 			Containers: []corev1.Container{
 				{
 					Name:      "server",
@@ -538,6 +543,8 @@ func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, index int3
 		},
 		Spec: corev1.PodSpec{
 			NodeSelector: m.Spec.NodeSelector,
+			Affinity:     m.Spec.Affinity,
+			Tolerations:  m.Spec.Tolerations,
 			Containers: []corev1.Container{
 				{
 					Name:      "server",
@@ -683,6 +690,16 @@ func (r *ModelReconciler) applyResourceProfile(model *kubeaiv1.Model) (bool, err
 	nodeSelector := profile.NodeSelector
 	if !selectorsEqual(nodeSelector, model.Spec.NodeSelector) {
 		model.Spec.NodeSelector = nodeSelector
+		changed = true
+	}
+
+	if !reflect.DeepEqual(profile.Affinity, model.Spec.Affinity) {
+		model.Spec.Affinity = profile.Affinity
+		changed = true
+	}
+
+	if !reflect.DeepEqual(profile.Tolerations, model.Spec.Tolerations) {
+		model.Spec.Tolerations = profile.Tolerations
 		changed = true
 	}
 
