@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"sync"
-	"time"
 
 	"sigs.k8s.io/yaml"
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
@@ -180,11 +179,11 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 	}
 
 	// TODO: Make consecutive scale downs configurable.
-	modelScaler := modelscaler.NewModelScaler(mgr.GetClient(), namespace, 3)
+	modelScaler := modelscaler.NewModelScaler(mgr.GetClient(), namespace, cfg.Autoscaling.RequiredConsecutiveScaleDowns())
 
 	// TODO: Get values from config.
 	modelAutoscaler := modelautoscaler.New(
-		10*time.Second,
+		cfg.Autoscaling.Interval.Duration,
 		10,
 		leaderElection,
 		modelScaler,

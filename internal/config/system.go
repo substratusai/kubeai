@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"errors"
+	"math"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -26,6 +27,8 @@ type System struct {
 
 	// AllowPodAddressOverride will allow the pod address to be overridden by the Model objects. This is useful for development purposes.
 	AllowPodAddressOverride bool `json:"allowPodAddressOverride"`
+
+	Autoscaling Autoscaling `json:"autoscaling"`
 }
 
 func (s *System) DefaultAndValidate() error {
@@ -43,7 +46,27 @@ func (s *System) DefaultAndValidate() error {
 			s.Messaging.Streams[i].MaxHandlers = 1
 		}
 	}
+	if s.Autoscaling.Interval.Duration == 0 {
+		s.Autoscaling.Interval.Duration = 10 * time.Second
+	}
+	if s.Autoscaling.ScaleDownDelay.Duration == 0 {
+		s.Autoscaling.ScaleDownDelay.Duration = 3 * time.Minute
+	}
 	return validator.New(validator.WithRequiredStructEnabled()).Struct(s)
+}
+
+type Autoscaling struct {
+	// Interval is the time between each autoscaling check. Default is 10 seconds.
+	Interval Duration `json:"interval"`
+	// ScaleDownDelay is the minimum time between each scale down operation. Default is 3 minutes.
+	ScaleDownDelay Duration `json:"scaleDownDelay"`
+}
+
+// RequiredConsecutiveScaleDowns returns the number of consecutive scale down
+// operations required before the deployment is scaled down. This is calculated
+// by dividing the ScaleDownDelay by the Interval.
+func (a *Autoscaling) RequiredConsecutiveScaleDowns() int {
+	return int(math.Ceil(float64(a.ScaleDownDelay.Duration) / float64(a.Interval.Duration)))
 }
 
 type SecretNames struct {
