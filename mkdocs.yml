@@ -14,6 +14,8 @@ nav:
   - ... | how-to/*.md
   - ... | concepts/*.md
   - ... | tutorials/*.md
+  - ... | contributing/*.md
+  - ... | api-reference.md
   - ...
 plugins:
     - search
