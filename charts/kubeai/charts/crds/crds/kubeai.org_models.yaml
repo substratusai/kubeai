@@ -999,7 +999,7 @@ spec:
                   type: string
                 description: |-
                   NodeSelector to be added to the server process.
-                  Will be set from the ResourceProfile if provided.
+                  Will be set from the ResourceProfile if not specified.
                 type: object
               owner:
                 type: string
