@@ -184,7 +184,7 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 	// TODO: Get values from config.
 	modelAutoscaler := modelautoscaler.New(
 		cfg.Autoscaling.Interval.Duration,
-		10,
+		cfg.Autoscaling.AverageWindowCount(),
 		leaderElection,
 		modelScaler,
 		modelResolver,

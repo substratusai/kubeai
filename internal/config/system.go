@@ -52,6 +52,9 @@ func (s *System) DefaultAndValidate() error {
 	if s.Autoscaling.ScaleDownDelay.Duration == 0 {
 		s.Autoscaling.ScaleDownDelay.Duration = 3 * time.Minute
 	}
+	if s.Autoscaling.TimeWindow.Duration == 0 {
+		s.Autoscaling.ScaleDownDelay.Duration = 3 * time.Minute
+	}
 	return validator.New(validator.WithRequiredStructEnabled()).Struct(s)
 }
 
@@ -59,6 +62,10 @@ type Autoscaling struct {
 	// Interval is the time between each autoscaling check.
 	// Default is 10 seconds.
 	Interval Duration `json:"interval"`
+	// TimeWindow that the autoscaling algorithm will consider when
+	// calculating the average number of requests.
+	// Default is 3 minutes.
+	TimeWindow Duration `json:"timeWindow"`
 	// ScaleDownDelay is the minimum time before a deployment is scaled down after
 	// the autoscaling algorithm determines that it should be scaled down.
 	// Default is 3 minutes.
@@ -70,6 +77,12 @@ type Autoscaling struct {
 // by dividing the ScaleDownDelay by the Interval.
 func (a *Autoscaling) RequiredConsecutiveScaleDowns() int {
 	return int(math.Ceil(float64(a.ScaleDownDelay.Duration) / float64(a.Interval.Duration)))
+}
+
+// AverageWindowCount returns the number of intervals that will be considered when
+// calculating the average value.
+func (a *Autoscaling) AverageWindowCount() int {
+	return int(math.Ceil(float64(a.TimeWindow.Duration) / float64(a.Interval.Duration)))
 }
 
 type SecretNames struct {
