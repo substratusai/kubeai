@@ -42,7 +42,7 @@ func TestModelScalingBounds(t *testing.T) {
 
 	// Update the Model object to set MinReplicas to 1.
 	updateModel(t, m, func() { m.Spec.MinReplicas = 1 }, "MinReplicas=1")
-	requireModelReplicas(t, m, 1, "Replicas should be scaled up to MinReplicas after update")
+	requireModelReplicas(t, m, 1, "Replicas should be scaled up to MinReplicas after update", time.Second)
 
 	// Check that a Pod was created for the Model.
 	require.EventuallyWithT(t, func(t *assert.CollectT) {
@@ -56,5 +56,5 @@ func TestModelScalingBounds(t *testing.T) {
 	updateModel(t, m, func() { m.Spec.Replicas = ptr.To(m.Spec.MaxReplicas + 1) }, "Replicas > MaxReplicas")
 
 	// Model should scale down to MaxReplicas.
-	requireModelReplicas(t, m, m.Spec.MaxReplicas, "Replicas should be scaled down to MaxReplicas")
+	requireModelReplicas(t, m, m.Spec.MaxReplicas, "Replicas should be scaled down to MaxReplicas", time.Second)
 }

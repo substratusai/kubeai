@@ -53,20 +53,20 @@ func updateModel(t *testing.T, m *v1.Model, modify func(), msg string) {
 	}, 2*time.Second, time.Second/10, "Updating Model should succeed: "+msg)
 }
 
-func requireModelReplicas(t *testing.T, m *v1.Model, expectedReplicas int32, msg string) {
+func requireModelReplicas(t *testing.T, m *v1.Model, expectedReplicas int32, msg string, after time.Duration) {
 	require.EventuallyWithT(t, func(t *assert.CollectT) {
 		assert.NoError(t, testK8sClient.Get(testCtx, client.ObjectKeyFromObject(m), m))
 		assert.NotNil(t, m.Spec.Replicas)
 		assert.Equal(t, expectedReplicas, *m.Spec.Replicas)
-	}, 2*time.Second, time.Second/10, "Model Replicas should match: "+msg)
+	}, after, time.Second/10, "Model Replicas should match: "+msg)
 }
 
-func requireModelPods(t *testing.T, m *v1.Model, expectedPods int, msg string) {
+func requireModelPods(t *testing.T, m *v1.Model, expectedPods int, msg string, after time.Duration) {
 	require.EventuallyWithT(t, func(t *assert.CollectT) {
 		podList := &corev1.PodList{}
 		assert.NoError(t, testK8sClient.List(testCtx, podList, client.InNamespace(testNS), client.MatchingLabels{"model": m.Name}))
 		assert.Len(t, podList.Items, expectedPods)
-	}, 2*time.Second, time.Second/10, "Model Pods should match: "+msg)
+	}, after, time.Second/10, "Model Pods should match: "+msg)
 }
 
 func markAllModelPodsReady(t *testing.T, m *v1.Model) {

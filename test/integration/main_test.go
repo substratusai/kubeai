@@ -24,12 +24,14 @@ import (
 // General //
 
 var (
-	testEnv        *envtest.Environment
-	testK8sClient  client.Client
-	testCtx        context.Context
-	testCancel     context.CancelFunc
-	testNS         = "default"
-	testHTTPClient = &http.Client{Timeout: 10 * time.Second}
+	testEnv       *envtest.Environment
+	testK8sClient client.Client
+	testCtx       context.Context
+	testCancel    context.CancelFunc
+	testNS        = "default"
+	// testHTTPClient is a client with a long timeout for use in tests
+	// where requests may be held for long periods of time on purpose.
+	testHTTPClient = &http.Client{Timeout: 10 * time.Minute}
 )
 
 // Messenger //
