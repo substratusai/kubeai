@@ -178,17 +178,15 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 		return fmt.Errorf("unable to set up ready check: %w", err)
 	}
 
-	// TODO: Make consecutive scale downs configurable.
 	modelScaler := modelscaler.NewModelScaler(mgr.GetClient(), namespace, cfg.Autoscaling.RequiredConsecutiveScaleDowns())
 
-	// TODO: Get values from config.
 	modelAutoscaler := modelautoscaler.New(
 		cfg.Autoscaling.Interval.Duration,
 		cfg.Autoscaling.AverageWindowCount(),
 		leaderElection,
 		modelScaler,
 		modelResolver,
-		1000,
+		float64(cfg.Autoscaling.Target),
 	)
 	go modelAutoscaler.Start()
 

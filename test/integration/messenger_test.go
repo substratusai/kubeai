@@ -6,12 +6,10 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
-	v1 "github.com/substratusai/kubeai/api/v1"
 	"gocloud.dev/pubsub"
 )
 
@@ -44,15 +42,8 @@ func TestMessenger(t *testing.T) {
 
 		w.Write([]byte(fmt.Sprintf(`{"model": %q, "choices": [{"text": "hey"}]}`, reqBody.Model)))
 	}))
-	t.Logf("testBackend URL: %s", testModelBackend.URL)
 
-	u, err := url.Parse(testModelBackend.URL)
-	require.NoError(t, err)
-
-	updateModel(t, m, func() {
-		m.ObjectMeta.Annotations[v1.ModelPodIPAnnotation] = u.Hostname()
-		m.ObjectMeta.Annotations[v1.ModelPodPortAnnotation] = u.Port()
-	}, "Set model IP/port annotations to direct requests to testBackend instead of the Pod's (non-existant) IP")
+	updateModelWithBackend(t, m, testModelBackend)
 
 	// Wait for controller cache to sync.
 	time.Sleep(3 * time.Second)

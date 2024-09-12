@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"net/http"
 	"os"
 	"sync"
 	"testing"
@@ -23,11 +24,12 @@ import (
 // General //
 
 var (
-	testEnv       *envtest.Environment
-	testK8sClient client.Client
-	testCtx       context.Context
-	testCancel    context.CancelFunc
-	testNS        = "default"
+	testEnv        *envtest.Environment
+	testK8sClient  client.Client
+	testCtx        context.Context
+	testCancel     context.CancelFunc
+	testNS         = "default"
+	testHTTPClient = &http.Client{Timeout: 10 * time.Second}
 )
 
 // Messenger //
@@ -124,6 +126,12 @@ func sysCfg() config.System {
 					"compute-type": "gpu",
 				},
 			},
+		},
+		Autoscaling: config.Autoscaling{
+			Interval:       config.Duration{Duration: 1 * time.Second},
+			TimeWindow:     config.Duration{Duration: 3 * time.Second},
+			ScaleDownDelay: config.Duration{Duration: 5 * time.Second},
+			Target:         1,
 		},
 		AllowPodAddressOverride: true,
 	}

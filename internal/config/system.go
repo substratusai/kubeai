@@ -55,6 +55,9 @@ func (s *System) DefaultAndValidate() error {
 	if s.Autoscaling.TimeWindow.Duration == 0 {
 		s.Autoscaling.ScaleDownDelay.Duration = 3 * time.Minute
 	}
+	if s.Autoscaling.Target == 0 {
+		s.Autoscaling.Target = 200
+	}
 	return validator.New(validator.WithRequiredStructEnabled()).Struct(s)
 }
 
@@ -70,6 +73,9 @@ type Autoscaling struct {
 	// the autoscaling algorithm determines that it should be scaled down.
 	// Default is 3 minutes.
 	ScaleDownDelay Duration `json:"scaleDownDelay"`
+	// Target is the target number of active requests per Pod.
+	// Default is 200.
+	Target int `json:"target"`
 }
 
 // RequiredConsecutiveScaleDowns returns the number of consecutive scale down
