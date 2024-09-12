@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://www.kubeai.org/tutorials/langtrace/">
+        <link rel="canonical" href="https://www.kubeai.org/how-to/build-models-into-containers/">
       
       
-        <link rel="prev" href="../../concepts/resource-profiles/">
+        <link rel="prev" href="../../installation/gke/">
       
       
-        <link rel="next" href="../weaviate/">
+        <link rel="next" href="../configure-speech-to-text/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Deploying KubeAI with Langtrace - KubeAI</title>
+        <title>Build models into containers - KubeAI</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#deploying-kubeai-with-langtrace" class="md-skip">
+        <a href="#build-models-into-containers" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Deploying KubeAI with Langtrace
+              Build models into containers
             
           </span>
         </div>
@@ -305,17 +305,19 @@
       
   
   
+    
   
   
+  
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -329,7 +331,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             How to
@@ -340,10 +342,19 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../how-to/build-models-into-containers/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -352,6 +363,7 @@
   
 
       </a>
+      
     </li>
   
 
@@ -364,7 +376,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/configure-speech-to-text/" class="md-nav__link">
+      <a href="../configure-speech-to-text/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -385,7 +397,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/manage-models/" class="md-nav__link">
+      <a href="../manage-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -406,7 +418,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/manage-resource-profiles/" class="md-nav__link">
+      <a href="../manage-resource-profiles/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -536,19 +548,17 @@
       
   
   
-    
   
   
-  
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
         
           
           <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
@@ -562,7 +572,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             Tutorials
@@ -573,19 +583,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../tutorials/langtrace/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -594,7 +595,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -607,7 +607,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../weaviate/" class="md-nav__link">
+      <a href="../../tutorials/weaviate/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -769,93 +769,38 @@
   
 
 
-<h1 id="deploying-kubeai-with-langtrace">Deploying KubeAI with Langtrace<a class="headerlink" href="#deploying-kubeai-with-langtrace" title="Permanent link">&para;</a></h1>
-<p>Langtrace is an open source tool that helps you with tracing and monitoring
-your AI calls. It includes a self-hosted UI that for example shows you the
-estimated costs of your LLM calls.</p>
-<p><a href="https://github.com/substratusai/kubeai">KubeAI</a> is used for deploying LLMs with an OpenAI compatible endpoint.</p>
-<p>In this tutorial you will learn how to deploy KubeAI and Langtrace end-to-end.
-Both KubeAI and Langtrace are installed in your Kubernetes cluster.
-No cloud services or external dependencies are required.</p>
-<p>If you don't have a K8s cluster yet, you can create one using <a href="https://kind.sigs.k8s.io/">kind</a> or <a href="https://minikube.sigs.k8s.io/docs/">minikube</a>.
-<div class="highlight"><pre><span></span><code>kind<span class="w"> </span>create<span class="w"> </span>cluster<span class="w"> </span><span class="c1"># OR: minikube start</span>
+<h1 id="build-models-into-containers">Build models into containers<a class="headerlink" href="#build-models-into-containers" title="Permanent link">&para;</a></h1>
+<p>In this guide we will preload a LLM into a custom built Ollama serving image. You can follow the same steps for other models and other serving engines.</p>
+<p>Define some values
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">MODEL_URL</span><span class="o">=</span>ollama://qwen2:0.5b
+
+<span class="c1"># Customize with your own image repo.</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">IMAGE</span><span class="o">=</span>us-central1-docker.pkg.dev/substratus-dev/default/ollama-builtin-qwen2-05b:latest
 </code></pre></div></p>
-<p>Install Langtrace:
-<div class="highlight"><pre><span></span><code>helm repo add langtrace https://Scale3-Labs.github.io/langtrace-helm-chart
-helm repo update
-helm install langtrace langtrace/langtrace
-</code></pre></div></p>
-<p>Install KubeAI:
-<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>kubeai<span class="w"> </span>https://substratusai.github.io/kubeai/
-helm<span class="w"> </span>repo<span class="w"> </span>update
-cat<span class="w"> </span><span class="s">&lt;&lt;EOF &gt; helm-values.yaml</span>
-<span class="s">models:</span>
-<span class="s">  catalog:</span>
-<span class="s">    gemma2-2b-cpu:</span>
-<span class="s">      enabled: true</span>
-<span class="s">      minReplicas: 1</span>
+<p>Build and push image. Note: building (downloading base image &amp; model) and pushing (uploading image &amp; model) can take a while depending on the size of the model.</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/substratusai/kubeai
+<span class="nb">cd</span><span class="w"> </span>./kubeai/images/ollama-builtin
+
+docker<span class="w"> </span>build<span class="w"> </span>--build-arg<span class="w"> </span><span class="nv">MODEL_URL</span><span class="o">=</span><span class="nv">$MODEL_URL</span><span class="w"> </span>-t<span class="w"> </span><span class="nv">$IMAGE</span><span class="w"> </span>.
+docker<span class="w"> </span>push<span class="w"> </span><span class="nv">$IMAGE</span>
+</code></pre></div>
+<p>Create a model manifest &amp; apply into a cluster with KubeAI installed. NOTE: The only difference between an built-in model image and otherwise is the addition of the <code>image:</code> field.</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt; EOF</span>
+<span class="s">apiVersion: kubeai.org/v1</span>
+<span class="s">kind: Model</span>
+<span class="s">metadata:</span>
+<span class="s">  name: builtin-model-example</span>
+<span class="s">spec:</span>
+<span class="s">  features: [&quot;TextGeneration&quot;]</span>
+<span class="s">  owner: alibaba</span>
+<span class="s">  image: $IMAGE # &lt;-- The image with model built-in</span>
+<span class="s">  url: &quot;$MODEL_URL&quot;</span>
+<span class="s">  engine: OLlama</span>
+<span class="s">  resourceProfile: cpu:1</span>
+<span class="s">  minReplicas: 1</span>
+<span class="s">  maxReplicas: 3</span>
 <span class="s">EOF</span>
-
-helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>kubeai<span class="w"> </span>kubeai/kubeai<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--wait<span class="w"> </span>--timeout<span class="w"> </span>10m<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>-f<span class="w"> </span>./helm-values.yaml
-</code></pre></div></p>
-<p>Create a local Python environment and install dependencies:
-<div class="highlight"><pre><span></span><code>python3 -m venv .venv
-source .venv/bin/activate
-pip install langtrace-python-sdk openai
-</code></pre></div></p>
-<p>Expose the KubeAI service to your local port:
-<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>port-forward<span class="w"> </span>service/kubeai<span class="w"> </span><span class="m">8000</span>:80
-</code></pre></div></p>
-<p>Expose the Langtrace service to your local port:
-<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>port-forward<span class="w"> </span>service/langtrace-app<span class="w"> </span><span class="m">3000</span>:3000
-</code></pre></div></p>
-<p>A Langtrace API key is required to use the Langtrace SDK. So lets get one
-by visiting your self hosted Langtace UI.</p>
-<p>Open your browser to <a href="http://localhost:3000">http://localhost:3000</a>, create
-a project and get the API keys for your langtrace project.</p>
-<p>In the Python script below, replace <code>langtrace_api_key</code> with your API key.</p>
-<p>Create file named <code>langtrace-example.py</code> with the following content:
-<div class="highlight"><pre><span></span><code><span class="c1"># Replace this with your langtrace API key by visiting http://localhost:3000</span>
-<span class="n">langtrace_api_key</span><span class="o">=</span><span class="s2">&quot;f7e003de19b9a628258531c17c264002e985604ca9fa561debcc85c41f357b09&quot;</span>
-
-<span class="kn">from</span> <span class="nn">langtrace_python_sdk</span> <span class="kn">import</span> <span class="n">langtrace</span>
-<span class="kn">from</span> <span class="nn">langtrace_python_sdk.utils.with_root_span</span> <span class="kn">import</span> <span class="n">with_langtrace_root_span</span>
-<span class="c1"># Paste this code after your langtrace init function</span>
-
-<span class="kn">from</span> <span class="nn">openai</span> <span class="kn">import</span> <span class="n">OpenAI</span>
-
-<span class="n">langtrace</span><span class="o">.</span><span class="n">init</span><span class="p">(</span>
-    <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span>
-    <span class="n">api_host</span><span class="o">=</span><span class="s2">&quot;http://localhost:3000/api/trace&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-
-<span class="n">base_url</span> <span class="o">=</span> <span class="s2">&quot;http://localhost:8000/openai/v1&quot;</span>
-<span class="n">model</span> <span class="o">=</span> <span class="s2">&quot;gemma2-2b-cpu&quot;</span>
-
-<span class="nd">@with_langtrace_root_span</span><span class="p">()</span>
-<span class="k">def</span> <span class="nf">example</span><span class="p">():</span>
-    <span class="n">client</span> <span class="o">=</span> <span class="n">OpenAI</span><span class="p">(</span><span class="n">base_url</span><span class="o">=</span><span class="n">base_url</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;ignored-by-kubeai&quot;</span><span class="p">)</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
-        <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
-        <span class="n">messages</span><span class="o">=</span><span class="p">[</span>
-            <span class="p">{</span>
-                <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;How many states of matter are there?&quot;</span>
-            <span class="p">}</span>
-        <span class="p">],</span>
-    <span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
-
-<span class="n">example</span><span class="p">()</span>
-</code></pre></div></p>
-<p>Run the Python script:
-<div class="highlight"><pre><span></span><code>python3<span class="w"> </span>langtrace-example.py
-</code></pre></div></p>
-<p>Now you should see the trace in your Langtrace UI. Take a look by visiting
-<a href="http://localhost:3000">http://localhost:3000</a>.</p>
-<p><img alt="Langtrace UI" src="../../screenshots/langtrace.png" /></p>
+</code></pre></div>
 
 
 
