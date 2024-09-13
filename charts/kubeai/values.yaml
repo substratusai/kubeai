@@ -61,10 +61,10 @@ resourceProfiles:
   #     cloud.google.com/gke-accelerator-type: tpu-v5-lite-podslice
 
 autoscalingProfiles:
-  # NOTE: "defualt" profile is required.
+  # NOTE: "default" profile is required.
   default:
     minReplicas: 0
-    maxReplicas: 100
+    maxReplicas: 3
     targetRequests: 100
 
 messaging:
