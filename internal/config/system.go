@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
+	v1 "github.com/substratusai/kubeai/api/v1"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -15,74 +16,83 @@ type System struct {
 
 	ModelServers ModelServers `json:"modelServers" validate:"required"`
 
-	ResourceProfiles map[string]ResourceProfile `json:"resourceProfiles"`
+	ResourceProfiles map[string]ResourceProfile `json:"resourceProfiles" validate:"required"`
 
 	Messaging Messaging `json:"messaging"`
 
-	// MetricsAddr is the address the metric endpoint binds to. Default is ":8080".
-	MetricsAddr string `json:"metricsAddr"`
+	// MetricsAddr is the address the metric endpoint binds to.
+	// Defaults to ":8080"
+	MetricsAddr string `json:"metricsAddr" validate:"required"`
 
-	// HealthAddr is the address the health probe endpoint binds to. Default is ":8081".
-	HealthAddress string `json:"healthAddress"`
+	// HealthAddr is the address the health probe endpoint binds to.
+	// Defaults to ":8081"
+	HealthAddress string `json:"healthAddress" validate:"required"`
 
 	// AllowPodAddressOverride will allow the pod address to be overridden by the Model objects. This is useful for development purposes.
 	AllowPodAddressOverride bool `json:"allowPodAddressOverride"`
 
-	Autoscaling Autoscaling `json:"autoscaling"`
+	Autoscaling Autoscaling `json:"autoscaling" validate:"required"`
 }
 
 func (s *System) DefaultAndValidate() error {
-	if s.Messaging.ErrorMaxBackoff.Duration == 0 {
-		s.Messaging.ErrorMaxBackoff.Duration = time.Minute
-	}
 	if s.MetricsAddr == "" {
 		s.MetricsAddr = ":8080"
 	}
 	if s.HealthAddress == "" {
 		s.HealthAddress = ":8081"
 	}
+
 	for i := range s.Messaging.Streams {
 		if s.Messaging.Streams[i].MaxHandlers == 0 {
 			s.Messaging.Streams[i].MaxHandlers = 1
 		}
 	}
+
+	if _, ok := s.Autoscaling.Profiles["default"]; !ok {
+		return errors.New("default autoscaling profile is required")
+	}
+
 	if s.Autoscaling.Interval.Duration == 0 {
 		s.Autoscaling.Interval.Duration = 10 * time.Second
 	}
-	if s.Autoscaling.ScaleDownDelay.Duration == 0 {
-		s.Autoscaling.ScaleDownDelay.Duration = 3 * time.Minute
-	}
 	if s.Autoscaling.TimeWindow.Duration == 0 {
-		s.Autoscaling.ScaleDownDelay.Duration = 3 * time.Minute
+		s.Autoscaling.TimeWindow.Duration = 10 * time.Minute
 	}
-	if s.Autoscaling.Target == 0 {
-		s.Autoscaling.Target = 200
+
+	for name, profile := range s.Autoscaling.Profiles {
+		// NOTE: Keep in sync with defaults in api pkg.
+		if profile.MaxReplicas == 0 {
+			profile.MaxReplicas = 3
+		}
+		if profile.TargetRequests == 0 {
+			profile.TargetRequests = 100
+		}
+
+		s.Autoscaling.Profiles[name] = profile
 	}
+
 	return validator.New(validator.WithRequiredStructEnabled()).Struct(s)
 }
 
 type Autoscaling struct {
 	// Interval is the time between each autoscaling check.
-	// Default is 10 seconds.
-	Interval Duration `json:"interval"`
+	// Defaults to 10 seconds.
+	Interval Duration `json:"interval" validate:"required"`
 	// TimeWindow that the autoscaling algorithm will consider when
 	// calculating the average number of requests.
-	// Default is 3 minutes.
-	TimeWindow Duration `json:"timeWindow"`
-	// ScaleDownDelay is the minimum time before a deployment is scaled down after
-	// the autoscaling algorithm determines that it should be scaled down.
-	// Default is 3 minutes.
-	ScaleDownDelay Duration `json:"scaleDownDelay"`
-	// Target is the target number of active requests per Pod.
-	// Default is 200.
-	Target int `json:"target"`
+	// Defaults to 10 minutes.
+	TimeWindow Duration `json:"timeWindow" validate:"required"`
+	// Profiles is a map of autoscaling profiles that can be used to configure
+	// autoscaling on a model-by-model basis.
+	// A "default" profile is required.
+	Profiles map[string]v1.ModelAutoscaling `json:"profiles" validate:"required"`
 }
 
 // RequiredConsecutiveScaleDowns returns the number of consecutive scale down
 // operations required before the deployment is scaled down. This is calculated
 // by dividing the ScaleDownDelay by the Interval.
-func (a *Autoscaling) RequiredConsecutiveScaleDowns() int {
-	return int(math.Ceil(float64(a.ScaleDownDelay.Duration) / float64(a.Interval.Duration)))
+func (a *Autoscaling) RequiredConsecutiveScaleDowns(profile v1.ModelAutoscaling) int {
+	return int(math.Ceil(float64(profile.ScaleDownDelay.Duration) / float64(a.Interval.Duration)))
 }
 
 // AverageWindowCount returns the number of intervals that will be considered when
@@ -97,7 +107,7 @@ type SecretNames struct {
 
 type Messaging struct {
 	// ErrorMaxBackoff is the maximum backoff time that will be applied when
-	// consecutive errors are encountered. Default is 1 minute.
+	// consecutive errors are encountered.
 	ErrorMaxBackoff Duration        `json:"errorMaxBackoff"`
 	Streams         []MessageStream `json:"streams"`
 }

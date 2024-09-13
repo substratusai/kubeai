@@ -31,9 +31,7 @@ type ModelSpec struct {
 	// +kubebuilder:validation:Enum=OLlama;VLLM;FasterWhisper
 	Engine string `json:"engine"`
 
-	Replicas    *int32 `json:"replicas,omitempty"`
-	MinReplicas int32  `json:"minReplicas"`
-	MaxReplicas int32  `json:"maxReplicas"`
+	Replicas *int32 `json:"replicas,omitempty"`
 
 	// ResourceProfile maps to specific pre-configured resources.
 	ResourceProfile string `json:"resourceProfile,omitempty"`
@@ -63,6 +61,33 @@ type ModelSpec struct {
 
 	// Env variables to be added to the server process.
 	Env map[string]string `json:"env,omitempty"`
+
+	// AutoscalingProfile to be used for autoscaling.
+	AutoscalingProfile string `json:"autoscalingProfile"`
+
+	// Autoscaling configuration.
+	// Will be set from the AutoscalingProfile if not specified.
+	Autoscaling *ModelAutoscaling `json:"autoscaling,omitempty"`
+}
+
+type ModelAutoscaling struct {
+	// Disabled is used to disable autoscaling.
+	Disabled bool `json:"disabled,omitempty"`
+	// TargetRequests is the target number of active requests per Pod.
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:default=100
+	TargetRequests int32 `json:"targetRequests"`
+	// ScaleDownDelay is the minimum time before a deployment is scaled down after
+	// the autoscaling algorithm determines that it should be scaled down.
+	ScaleDownDelay metav1.Duration `json:"scaleDownDelay"`
+	// MinReplicas is the minimum number of Pod replicas that the model can scale down to.
+	// Note: 0 is a valid value.
+	// +kubebuilder:validation:Minimum=0
+	MinReplicas int32 `json:"minReplicas"`
+	// MinReplicas is the minimum number of Pod replicas that the model can scale up to.
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:default=3
+	MaxReplicas int32 `json:"maxReplicas"`
 }
 
 // +kubebuilder:validation:Enum=TextGeneration;TextEmbedding;SpeechToText

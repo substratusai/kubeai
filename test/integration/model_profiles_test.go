@@ -12,12 +12,28 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// TestModelResourceProfile tests that resource profiles are applied as expected.
-func TestModelResourceProfile(t *testing.T) {
+// TestModelDefaultProfiles tests that default profiles are applied as expected.
+func TestModelDefaultProfiles(t *testing.T) {
+	// Construct a Model object with MinReplicas set to 0.
+	m := modelForTest(t)
+	m.Spec.AutoscalingProfile = ""
+	require.NoError(t, testK8sClient.Create(testCtx, m))
+
+	require.EventuallyWithT(t, func(t *assert.CollectT) {
+		assert.NoError(t, testK8sClient.Get(testCtx, client.ObjectKeyFromObject(m), m))
+		assert.Equal(t, "default", m.Spec.AutoscalingProfile)
+		if assert.NotNil(t, m.Spec.Autoscaling) {
+			assert.Equal(t, sysCfg().Autoscaling.Profiles["default"], *m.Spec.Autoscaling)
+		}
+	}, 5*time.Second, time.Second/10, "Default autoscaling profile should be applied to the Model object")
+}
+
+// TestModelProfiles tests that profiles are applied as expected.
+func TestModelProfiles(t *testing.T) {
 	// Construct a Model object with MinReplicas set to 0.
 	m := modelForTest(t)
 	// Make sure there is a Pod created to run assertions against.
-	m.Spec.MinReplicas = 1
+	m.Spec.AutoscalingProfile = "online"
 	// Create the Model object in the Kubernetes cluster.
 	require.NoError(t, testK8sClient.Create(testCtx, m))
 
@@ -41,6 +57,9 @@ func TestModelResourceProfile(t *testing.T) {
 		assert.Equal(t, sysCfg().ResourceProfiles[resourceProfileCPU].Affinity, m.Spec.Affinity)
 		assert.Equal(t, sysCfg().ResourceProfiles[resourceProfileCPU].NodeSelector, m.Spec.NodeSelector)
 		assert.Equal(t, testVLLMCPUImage, m.Spec.Image)
+		if assert.NotNil(t, m.Spec.Autoscaling) {
+			assert.Equal(t, sysCfg().Autoscaling.Profiles["online"], *m.Spec.Autoscaling)
+		}
 	}, 2*time.Second, time.Second/10, "Resource profile should be applied to the Model object")
 
 	require.EventuallyWithT(t, func(t *assert.CollectT) {
@@ -58,12 +77,12 @@ func TestModelResourceProfile(t *testing.T) {
 	}, 2*time.Second, time.Second/10, "Resource profile should be applied to the model Pod object")
 }
 
-// TestModelResourceProfileWithUserSetValues tests that user-set values are not overridden by resource profiles.
-func TestModelResourceProfileWithUserSetValues(t *testing.T) {
+// TestModelProfileWithUserSetValues tests that user-set values are not overridden by profiles.
+func TestModelProfileWithUserSetValues(t *testing.T) {
 	// Construct a Model object with MinReplicas set to 0.
 	m := modelForTest(t)
 	// Make sure there is a Pod created to run assertions against.
-	m.Spec.MinReplicas = 1
+	m.Spec.AutoscalingProfile = "online"
 
 	userSetResources := corev1.ResourceRequirements{
 		Requests: corev1.ResourceList{

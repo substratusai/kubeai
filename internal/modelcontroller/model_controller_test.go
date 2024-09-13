@@ -3,6 +3,7 @@ package modelcontroller
 import (
 	"encoding/json"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 	v1 "github.com/substratusai/kubeai/api/v1"
@@ -12,9 +13,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func Test_applyResourceProfile(t *testing.T) {
+func Test_applyProfiles(t *testing.T) {
 	r := ModelReconciler{
 		ResourceProfiles: map[string]config.ResourceProfile{
+			"none": {},
 			"my-gpu": {
 				Limits: corev1.ResourceList{
 					"nvidia.com/gpu": resource.MustParse("1"),
@@ -72,6 +74,15 @@ func Test_applyResourceProfile(t *testing.T) {
 				},
 			},
 		},
+		AutoscalingProfiles: map[string]v1.ModelAutoscaling{
+			"default": {
+				TargetRequests: 1,
+			},
+			"basic": {
+				TargetRequests: 100,
+				ScaleDownDelay: metav1.Duration{Duration: 3 * time.Second},
+			},
+		},
 	}
 
 	cases := []struct {
@@ -84,15 +95,17 @@ func Test_applyResourceProfile(t *testing.T) {
 			name: "basic",
 			input: &v1.Model{
 				Spec: v1.ModelSpec{
-					ResourceProfile: "my-gpu:1",
-					Engine:          v1.VLLMEngine,
+					Engine:             v1.VLLMEngine,
+					ResourceProfile:    "my-gpu:1",
+					AutoscalingProfile: "basic",
 				},
 			},
 			expectChanged: true,
 			expected: &v1.Model{
 				Spec: v1.ModelSpec{
-					ResourceProfile: "my-gpu:1",
-					Engine:          v1.VLLMEngine,
+					Engine:             v1.VLLMEngine,
+					ResourceProfile:    "my-gpu:1",
+					AutoscalingProfile: "basic",
 					Resources: &corev1.ResourceRequirements{
 						Limits: corev1.ResourceList{
 							"nvidia.com/gpu": resource.MustParse("1"),
@@ -128,6 +141,10 @@ func Test_applyResourceProfile(t *testing.T) {
 							Operator: corev1.TolerationOpExists,
 							Effect:   corev1.TaintEffectNoSchedule,
 						},
+					},
+					Autoscaling: &v1.ModelAutoscaling{
+						TargetRequests: 100,
+						ScaleDownDelay: metav1.Duration{Duration: 3 * time.Second},
 					},
 				},
 			},
@@ -147,7 +164,8 @@ func Test_applyResourceProfile(t *testing.T) {
                                 "f:tolerations": {},
                                 "f:resources": {},
                                 "f:affinity": {},
-                                "f:nodeSelector": {}
+                                "f:nodeSelector": {},
+                                "f:autosacling": {}
                             }
                         }`),
 							},
@@ -155,8 +173,9 @@ func Test_applyResourceProfile(t *testing.T) {
 					},
 				},
 				Spec: v1.ModelSpec{
-					ResourceProfile: "my-gpu:1",
-					Engine:          v1.VLLMEngine,
+					Engine:             v1.VLLMEngine,
+					ResourceProfile:    "my-gpu:1",
+					AutoscalingProfile: "basic",
 					Resources: &corev1.ResourceRequirements{
 						Limits: corev1.ResourceList{
 							"nvidia.com/gpu": resource.MustParse("1"),
@@ -193,6 +212,10 @@ func Test_applyResourceProfile(t *testing.T) {
 							Effect:   corev1.TaintEffectNoSchedule,
 						},
 					},
+					Autoscaling: &v1.ModelAutoscaling{
+						TargetRequests: 100,
+						ScaleDownDelay: metav1.Duration{Duration: 3 * time.Second},
+					},
 				},
 			},
 			expectChanged: false,
@@ -201,8 +224,9 @@ func Test_applyResourceProfile(t *testing.T) {
 			name: "should not change",
 			input: &v1.Model{
 				Spec: v1.ModelSpec{
-					ResourceProfile: "my-gpu:1",
-					Engine:          v1.VLLMEngine,
+					ResourceProfile:    "my-gpu:1",
+					Engine:             v1.VLLMEngine,
+					AutoscalingProfile: "basic",
 					Resources: &corev1.ResourceRequirements{
 						Limits: corev1.ResourceList{
 							"custom.com/gpu": resource.MustParse("3"),
@@ -239,6 +263,10 @@ func Test_applyResourceProfile(t *testing.T) {
 							Effect:   corev1.TaintEffectNoSchedule,
 						},
 					},
+					Autoscaling: &v1.ModelAutoscaling{
+						TargetRequests: 100,
+						ScaleDownDelay: metav1.Duration{Duration: 3 * time.Second},
+					},
 				},
 			},
 			expectChanged: false,
@@ -263,8 +291,9 @@ func Test_applyResourceProfile(t *testing.T) {
 					},
 				},
 				Spec: v1.ModelSpec{
-					ResourceProfile: "tolerations-only:1",
-					Engine:          v1.VLLMEngine,
+					ResourceProfile:    "tolerations-only:1",
+					Engine:             v1.VLLMEngine,
+					AutoscalingProfile: "default",
 					Tolerations: []corev1.Toleration{
 						{
 							Key:      "toleration1",
@@ -273,14 +302,18 @@ func Test_applyResourceProfile(t *testing.T) {
 						},
 					},
 					Image: "default-vllm-image",
+					Autoscaling: &v1.ModelAutoscaling{
+						TargetRequests: 1,
+					},
 				},
 			},
 			expectChanged: true,
 			expected: &v1.Model{
 				Spec: v1.ModelSpec{
-					ResourceProfile: "tolerations-only:1",
-					Engine:          v1.VLLMEngine,
-					Resources:       &corev1.ResourceRequirements{},
+					ResourceProfile:    "tolerations-only:1",
+					Engine:             v1.VLLMEngine,
+					AutoscalingProfile: "default",
+					Resources:          &corev1.ResourceRequirements{},
 					Tolerations: []corev1.Toleration{
 						{
 							Key:      "toleration1",
@@ -293,7 +326,8 @@ func Test_applyResourceProfile(t *testing.T) {
 							Effect:   corev1.TaintEffectNoSchedule,
 						},
 					},
-					Image: "default-vllm-image",
+					Image:       "default-vllm-image",
+					Autoscaling: &v1.ModelAutoscaling{TargetRequests: 1},
 				},
 			},
 		},
@@ -317,8 +351,9 @@ func Test_applyResourceProfile(t *testing.T) {
 					},
 				},
 				Spec: v1.ModelSpec{
-					ResourceProfile: "tolerations-only:1",
-					Engine:          v1.VLLMEngine,
+					ResourceProfile:    "tolerations-only:1",
+					Engine:             v1.VLLMEngine,
+					AutoscalingProfile: "default",
 					Tolerations: []corev1.Toleration{
 						{
 							Key:      "toleration1",
@@ -331,15 +366,17 @@ func Test_applyResourceProfile(t *testing.T) {
 							Effect:   corev1.TaintEffectNoSchedule,
 						},
 					},
-					Image: "default-vllm-image",
+					Image:       "default-vllm-image",
+					Autoscaling: &v1.ModelAutoscaling{TargetRequests: 1},
 				},
 			},
 			expectChanged: true,
 			expected: &v1.Model{
 				Spec: v1.ModelSpec{
-					ResourceProfile: "tolerations-only:1",
-					Engine:          v1.VLLMEngine,
-					Resources:       &corev1.ResourceRequirements{},
+					ResourceProfile:    "tolerations-only:1",
+					Engine:             v1.VLLMEngine,
+					AutoscalingProfile: "default",
+					Resources:          &corev1.ResourceRequirements{},
 					Tolerations: []corev1.Toleration{
 						{
 							Key:      "toleration1",
@@ -352,7 +389,27 @@ func Test_applyResourceProfile(t *testing.T) {
 							Effect:   corev1.TaintEffectNoSchedule,
 						},
 					},
-					Image: "default-vllm-image",
+					Image:       "default-vllm-image",
+					Autoscaling: &v1.ModelAutoscaling{TargetRequests: 1},
+				},
+			},
+		},
+		{
+			name: "no autoscaling profile specified",
+			input: &v1.Model{
+				Spec: v1.ModelSpec{
+					Engine:          v1.VLLMEngine,
+					ResourceProfile: "none:1",
+				},
+			},
+			expectChanged: true,
+			expected: &v1.Model{
+				Spec: v1.ModelSpec{
+					Engine:             v1.VLLMEngine,
+					ResourceProfile:    "none:1",
+					AutoscalingProfile: "default",
+					Resources:          &corev1.ResourceRequirements{},
+					Autoscaling:        &v1.ModelAutoscaling{TargetRequests: 1},
 				},
 			},
 		},
@@ -362,7 +419,7 @@ func Test_applyResourceProfile(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			model := c.input
 			clone := model.DeepCopy()
-			changed, err := r.applyResourceProfile(model)
+			changed, err := r.applyProfiles(model)
 			require.NoError(t, err)
 			if c.expectChanged {
 				requireEqualProfileFields(t, c.expected, model)
@@ -375,17 +432,19 @@ func Test_applyResourceProfile(t *testing.T) {
 }
 
 func requireEqualProfileFields(t *testing.T, a, b *v1.Model) {
-	requireEqualJSON(t, a.Spec.ResourceProfile, b.Spec.ResourceProfile)
-	requireEqualJSON(t, a.Spec.Resources, b.Spec.Resources)
-	requireEqualJSON(t, a.Spec.NodeSelector, b.Spec.NodeSelector)
-	requireEqualJSON(t, a.Spec.Affinity, b.Spec.Affinity)
-	requireEqualJSON(t, a.Spec.Tolerations, b.Spec.Tolerations)
+	requireEqualJSON(t, a.Spec.ResourceProfile, b.Spec.ResourceProfile, "resourceProfile")
+	requireEqualJSON(t, a.Spec.Resources, b.Spec.Resources, "resources")
+	requireEqualJSON(t, a.Spec.NodeSelector, b.Spec.NodeSelector, "nodeSelector")
+	requireEqualJSON(t, a.Spec.Affinity, b.Spec.Affinity, "affinity")
+	requireEqualJSON(t, a.Spec.Tolerations, b.Spec.Tolerations, "tolerations")
+	requireEqualJSON(t, a.Spec.AutoscalingProfile, b.Spec.AutoscalingProfile, "autoscalingProfile")
+	requireEqualJSON(t, a.Spec.Autoscaling, b.Spec.Autoscaling, "autoscaling")
 }
 
-func requireEqualJSON(t *testing.T, a, b interface{}) {
+func requireEqualJSON(t *testing.T, a, b interface{}, field string) {
 	jsonA, err := json.Marshal(a)
 	require.NoError(t, err)
 	jsonB, err := json.Marshal(b)
 	require.NoError(t, err)
-	require.JSONEq(t, string(jsonA), string(jsonB))
+	require.JSONEqf(t, string(jsonA), string(jsonB), "unexpected .spec.%s field", field)
 }

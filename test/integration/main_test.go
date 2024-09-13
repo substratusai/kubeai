@@ -10,15 +10,19 @@ import (
 	"testing"
 	"time"
 
+	v1 "github.com/substratusai/kubeai/api/v1"
 	"github.com/substratusai/kubeai/internal/config"
 	"github.com/substratusai/kubeai/internal/manager"
 	"gocloud.dev/pubsub"
 	_ "gocloud.dev/pubsub/mempubsub"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
 
 // General //
@@ -31,7 +35,7 @@ var (
 	testNS        = "default"
 	// testHTTPClient is a client with a long timeout for use in tests
 	// where requests may be held for long periods of time on purpose.
-	testHTTPClient = &http.Client{Timeout: 10 * time.Minute}
+	testHTTPClient = &http.Client{Timeout: 5 * time.Minute}
 )
 
 // Messenger //
@@ -60,6 +64,8 @@ const (
 // which would be tricky to debug.
 func sysCfg() config.System {
 	return config.System{
+		MetricsAddr:   "127.0.0.1:8080",
+		HealthAddress: "127.0.0.1:8081",
 		SecretNames: config.SecretNames{
 			Huggingface: "huggingface",
 		},
@@ -130,10 +136,22 @@ func sysCfg() config.System {
 			},
 		},
 		Autoscaling: config.Autoscaling{
-			Interval:       config.Duration{Duration: 1 * time.Second},
-			TimeWindow:     config.Duration{Duration: 3 * time.Second},
-			ScaleDownDelay: config.Duration{Duration: 5 * time.Second},
-			Target:         1,
+			Interval:   config.Duration{Duration: 1 * time.Second},
+			TimeWindow: config.Duration{Duration: 5 * time.Second},
+			Profiles: map[string]v1.ModelAutoscaling{
+				"default": {
+					TargetRequests: 1,
+					ScaleDownDelay: metav1.Duration{Duration: 5 * time.Second},
+					MinReplicas:    0,
+					MaxReplicas:    3,
+				},
+				"online": {
+					TargetRequests: 1,
+					ScaleDownDelay: metav1.Duration{Duration: 5 * time.Second},
+					MinReplicas:    1,
+					MaxReplicas:    3,
+				},
+			},
 		},
 		AllowPodAddressOverride: true,
 	}
@@ -142,6 +160,8 @@ func sysCfg() config.System {
 // TestMain performs setup and teardown for integration tests - i.e. all Test*()
 // functions in this package.
 func TestMain(m *testing.M) {
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
 	testCtx, testCancel = context.WithCancel(ctrl.SetupSignalHandler())
 
 	// Setup Kubernetes environment.

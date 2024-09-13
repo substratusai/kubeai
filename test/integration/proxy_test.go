@@ -16,12 +16,19 @@ import (
 )
 
 func TestProxy(t *testing.T) {
+	backendComplete := make(chan struct{})
+
+	t.Cleanup(func() {
+		// Finish all requests
+		close(backendComplete)
+		//testCancel()
+	})
+
 	m := modelForTest(t)
 
 	// Create the Model object in the Kubernetes cluster.
 	require.NoError(t, testK8sClient.Create(testCtx, m))
 
-	backendComplete := make(chan struct{})
 	backendRequests := &atomic.Int32{}
 	totalBackendRequests := &atomic.Int32{}
 	testModelBackend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -76,7 +83,7 @@ vllm:num_requests_waiting{model_name="%s"} %d.0
 	sendRequests(t, &wg, m.Name, 2, http.StatusOK)
 	require.Never(t, func() bool {
 		assert.NoError(t, testK8sClient.Get(testCtx, client.ObjectKeyFromObject(m), m))
-		return *m.Spec.Replicas > m.Spec.MaxReplicas
+		return *m.Spec.Replicas > m.Spec.Autoscaling.MaxReplicas
 	}, autoscaleUpWait, time.Second/10, "Replicas should not be scaled past MaxReplicas")
 
 	completeRequests(backendComplete, 4)
@@ -84,8 +91,8 @@ vllm:num_requests_waiting{model_name="%s"} %d.0
 
 	// Ensure the deployment is autoscaled back down to MinReplicas.
 	const autoscaleDownWait = 10 * time.Second
-	requireModelReplicas(t, m, m.Spec.MinReplicas, "Replicas should scale back to MinReplicas", autoscaleDownWait)
-	requireModelPods(t, m, int(m.Spec.MinReplicas), "Pods should be removed", time.Second)
+	requireModelReplicas(t, m, m.Spec.Autoscaling.MinReplicas, "Replicas should scale back to MinReplicas", autoscaleDownWait)
+	requireModelPods(t, m, int(m.Spec.Autoscaling.MinReplicas), "Pods should be removed", time.Second)
 
 	t.Log("Waiting for all requests to complete")
 	wg.Wait()

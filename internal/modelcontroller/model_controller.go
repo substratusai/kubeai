@@ -50,6 +50,7 @@ type ModelReconciler struct {
 	AllowPodAddressOverride bool
 	HuggingfaceSecretName   string
 	ResourceProfiles        map[string]config.ResourceProfile
+	AutoscalingProfiles     map[string]kubeaiv1.ModelAutoscaling
 	ModelServers            config.ModelServers
 }
 
@@ -64,6 +65,7 @@ type ModelReconciler struct {
 
 func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
+	log.Info("Reconciling Model")
 
 	model := &kubeaiv1.Model{}
 	if err := r.Get(ctx, req.NamespacedName, model); err != nil {
@@ -71,19 +73,15 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	}
 
 	var shouldUpdate bool
-	if model.Spec.Replicas == nil {
-		shouldUpdate = true
-		model.Spec.Replicas = ptr.To(model.Spec.MinReplicas)
-	}
 	{
-		changed, err := r.applyResourceProfile(model)
+		changed, err := r.applyProfiles(model)
 		if err != nil {
-			log.Error(err, "applying resource profile")
+			log.Error(err, "applying profiles")
 			// No use in retrying here, return nil error.
 			return ctrl.Result{}, nil
 		}
 		if changed {
-			log.Info("applied resource profile")
+			log.Info("applied profiles")
 			shouldUpdate = true
 		}
 	}
@@ -647,7 +645,7 @@ func (r *ModelReconciler) annotationsForModel(m *kubeaiv1.Model) map[string]stri
 	return ann
 }
 
-func (r *ModelReconciler) applyResourceProfile(model *kubeaiv1.Model) (bool, error) {
+func (r *ModelReconciler) applyProfiles(model *kubeaiv1.Model) (bool, error) {
 	managedFields, err := k8sutils.KubeAIManagedFields(model)
 	if err != nil {
 		return false, fmt.Errorf("getting managed fields: %w", err)
@@ -724,6 +722,17 @@ func (r *ModelReconciler) applyResourceProfile(model *kubeaiv1.Model) (bool, err
 		changed = true
 	}
 
+	if model.Spec.AutoscalingProfile == "" {
+		model.Spec.AutoscalingProfile = "default"
+		changed = true
+	}
+	autoscalingProfile := r.AutoscalingProfiles[model.Spec.AutoscalingProfile]
+	if model.Spec.Autoscaling == nil ||
+		(!reflect.DeepEqual(autoscalingProfile, model.Spec.Autoscaling) && k8sutils.ManagesField(managedFields, "spec", "autoscaling")) {
+		model.Spec.Autoscaling = &autoscalingProfile
+		changed = true
+	}
+
 	return changed, nil
 }
 
@@ -758,18 +767,21 @@ func (r *ModelReconciler) lookupServerImage(model *kubeaiv1.Model, profile confi
 }
 
 func (r *ModelReconciler) applyReplicaBounds(model *kubeaiv1.Model) bool {
-	var replicas int32
-	if model.Spec.Replicas != nil {
-		replicas = *model.Spec.Replicas
-	}
+	min := model.Spec.Autoscaling.MinReplicas
+	max := model.Spec.Autoscaling.MaxReplicas
 
-	if replicas < model.Spec.MinReplicas {
-		model.Spec.Replicas = ptr.To(model.Spec.MinReplicas)
+	if model.Spec.Replicas == nil {
+		model.Spec.Replicas = ptr.To(min)
 		return true
 	}
 
-	if replicas > model.Spec.MaxReplicas {
-		model.Spec.Replicas = ptr.To(model.Spec.MaxReplicas)
+	if *model.Spec.Replicas < min {
+		model.Spec.Replicas = ptr.To(min)
+		return true
+	}
+
+	if *model.Spec.Replicas > max {
+		model.Spec.Replicas = ptr.To(max)
 		return true
 	}
 

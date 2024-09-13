@@ -37,10 +37,10 @@ func modelForTest(t *testing.T) *v1.Model {
 			Features:        []v1.ModelFeature{v1.ModelFeatureTextGeneration},
 			Engine:          v1.VLLMEngine,
 			ResourceProfile: resourceProfileCPU + ":3",
-			MinReplicas:     0,
-			MaxReplicas:     3,
-			Args:            []string{"--test-arg"},
-			Env:             map[string]string{"TEST_ENV": "test"},
+			// Should default to "default".
+			//AutoscalingProfile: "default",
+			Args: []string{"--test-arg"},
+			Env:  map[string]string{"TEST_ENV": "test"},
 		},
 	}
 }
@@ -56,6 +56,8 @@ func updateModel(t *testing.T, m *v1.Model, modify func(), msg string) {
 func requireModelReplicas(t *testing.T, m *v1.Model, expectedReplicas int32, msg string, after time.Duration) {
 	require.EventuallyWithT(t, func(t *assert.CollectT) {
 		assert.NoError(t, testK8sClient.Get(testCtx, client.ObjectKeyFromObject(m), m))
+		//jsn, _ := json.MarshalIndent(m, "", "  ")
+		//fmt.Println(string(jsn))
 		assert.NotNil(t, m.Spec.Replicas)
 		assert.Equal(t, expectedReplicas, *m.Spec.Replicas)
 	}, after, time.Second/10, "Model Replicas should match: "+msg)

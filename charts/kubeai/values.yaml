@@ -60,10 +60,16 @@ resourceProfiles:
   #   nodeSelector:
   #     cloud.google.com/gke-accelerator-type: tpu-v5-lite-podslice
 
+autoscalingProfiles:
+  # NOTE: "defualt" profile is required.
+  default:
+    minReplicas: 0
+    maxReplicas: 100
+    targetRequests: 100
+
 messaging:
   errorMaxBackoff: 30s
   streams: []
-
 
 # Configure the openwebui subchart.
 openwebui:

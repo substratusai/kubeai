@@ -63,6 +63,9 @@ func init() {
 // Returns an error if setup fails.
 // Exits the program if any of the components stop with an error.
 func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
+	defer func() {
+		Log.Info("run finished")
+	}()
 	if err := cfg.DefaultAndValidate(); err != nil {
 		return fmt.Errorf("invalid config: %w", err)
 	}
@@ -164,6 +167,7 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 		AllowPodAddressOverride: cfg.AllowPodAddressOverride,
 		HuggingfaceSecretName:   cfg.SecretNames.Huggingface,
 		ResourceProfiles:        cfg.ResourceProfiles,
+		AutoscalingProfiles:     cfg.Autoscaling.Profiles,
 		ModelServers:            cfg.ModelServers,
 	}
 	if err = modelReconciler.SetupWithManager(mgr); err != nil {
@@ -178,17 +182,14 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 		return fmt.Errorf("unable to set up ready check: %w", err)
 	}
 
-	modelScaler := modelscaler.NewModelScaler(mgr.GetClient(), namespace, cfg.Autoscaling.RequiredConsecutiveScaleDowns())
+	modelScaler := modelscaler.NewModelScaler(mgr.GetClient(), namespace)
 
 	modelAutoscaler := modelautoscaler.New(
-		cfg.Autoscaling.Interval.Duration,
-		cfg.Autoscaling.AverageWindowCount(),
 		leaderElection,
 		modelScaler,
 		modelResolver,
-		float64(cfg.Autoscaling.Target),
+		cfg.Autoscaling,
 	)
-	go modelAutoscaler.Start()
 
 	modelProxy := modelproxy.NewHandler(modelScaler, modelResolver, 3, nil)
 	openaiHandler := openaiserver.NewHandler(mgr.GetClient(), modelProxy)
@@ -220,7 +221,19 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 
 	wg.Add(1)
 	go func() {
-		defer wg.Done()
+		defer func() {
+			Log.Info("autoscaler stopped")
+			wg.Done()
+		}()
+		modelAutoscaler.Start(ctx)
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer func() {
+			Log.Info("api server stopped")
+			wg.Done()
+		}()
 		Log.Info("starting api server", "addr", apiServer.Addr)
 		if err := apiServer.ListenAndServe(); err != nil {
 			if errors.Is(err, http.ErrServerClosed) {
@@ -233,7 +246,10 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 	}()
 	wg.Add(1)
 	go func() {
-		defer wg.Done()
+		defer func() {
+			Log.Info("leader election stopped")
+			wg.Done()
+		}()
 		Log.Info("starting leader election")
 		err := leaderElection.Start(ctx)
 		if err != nil {
@@ -248,7 +264,10 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 	for i := range msgrs {
 		wg.Add(1)
 		go func() {
-			defer wg.Done()
+			defer func() {
+				Log.Info("messenger stopped", "index", i)
+				wg.Done()
+			}()
 			Log.Info("Starting messenger", "index", i)
 			err := msgrs[i].Start(ctx)
 			if err != nil {
@@ -262,13 +281,16 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 		}()
 	}
 
-	Log.Info("starting manager")
+	Log.Info("starting controller-manager")
 	wg.Add(1)
 	go func() {
-		defer wg.Done()
+		defer func() {
+			Log.Info("controller-manager stopped")
+			wg.Done()
+		}()
 		if err := mgr.Start(ctx); err != nil {
 			if !errors.Is(err, context.Canceled) {
-				Log.Error(err, "running manager")
+				Log.Error(err, "error running controller-manager")
 				os.Exit(1)
 			}
 		}
