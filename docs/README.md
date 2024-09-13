@@ -63,7 +63,7 @@ models:
   catalog:
     gemma2-2b-cpu:
       enabled: true
-      minReplicas: 1
+      autoscalingProfile: online
     qwen2-500m-cpu:
       enabled: true
     nomic-embed-text-cpu:

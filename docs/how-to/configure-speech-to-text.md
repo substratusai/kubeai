@@ -13,7 +13,7 @@ models:
   catalog:
     faster-whisper-medium-en-cpu:
       enabled: true
-      minReplicas: 1
+      autoscalingProfile: online
 ```
 
 ### Enable by creating Model CRD
@@ -29,8 +29,6 @@ spec:
   owner: Systran
   url: hf://Systran/faster-whisper-medium.en
   engine: FasterWhisper
-  minReplicas: 0
-  maxReplicas: 3
   resourceProfile: cpu:1
 ```
 

@@ -20,8 +20,6 @@ spec:
     - --max-model-len=16384
     - --max-num-batched-token=16384
     - --gpu-memory-utilization=0.9
-  minReplicas: 0
-  maxReplicas: 3
   resourceProfile: nvidia-gpu-l4:1
 ```
 

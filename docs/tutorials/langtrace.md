@@ -31,7 +31,7 @@ models:
   catalog:
     gemma2-2b-cpu:
       enabled: true
-      minReplicas: 1
+      autoscalingProfile: online
 EOF
 
 helm upgrade --install kubeai kubeai/kubeai \

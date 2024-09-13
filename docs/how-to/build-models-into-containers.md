@@ -35,7 +35,5 @@ spec:
   url: "$MODEL_URL"
   engine: OLlama
   resourceProfile: cpu:1
-  minReplicas: 1
-  maxReplicas: 3
 EOF
 ```

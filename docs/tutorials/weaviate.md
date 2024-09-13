@@ -37,7 +37,7 @@ models:
   catalog:
     text-embedding-ada-002:
       enabled: true
-      minReplicas: 1
+      autoscalingProfile: online
       features: ["TextEmbedding"]
       owner: nomic
       url: "ollama://nomic-embed-text"
@@ -45,7 +45,7 @@ models:
       resourceProfile: cpu:1
     gpt-3.5-turbo:
       enabled: true
-      minReplicas: 1
+      autoscalingProfile: online
       features: ["TextGeneration"]
       owner: google
       url: "ollama://gemma2:2b"
