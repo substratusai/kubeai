@@ -37,11 +37,14 @@ Install the required Python packages:
 pip install langchain_openai
 ```
 
-Let's access the KubeAI OpenAI compatible API from our laptop. First, we need to port-forward the API server:
+Let's access the KubeAI OpenAI compatible API locally to make it easier.
+
+Run the following command to port-forward to the KubeAI service:
 ```bash
 kubectl port-forward svc/kubeai 8000:80
 ```
-Now the KubeAI OpenAI compatible API is available at `http://localhost:8000/openai`.
+Now the KubeAI OpenAI compatible API is available at `http://localhost:8000/openai`
+from your local machine.
 
 Now create a Python script named `test-langchain.py` with the following content:
 ```python
