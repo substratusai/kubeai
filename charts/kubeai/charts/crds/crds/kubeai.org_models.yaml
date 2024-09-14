@@ -976,7 +976,7 @@ spec:
                     type: boolean
                   maxReplicas:
                     default: 3
-                    description: MinReplicas is the minimum number of Pod replicas
+                    description: MaxReplicas is the maximum number of Pod replicas
                       that the model can scale up to.
                     format: int32
                     minimum: 1
