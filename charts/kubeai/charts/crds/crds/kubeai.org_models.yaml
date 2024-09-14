@@ -1149,7 +1149,6 @@ spec:
               url:
                 type: string
             required:
-            - autoscalingProfile
             - engine
             - features
             - owner

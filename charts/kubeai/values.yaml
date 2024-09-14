@@ -60,18 +60,21 @@ resourceProfiles:
   #   nodeSelector:
   #     cloud.google.com/gke-accelerator-type: tpu-v5-lite-podslice
 
-autoscalingProfiles:
-  # NOTE: "default" profile is required.
-  default:
-    minReplicas: 0
-    maxReplicas: 3
-    targetRequests: 100
-    scaleDownDelay: 30s
-  online:
-    minReplicas: 1
-    maxReplicas: 10
-    targetRequests: 100
-    scaleDownDelay: 30s
+autoscaling:
+  interval: 10s
+  timeWindow: 10m
+  profiles:
+    # NOTE: "default" profile is required.
+    default:
+      minReplicas: 0
+      maxReplicas: 3
+      targetRequests: 100
+      scaleDownDelay: 30s
+    online:
+      minReplicas: 1
+      maxReplicas: 10
+      targetRequests: 100
+      scaleDownDelay: 30s
 
 messaging:
   errorMaxBackoff: 30s
@@ -191,13 +194,6 @@ readinessProbe:
     port: 8081
   initialDelaySeconds: 5
   periodSeconds: 10
-
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
 
 # Additional volumes on the output Deployment definition.
 volumes: []

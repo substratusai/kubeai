@@ -63,7 +63,7 @@ type ModelSpec struct {
 	Env map[string]string `json:"env,omitempty"`
 
 	// AutoscalingProfile to be used for autoscaling.
-	AutoscalingProfile string `json:"autoscalingProfile"`
+	AutoscalingProfile string `json:"autoscalingProfile,omitempty"`
 
 	// Autoscaling configuration.
 	// Will be set from the AutoscalingProfile if not specified.
