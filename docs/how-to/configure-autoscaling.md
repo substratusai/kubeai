@@ -52,3 +52,21 @@ spec:
   # ...
   autoscalingProfile: "budget"
 ```
+
+## Specifying autoscaling details in-Model
+
+Models can optionally define autoscaling details inline instead of selecting a system-wide autoscaling profile.
+
+```yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: my-model
+spec:
+  # ...
+  autoscaling:
+    minReplicas: 1
+    maxReplicas: 9
+    targetRequests: 250
+    scaleDownDelay: 30s
+```
