@@ -39,7 +39,7 @@ pip install langchain_openai
 
 Let's access the KubeAI OpenAI compatible API from our laptop. First, we need to port-forward the API server:
 ```bash
-kubectl port-forward svc/kubeai-openai 8000:80
+kubectl port-forward svc/kubeai 8000:80
 ```
 Now the KubeAI OpenAI compatible API is available at `http://localhost:8000/openai`.
 
