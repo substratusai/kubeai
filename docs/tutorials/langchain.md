@@ -46,7 +46,9 @@ kubectl port-forward svc/kubeai 8000:80
 Now the KubeAI OpenAI compatible API is available at `http://localhost:8000/openai`
 from your local machine.
 
-Now create a Python script named `test-langchain.py` with the following content:
+Let's create a simple Python script that uses LangChain and is connected to KubeAI.
+
+Create a file named `test-langchain.py` with the following content:
 ```python
 from langchain_openai import ChatOpenAI
 
