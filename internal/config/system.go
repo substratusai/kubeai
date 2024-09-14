@@ -60,7 +60,10 @@ func (s *System) DefaultAndValidate() error {
 	}
 
 	for name, profile := range s.Autoscaling.Profiles {
-		// NOTE: Keep in sync with defaults in api pkg.
+		// NOTE: Keep in sync with CRD defaults in api pkg.
+		// Those defaults are only applied by the API Server when a user
+		// sets the .spec.autoscaling field directly (outside of using
+		// an autoscaling profile).
 		if profile.MaxReplicas == 0 {
 			profile.MaxReplicas = 3
 		}

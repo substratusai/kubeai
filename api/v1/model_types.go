@@ -84,7 +84,7 @@ type ModelAutoscaling struct {
 	// Note: 0 is a valid value.
 	// +kubebuilder:validation:Minimum=0
 	MinReplicas int32 `json:"minReplicas"`
-	// MinReplicas is the minimum number of Pod replicas that the model can scale up to.
+	// MaxReplicas is the maximum number of Pod replicas that the model can scale up to.
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:default=3
 	MaxReplicas int32 `json:"maxReplicas"`
