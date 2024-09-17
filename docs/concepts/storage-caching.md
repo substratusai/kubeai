@@ -1,4 +1,4 @@
-# Model Storage
+# Storage / Caching
 
 With "Large" in the name, caching is a critical part of serving LLMs.
 

@@ -163,7 +163,7 @@ $(GOLANGCI_LINT): $(LOCALBIN)
 	$(call go-install-tool,$(GOLANGCI_LINT),github.com/golangci/golangci-lint/cmd/golangci-lint,$(GOLANGCI_LINT_VERSION))
 
 .PHONY: docs
-docs: generate-api-ref-docs
+docs: generate-kubernetes-api-reference
 	cd ./docs && \
 		python3 -m venv .venv && \
 		source .venv/bin/activate && \
@@ -171,14 +171,16 @@ docs: generate-api-ref-docs
 		cd .. && \
 		mkdocs serve
 
-.PHONY: generate-api-ref-docs
-generate-api-ref-docs: crd-ref-docs
+.PHONY: generate-kubernetes-api-reference
+generate-kubernetes-api-reference: crd-ref-docs
 	$(CRD_REF_DOCS) \
-		--config=./docs/.api-reference/config.yaml \
+		--config=./docs/reference/.kubernetes-api/config.yaml \
 		--log-level=INFO \
-		--output-path=./docs/api-reference.md \
+		--output-path=./docs/reference/kubernetes-api.md \
 		--source-path=./api \
 		--renderer=markdown
+	# Replace the title
+	perl -pi -e 's/# API Reference/# Kubernetes API/g' ./docs/reference/kubernetes-api.md
 
 .PHONY: crd-ref-docs
 crd-ref-docs: $(CRD_REF_DOCS) ## Download crd-ref-docs.

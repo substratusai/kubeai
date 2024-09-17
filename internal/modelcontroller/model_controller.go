@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"math"
-	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -64,6 +63,7 @@ type ModelReconciler struct {
 
 func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
+	log.Info("Reconciling Model")
 
 	model := &kubeaiv1.Model{}
 	if err := r.Get(ctx, req.NamespacedName, model); err != nil {
@@ -71,30 +71,21 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	}
 
 	var shouldUpdate bool
-	if model.Spec.Replicas == nil {
-		shouldUpdate = true
-		model.Spec.Replicas = ptr.To(model.Spec.MinReplicas)
-	}
-	{
-		changed, err := r.applyResourceProfile(model)
-		if err != nil {
-			log.Error(err, "applying resource profile")
-			// No use in retrying here, return nil error.
-			return ctrl.Result{}, nil
-		}
-		if changed {
-			log.Info("applied resource profile")
-			shouldUpdate = true
-		}
-	}
 	// Apply self labels based on features so that we can easily filter models.
 	shouldUpdate = r.applySelfLabels(model) || shouldUpdate
 	// Apply replica bounds to handle cases where min/max replicas were updated but a scale event was not triggered.
-	shouldUpdate = r.applyReplicaBounds(model) || shouldUpdate
+	if !model.Spec.AutoscalingDisabled {
+		shouldUpdate = r.applyAutoscalingReplicaBounds(model) || shouldUpdate
+	}
 	if shouldUpdate {
 		if err := r.Update(ctx, model, k8sutils.DefaultUpdateOptions()); err != nil {
 			return ctrl.Result{}, fmt.Errorf("updating model: %w", err)
 		}
+	}
+
+	modelConfig, err := r.getModelConfig(model)
+	if err != nil {
+		return ctrl.Result{}, fmt.Errorf("getting model profile: %w", err)
 	}
 
 	allPods := &corev1.PodList{}
@@ -104,14 +95,18 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{}, fmt.Errorf("listing all node pools: %w", err)
 	}
 
+	var scaleDesired int32
+	// Replicas could be nil if autoscaling is disabled.
+	if model.Spec.Replicas != nil {
+		scaleDesired = *model.Spec.Replicas
+	}
 	scaleActual := int32(len(allPods.Items))
-	scaleDesired := *model.Spec.Replicas
 	scaleDiff := scaleActual - scaleDesired
 	scaleDiffAbs := int32(math.Abs(float64(scaleDiff)))
 
 	// TODO: Take into account Pods that are in a deletion state.
 
-	var podForModel func(*kubeaiv1.Model, int32) *corev1.Pod
+	var podForModel func(*kubeaiv1.Model, ModelConfig, int32) *corev1.Pod
 	switch model.Spec.Engine {
 	case kubeaiv1.OLlamaEngine:
 		podForModel = r.oLlamaPodForModel
@@ -131,13 +126,14 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 		var toCreate []*corev1.Pod
 		for i := int32(0); i < scaleDiffAbs; i++ {
-			toCreate = append(toCreate, podForModel(model, scaleActual+i))
+			toCreate = append(toCreate, podForModel(model, modelConfig, scaleActual+i))
 		}
 
 		for _, pod := range toCreate {
 			if err := ctrl.SetControllerReference(model, pod, r.Scheme); err != nil {
 				return ctrl.Result{}, fmt.Errorf("setting controller reference: %w", err)
 			}
+			log.Info("Creating Pod", "podName", pod.Name)
 			if err := r.Client.Create(ctx, pod, k8sutils.DefaultCreateOptions()); err != nil {
 				return ctrl.Result{}, fmt.Errorf("creating pod: %w", err)
 			}
@@ -151,6 +147,7 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			if toDeleteCount == 0 {
 				break
 			}
+			log.Info("Deleting Pod", "podName", pod.Name)
 			if err := r.Client.Delete(ctx, &corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: pod.Namespace,
@@ -201,7 +198,7 @@ func (r *ModelReconciler) apply(ctx context.Context, model *kubeaiv1.Model, obj 
 }
 */
 
-func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, index int32) *corev1.Pod {
+func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, profile ModelConfig, index int32) *corev1.Pod {
 	lbs := labelsForModel(m)
 	ann := r.annotationsForModel(m)
 	if _, ok := ann[kubeaiv1.ModelPodPortAnnotation]; !ok {
@@ -253,16 +250,19 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, index int32) *corev
 			Annotations: ann,
 		},
 		Spec: corev1.PodSpec{
-			NodeSelector: m.Spec.NodeSelector,
-			Affinity:     m.Spec.Affinity,
-			Tolerations:  m.Spec.Tolerations,
+			NodeSelector: profile.NodeSelector,
+			Affinity:     profile.Affinity,
+			Tolerations:  profile.Tolerations,
 			Containers: []corev1.Container{
 				{
-					Name:      "server",
-					Image:     m.Spec.Image,
-					Args:      args,
-					Env:       env,
-					Resources: *m.Spec.Resources,
+					Name:  "server",
+					Image: profile.Image,
+					Args:  args,
+					Env:   env,
+					Resources: corev1.ResourceRequirements{
+						Requests: profile.Requests,
+						Limits:   profile.Limits,
+					},
 					Ports: []corev1.ContainerPort{
 						{
 							ContainerPort: 8000,
@@ -333,7 +333,7 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, index int32) *corev
 	return pod
 }
 
-func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, index int32) *corev1.Pod {
+func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, profile ModelConfig, index int32) *corev1.Pod {
 	lbs := labelsForModel(m)
 	ann := r.annotationsForModel(m)
 
@@ -400,16 +400,19 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, index int32) *cor
 			Annotations: ann,
 		},
 		Spec: corev1.PodSpec{
-			NodeSelector: m.Spec.NodeSelector,
-			Affinity:     m.Spec.Affinity,
-			Tolerations:  m.Spec.Tolerations,
+			NodeSelector: profile.NodeSelector,
+			Affinity:     profile.Affinity,
+			Tolerations:  profile.Tolerations,
 			Containers: []corev1.Container{
 				{
-					Name:      "server",
-					Image:     m.Spec.Image,
-					Args:      m.Spec.Args,
-					Env:       env,
-					Resources: *m.Spec.Resources,
+					Name:  "server",
+					Image: profile.Image,
+					Args:  m.Spec.Args,
+					Env:   env,
+					Resources: corev1.ResourceRequirements{
+						Requests: profile.Requests,
+						Limits:   profile.Limits,
+					},
 					Ports: []corev1.ContainerPort{
 						{
 							ContainerPort: 8000,
@@ -489,7 +492,7 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, index int32) *cor
 
 }
 
-func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, index int32) *corev1.Pod {
+func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, profile ModelConfig, index int32) *corev1.Pod {
 	lbs := labelsForModel(m)
 	ann := r.annotationsForModel(m)
 	if _, ok := ann[kubeaiv1.ModelPodPortAnnotation]; !ok {
@@ -543,16 +546,19 @@ func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, index int3
 			Annotations: ann,
 		},
 		Spec: corev1.PodSpec{
-			NodeSelector: m.Spec.NodeSelector,
-			Affinity:     m.Spec.Affinity,
-			Tolerations:  m.Spec.Tolerations,
+			NodeSelector: profile.NodeSelector,
+			Affinity:     profile.Affinity,
+			Tolerations:  profile.Tolerations,
 			Containers: []corev1.Container{
 				{
-					Name:      "server",
-					Image:     m.Spec.Image,
-					Args:      args,
-					Env:       env,
-					Resources: *m.Spec.Resources,
+					Name:  "server",
+					Image: profile.Image,
+					Args:  args,
+					Env:   env,
+					Resources: corev1.ResourceRequirements{
+						Requests: profile.Requests,
+						Limits:   profile.Limits,
+					},
 					Ports: []corev1.ContainerPort{
 						{
 							ContainerPort: 8000,
@@ -647,25 +653,27 @@ func (r *ModelReconciler) annotationsForModel(m *kubeaiv1.Model) map[string]stri
 	return ann
 }
 
-func (r *ModelReconciler) applyResourceProfile(model *kubeaiv1.Model) (bool, error) {
-	managedFields, err := k8sutils.KubeAIManagedFields(model)
-	if err != nil {
-		return false, fmt.Errorf("getting managed fields: %w", err)
-	}
+type ModelConfig struct {
+	config.ResourceProfile
+	Image string
+}
+
+func (r *ModelReconciler) getModelConfig(model *kubeaiv1.Model) (ModelConfig, error) {
+	var result ModelConfig
 
 	split := strings.Split(model.Spec.ResourceProfile, ":")
 	if len(split) != 2 {
-		return false, fmt.Errorf("invalid resource profile: %q, should match <name>:<multiple>, example: nvidia-gpu-l4:2", model.Spec.ResourceProfile)
+		return result, fmt.Errorf("invalid resource profile: %q, should match <name>:<multiple>, example: nvidia-gpu-l4:2", model.Spec.ResourceProfile)
 	}
 	name := split[0]
 	multiple, err := strconv.Atoi(split[1])
 	if err != nil {
-		return false, fmt.Errorf("invalid multiple in resource profile multiple: %q: %w", split[1], err)
+		return result, fmt.Errorf("invalid multiple in resource profile multiple: %q: %w", split[1], err)
 	}
 
 	profile, ok := r.ResourceProfiles[name]
 	if !ok {
-		return false, fmt.Errorf("resource profile not found: %q", name)
+		return result, fmt.Errorf("resource profile not found: %q", name)
 	}
 
 	requests := make(corev1.ResourceList)
@@ -682,52 +690,25 @@ func (r *ModelReconciler) applyResourceProfile(model *kubeaiv1.Model) (bool, err
 		limits[key] = q
 	}
 
-	var changed bool
-
-	resources := corev1.ResourceRequirements{
-		Requests: requests,
-		Limits:   limits,
-	}
-	if model.Spec.Resources == nil ||
-		((!resourcesEqual(model.Spec.Resources.Requests, requests) || !resourcesEqual(model.Spec.Resources.Limits, limits)) &&
-			k8sutils.ManagesField(managedFields, "spec", "resources")) {
-		model.Spec.Resources = &resources
-		changed = true
-	}
-
-	nodeSelector := profile.NodeSelector
-	if model.Spec.NodeSelector == nil ||
-		(!selectorsEqual(nodeSelector, model.Spec.NodeSelector) && k8sutils.ManagesField(managedFields, "spec", "nodeSelector")) {
-		model.Spec.NodeSelector = nodeSelector
-		changed = true
-	}
-
-	if model.Spec.Affinity == nil || (!reflect.DeepEqual(profile.Affinity, model.Spec.Affinity) &&
-		k8sutils.ManagesField(managedFields, "spec", "affinity")) {
-		model.Spec.Affinity = profile.Affinity
-		changed = true
-	}
-
-	if model.Spec.Tolerations == nil || (!reflect.DeepEqual(profile.Tolerations, model.Spec.Tolerations) &&
-		k8sutils.ManagesField(managedFields, "spec", "tolerations")) {
-		model.Spec.Tolerations = profile.Tolerations
-		changed = true
-	}
+	result.ResourceProfile = profile
+	// Apply the multiplied requests and limits to the profile.
+	result.Requests = requests
+	result.Limits = limits
 
 	image, err := r.lookupServerImage(model, profile)
 	if err != nil {
-		return false, fmt.Errorf("looking up server image: %w", err)
+		return result, fmt.Errorf("looking up server image: %w", err)
 	}
-	if model.Spec.Image == "" ||
-		(model.Spec.Image != image && k8sutils.ManagesField(managedFields, "spec", "image")) {
-		model.Spec.Image = image
-		changed = true
-	}
+	result.Image = image
 
-	return changed, nil
+	return result, nil
 }
 
 func (r *ModelReconciler) lookupServerImage(model *kubeaiv1.Model, profile config.ResourceProfile) (string, error) {
+	if model.Spec.Image != "" {
+		return model.Spec.Image, nil
+	}
+
 	var serverImgs map[string]string
 	switch model.Spec.Engine {
 	case kubeaiv1.OLlamaEngine:
@@ -757,19 +738,17 @@ func (r *ModelReconciler) lookupServerImage(model *kubeaiv1.Model, profile confi
 	}
 }
 
-func (r *ModelReconciler) applyReplicaBounds(model *kubeaiv1.Model) bool {
-	var replicas int32
-	if model.Spec.Replicas != nil {
-		replicas = *model.Spec.Replicas
-	}
+func (r *ModelReconciler) applyAutoscalingReplicaBounds(model *kubeaiv1.Model) bool {
+	min := model.Spec.MinReplicas
+	max := model.Spec.MaxReplicas
 
-	if replicas < model.Spec.MinReplicas {
-		model.Spec.Replicas = ptr.To(model.Spec.MinReplicas)
+	if model.Spec.Replicas == nil || *model.Spec.Replicas < min {
+		model.Spec.Replicas = ptr.To(min)
 		return true
 	}
 
-	if replicas > model.Spec.MaxReplicas {
-		model.Spec.Replicas = ptr.To(model.Spec.MaxReplicas)
+	if max != nil && *model.Spec.Replicas > *max {
+		model.Spec.Replicas = ptr.To(*max)
 		return true
 	}
 

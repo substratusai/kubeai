@@ -17,6 +17,10 @@ import (
 func TestModelScalingBounds(t *testing.T) {
 	// Construct a Model object with MinReplicas set to 0.
 	m := modelForTest(t)
+	m.Spec.TargetRequests = ptr.To[int32](1)
+	m.Spec.ScaleDownDelaySeconds = ptr.To[int64](999999)
+	m.Spec.MinReplicas = 0
+	m.Spec.MaxReplicas = ptr.To[int32](2)
 
 	// Create the Model object in the Kubernetes cluster.
 	require.NoError(t, testK8sClient.Create(testCtx, m))
@@ -42,7 +46,7 @@ func TestModelScalingBounds(t *testing.T) {
 
 	// Update the Model object to set MinReplicas to 1.
 	updateModel(t, m, func() { m.Spec.MinReplicas = 1 }, "MinReplicas=1")
-	requireModelReplicas(t, m, 1, "Replicas should be scaled up to MinReplicas after update")
+	requireModelReplicas(t, m, 1, "Replicas should be scaled up to MinReplicas after update", time.Second)
 
 	// Check that a Pod was created for the Model.
 	require.EventuallyWithT(t, func(t *assert.CollectT) {
@@ -53,8 +57,8 @@ func TestModelScalingBounds(t *testing.T) {
 
 	// Update model replicas to be greater than max replicas.
 	// TODO: Future: This should be a validation error enforced by webhook.
-	updateModel(t, m, func() { m.Spec.Replicas = ptr.To(m.Spec.MaxReplicas + 1) }, "Replicas > MaxReplicas")
+	updateModel(t, m, func() { m.Spec.Replicas = ptr.To(*m.Spec.MaxReplicas + 1) }, "Replicas > MaxReplicas")
 
 	// Model should scale down to MaxReplicas.
-	requireModelReplicas(t, m, m.Spec.MaxReplicas, "Replicas should be scaled down to MaxReplicas")
+	requireModelReplicas(t, m, *m.Spec.MaxReplicas, "Replicas should be scaled down to MaxReplicas", time.Second)
 }

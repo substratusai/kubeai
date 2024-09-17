@@ -16,15 +16,14 @@ import (
 // TODO: Change to ModelClient
 
 type ModelScaler struct {
-	client                        client.Client
-	namespace                     string
-	consecutiveScaleDownsMtx      sync.RWMutex
-	consecutiveScaleDowns         map[string]int
-	requiredConsecutiveScaleDowns int
+	client                   client.Client
+	namespace                string
+	consecutiveScaleDownsMtx sync.RWMutex
+	consecutiveScaleDowns    map[string]int
 }
 
-func NewModelScaler(client client.Client, namespace string, requiredConsecutiveScaleDowns int) *ModelScaler {
-	return &ModelScaler{client: client, namespace: namespace, consecutiveScaleDowns: map[string]int{}, requiredConsecutiveScaleDowns: requiredConsecutiveScaleDowns}
+func NewModelScaler(client client.Client, namespace string) *ModelScaler {
+	return &ModelScaler{client: client, namespace: namespace, consecutiveScaleDowns: map[string]int{}}
 }
 
 func (s *ModelScaler) ModelExists(ctx context.Context, model string) (bool, error) {
@@ -37,17 +36,13 @@ func (s *ModelScaler) ModelExists(ctx context.Context, model string) (bool, erro
 	return true, nil
 }
 
-func (s *ModelScaler) ListAllModels(ctx context.Context) ([]string, error) {
+func (s *ModelScaler) ListAllModels(ctx context.Context) ([]kubeaiv1.Model, error) {
 	models := &kubeaiv1.ModelList{}
 	if err := s.client.List(ctx, models, client.InNamespace(s.namespace)); err != nil {
 		return nil, fmt.Errorf("list models: %w", err)
 	}
 
-	var names []string
-	for _, model := range models.Items {
-		names = append(names, model.Name)
-	}
-	return names, nil
+	return models.Items, nil
 }
 
 func (s *ModelScaler) ScaleAtLeastOneReplica(ctx context.Context, model string) error {
@@ -56,7 +51,16 @@ func (s *ModelScaler) ScaleAtLeastOneReplica(ctx context.Context, model string) 
 		return fmt.Errorf("get scale: %w", err)
 	}
 
-	if obj.Spec.Replicas != nil && *obj.Spec.Replicas == 0 && obj.Spec.MaxReplicas > 0 {
+	if obj.Spec.AutoscalingDisabled {
+		return nil
+	}
+
+	replicas := int32(0)
+	if obj.Spec.Replicas != nil {
+		replicas = *obj.Spec.Replicas
+	}
+
+	if replicas == 0 && !obj.Spec.AutoscalingDisabled {
 		scale := &autoscalingv1.Scale{
 			Spec: autoscalingv1.ScaleSpec{Replicas: 1},
 		}
@@ -68,44 +72,46 @@ func (s *ModelScaler) ScaleAtLeastOneReplica(ctx context.Context, model string) 
 	return nil
 }
 
-func (s *ModelScaler) Scale(ctx context.Context, model string, replicas int32) error {
-	obj := &kubeaiv1.Model{}
-	if err := s.client.Get(ctx, types.NamespacedName{Namespace: s.namespace, Name: model}, obj); err != nil {
-		return fmt.Errorf("get scale: %w", err)
-	}
+// Scale scales the model to the desired number of replicas, enforcing the min and max replica bounds.
+// Model should have .Spec defined before calling Scale().
+func (s *ModelScaler) Scale(ctx context.Context, model *kubeaiv1.Model, replicas int32, requiredConsecutiveScaleDowns int) error {
+	//obj := &kubeaiv1.Model{}
+	//if err := s.client.Get(ctx, types.NamespacedName{Namespace: s.namespace, Name: model}, obj); err != nil {
+	//	return fmt.Errorf("get scale: %w", err)
+	//}
 
-	replicas = enforceReplicaBounds(replicas, obj)
+	replicas = enforceReplicaBounds(replicas, model)
 
 	var existingReplicas int32 = 0
-	if obj.Spec.Replicas != nil {
-		existingReplicas = *obj.Spec.Replicas
+	if model.Spec.Replicas != nil {
+		existingReplicas = *model.Spec.Replicas
 	}
 
 	if existingReplicas > replicas {
 		// Scale down
 		s.consecutiveScaleDownsMtx.RLock()
-		consec := s.consecutiveScaleDowns[model]
+		consec := s.consecutiveScaleDowns[model.Name]
 		s.consecutiveScaleDownsMtx.RUnlock()
-		if consec < s.requiredConsecutiveScaleDowns {
-			log.Printf("model %s has %d consecutive scale downs (< %d), not scaling down yet", model, consec, s.requiredConsecutiveScaleDowns)
+		if consec < requiredConsecutiveScaleDowns {
+			log.Printf("model %s has %d consecutive scale downs (< %d), not scaling down yet", model.Name, consec, requiredConsecutiveScaleDowns)
 			s.consecutiveScaleDownsMtx.Lock()
-			s.consecutiveScaleDowns[model]++
+			s.consecutiveScaleDowns[model.Name]++
 			s.consecutiveScaleDownsMtx.Unlock()
 			return nil
 		}
 	} else {
 		// Scale up or constant scale.
 		s.consecutiveScaleDownsMtx.Lock()
-		s.consecutiveScaleDowns[model] = 0
+		s.consecutiveScaleDowns[model.Name] = 0
 		s.consecutiveScaleDownsMtx.Unlock()
 	}
 
 	if existingReplicas != replicas {
-		log.Printf("scaling model %s from %d to %d replicas", model, existingReplicas, replicas)
+		log.Printf("scaling model %s from %d to %d replicas", model.Name, existingReplicas, replicas)
 		scale := &autoscalingv1.Scale{
 			Spec: autoscalingv1.ScaleSpec{Replicas: replicas},
 		}
-		if err := s.client.SubResource("scale").Update(ctx, obj, client.WithSubResourceBody(scale)); err != nil {
+		if err := s.client.SubResource("scale").Update(ctx, model, client.WithSubResourceBody(scale)); err != nil {
 			return fmt.Errorf("update scale: %w", err)
 		}
 	}
@@ -114,11 +120,15 @@ func (s *ModelScaler) Scale(ctx context.Context, model string, replicas int32) e
 }
 
 func enforceReplicaBounds(replicas int32, model *kubeaiv1.Model) int32 {
-	if replicas > model.Spec.MaxReplicas {
-		return model.Spec.MaxReplicas
+	max := model.Spec.MaxReplicas
+	min := model.Spec.MinReplicas
+	if max != nil {
+		if replicas > *max {
+			return *max
+		}
 	}
-	if replicas < model.Spec.MinReplicas {
-		return model.Spec.MinReplicas
+	if replicas < min {
+		return min
 	}
 	return replicas
 }

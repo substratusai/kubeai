@@ -21,7 +21,6 @@ limitations under the License.
 package v1
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -92,35 +91,6 @@ func (in *ModelSpec) DeepCopyInto(out *ModelSpec) {
 		*out = make([]ModelFeature, len(*in))
 		copy(*out, *in)
 	}
-	if in.Replicas != nil {
-		in, out := &in.Replicas, &out.Replicas
-		*out = new(int32)
-		**out = **in
-	}
-	if in.Resources != nil {
-		in, out := &in.Resources, &out.Resources
-		*out = new(corev1.ResourceRequirements)
-		(*in).DeepCopyInto(*out)
-	}
-	if in.NodeSelector != nil {
-		in, out := &in.NodeSelector, &out.NodeSelector
-		*out = make(map[string]string, len(*in))
-		for key, val := range *in {
-			(*out)[key] = val
-		}
-	}
-	if in.Affinity != nil {
-		in, out := &in.Affinity, &out.Affinity
-		*out = new(corev1.Affinity)
-		(*in).DeepCopyInto(*out)
-	}
-	if in.Tolerations != nil {
-		in, out := &in.Tolerations, &out.Tolerations
-		*out = make([]corev1.Toleration, len(*in))
-		for i := range *in {
-			(*in)[i].DeepCopyInto(&(*out)[i])
-		}
-	}
 	if in.Args != nil {
 		in, out := &in.Args, &out.Args
 		*out = make([]string, len(*in))
@@ -132,6 +102,26 @@ func (in *ModelSpec) DeepCopyInto(out *ModelSpec) {
 		for key, val := range *in {
 			(*out)[key] = val
 		}
+	}
+	if in.Replicas != nil {
+		in, out := &in.Replicas, &out.Replicas
+		*out = new(int32)
+		**out = **in
+	}
+	if in.MaxReplicas != nil {
+		in, out := &in.MaxReplicas, &out.MaxReplicas
+		*out = new(int32)
+		**out = **in
+	}
+	if in.TargetRequests != nil {
+		in, out := &in.TargetRequests, &out.TargetRequests
+		*out = new(int32)
+		**out = **in
+	}
+	if in.ScaleDownDelaySeconds != nil {
+		in, out := &in.ScaleDownDelaySeconds, &out.ScaleDownDelaySeconds
+		*out = new(int64)
+		**out = **in
 	}
 }
 

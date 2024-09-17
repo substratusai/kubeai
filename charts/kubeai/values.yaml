@@ -60,10 +60,17 @@ resourceProfiles:
   #   nodeSelector:
   #     cloud.google.com/gke-accelerator-type: tpu-v5-lite-podslice
 
+modelAutoscaling:
+  # Interval that the autoscaler will scrape model server metrics.
+  # and calculate the desired number of replicas.
+  interval: 10s
+  # Time window the autoscaling algorithm will consider when calculating
+  # the desired number of replicas.
+  timeWindow: 10m
+
 messaging:
   errorMaxBackoff: 30s
   streams: []
-
 
 # Configure the openwebui subchart.
 openwebui:
@@ -179,13 +186,6 @@ readinessProbe:
     port: 8081
   initialDelaySeconds: 5
   periodSeconds: 10
-
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
 
 # Additional volumes on the output Deployment definition.
 volumes: []

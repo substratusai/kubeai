@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"errors"
+	"math"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -14,36 +15,69 @@ type System struct {
 
 	ModelServers ModelServers `json:"modelServers" validate:"required"`
 
-	ResourceProfiles map[string]ResourceProfile `json:"resourceProfiles"`
+	ResourceProfiles map[string]ResourceProfile `json:"resourceProfiles" validate:"required"`
 
 	Messaging Messaging `json:"messaging"`
 
-	// MetricsAddr is the address the metric endpoint binds to. Default is ":8080".
-	MetricsAddr string `json:"metricsAddr"`
+	// MetricsAddr is the address the metric endpoint binds to.
+	// Defaults to ":8080"
+	MetricsAddr string `json:"metricsAddr" validate:"required"`
 
-	// HealthAddr is the address the health probe endpoint binds to. Default is ":8081".
-	HealthAddress string `json:"healthAddress"`
+	// HealthAddr is the address the health probe endpoint binds to.
+	// Defaults to ":8081"
+	HealthAddress string `json:"healthAddress" validate:"required"`
 
 	// AllowPodAddressOverride will allow the pod address to be overridden by the Model objects. This is useful for development purposes.
 	AllowPodAddressOverride bool `json:"allowPodAddressOverride"`
+
+	ModelAutoscaling ModelAutoscaling `json:"modelAutoscaling" validate:"required"`
 }
 
 func (s *System) DefaultAndValidate() error {
-	if s.Messaging.ErrorMaxBackoff.Duration == 0 {
-		s.Messaging.ErrorMaxBackoff.Duration = time.Minute
-	}
 	if s.MetricsAddr == "" {
 		s.MetricsAddr = ":8080"
 	}
 	if s.HealthAddress == "" {
 		s.HealthAddress = ":8081"
 	}
+
 	for i := range s.Messaging.Streams {
 		if s.Messaging.Streams[i].MaxHandlers == 0 {
 			s.Messaging.Streams[i].MaxHandlers = 1
 		}
 	}
+
+	if s.ModelAutoscaling.Interval.Duration == 0 {
+		s.ModelAutoscaling.Interval.Duration = 10 * time.Second
+	}
+	if s.ModelAutoscaling.TimeWindow.Duration == 0 {
+		s.ModelAutoscaling.TimeWindow.Duration = 10 * time.Minute
+	}
+
 	return validator.New(validator.WithRequiredStructEnabled()).Struct(s)
+}
+
+type ModelAutoscaling struct {
+	// Interval is the time between each autoscaling check.
+	// Defaults to 10 seconds.
+	Interval Duration `json:"interval" validate:"required"`
+	// TimeWindow that the autoscaling algorithm will consider when
+	// calculating the average number of requests.
+	// Defaults to 10 minutes.
+	TimeWindow Duration `json:"timeWindow" validate:"required"`
+}
+
+// RequiredConsecutiveScaleDowns returns the number of consecutive scale down
+// operations required before the deployment is scaled down. This is calculated
+// by dividing the ScaleDownDelay by the Interval.
+func (a *ModelAutoscaling) RequiredConsecutiveScaleDowns(scaleDownDelaySeconds int64) int {
+	return int(math.Ceil(float64(time.Duration(scaleDownDelaySeconds)*time.Second) / float64(a.Interval.Duration)))
+}
+
+// AverageWindowCount returns the number of intervals that will be considered when
+// calculating the average value.
+func (a *ModelAutoscaling) AverageWindowCount() int {
+	return int(math.Ceil(float64(a.TimeWindow.Duration) / float64(a.Interval.Duration)))
 }
 
 type SecretNames struct {
@@ -52,7 +86,7 @@ type SecretNames struct {
 
 type Messaging struct {
 	// ErrorMaxBackoff is the maximum backoff time that will be applied when
-	// consecutive errors are encountered. Default is 1 minute.
+	// consecutive errors are encountered.
 	ErrorMaxBackoff Duration        `json:"errorMaxBackoff"`
 	Streams         []MessageStream `json:"streams"`
 }
