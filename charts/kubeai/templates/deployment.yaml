@@ -12,7 +12,7 @@ spec:
   template:
     metadata:
       annotations:
-        # Recreate Pods on update to ConfigMap b/c hot reload is not supported.
+        # Recreate Pods on update of ConfigMap b/c hot reload is not supported.
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
       {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
