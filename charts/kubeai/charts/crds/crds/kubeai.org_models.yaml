@@ -17,7 +17,7 @@ spec:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: Model is the Schema for the models API
+        description: Model resources define the ML models that will be served by KubeAI.
         properties:
           apiVersion:
             description: |-
@@ -37,7 +37,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: ModelSpec defines the desired state of Model
+            description: ModelSpec defines the desired state of Model.
             properties:
               args:
                 description: Args to be added to the server process.
@@ -47,9 +47,10 @@ spec:
               autoscalingDisabled:
                 description: |-
                   AutoscalingDisabled will stop the controller from managing the replicas
-                  for the Model. If true metrics will not be collected on server Pods.
+                  for the Model. When disabled, metrics will not be collected on server Pods.
                 type: boolean
               engine:
+                description: Engine to be used for the server process.
                 enum:
                 - OLlama
                 - VLLM
@@ -61,6 +62,9 @@ spec:
                 description: Env variables to be added to the server process.
                 type: object
               features:
+                description: |-
+                  Features that the model supports.
+                  Dictates the APIs that are available for the model.
                 items:
                   enum:
                   - TextGeneration
@@ -71,7 +75,7 @@ spec:
               image:
                 description: |-
                   Image to be used for the server process.
-                  Will be set from the ResourceProfile if not specified.
+                  Will be set from ResourceProfile + Engine if not specified.
                 type: string
               maxReplicas:
                 description: |-
@@ -88,12 +92,24 @@ spec:
                 minimum: 0
                 type: integer
               owner:
+                description: |-
+                  Owner of the model. Used solely to populate the owner field in the
+                  OpenAI /v1/models endpoint.
+                  DEPRECATED.
                 type: string
               replicas:
+                description: |-
+                  Replicas is the number of Pod replicas that should be actively
+                  serving the model. KubeAI will manage this field unless AutoscalingDisabled
+                  is set to true.
                 format: int32
                 type: integer
               resourceProfile:
-                description: ResourceProfile maps to specific pre-configured resources.
+                description: |-
+                  ResourceProfile required to serve the model.
+                  Use the format "<resource-profile-name>:<count>".
+                  Example: "nvidia-gpu-l4:2" - 2x NVIDIA L4 GPUs.
+                  Must be a valid ResourceProfile defined in the system config.
                 type: string
               scaleDownDelaySeconds:
                 default: 30
@@ -104,12 +120,18 @@ spec:
                 type: integer
               targetRequests:
                 default: 100
-                description: TargetRequests is the target number of active requests
-                  per Pod.
+                description: |-
+                  TargetRequests is average number of active requests that the autoscaler
+                  will try to maintain on model server Pods.
                 format: int32
                 minimum: 1
                 type: integer
               url:
+                description: |-
+                  URL of the model to be served.
+                  Currently only the following formats are supported:
+                  For VLLM & FasterWhisper engines: "hf://<model-repo>/<model-name>"
+                  For OLlama engine: "ollama://<model>
                 type: string
             required:
             - engine
@@ -121,7 +143,7 @@ spec:
             - url
             type: object
           status:
-            description: ModelStatus defines the observed state of Model
+            description: ModelStatus defines the observed state of Model.
             properties:
               replicas:
                 properties:

@@ -91,11 +91,6 @@ func (in *ModelSpec) DeepCopyInto(out *ModelSpec) {
 		*out = make([]ModelFeature, len(*in))
 		copy(*out, *in)
 	}
-	if in.Replicas != nil {
-		in, out := &in.Replicas, &out.Replicas
-		*out = new(int32)
-		**out = **in
-	}
 	if in.Args != nil {
 		in, out := &in.Args, &out.Args
 		*out = make([]string, len(*in))
@@ -108,6 +103,16 @@ func (in *ModelSpec) DeepCopyInto(out *ModelSpec) {
 			(*out)[key] = val
 		}
 	}
+	if in.Replicas != nil {
+		in, out := &in.Replicas, &out.Replicas
+		*out = new(int32)
+		**out = **in
+	}
+	if in.MaxReplicas != nil {
+		in, out := &in.MaxReplicas, &out.MaxReplicas
+		*out = new(int32)
+		**out = **in
+	}
 	if in.TargetRequests != nil {
 		in, out := &in.TargetRequests, &out.TargetRequests
 		*out = new(int32)
@@ -116,11 +121,6 @@ func (in *ModelSpec) DeepCopyInto(out *ModelSpec) {
 	if in.ScaleDownDelaySeconds != nil {
 		in, out := &in.ScaleDownDelaySeconds, &out.ScaleDownDelaySeconds
 		*out = new(int64)
-		**out = **in
-	}
-	if in.MaxReplicas != nil {
-		in, out := &in.MaxReplicas, &out.MaxReplicas
-		*out = new(int32)
 		**out = **in
 	}
 }
