@@ -13,7 +13,7 @@ models:
   catalog:
     faster-whisper-medium-en-cpu:
       enabled: true
-      autoscalingProfile: online
+      minReplicas: 1
 ```
 
 ### Enable by creating Model CRD

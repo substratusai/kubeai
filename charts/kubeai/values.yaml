@@ -61,7 +61,11 @@ resourceProfiles:
   #     cloud.google.com/gke-accelerator-type: tpu-v5-lite-podslice
 
 modelAutoscaling:
+  # Interval that the autoscaler will scrape model server metrics.
+  # and calculate the desired number of replicas.
   interval: 10s
+  # Time window the autoscaling algorithm will consider when calculating
+  # the desired number of replicas.
   timeWindow: 10m
 
 messaging:
