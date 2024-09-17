@@ -2,66 +2,78 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://www.kubeai.org/</loc>
-         <lastmod>2024-09-14</lastmod>
+         <lastmod>2024-09-17</lastmod>
     </url>
     <url>
-         <loc>https://www.kubeai.org/api-reference/</loc>
-         <lastmod>2024-09-14</lastmod>
+         <loc>https://www.kubeai.org/concepts/autoscaling/</loc>
+         <lastmod>2024-09-17</lastmod>
     </url>
     <url>
-         <loc>https://www.kubeai.org/concepts/model-storage/</loc>
-         <lastmod>2024-09-14</lastmod>
-    </url>
-    <url>
-         <loc>https://www.kubeai.org/concepts/models/</loc>
-         <lastmod>2024-09-14</lastmod>
+         <loc>https://www.kubeai.org/concepts/backend-servers/</loc>
+         <lastmod>2024-09-17</lastmod>
     </url>
     <url>
          <loc>https://www.kubeai.org/concepts/resource-profiles/</loc>
-         <lastmod>2024-09-14</lastmod>
+         <lastmod>2024-09-17</lastmod>
+    </url>
+    <url>
+         <loc>https://www.kubeai.org/concepts/storage-caching/</loc>
+         <lastmod>2024-09-17</lastmod>
     </url>
     <url>
          <loc>https://www.kubeai.org/contributing/development-environment/</loc>
-         <lastmod>2024-09-14</lastmod>
+         <lastmod>2024-09-17</lastmod>
     </url>
     <url>
          <loc>https://www.kubeai.org/contributing/documentation/</loc>
-         <lastmod>2024-09-14</lastmod>
+         <lastmod>2024-09-17</lastmod>
     </url>
     <url>
          <loc>https://www.kubeai.org/contributing/release-process/</loc>
-         <lastmod>2024-09-14</lastmod>
+         <lastmod>2024-09-17</lastmod>
     </url>
     <url>
          <loc>https://www.kubeai.org/how-to/build-models-into-containers/</loc>
-         <lastmod>2024-09-14</lastmod>
+         <lastmod>2024-09-17</lastmod>
+    </url>
+    <url>
+         <loc>https://www.kubeai.org/how-to/configure-autoscaling/</loc>
+         <lastmod>2024-09-17</lastmod>
+    </url>
+    <url>
+         <loc>https://www.kubeai.org/how-to/configure-resource-profiles/</loc>
+         <lastmod>2024-09-17</lastmod>
     </url>
     <url>
          <loc>https://www.kubeai.org/how-to/configure-speech-to-text/</loc>
-         <lastmod>2024-09-14</lastmod>
+         <lastmod>2024-09-17</lastmod>
     </url>
     <url>
-         <loc>https://www.kubeai.org/how-to/manage-models/</loc>
-         <lastmod>2024-09-14</lastmod>
-    </url>
-    <url>
-         <loc>https://www.kubeai.org/how-to/manage-resource-profiles/</loc>
-         <lastmod>2024-09-14</lastmod>
+         <loc>https://www.kubeai.org/how-to/install-models/</loc>
+         <lastmod>2024-09-17</lastmod>
     </url>
     <url>
          <loc>https://www.kubeai.org/installation/gke/</loc>
-         <lastmod>2024-09-14</lastmod>
+         <lastmod>2024-09-17</lastmod>
+    </url>
+    <url>
+         <loc>https://www.kubeai.org/reference/kubernetes-api/</loc>
+         <lastmod>2024-09-17</lastmod>
+    </url>
+    <url>
+         <loc>https://www.kubeai.org/reference/openai-api-compatibility/</loc>
+         <lastmod>2024-09-17</lastmod>
     </url>
     <url>
          <loc>https://www.kubeai.org/tutorials/langchain/</loc>
-         <lastmod>2024-09-14</lastmod>
+         <lastmod>2024-09-17</lastmod>
     </url>
     <url>
          <loc>https://www.kubeai.org/tutorials/langtrace/</loc>
-         <lastmod>2024-09-14</lastmod>
+         <lastmod>2024-09-17</lastmod>
     </url>
     <url>
          <loc>https://www.kubeai.org/tutorials/weaviate/</loc>
-         <lastmod>2024-09-14</lastmod>
+         <lastmod>2024-09-17</lastmod>
     </url>
 </urlset>

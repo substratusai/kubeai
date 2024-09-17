@@ -8,26 +8,28 @@
       
       
       
-        <link rel="canonical" href="https://www.kubeai.org/api-reference/">
+        <link rel="canonical" href="https://www.kubeai.org/concepts/backend-servers/">
       
       
-        <link rel="prev" href="../contributing/release-process/">
+        <link rel="prev" href="../autoscaling/">
       
       
+        <link rel="next" href="../resource-profiles/">
       
-      <link rel="icon" href="../assets/images/favicon.png">
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.34">
     
     
       
-        <title>API Reference - KubeAI</title>
+        <title>Backend Servers - KubeAI</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.35f28582.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.35f28582.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -46,7 +48,7 @@
       
     
     
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -70,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#api-reference" class="md-skip">
+        <a href="#backend-servers" class="md-skip">
           Skip to content
         </a>
       
@@ -86,7 +88,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="KubeAI" class="md-header__button md-logo" aria-label="KubeAI" data-md-component="logo">
+    <a href="../.." title="KubeAI" class="md-header__button md-logo" aria-label="KubeAI" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -106,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              API Reference
+              Backend Servers
             
           </span>
         </div>
@@ -193,7 +195,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="KubeAI" class="md-nav__button md-logo" aria-label="KubeAI" data-md-component="logo">
+    <a href="../.." title="KubeAI" class="md-nav__button md-logo" aria-label="KubeAI" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -223,7 +225,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -278,7 +280,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../installation/gke/" class="md-nav__link">
+      <a href="../../installation/gke/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -341,7 +343,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../how-to/build-models-into-containers/" class="md-nav__link">
+      <a href="../../how-to/build-models-into-containers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -362,11 +364,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../how-to/configure-speech-to-text/" class="md-nav__link">
+      <a href="../../how-to/configure-autoscaling/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Configure Speech To Text
+    Configure autoscaling
   </span>
   
 
@@ -383,11 +385,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../how-to/manage-models/" class="md-nav__link">
+      <a href="../../how-to/configure-resource-profiles/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Manage models
+    Configure resource profiles
   </span>
   
 
@@ -404,11 +406,32 @@
   
   
     <li class="md-nav__item">
-      <a href="../how-to/manage-resource-profiles/" class="md-nav__link">
+      <a href="../../how-to/configure-speech-to-text/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Manage resource profiles
+    Configure speech-to-text
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/install-models/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Install models
   </span>
   
 
@@ -429,17 +452,19 @@
       
   
   
+    
   
   
+  
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
           <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
@@ -453,7 +478,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             Concepts
@@ -467,11 +492,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../concepts/model-storage/" class="md-nav__link">
+      <a href="../autoscaling/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Model Storage
+    Autoscaling
   </span>
   
 
@@ -485,18 +510,67 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../concepts/models/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Backend Servers
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
-    Models
+    Backend Servers
   </span>
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#next" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -509,11 +583,32 @@
   
   
     <li class="md-nav__item">
-      <a href="../concepts/resource-profiles/" class="md-nav__link">
+      <a href="../resource-profiles/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
     Resource Profiles
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../storage-caching/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Storage / Caching
   </span>
   
 
@@ -572,7 +667,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorials/langchain/" class="md-nav__link">
+      <a href="../../tutorials/langchain/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -593,7 +688,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorials/langtrace/" class="md-nav__link">
+      <a href="../../tutorials/langtrace/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -614,7 +709,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorials/weaviate/" class="md-nav__link">
+      <a href="../../tutorials/weaviate/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -677,7 +772,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../contributing/development-environment/" class="md-nav__link">
+      <a href="../../contributing/development-environment/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -698,7 +793,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../contributing/documentation/" class="md-nav__link">
+      <a href="../../contributing/documentation/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -719,7 +814,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../contributing/release-process/" class="md-nav__link">
+      <a href="../../contributing/release-process/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -744,141 +839,81 @@
       
   
   
+  
+  
     
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
       
         
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
           
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
   
   <span class="md-ellipsis">
-    API Reference
+    Reference
   </span>
   
 
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/kubernetes-api/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    API Reference
+    Kubernetes API
   </span>
   
 
       </a>
-      
-        
+    </li>
+  
 
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+              
+            
+              
+                
   
   
   
-    
   
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#packages" class="md-nav__link">
-    <span class="md-ellipsis">
-      Packages
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#kubeaiorgv1" class="md-nav__link">
-    <span class="md-ellipsis">
-      kubeai.org/v1
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="kubeai.org/v1">
-      <ul class="md-nav__list">
+    <li class="md-nav__item">
+      <a href="../../reference/openai-api-compatibility/" class="md-nav__link">
         
-          <li class="md-nav__item">
-  <a href="#resource-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Resource Types
-    </span>
-  </a>
   
-    <nav class="md-nav" aria-label="Resource Types">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#model" class="md-nav__link">
-    <span class="md-ellipsis">
-      Model
-    </span>
-  </a>
+  <span class="md-ellipsis">
+    OpenAI API Compatibility
+  </span>
   
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#modelfeature" class="md-nav__link">
-    <span class="md-ellipsis">
-      ModelFeature
-    </span>
-  </a>
+
+      </a>
+    </li>
   
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#modelspec" class="md-nav__link">
-    <span class="md-ellipsis">
-      ModelSpec
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#modelstatus" class="md-nav__link">
-    <span class="md-ellipsis">
-      ModelStatus
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#modelstatusreplicas" class="md-nav__link">
-    <span class="md-ellipsis">
-      ModelStatusReplicas
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
+
+              
+            
+          </ul>
+        </nav>
       
     </li>
   
@@ -911,86 +946,11 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#packages" class="md-nav__link">
+  <a href="#next" class="md-nav__link">
     <span class="md-ellipsis">
-      Packages
+      Next
     </span>
   </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#kubeaiorgv1" class="md-nav__link">
-    <span class="md-ellipsis">
-      kubeai.org/v1
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="kubeai.org/v1">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#resource-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Resource Types
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Resource Types">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#model" class="md-nav__link">
-    <span class="md-ellipsis">
-      Model
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#modelfeature" class="md-nav__link">
-    <span class="md-ellipsis">
-      ModelFeature
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#modelspec" class="md-nav__link">
-    <span class="md-ellipsis">
-      ModelSpec
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#modelstatus" class="md-nav__link">
-    <span class="md-ellipsis">
-      ModelStatus
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#modelstatusreplicas" class="md-nav__link">
-    <span class="md-ellipsis">
-      ModelStatusReplicas
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1012,222 +972,11 @@
   
 
 
-<h1 id="api-reference">API Reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h1>
-<h2 id="packages">Packages<a class="headerlink" href="#packages" title="Permanent link">&para;</a></h2>
-<ul>
-<li><a href="#kubeaiorgv1">kubeai.org/v1</a></li>
-</ul>
-<h2 id="kubeaiorgv1">kubeai.org/v1<a class="headerlink" href="#kubeaiorgv1" title="Permanent link">&para;</a></h2>
-<p>Package v1 contains API Schema definitions for the kubeai v1 API group</p>
-<h3 id="resource-types">Resource Types<a class="headerlink" href="#resource-types" title="Permanent link">&para;</a></h3>
-<ul>
-<li><a href="#model">Model</a></li>
-</ul>
-<h4 id="model">Model<a class="headerlink" href="#model" title="Permanent link">&para;</a></h4>
-<p>Model is the Schema for the models API</p>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-<th>Default</th>
-<th>Validation</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>apiVersion</code> <em>string</em></td>
-<td><code>kubeai.org/v1</code></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td><code>kind</code> <em>string</em></td>
-<td><code>Model</code></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td><code>metadata</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#objectmeta-v1-meta">ObjectMeta</a></em></td>
-<td>Refer to Kubernetes API documentation for fields of <code>metadata</code>.</td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td><code>spec</code> <em><a href="#modelspec">ModelSpec</a></em></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td><code>status</code> <em><a href="#modelstatus">ModelStatus</a></em></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-<h4 id="modelfeature">ModelFeature<a class="headerlink" href="#modelfeature" title="Permanent link">&para;</a></h4>
-<p><em>Underlying type:</em> <em>string</em></p>
-<p><em>Validation:</em>
-- Enum: [TextGeneration TextEmbedding SpeechToText]</p>
-<p><em>Appears in:</em>
-- <a href="#modelspec">ModelSpec</a></p>
-<h4 id="modelspec">ModelSpec<a class="headerlink" href="#modelspec" title="Permanent link">&para;</a></h4>
-<p>ModelSpec defines the desired state of Model</p>
-<p><em>Appears in:</em>
-- <a href="#model">Model</a></p>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-<th>Default</th>
-<th>Validation</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>owner</code> <em>string</em></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td><code>url</code> <em>string</em></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td><code>features</code> <em><a href="#modelfeature">ModelFeature</a> array</em></td>
-<td></td>
-<td></td>
-<td>Enum: [TextGeneration TextEmbedding SpeechToText] <br /></td>
-</tr>
-<tr>
-<td><code>engine</code> <em>string</em></td>
-<td></td>
-<td></td>
-<td>Enum: [OLlama VLLM FasterWhisper] <br /></td>
-</tr>
-<tr>
-<td><code>replicas</code> <em>integer</em></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td><code>minReplicas</code> <em>integer</em></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td><code>maxReplicas</code> <em>integer</em></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td><code>resourceProfile</code> <em>string</em></td>
-<td>ResourceProfile maps to specific pre-configured resources.</td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td><code>image</code> <em>string</em></td>
-<td>Image to be used for the server process.<br />Will be set from the ResourceProfile if not specified.</td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td><code>resources</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#resourcerequirements-v1-core">ResourceRequirements</a></em></td>
-<td>Resources to be allocated to the server process.<br />Will be set from the ResourceProfile if not specified.</td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td><code>nodeSelector</code> <em>object (keys:string, values:string)</em></td>
-<td>NodeSelector to be added to the server process.<br />Will be set from the ResourceProfile if not specified.</td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td><code>affinity</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#affinity-v1-core">Affinity</a></em></td>
-<td>Affinity to be added to the server process.<br />Will be set from the ResourceProfile if not specified.</td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td><code>tolerations</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.26/#toleration-v1-core">Toleration</a> array</em></td>
-<td>Tolerations to be added to the server process.<br />Will be set from the ResourceProfile if not specified.</td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td><code>args</code> <em>string array</em></td>
-<td>Args to be added to the server process.</td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td><code>env</code> <em>object (keys:string, values:string)</em></td>
-<td>Env variables to be added to the server process.</td>
-<td></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-<h4 id="modelstatus">ModelStatus<a class="headerlink" href="#modelstatus" title="Permanent link">&para;</a></h4>
-<p>ModelStatus defines the observed state of Model</p>
-<p><em>Appears in:</em>
-- <a href="#model">Model</a></p>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-<th>Default</th>
-<th>Validation</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>replicas</code> <em><a href="#modelstatusreplicas">ModelStatusReplicas</a></em></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-</tbody>
-</table>
-<h4 id="modelstatusreplicas">ModelStatusReplicas<a class="headerlink" href="#modelstatusreplicas" title="Permanent link">&para;</a></h4>
-<p><em>Appears in:</em>
-- <a href="#modelstatus">ModelStatus</a></p>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-<th>Default</th>
-<th>Validation</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>all</code> <em>integer</em></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td><code>ready</code> <em>integer</em></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-</tbody>
-</table>
+<h1 id="backend-servers">Backend Servers<a class="headerlink" href="#backend-servers" title="Permanent link">&para;</a></h1>
+<p>KubeAI serves ML models by launching Pods on Kubernetes. The configuration and lifecycle of these Pods are managed by the KubeAI controller. Every model server Pod loads exactly one model on startup.</p>
+<p>In a Model manifest you can define what server to use for inference (<code>VLLM</code>, <code>OLlama</code>). Any model-specific settings can be passed to the server process via the <code>args</code> and <code>env</code> fields.</p>
+<h2 id="next">Next<a class="headerlink" href="#next" title="Permanent link">&para;</a></h2>
+<p>Read about <a href="../../how-to/install-models/">how to install models</a>.</p>
 
 
 
@@ -1274,10 +1023,10 @@
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.07f07601.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.07f07601.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.56dfad97.min.js"></script>
+      <script src="../../assets/javascripts/bundle.56dfad97.min.js"></script>
       
     
   </body>

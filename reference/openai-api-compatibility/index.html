@@ -8,13 +8,11 @@
       
       
       
-        <link rel="canonical" href="https://www.kubeai.org/how-to/manage-models/">
+        <link rel="canonical" href="https://www.kubeai.org/reference/openai-api-compatibility/">
       
       
-        <link rel="prev" href="../configure-speech-to-text/">
+        <link rel="prev" href="../kubernetes-api/">
       
-      
-        <link rel="next" href="../manage-resource-profiles/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +20,7 @@
     
     
       
-        <title>Manage models - KubeAI</title>
+        <title>OpenAI API Compatibility - KubeAI</title>
       
     
     
@@ -72,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#manage-models" class="md-skip">
+        <a href="#openai-api-compatibility" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +106,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Manage models
+              OpenAI API Compatibility
             
           </span>
         </div>
@@ -305,19 +303,17 @@
       
   
   
-    
   
   
-  
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -331,7 +327,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             How to
@@ -345,7 +341,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../build-models-into-containers/" class="md-nav__link">
+      <a href="../../how-to/build-models-into-containers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -366,136 +362,15 @@
   
   
     <li class="md-nav__item">
-      <a href="../configure-speech-to-text/" class="md-nav__link">
+      <a href="../../how-to/configure-autoscaling/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Configure Speech To Text
+    Configure autoscaling
   </span>
   
 
       </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-    
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Manage models
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
-  
-  <span class="md-ellipsis">
-    Manage models
-  </span>
-  
-
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#listing-models" class="md-nav__link">
-    <span class="md-ellipsis">
-      Listing models
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#installing-models-with-helm" class="md-nav__link">
-    <span class="md-ellipsis">
-      Installing models with helm
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Installing models with helm">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#preconfigured-models-with-helm" class="md-nav__link">
-    <span class="md-ellipsis">
-      Preconfigured models with helm
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#custom-models-with-helm" class="md-nav__link">
-    <span class="md-ellipsis">
-      Custom models with helm
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#installing-models-with-kubectl" class="md-nav__link">
-    <span class="md-ellipsis">
-      Installing models with kubectl
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#feedback-welcome-a-model-management-ui" class="md-nav__link">
-    <span class="md-ellipsis">
-      Feedback welcome: A model management UI
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -508,11 +383,53 @@
   
   
     <li class="md-nav__item">
-      <a href="../manage-resource-profiles/" class="md-nav__link">
+      <a href="../../how-to/configure-resource-profiles/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Manage resource profiles
+    Configure resource profiles
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/configure-speech-to-text/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configure speech-to-text
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/install-models/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Install models
   </span>
   
 
@@ -571,11 +488,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/model-storage/" class="md-nav__link">
+      <a href="../../concepts/autoscaling/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Model Storage
+    Autoscaling
   </span>
   
 
@@ -592,11 +509,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/models/" class="md-nav__link">
+      <a href="../../concepts/backend-servers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Models
+    Backend Servers
   </span>
   
 
@@ -618,6 +535,27 @@
   
   <span class="md-ellipsis">
     Resource Profiles
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/storage-caching/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Storage / Caching
   </span>
   
 
@@ -848,18 +786,190 @@
       
   
   
+    
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Reference
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/" class="md-nav__link">
+      <a href="../kubernetes-api/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    API Reference
+    Kubernetes API
   </span>
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    OpenAI API Compatibility
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    OpenAI API Compatibility
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#general" class="md-nav__link">
+    <span class="md-ellipsis">
+      General:
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="General:">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#models" class="md-nav__link">
+    <span class="md-ellipsis">
+      Models
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#inference" class="md-nav__link">
+    <span class="md-ellipsis">
+      Inference
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Inference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#text-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Text Generation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#embeddings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Embeddings
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#speech-to-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      Speech-to-Text
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -891,46 +1001,19 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#listing-models" class="md-nav__link">
+  <a href="#general" class="md-nav__link">
     <span class="md-ellipsis">
-      Listing models
+      General:
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#installing-models-with-helm" class="md-nav__link">
-    <span class="md-ellipsis">
-      Installing models with helm
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Installing models with helm">
+    <nav class="md-nav" aria-label="General:">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#preconfigured-models-with-helm" class="md-nav__link">
+  <a href="#models" class="md-nav__link">
     <span class="md-ellipsis">
-      Preconfigured models with helm
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#custom-models-with-helm" class="md-nav__link">
-    <span class="md-ellipsis">
-      Custom models with helm
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#installing-models-with-kubectl" class="md-nav__link">
-    <span class="md-ellipsis">
-      Installing models with kubectl
+      Models
     </span>
   </a>
   
@@ -942,11 +1025,44 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#feedback-welcome-a-model-management-ui" class="md-nav__link">
+  <a href="#inference" class="md-nav__link">
     <span class="md-ellipsis">
-      Feedback welcome: A model management UI
+      Inference
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Inference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#text-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Text Generation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#embeddings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Embeddings
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#speech-to-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      Speech-to-Text
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -968,51 +1084,35 @@
   
 
 
-<h1 id="manage-models">Manage models<a class="headerlink" href="#manage-models" title="Permanent link">&para;</a></h1>
-<p>This guide provides instructions on how to perform CRUD operations on KubeAI <a href="../../concepts/models/">Models</a>.</p>
-<h2 id="listing-models">Listing models<a class="headerlink" href="#listing-models" title="Permanent link">&para;</a></h2>
-<p>You can view all installed models through the Kubernetes API using <code>kubectl get models</code> (use the <code>-o yaml</code> flag for more details).</p>
-<p>You can also list all models via the OpenAI-compatible <code>/v1/models</code> endpoint:</p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://your-deployed-kubeai-endpoint/openai/v1/models
+<h1 id="openai-api-compatibility">OpenAI API Compatibility<a class="headerlink" href="#openai-api-compatibility" title="Permanent link">&para;</a></h1>
+<p>KubeAI provides an OpenAI API compatiblity layer.</p>
+<h2 id="general">General:<a class="headerlink" href="#general" title="Permanent link">&para;</a></h2>
+<h3 id="models">Models<a class="headerlink" href="#models" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>GET /v1/models
 </code></pre></div>
-<h2 id="installing-models-with-helm">Installing models with helm<a class="headerlink" href="#installing-models-with-helm" title="Permanent link">&para;</a></h2>
-<h3 id="preconfigured-models-with-helm">Preconfigured models with helm<a class="headerlink" href="#preconfigured-models-with-helm" title="Permanent link">&para;</a></h3>
-<p>When you are defining KubeAI Helm values, you can install a preconfigured Model by setting <code>enabled: true</code>. You can view a list of all preconfigured models <a href="https://github.com/substratusai/kubeai/blob/main/charts/kubeai/charts/models/values.yaml">here</a>. NOTE: When you are installing the KubeAI chart, the catalog is accessed under <code>.models.catalog.&lt;model-name&gt;</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># helm-values.yaml</span>
-<span class="nt">models</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">catalog</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">llama-3.1-8b-instruct-fp8-l4</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<ul>
+<li>Lists all <code>kind: Model</code> object installed in teh Kubernetes API Server.</li>
+</ul>
+<h2 id="inference">Inference<a class="headerlink" href="#inference" title="Permanent link">&para;</a></h2>
+<h3 id="text-generation">Text Generation<a class="headerlink" href="#text-generation" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>POST /v1/chat/completions
+POST /v1/completions
 </code></pre></div>
-<p>You can optionally override preconfigured settings, for example, <code>resourceProfile</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># helm-values.yaml</span>
-<span class="nt">models</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">catalog</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">llama-3.1-8b-instruct-fp8-l4</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">      </span><span class="nt">resourceProfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nvidia-gpu-l4:2</span><span class="w"> </span><span class="c1"># Require &quot;2 NVIDIA L4 GPUs&quot;</span>
+<ul>
+<li>Supported for Models with <code>.spec.features: ["TextGeneration"]</code>.</li>
+</ul>
+<h3 id="embeddings">Embeddings<a class="headerlink" href="#embeddings" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>POST /v1/embeddings
 </code></pre></div>
-<h3 id="custom-models-with-helm">Custom models with helm<a class="headerlink" href="#custom-models-with-helm" title="Permanent link">&para;</a></h3>
-<p>If you prefer to add a custom model via the same Helm chart you use for installed KubeAI, you can add your custom model entry into the <code>.models.catalog</code> array of your existing Helm values file:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># helm-values.yaml</span>
-<span class="nt">models</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">catalog</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">my-custom-model-name</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">      </span><span class="nt">features</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;TextEmbedding&quot;</span><span class="p p-Indicator">]</span>
-<span class="w">      </span><span class="nt">owner</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">me</span>
-<span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;hf://me/my-custom-model&quot;</span>
-<span class="w">      </span><span class="nt">resourceProfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CPU:1</span>
+<ul>
+<li>Supported for  Models with <code>.spec.features: ["TextEmbedding"]</code>.</li>
+</ul>
+<h3 id="speech-to-text">Speech-to-Text<a class="headerlink" href="#speech-to-text" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>POST /v1/audio/transcriptions
 </code></pre></div>
-<h3 id="installing-models-with-kubectl">Installing models with kubectl<a class="headerlink" href="#installing-models-with-kubectl" title="Permanent link">&para;</a></h3>
-<p>You can add your own model by defining a Model yaml file and applying it using <code>kubectl apply -f model.yaml</code>.</p>
-<p>If you have a running cluster with KubeAI installed you can inspect the schema for a Model using <code>kubectl explain</code>:</p>
-<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>explain<span class="w"> </span>models
-kubectl<span class="w"> </span>explain<span class="w"> </span>models.spec
-kubectl<span class="w"> </span>explain<span class="w"> </span>models.spec.engine
-</code></pre></div>
-<h2 id="feedback-welcome-a-model-management-ui">Feedback welcome: A model management UI<a class="headerlink" href="#feedback-welcome-a-model-management-ui" title="Permanent link">&para;</a></h2>
-<p>We are considering adding a UI for managing models in a running KubeAI instance. Give the <a href="https://github.com/substratusai/kubeai/issues/148">GitHub Issue</a> a thumbs up if you would be interested in this feature.</p>
+<ul>
+<li>Supported for Models with <code>.spec.features: ["SpeechToText"]</code>.</li>
+</ul>
 
 
 

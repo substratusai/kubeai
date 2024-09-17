@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://www.kubeai.org/concepts/models/">
+        <link rel="canonical" href="https://www.kubeai.org/how-to/configure-resource-profiles/">
       
       
-        <link rel="prev" href="../model-storage/">
+        <link rel="prev" href="../configure-autoscaling/">
       
       
-        <link rel="next" href="../resource-profiles/">
+        <link rel="next" href="../configure-speech-to-text/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Models - KubeAI</title>
+        <title>Configure resource profiles - KubeAI</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#models" class="md-skip">
+        <a href="#configure-resource-profiles" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Models
+              Configure resource profiles
             
           </span>
         </div>
@@ -305,17 +305,19 @@
       
   
   
+    
   
   
+  
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -329,7 +331,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             How to
@@ -343,7 +345,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/build-models-into-containers/" class="md-nav__link">
+      <a href="../build-models-into-containers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -364,118 +366,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/configure-speech-to-text/" class="md-nav__link">
+      <a href="../configure-autoscaling/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Configure Speech To Text
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../how-to/manage-models/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Manage models
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../how-to/manage-resource-profiles/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Manage resource profiles
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-    
-  
-  
-  
-    
-    
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
-        
-          
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
-            
-  
-  <span class="md-ellipsis">
-    Concepts
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_4">
-            <span class="md-nav__icon md-icon"></span>
-            Concepts
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../model-storage/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Model Storage
+    Configure autoscaling
   </span>
   
 
@@ -505,7 +400,7 @@
           
   
   <span class="md-ellipsis">
-    Models
+    Configure resource profiles
   </span>
   
 
@@ -516,7 +411,7 @@
         
   
   <span class="md-ellipsis">
-    Models
+    Configure resource profiles
   </span>
   
 
@@ -538,36 +433,18 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#server-settings" class="md-nav__link">
+  <a href="#modifying-preconfigured-resource-profiles" class="md-nav__link">
     <span class="md-ellipsis">
-      Server Settings
+      Modifying preconfigured resource profiles
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#autoscaling" class="md-nav__link">
+  <a href="#adding-additional-resource-profiles" class="md-nav__link">
     <span class="md-ellipsis">
-      Autoscaling
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#openai-api-compatibility" class="md-nav__link">
-    <span class="md-ellipsis">
-      OpenAI-API compatibility
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next" class="md-nav__link">
-    <span class="md-ellipsis">
-      Next
+      Adding additional resource profiles
     </span>
   </a>
   
@@ -589,11 +466,158 @@
   
   
     <li class="md-nav__item">
-      <a href="../resource-profiles/" class="md-nav__link">
+      <a href="../configure-speech-to-text/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configure speech-to-text
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install-models/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Install models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Concepts
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Concepts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/autoscaling/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Autoscaling
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/backend-servers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Backend Servers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/resource-profiles/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
     Resource Profiles
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/storage-caching/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Storage / Caching
   </span>
   
 
@@ -826,16 +850,80 @@
   
   
   
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Reference
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
     <li class="md-nav__item">
-      <a href="../../api-reference/" class="md-nav__link">
+      <a href="../../reference/kubernetes-api/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    API Reference
+    Kubernetes API
   </span>
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/openai-api-compatibility/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    OpenAI API Compatibility
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -867,36 +955,18 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#server-settings" class="md-nav__link">
+  <a href="#modifying-preconfigured-resource-profiles" class="md-nav__link">
     <span class="md-ellipsis">
-      Server Settings
+      Modifying preconfigured resource profiles
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#autoscaling" class="md-nav__link">
+  <a href="#adding-additional-resource-profiles" class="md-nav__link">
     <span class="md-ellipsis">
-      Autoscaling
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#openai-api-compatibility" class="md-nav__link">
-    <span class="md-ellipsis">
-      OpenAI-API compatibility
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next" class="md-nav__link">
-    <span class="md-ellipsis">
-      Next
+      Adding additional resource profiles
     </span>
   </a>
   
@@ -920,36 +990,46 @@
   
 
 
-<h1 id="models">Models<a class="headerlink" href="#models" title="Permanent link">&para;</a></h1>
-<p>KubeAI serves ML models by launching Pods on Kubernetes. Every model server Pod loads exactly one model on startup.</p>
-<p>Model <a href="https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/">Custom Resources</a> are used to configure what ML models KubeAI serves.</p>
-<p>Example:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubeai.org/v1</span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Model</span>
-<span class="nt">metadata</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">llama-3.1-8b-instruct-fp8-l4</span>
-<span class="nt">spec</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">features</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;TextGeneration&quot;</span><span class="p p-Indicator">]</span>
-<span class="w">  </span><span class="nt">owner</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">neuralmagic</span>
-<span class="w">  </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hf://neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8</span>
-<span class="w">  </span><span class="nt">engine</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">VLLM</span>
-<span class="w">  </span><span class="nt">args</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--max-model-len=16384</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--max-num-batched-token=16384</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--gpu-memory-utilization=0.9</span>
-<span class="w">  </span><span class="nt">minReplicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
-<span class="w">  </span><span class="nt">maxReplicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
-<span class="w">  </span><span class="nt">resourceProfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nvidia-gpu-l4:1</span>
+<h1 id="configure-resource-profiles">Configure resource profiles<a class="headerlink" href="#configure-resource-profiles" title="Permanent link">&para;</a></h1>
+<p>This guide will cover modifying preconfigured <a href="../../concepts/resource-profiles/">resource profiles</a> and adding your own.</p>
+<h2 id="modifying-preconfigured-resource-profiles">Modifying preconfigured resource profiles<a class="headerlink" href="#modifying-preconfigured-resource-profiles" title="Permanent link">&para;</a></h2>
+<p>The KubeAI helm chart comes with preconfigured resource profiles for common resource types such as NVIDIA L4 GPUs. You can view these profiles in the <a href="https://github.com/substratusai/kubeai/blob/main/charts/kubeai/values.yaml">default helm values file</a>.</p>
+<p>These profiles usually require some additional settings based on the cluster/cloud that KubeAI is installed into. You can modify a resource profile by setting custom helm values and runing <code>helm install</code> or <code>helm upgrade</code>. For example, if you are installing KubeAI on GKE you will need to set GKE-specific node selectors:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># helm-values.yaml</span>
+<span class="nt">resourceProfiles</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">nvidia-gpu-l4</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">nodeSelector</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">cloud.google.com/gke-accelerator</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;nvidia-l4&quot;</span>
+<span class="w">      </span><span class="nt">cloud.google.com/gke-spot</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;true&quot;</span>
 </code></pre></div>
-<h2 id="server-settings">Server Settings<a class="headerlink" href="#server-settings" title="Permanent link">&para;</a></h2>
-<p>In a Model manifest you can define what server to use for inference (<code>VLLM</code>, <code>OLlama</code>). Any model-specific settings can be passed to the server process via the <code>args</code> and <code>env</code> fields.</p>
-<h2 id="autoscaling">Autoscaling<a class="headerlink" href="#autoscaling" title="Permanent link">&para;</a></h2>
-<p>KubeAI has built-in support for autoscaling model inference servers. If the model is scaled to zero when a request comes in, the KubeAI server will hold the request until it is able spin up a new server Pod. Once the model server is running, KubeAI server will automatically scrape its metrics endpoint to determine how to autoscale from there.</p>
-<p>Autoscaling can be configured via the <code>minReplicas</code> and <code>maxReplicas</code> spec fields. KubeAI will modify the <code>.spec.replicas</code> field as it autoscales and report the observed state in <code>.status.replicas</code>.</p>
-<h2 id="openai-api-compatibility">OpenAI-API compatibility<a class="headerlink" href="#openai-api-compatibility" title="Permanent link">&para;</a></h2>
-<p>Kubernetes Model Custom Resources are the source of truth for models that exist in KubeAI. KubeAI provides a view into installed Models via the OpenAI <code>/v1/models</code> endpoint (which KubeAI serves at <code>/openai/v1/models</code>).</p>
-<h2 id="next">Next<a class="headerlink" href="#next" title="Permanent link">&para;</a></h2>
-<p>Read about <a href="../../how-to/manage-models/">how to manage models</a>.</p>
+<p>NOTE: See the cloud-specific installation guide for a comprehensive list of settings.</p>
+<h2 id="adding-additional-resource-profiles">Adding additional resource profiles<a class="headerlink" href="#adding-additional-resource-profiles" title="Permanent link">&para;</a></h2>
+<p>If the preconfigured resource profiles do not meet your needs you can add additional profiles by appending to the <code>.resourceProfiles</code> object in the helm values file you use to install KubeAI.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># helm-values.yaml</span>
+<span class="nt">resourceProfiles</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">my-custom-gpu</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">imageName</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;optional-custom-image-name&quot;</span>
+<span class="w">    </span><span class="nt">nodeSelector</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">my-custom-node-pool</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;some-value&quot;</span>
+<span class="w">    </span><span class="nt">limits</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">custom.com/gpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1&quot;</span>
+<span class="w">    </span><span class="nt">requests</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">custom.com/gpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1&quot;</span>
+<span class="w">      </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;3&quot;</span>
+<span class="w">      </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;12Gi&quot;</span>
+</code></pre></div>
+<p>If you need to run custom model server images on your resource profile, make sure to also add those in the <code>modelServers</code> section:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># helm-values.yaml</span>
+<span class="nt">modelServers</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">VLLM</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">images</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">optional-custom-image-name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;my-repo/my-vllm-image:v1.2.3&quot;</span>
+<span class="w">  </span><span class="nt">OLlama</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">images</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">optional-custom-image-name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;my-repo/my-ollama-image:v1.2.3&quot;</span>
+</code></pre></div>
+<h1 id="next">Next<a class="headerlink" href="#next" title="Permanent link">&para;</a></h1>
+<p>See the guide on <a href="../install-models/">how to install models</a> which includes how to configure the resource profile to use for a given model.</p>
 
 
 

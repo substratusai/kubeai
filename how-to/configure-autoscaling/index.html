@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://www.kubeai.org/how-to/build-models-into-containers/">
+        <link rel="canonical" href="https://www.kubeai.org/how-to/configure-autoscaling/">
       
       
-        <link rel="prev" href="../../installation/gke/">
+        <link rel="prev" href="../build-models-into-containers/">
       
       
-        <link rel="next" href="../configure-autoscaling/">
+        <link rel="next" href="../configure-resource-profiles/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Build models into containers - KubeAI</title>
+        <title>Configure autoscaling - KubeAI</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#build-models-into-containers" class="md-skip">
+        <a href="#configure-autoscaling" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Build models into containers
+              Configure autoscaling
             
           </span>
         </div>
@@ -342,6 +342,27 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../build-models-into-containers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Build models into containers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -354,29 +375,18 @@
         
       
       
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
   
   <span class="md-ellipsis">
-    Build models into containers
+    Configure autoscaling
   </span>
   
 
-      </a>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../configure-autoscaling/" class="md-nav__link">
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -385,6 +395,68 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#system-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      System Settings
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#model-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Model Settings
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Model Settings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#model-settings-helm" class="md-nav__link">
+    <span class="md-ellipsis">
+      Model settings: helm
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#model-settings-kubectl" class="md-nav__link">
+    <span class="md-ellipsis">
+      Model settings: kubectl
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -900,6 +972,56 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#system-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      System Settings
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#model-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Model Settings
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Model Settings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#model-settings-helm" class="md-nav__link">
+    <span class="md-ellipsis">
+      Model settings: helm
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#model-settings-kubectl" class="md-nav__link">
+    <span class="md-ellipsis">
+      Model settings: kubectl
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -916,36 +1038,51 @@
   
 
 
-<h1 id="build-models-into-containers">Build models into containers<a class="headerlink" href="#build-models-into-containers" title="Permanent link">&para;</a></h1>
-<p>In this guide we will preload a LLM into a custom built Ollama serving image. You can follow the same steps for other models and other serving engines.</p>
-<p>Define some values
-<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">MODEL_URL</span><span class="o">=</span>ollama://qwen2:0.5b
-
-<span class="c1"># Customize with your own image repo.</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">IMAGE</span><span class="o">=</span>us-central1-docker.pkg.dev/substratus-dev/default/ollama-builtin-qwen2-05b:latest
-</code></pre></div></p>
-<p>Build and push image. Note: building (downloading base image &amp; model) and pushing (uploading image &amp; model) can take a while depending on the size of the model.</p>
-<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/substratusai/kubeai
-<span class="nb">cd</span><span class="w"> </span>./kubeai/images/ollama-builtin
-
-docker<span class="w"> </span>build<span class="w"> </span>--build-arg<span class="w"> </span><span class="nv">MODEL_URL</span><span class="o">=</span><span class="nv">$MODEL_URL</span><span class="w"> </span>-t<span class="w"> </span><span class="nv">$IMAGE</span><span class="w"> </span>.
-docker<span class="w"> </span>push<span class="w"> </span><span class="nv">$IMAGE</span>
+<h1 id="configure-autoscaling">Configure autoscaling<a class="headerlink" href="#configure-autoscaling" title="Permanent link">&para;</a></h1>
+<p>This guide with cover how to configure KubeAI <a href="../../concepts/autoscaling/">autoscaling</a> parameters.</p>
+<h2 id="system-settings">System Settings<a class="headerlink" href="#system-settings" title="Permanent link">&para;</a></h2>
+<p>KubeAI administrators can define system-wide autoscaling settings by setting the following helm values:</p>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># helm-values.yaml</span>
+<span class="nt">modelAutoscaling</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15s</span>
+<span class="w">  </span><span class="nt">timeWindow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10m</span>
+<span class="c1"># ...</span>
 </code></pre></div>
-<p>Create a model manifest &amp; apply into a cluster with KubeAI installed. NOTE: The only difference between an built-in model image and otherwise is the addition of the <code>image:</code> field.</p>
-<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt; EOF</span>
-<span class="s">apiVersion: kubeai.org/v1</span>
-<span class="s">kind: Model</span>
-<span class="s">metadata:</span>
-<span class="s">  name: builtin-model-example</span>
-<span class="s">spec:</span>
-<span class="s">  features: [&quot;TextGeneration&quot;]</span>
-<span class="s">  owner: alibaba</span>
-<span class="s">  image: $IMAGE # &lt;-- The image with model built-in</span>
-<span class="s">  url: &quot;$MODEL_URL&quot;</span>
-<span class="s">  engine: OLlama</span>
-<span class="s">  resourceProfile: cpu:1</span>
-<span class="s">EOF</span>
+<h2 id="model-settings">Model Settings<a class="headerlink" href="#model-settings" title="Permanent link">&para;</a></h2>
+<p>The following settings can be configured on a model-by-model basis.</p>
+<p><strong>NOTE:</strong> Updates to model settings will be applied upon scale up of additional model Pods. You can force-restart model servers by running <code>kubectl delete pods -l model=&lt;model-name&gt;</code>.</p>
+<h3 id="model-settings-helm">Model settings: helm<a class="headerlink" href="#model-settings-helm" title="Permanent link">&para;</a></h3>
+<p>If you are managing models via Helm, you can use:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># helm-values.yaml</span>
+<span class="nt">models</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">catalog</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">model-a</span><span class="p">:</span>
+<span class="w">      </span><span class="c1"># ...</span>
+<span class="w">      </span><span class="nt">minReplicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">      </span><span class="nt">maxReplicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9</span>
+<span class="w">      </span><span class="nt">targetRequests</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">250</span>
+<span class="w">      </span><span class="nt">scaleDownDelaySeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">45</span>
+<span class="w">    </span><span class="nt">model-b</span><span class="p">:</span>
+<span class="w">      </span><span class="c1"># ...</span>
+<span class="w">      </span><span class="nt">disableAutoscaling</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="c1"># ...</span>
 </code></pre></div>
+<p>Re-running <code>helm upgrade</code> with these additional parameters will update model settings in the cluster.</p>
+<h3 id="model-settings-kubectl">Model settings: kubectl<a class="headerlink" href="#model-settings-kubectl" title="Permanent link">&para;</a></h3>
+<p>You can also specify the autoscaling profile directly via the Models custom resource in the Kubernetes API:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubeai.org/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Model</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-model</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># ...</span>
+<span class="w">  </span><span class="nt">minReplicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">  </span><span class="nt">maxReplicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9</span>
+<span class="w">  </span><span class="nt">targetRequests</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">250</span>
+<span class="w">  </span><span class="nt">scaleDownDelaySeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">45</span>
+</code></pre></div>
+<p>If you are already managing models using Model manifest files, you can make the update to your file and reapply it using <code>kubectl apply -f &lt;filename&gt;.yaml</code>.</p>
 
 
 

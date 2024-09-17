@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://www.kubeai.org/concepts/model-storage/">
+        <link rel="canonical" href="https://www.kubeai.org/concepts/autoscaling/">
       
       
-        <link rel="prev" href="../../how-to/manage-resource-profiles/">
+        <link rel="prev" href="../../how-to/install-models/">
       
       
-        <link rel="next" href="../models/">
+        <link rel="next" href="../backend-servers/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Model Storage - KubeAI</title>
+        <title>Autoscaling - KubeAI</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#model-storage" class="md-skip">
+        <a href="#autoscaling" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Model Storage
+              Autoscaling
             
           </span>
         </div>
@@ -364,11 +364,53 @@
   
   
     <li class="md-nav__item">
+      <a href="../../how-to/configure-autoscaling/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configure autoscaling
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/configure-resource-profiles/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configure resource profiles
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../how-to/configure-speech-to-text/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Configure Speech To Text
+    Configure speech-to-text
   </span>
   
 
@@ -385,32 +427,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/manage-models/" class="md-nav__link">
+      <a href="../../how-to/install-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Manage models
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../how-to/manage-resource-profiles/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Manage resource profiles
+    Install models
   </span>
   
 
@@ -484,7 +505,7 @@
           
   
   <span class="md-ellipsis">
-    Model Storage
+    Autoscaling
   </span>
   
 
@@ -495,7 +516,7 @@
         
   
   <span class="md-ellipsis">
-    Model Storage
+    Autoscaling
   </span>
   
 
@@ -517,27 +538,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#a-model-built-into-container" class="md-nav__link">
+  <a href="#next" class="md-nav__link">
     <span class="md-ellipsis">
-      A. Model built into container
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#b-model-on-shared-filesystem-read-write-many" class="md-nav__link">
-    <span class="md-ellipsis">
-      B. Model on shared filesystem (read-write-many)
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#c-model-on-read-only-many-disk" class="md-nav__link">
-    <span class="md-ellipsis">
-      C. Model on read-only-many disk
+      Next
     </span>
   </a>
   
@@ -559,11 +562,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../models/" class="md-nav__link">
+      <a href="../backend-servers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Models
+    Backend Servers
   </span>
   
 
@@ -585,6 +588,27 @@
   
   <span class="md-ellipsis">
     Resource Profiles
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../storage-caching/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Storage / Caching
   </span>
   
 
@@ -817,16 +841,80 @@
   
   
   
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Reference
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
     <li class="md-nav__item">
-      <a href="../../api-reference/" class="md-nav__link">
+      <a href="../../reference/kubernetes-api/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    API Reference
+    Kubernetes API
   </span>
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/openai-api-compatibility/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    OpenAI API Compatibility
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -858,27 +946,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#a-model-built-into-container" class="md-nav__link">
+  <a href="#next" class="md-nav__link">
     <span class="md-ellipsis">
-      A. Model built into container
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#b-model-on-shared-filesystem-read-write-many" class="md-nav__link">
-    <span class="md-ellipsis">
-      B. Model on shared filesystem (read-write-many)
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#c-model-on-read-only-many-disk" class="md-nav__link">
-    <span class="md-ellipsis">
-      C. Model on read-only-many disk
+      Next
     </span>
   </a>
   
@@ -902,40 +972,12 @@
   
 
 
-<h1 id="model-storage">Model Storage<a class="headerlink" href="#model-storage" title="Permanent link">&para;</a></h1>
-<p>With "Large" in the name, caching is a critical part of serving LLMs.</p>
-<p>The best caching technique may very depending on your environment:</p>
-<ul>
-<li>What cloud features are available?</li>
-<li>Is your cluster deployed in an air-gapped environment?</li>
-</ul>
-<h2 id="a-model-built-into-container">A. Model built into container<a class="headerlink" href="#a-model-built-into-container" title="Permanent link">&para;</a></h2>
-<p><strong>Status:</strong> Supported</p>
-<p>Building a model into a container image can provide a simple way to take advantage of image-related optimizations built into Kubernetes:</p>
-<ul>
-<li>
-<p>Relaunching a model server on the same Node that it ran on before will <a href="https://kubernetes.io/docs/concepts/architecture/garbage-collection/#container-image-lifecycle">likely</a> be able to reuse the previously pulled image.</p>
-</li>
-<li>
-<p><a href="https://cloud.google.com/kubernetes-engine/docs/how-to/data-container-image-preloading">Secondary boot disks on GKE</a> can be used to avoid needing to pull images.</p>
-</li>
-<li>
-<p><a href="https://cloud.google.com/blog/products/containers-kubernetes/introducing-container-image-streaming-in-gke">Image streaming on GKE</a> can allow for containers to startup before the entire image is present on the Node.</p>
-</li>
-<li>
-<p>Container images can be pre-installed on Nodes in air-gapped environments (example: <a href="https://docs.k3s.io/installation/airgap">k3s airgap installation</a>).</p>
-</li>
-</ul>
-<p><strong>Guides:</strong></p>
-<ul>
-<li><a href="../../how-to/build-models-into-containers/">How to build models into container images</a></li>
-</ul>
-<h2 id="b-model-on-shared-filesystem-read-write-many">B. Model on shared filesystem (read-write-many)<a class="headerlink" href="#b-model-on-shared-filesystem-read-write-many" title="Permanent link">&para;</a></h2>
-<p><strong>Status:</strong> <a href="https://github.com/substratusai/kubeai/blob/main/proposals/model-storage.md">Planned</a>.</p>
-<p>Examples: <a href="https://aws.amazon.com/efs/">AWS EFS</a></p>
-<h2 id="c-model-on-read-only-many-disk">C. Model on read-only-many disk<a class="headerlink" href="#c-model-on-read-only-many-disk" title="Permanent link">&para;</a></h2>
-<p><strong>Status:</strong> <a href="https://github.com/substratusai/kubeai/blob/main/proposals/model-storage.md">Planned</a>.</p>
-<p>Examples: <a href="https://cloud.google.com/compute/docs/disks/hyperdisks">GCP Hyperdisk ML</a></p>
+<h1 id="autoscaling">Autoscaling<a class="headerlink" href="#autoscaling" title="Permanent link">&para;</a></h1>
+<p>KubeAI proxies HTTP and messaging (i.e. Kafka, etc) requests and messages to models. It will adjust the number Pods serving a given model based on metrics reported by those servers. If no Pods are running when a request comes in, KubeAI will hold the request, scale up a Pod and forward the request when the Pod is ready. This process happens in a manner that is transparent to the end client (other than the added delay from a cold-start).</p>
+<p><br>
+<img src="/diagrams/autoscaling.excalidraw.png" width="90%"></img></p>
+<h2 id="next">Next<a class="headerlink" href="#next" title="Permanent link">&para;</a></h2>
+<p>Read about <a href="../../how-to/configure-autoscaling/">how to configure autoscaling</a>.</p>
 
 
 

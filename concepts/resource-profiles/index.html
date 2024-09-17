@@ -11,10 +11,10 @@
         <link rel="canonical" href="https://www.kubeai.org/concepts/resource-profiles/">
       
       
-        <link rel="prev" href="../models/">
+        <link rel="prev" href="../backend-servers/">
       
       
-        <link rel="next" href="../../tutorials/langchain/">
+        <link rel="next" href="../storage-caching/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -364,11 +364,53 @@
   
   
     <li class="md-nav__item">
+      <a href="../../how-to/configure-autoscaling/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configure autoscaling
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/configure-resource-profiles/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configure resource profiles
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../how-to/configure-speech-to-text/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Configure Speech To Text
+    Configure speech-to-text
   </span>
   
 
@@ -385,32 +427,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/manage-models/" class="md-nav__link">
+      <a href="../../how-to/install-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Manage models
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../how-to/manage-resource-profiles/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Manage resource profiles
+    Install models
   </span>
   
 
@@ -471,11 +492,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../model-storage/" class="md-nav__link">
+      <a href="../autoscaling/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Model Storage
+    Autoscaling
   </span>
   
 
@@ -492,11 +513,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../models/" class="md-nav__link">
+      <a href="../backend-servers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Models
+    Backend Servers
   </span>
   
 
@@ -571,6 +592,27 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../storage-caching/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Storage / Caching
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -799,16 +841,80 @@
   
   
   
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Reference
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
     <li class="md-nav__item">
-      <a href="../../api-reference/" class="md-nav__link">
+      <a href="../../reference/kubernetes-api/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    API Reference
+    Kubernetes API
   </span>
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/openai-api-compatibility/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    OpenAI API Compatibility
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -868,47 +974,18 @@
 
 <h1 id="resource-profiles">Resource Profiles<a class="headerlink" href="#resource-profiles" title="Permanent link">&para;</a></h1>
 <p>A resource profile maps a type of compute resource (i.e. NVIDIA L4 GPU) to a collection of Kubernetes settings that are configured on inference server Pods. These profiles are defined in the KubeAI <code>config.yaml</code> file (via a ConfigMap). Each model specifies the resource profile that it requires.</p>
-<p>Kubernetes Model resources specify a resource profile and the count of that resource that they require:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># model.yaml</span>
-<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubeai.org/v1</span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Model</span>
-<span class="nt">metadata</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">llama-3.1-8b-instruct-fp8-l4</span>
-<span class="nt">spec</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">engine</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">VLLM</span>
-<span class="w">  </span><span class="nt">resourceProfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nvidia-gpu-l4:1</span><span class="w"> </span><span class="c1"># Specified as &lt;profile&gt;:&lt;count&gt;</span>
-<span class="w">  </span><span class="c1"># ...</span>
-</code></pre></div>
+<p>Kubernetes Model resources specify a resource profile and the count of that resource that they require (for example <code>resourceProfile: nvidia-gpu-l4:2</code> - 2x L4 GPUs).</p>
 <p>A given profile might need to contain slightly different settings based on the cluster/cloud that KubeAI is deployed in.</p>
-<p>Example: A resource profile named <code>nvidia-gpu-l4</code> might contain the following settings on a GKE Kubernetes cluster:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># KubeAI config.yaml</span>
-<span class="nt">resourceProfiles</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">nvidia-gpu-l4</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">limits</span><span class="p">:</span>
-<span class="w">      </span><span class="c1"># Typical across most Kubernetes clusters:</span>
-<span class="w">      </span><span class="nt">nvidia.com/gpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1&quot;</span>
-<span class="w">    </span><span class="nt">requests</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">nvidia.com/gpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1&quot;</span>
-<span class="w">    </span><span class="nt">nodeSelector</span><span class="p">:</span>
-<span class="w">      </span><span class="c1"># Specific to GKE:</span>
-<span class="w">      </span><span class="nt">cloud.google.com/gke-accelerator</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;nvidia-l4&quot;</span>
-<span class="w">      </span><span class="nt">cloud.google.com/gke-spot</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;true&quot;</span>
-<span class="w">    </span><span class="nt">imageName</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;nvidia-gpu&quot;</span>
+<p>Example: A resource profile named <code>nvidia-gpu-l4</code> might contain the following node selectors when installing KubeAI on a GKE Kubernetes cluster:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">cloud.google.com/gke-accelerator</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;nvidia-l4&quot;</span>
+<span class="nt">cloud.google.com/gke-spot</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;true&quot;</span>
 </code></pre></div>
-<p>In addition to node selectors and resource requirements, a resource profile may optionally specify an image name. This name maps to the container image that will be selected when serving a model on that resource:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># KubeAI config.yaml</span>
-<span class="nt">modelServers</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">VLLM</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">images</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;vllm/vllm-openai:v0.5.5&quot;</span>
-<span class="w">      </span><span class="nt">nvidia-gpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;vllm/vllm-openai:v0.5.5&quot;</span><span class="w"> </span><span class="c1"># &lt;--</span>
-<span class="w">      </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;vllm/vllm-openai-cpu:v0.5.5&quot;</span>
-<span class="w">  </span><span class="nt">OLlama</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">images</span><span class="p">:</span>
-<span class="w">      </span><span class="c1"># ...</span>
+<p>and add the following resource requests to the model server Pods:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">nvidia.com/gpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1&quot;</span>
 </code></pre></div>
+<p>In addition to node selectors and resource requirements, a resource profile may optionally specify an image name. This name maps to the container image that will be selected when serving a model on that resource.</p>
 <h2 id="next">Next<a class="headerlink" href="#next" title="Permanent link">&para;</a></h2>
-<p>Read about <a href="../../how-to/manage-resource-profiles/">how to manage resource profiles</a>.</p>
+<p>Read about <a href="../../how-to/configure-resource-profiles/">how to configure resource profiles</a>.</p>
 
 
 

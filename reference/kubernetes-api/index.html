@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://www.kubeai.org/how-to/build-models-into-containers/">
+        <link rel="canonical" href="https://www.kubeai.org/reference/kubernetes-api/">
       
       
-        <link rel="prev" href="../../installation/gke/">
+        <link rel="prev" href="../../contributing/release-process/">
       
       
-        <link rel="next" href="../configure-autoscaling/">
+        <link rel="next" href="../openai-api-compatibility/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Build models into containers - KubeAI</title>
+        <title>Kubernetes API - KubeAI</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#build-models-into-containers" class="md-skip">
+        <a href="#kubernetes-api" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Build models into containers
+              Kubernetes API
             
           </span>
         </div>
@@ -305,19 +305,17 @@
       
   
   
-    
   
   
-  
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -331,7 +329,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             How to
@@ -342,19 +340,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../how-to/build-models-into-containers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -363,7 +352,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -376,7 +364,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configure-autoscaling/" class="md-nav__link">
+      <a href="../../how-to/configure-autoscaling/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -397,7 +385,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configure-resource-profiles/" class="md-nav__link">
+      <a href="../../how-to/configure-resource-profiles/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -418,7 +406,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configure-speech-to-text/" class="md-nav__link">
+      <a href="../../how-to/configure-speech-to-text/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -439,7 +427,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../install-models/" class="md-nav__link">
+      <a href="../../how-to/install-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -800,17 +788,19 @@
       
   
   
+    
   
   
+  
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
         
           
           <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
@@ -824,7 +814,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             Reference
@@ -835,10 +825,30 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../reference/kubernetes-api/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Kubernetes API
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -847,6 +857,110 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      Packages
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kubeaiorgv1" class="md-nav__link">
+    <span class="md-ellipsis">
+      kubeai.org/v1
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="kubeai.org/v1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resource-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Resource Types
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Resource Types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Model
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modelfeature" class="md-nav__link">
+    <span class="md-ellipsis">
+      ModelFeature
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modelspec" class="md-nav__link">
+    <span class="md-ellipsis">
+      ModelSpec
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modelstatus" class="md-nav__link">
+    <span class="md-ellipsis">
+      ModelStatus
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modelstatusreplicas" class="md-nav__link">
+    <span class="md-ellipsis">
+      ModelStatusReplicas
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -859,7 +973,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/openai-api-compatibility/" class="md-nav__link">
+      <a href="../openai-api-compatibility/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -900,6 +1014,98 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      Packages
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kubeaiorgv1" class="md-nav__link">
+    <span class="md-ellipsis">
+      kubeai.org/v1
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="kubeai.org/v1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resource-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Resource Types
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Resource Types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Model
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modelfeature" class="md-nav__link">
+    <span class="md-ellipsis">
+      ModelFeature
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modelspec" class="md-nav__link">
+    <span class="md-ellipsis">
+      ModelSpec
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modelstatus" class="md-nav__link">
+    <span class="md-ellipsis">
+      ModelStatus
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modelstatusreplicas" class="md-nav__link">
+    <span class="md-ellipsis">
+      ModelStatusReplicas
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -916,36 +1122,216 @@
   
 
 
-<h1 id="build-models-into-containers">Build models into containers<a class="headerlink" href="#build-models-into-containers" title="Permanent link">&para;</a></h1>
-<p>In this guide we will preload a LLM into a custom built Ollama serving image. You can follow the same steps for other models and other serving engines.</p>
-<p>Define some values
-<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">MODEL_URL</span><span class="o">=</span>ollama://qwen2:0.5b
-
-<span class="c1"># Customize with your own image repo.</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">IMAGE</span><span class="o">=</span>us-central1-docker.pkg.dev/substratus-dev/default/ollama-builtin-qwen2-05b:latest
-</code></pre></div></p>
-<p>Build and push image. Note: building (downloading base image &amp; model) and pushing (uploading image &amp; model) can take a while depending on the size of the model.</p>
-<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/substratusai/kubeai
-<span class="nb">cd</span><span class="w"> </span>./kubeai/images/ollama-builtin
-
-docker<span class="w"> </span>build<span class="w"> </span>--build-arg<span class="w"> </span><span class="nv">MODEL_URL</span><span class="o">=</span><span class="nv">$MODEL_URL</span><span class="w"> </span>-t<span class="w"> </span><span class="nv">$IMAGE</span><span class="w"> </span>.
-docker<span class="w"> </span>push<span class="w"> </span><span class="nv">$IMAGE</span>
-</code></pre></div>
-<p>Create a model manifest &amp; apply into a cluster with KubeAI installed. NOTE: The only difference between an built-in model image and otherwise is the addition of the <code>image:</code> field.</p>
-<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt; EOF</span>
-<span class="s">apiVersion: kubeai.org/v1</span>
-<span class="s">kind: Model</span>
-<span class="s">metadata:</span>
-<span class="s">  name: builtin-model-example</span>
-<span class="s">spec:</span>
-<span class="s">  features: [&quot;TextGeneration&quot;]</span>
-<span class="s">  owner: alibaba</span>
-<span class="s">  image: $IMAGE # &lt;-- The image with model built-in</span>
-<span class="s">  url: &quot;$MODEL_URL&quot;</span>
-<span class="s">  engine: OLlama</span>
-<span class="s">  resourceProfile: cpu:1</span>
-<span class="s">EOF</span>
-</code></pre></div>
+<h1 id="kubernetes-api">Kubernetes API<a class="headerlink" href="#kubernetes-api" title="Permanent link">&para;</a></h1>
+<h2 id="packages">Packages<a class="headerlink" href="#packages" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="#kubeaiorgv1">kubeai.org/v1</a></li>
+</ul>
+<h2 id="kubeaiorgv1">kubeai.org/v1<a class="headerlink" href="#kubeaiorgv1" title="Permanent link">&para;</a></h2>
+<p>Package v1 contains API Schema definitions for the kubeai v1 API group</p>
+<h3 id="resource-types">Resource Types<a class="headerlink" href="#resource-types" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="#model">Model</a></li>
+</ul>
+<h4 id="model">Model<a class="headerlink" href="#model" title="Permanent link">&para;</a></h4>
+<p>Model resources define the ML models that will be served by KubeAI.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>apiVersion</code> <em>string</em></td>
+<td><code>kubeai.org/v1</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>kind</code> <em>string</em></td>
+<td><code>Model</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>metadata</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.3/#objectmeta-v1-meta">ObjectMeta</a></em></td>
+<td>Refer to Kubernetes API documentation for fields of <code>metadata</code>.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>spec</code> <em><a href="#modelspec">ModelSpec</a></em></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>status</code> <em><a href="#modelstatus">ModelStatus</a></em></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="modelfeature">ModelFeature<a class="headerlink" href="#modelfeature" title="Permanent link">&para;</a></h4>
+<p><em>Underlying type:</em> <em>string</em></p>
+<p><em>Validation:</em>
+- Enum: [TextGeneration TextEmbedding SpeechToText]</p>
+<p><em>Appears in:</em>
+- <a href="#modelspec">ModelSpec</a></p>
+<h4 id="modelspec">ModelSpec<a class="headerlink" href="#modelspec" title="Permanent link">&para;</a></h4>
+<p>ModelSpec defines the desired state of Model.</p>
+<p><em>Appears in:</em>
+- <a href="#model">Model</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>url</code> <em>string</em></td>
+<td>URL of the model to be served.<br />Currently only the following formats are supported:<br />For VLLM &amp; FasterWhisper engines: "hf://<model-repo>/<model-name>"<br />For OLlama engine: "ollama://<model></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>features</code> <em><a href="#modelfeature">ModelFeature</a> array</em></td>
+<td>Features that the model supports.<br />Dictates the APIs that are available for the model.</td>
+<td></td>
+<td>Enum: [TextGeneration TextEmbedding SpeechToText] <br /></td>
+</tr>
+<tr>
+<td><code>engine</code> <em>string</em></td>
+<td>Engine to be used for the server process.</td>
+<td></td>
+<td>Enum: [OLlama VLLM FasterWhisper] <br /></td>
+</tr>
+<tr>
+<td><code>resourceProfile</code> <em>string</em></td>
+<td>ResourceProfile required to serve the model.<br />Use the format "<resource-profile-name>:<count>".<br />Example: "nvidia-gpu-l4:2" - 2x NVIDIA L4 GPUs.<br />Must be a valid ResourceProfile defined in the system config.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>image</code> <em>string</em></td>
+<td>Image to be used for the server process.<br />Will be set from ResourceProfile + Engine if not specified.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>args</code> <em>string array</em></td>
+<td>Args to be added to the server process.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>env</code> <em>object (keys:string, values:string)</em></td>
+<td>Env variables to be added to the server process.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>replicas</code> <em>integer</em></td>
+<td>Replicas is the number of Pod replicas that should be actively<br />serving the model. KubeAI will manage this field unless AutoscalingDisabled<br />is set to true.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>minReplicas</code> <em>integer</em></td>
+<td>MinReplicas is the minimum number of Pod replicas that the model can scale down to.<br />Note: 0 is a valid value.</td>
+<td></td>
+<td>Minimum: 0 <br />Optional: {} <br /></td>
+</tr>
+<tr>
+<td><code>maxReplicas</code> <em>integer</em></td>
+<td>MaxReplicas is the maximum number of Pod replicas that the model can scale up to.<br />Empty value means no limit.</td>
+<td></td>
+<td>Minimum: 1 <br /></td>
+</tr>
+<tr>
+<td><code>autoscalingDisabled</code> <em>boolean</em></td>
+<td>AutoscalingDisabled will stop the controller from managing the replicas<br />for the Model. When disabled, metrics will not be collected on server Pods.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>targetRequests</code> <em>integer</em></td>
+<td>TargetRequests is average number of active requests that the autoscaler<br />will try to maintain on model server Pods.</td>
+<td>100</td>
+<td>Minimum: 1 <br /></td>
+</tr>
+<tr>
+<td><code>scaleDownDelaySeconds</code> <em>integer</em></td>
+<td>ScaleDownDelay is the minimum time before a deployment is scaled down after<br />the autoscaling algorithm determines that it should be scaled down.</td>
+<td>30</td>
+<td></td>
+</tr>
+<tr>
+<td><code>owner</code> <em>string</em></td>
+<td>Owner of the model. Used solely to populate the owner field in the<br />OpenAI /v1/models endpoint.<br />DEPRECATED.</td>
+<td></td>
+<td>Optional: {} <br /></td>
+</tr>
+</tbody>
+</table>
+<h4 id="modelstatus">ModelStatus<a class="headerlink" href="#modelstatus" title="Permanent link">&para;</a></h4>
+<p>ModelStatus defines the observed state of Model.</p>
+<p><em>Appears in:</em>
+- <a href="#model">Model</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>replicas</code> <em><a href="#modelstatusreplicas">ModelStatusReplicas</a></em></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="modelstatusreplicas">ModelStatusReplicas<a class="headerlink" href="#modelstatusreplicas" title="Permanent link">&para;</a></h4>
+<p><em>Appears in:</em>
+- <a href="#modelstatus">ModelStatus</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>all</code> <em>integer</em></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>ready</code> <em>integer</em></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 
 
 

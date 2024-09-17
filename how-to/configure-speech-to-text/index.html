@@ -11,10 +11,10 @@
         <link rel="canonical" href="https://www.kubeai.org/how-to/configure-speech-to-text/">
       
       
-        <link rel="prev" href="../build-models-into-containers/">
+        <link rel="prev" href="../configure-resource-profiles/">
       
       
-        <link rel="next" href="../manage-models/">
+        <link rel="next" href="../install-models/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Configure Speech To Text - KubeAI</title>
+        <title>Configure speech-to-text - KubeAI</title>
       
     
     
@@ -108,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Configure Speech To Text
+              Configure speech-to-text
             
           </span>
         </div>
@@ -363,6 +363,48 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../configure-autoscaling/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configure autoscaling
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configure-resource-profiles/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configure resource profiles
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -379,7 +421,7 @@
           
   
   <span class="md-ellipsis">
-    Configure Speech To Text
+    Configure speech-to-text
   </span>
   
 
@@ -390,7 +432,7 @@
         
   
   <span class="md-ellipsis">
-    Configure Speech To Text
+    Configure speech-to-text
   </span>
   
 
@@ -469,32 +511,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../manage-models/" class="md-nav__link">
+      <a href="../install-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Manage models
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../manage-resource-profiles/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Manage resource profiles
+    Install models
   </span>
   
 
@@ -553,11 +574,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/model-storage/" class="md-nav__link">
+      <a href="../../concepts/autoscaling/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Model Storage
+    Autoscaling
   </span>
   
 
@@ -574,11 +595,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/models/" class="md-nav__link">
+      <a href="../../concepts/backend-servers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    Models
+    Backend Servers
   </span>
   
 
@@ -600,6 +621,27 @@
   
   <span class="md-ellipsis">
     Resource Profiles
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/storage-caching/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Storage / Caching
   </span>
   
 
@@ -832,16 +874,80 @@
   
   
   
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Reference
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
     <li class="md-nav__item">
-      <a href="../../api-reference/" class="md-nav__link">
+      <a href="../../reference/kubernetes-api/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    API Reference
+    Kubernetes API
   </span>
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/openai-api-compatibility/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    OpenAI API Compatibility
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -932,7 +1038,7 @@
   
 
 
-<h1 id="configure-speech-to-text">Configure Speech To Text<a class="headerlink" href="#configure-speech-to-text" title="Permanent link">&para;</a></h1>
+<h1 id="configure-speech-to-text">Configure speech-to-text<a class="headerlink" href="#configure-speech-to-text" title="Permanent link">&para;</a></h1>
 <p>KubeAI provides a Speech to Text endpoint that can be used to transcribe audio files. This guide will walk you through the steps to enable this feature.</p>
 <h2 id="enable-speech-to-text-model">Enable Speech to Text model<a class="headerlink" href="#enable-speech-to-text-model" title="Permanent link">&para;</a></h2>
 <p>You can create new models by creating a Model CRD object or by enabling a model from the model catalog.</p>
@@ -955,8 +1061,6 @@
 <span class="w">  </span><span class="nt">owner</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Systran</span>
 <span class="w">  </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hf://Systran/faster-whisper-medium.en</span>
 <span class="w">  </span><span class="nt">engine</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">FasterWhisper</span>
-<span class="w">  </span><span class="nt">minReplicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
-<span class="w">  </span><span class="nt">maxReplicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
 <span class="w">  </span><span class="nt">resourceProfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cpu:1</span>
 </code></pre></div>
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
