@@ -311,18 +311,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#supported-models" class="md-nav__link">
+  <a href="#documentation" class="md-nav__link">
     <span class="md-ellipsis">
-      Supported Models
+      Documentation
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#documentation" class="md-nav__link">
+  <a href="#adopters" class="md-nav__link">
     <span class="md-ellipsis">
-      Documentation
+      Adopters
     </span>
   </a>
   
@@ -1062,18 +1062,18 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#supported-models" class="md-nav__link">
+  <a href="#documentation" class="md-nav__link">
     <span class="md-ellipsis">
-      Supported Models
+      Documentation
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#documentation" class="md-nav__link">
+  <a href="#adopters" class="md-nav__link">
     <span class="md-ellipsis">
-      Documentation
+      Adopters
     </span>
   </a>
   
@@ -1194,21 +1194,38 @@ helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class=
 <h4 id="scale-up-qwen2-from-zero">Scale up Qwen2 from Zero<a class="headerlink" href="#scale-up-qwen2-from-zero" title="Permanent link">&para;</a></h4>
 <p>If you go back to the browser and start a chat with Qwen2, you will notice that it will take a while to respond at first. This is because we set <code>minReplicas: 0</code> for this model and KubeAI needs to spin up a new Pod (you can verify with <code>kubectl get models -oyaml qwen2-500m-cpu</code>).</p>
 <p>NOTE: Autoscaling after initial scale-from-zero is not yet supported for the Ollama backend which we use in this local quickstart. KubeAI relies upon backend-specific metrics and the Ollama project has an open issue: https://github.com/ollama/ollama/issues/3144. To see autoscaling in action, checkout the <a href="installation/gke/">GKE install guide</a> which uses the vLLM backend and autoscales across GPU resources.</p>
-<h2 id="supported-models">Supported Models<a class="headerlink" href="#supported-models" title="Permanent link">&para;</a></h2>
-<p>Any vLLM or Ollama model can be served by KubeAI. Some examples of popular models served on KubeAI include:</p>
-<ul>
-<li>Llama v3.1 (8B, 70B, 405B) </li>
-<li>Gemma2 (2B, 9B, 27B)</li>
-<li>Qwen2 (1.5B, 7B, 72B)</li>
-</ul>
 <h2 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h2>
-<p>Checkout our documenation on <a href="https://www.kubeai.org">kubeai.org</a> to find info on:</p>
+<p>Checkout our documentation on <a href="https://www.kubeai.org">kubeai.org</a> to find info on:</p>
 <ul>
 <li>Installing KubeAI in the cloud</li>
 <li>How to guides (e.g. how to manage models and resource profiles).</li>
 <li>Concepts (how the components of KubeAI work).</li>
 <li>How to contribute</li>
 </ul>
+<h2 id="adopters">Adopters<a class="headerlink" href="#adopters" title="Permanent link">&para;</a></h2>
+<p>List of known adopters:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+<th>Link</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Telescope</td>
+<td>Telescope uses KubeAI for multi-region large scale batch LLM inference.</td>
+<td><a href="https://trytelescope.ai">trytelescope.ai</a></td>
+</tr>
+<tr>
+<td>Google Cloud Distributed Edge</td>
+<td>KubeAI is included as a reference architecture for inferencing at the edge.</td>
+<td><a href="https://www.linkedin.com/posts/mikeensor_gcp-solutions-public-retail-edge-available-cluster-traits-activity-7237515920259104769-vBs9?utm_source=share&amp;utm_medium=member_desktop">LinkedIn</a>, <a href="https://gitlab.com/gcp-solutions-public/retail-edge/available-cluster-traits/kubeai-cluster-trait">GitLab</a></td>
+</tr>
+</tbody>
+</table>
+<p>If you are using KubeAI and would like to be listed as an adopter, please make a PR.</p>
 <h2 id="openai-api-compatibility">OpenAI API Compatibility<a class="headerlink" href="#openai-api-compatibility" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="c1"># Implemented #</span>
 /v1/chat/completions
