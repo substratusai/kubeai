@@ -136,8 +136,6 @@ spec:
             required:
             - engine
             - features
-            - minReplicas
-            - owner
             - scaleDownDelaySeconds
             - targetRequests
             - url

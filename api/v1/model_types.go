@@ -60,6 +60,7 @@ type ModelSpec struct {
 	// MinReplicas is the minimum number of Pod replicas that the model can scale down to.
 	// Note: 0 is a valid value.
 	// +kubebuilder:validation:Minimum=0
+	// +kubebuilder:validation:Optional
 	MinReplicas int32 `json:"minReplicas"`
 
 	// MaxReplicas is the maximum number of Pod replicas that the model can scale up to.
@@ -85,6 +86,7 @@ type ModelSpec struct {
 	// Owner of the model. Used solely to populate the owner field in the
 	// OpenAI /v1/models endpoint.
 	// DEPRECATED.
+	// +kubebuilder:validation:Optional
 	Owner string `json:"owner"`
 }
 

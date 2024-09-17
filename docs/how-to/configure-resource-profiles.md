@@ -53,4 +53,4 @@ modelServers:
 
 # Next
 
-See the guide on [how to manage models](./manage-models.md) which includes how to configure the resource profile to use for a given model.
+See the guide on [how to install models](./install-models.md) which includes how to configure the resource profile to use for a given model.
