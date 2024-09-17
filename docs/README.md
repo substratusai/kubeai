@@ -99,6 +99,16 @@ If you go back to the browser and start a chat with Qwen2, you will notice that 
 
 NOTE: Autoscaling after initial scale-from-zero is not yet supported for the Ollama backend which we use in this local quickstart. KubeAI relies upon backend-specific metrics and the Ollama project has an open issue: https://github.com/ollama/ollama/issues/3144. To see autoscaling in action, checkout the [GKE install guide](./installation/gke.md) which uses the vLLM backend and autoscales across GPU resources.
 
+
+## Documentation
+
+Checkout our documentation on [kubeai.org](https://www.kubeai.org) to find info on:
+
+* Installing KubeAI in the cloud
+* How to guides (e.g. how to manage models and resource profiles).
+* Concepts (how the components of KubeAI work).
+* How to contribute
+
 ## Adopters
 
 List of known adopters:
@@ -109,15 +119,6 @@ List of known adopters:
 | Google Cloud Distributed Edge | KubeAI is included as a reference architecture for inferencing at the edge. | [LinkedIn](https://www.linkedin.com/posts/mikeensor_gcp-solutions-public-retail-edge-available-cluster-traits-activity-7237515920259104769-vBs9?utm_source=share&utm_medium=member_desktop), [GitLab](https://gitlab.com/gcp-solutions-public/retail-edge/available-cluster-traits/kubeai-cluster-trait) |
 
 If you are using KubeAI and would like to be listed as an adopter, please make a PR.
-
-## Documentation
-
-Checkout our documenation on [kubeai.org](https://www.kubeai.org) to find info on:
-
-* Installing KubeAI in the cloud
-* How to guides (e.g. how to manage models and resource profiles).
-* Concepts (how the components of KubeAI work).
-* How to contribute
 
 ## OpenAI API Compatibility
 
