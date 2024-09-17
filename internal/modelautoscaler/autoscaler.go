@@ -19,7 +19,7 @@ func New(
 	leaderElection *leader.Election,
 	scaler *modelscaler.ModelScaler,
 	resolver *modelresolver.Manager,
-	cfg config.Autoscaling,
+	cfg config.ModelAutoscaling,
 ) *Autoscaler {
 	a := &Autoscaler{
 		leaderElection:   leaderElection,
@@ -40,7 +40,7 @@ type Autoscaler struct {
 	scaler   *modelscaler.ModelScaler
 	resolver *modelresolver.Manager
 
-	cfg config.Autoscaling
+	cfg config.ModelAutoscaling
 
 	movingAvgByModelMtx sync.Mutex
 	movingAvgByModel    map[string]*movingaverage.Simple
@@ -69,11 +69,7 @@ func (a *Autoscaler) Start(ctx context.Context) {
 		}
 
 		for _, m := range models {
-			if m.Spec.Autoscaling == nil {
-				log.Printf("Model %q has no autoscaling configuration, skipping", m.Name)
-				continue
-			}
-			if m.Spec.Autoscaling.Disabled {
+			if m.Spec.AutoscalingDisabled {
 				log.Printf("Model %q has autoscaling disabled, skipping", m.Name)
 				continue
 			}
@@ -97,10 +93,10 @@ func (a *Autoscaler) Start(ctx context.Context) {
 			avg := a.getMovingAvgQueueSize(m.Name)
 			avg.Next(agg.CurrentRequests())
 			flt := avg.Calculate()
-			normalized := flt / float64(m.Spec.Autoscaling.TargetRequests)
+			normalized := flt / float64(*m.Spec.TargetRequests)
 			ceil := math.Ceil(normalized)
-			log.Printf("Average for model %q: %v/%v (normalized ceil: %v), current requests: %v, history: %v", m.Name, flt, m.Spec.Autoscaling.TargetRequests, ceil, agg.CurrentRequests(), avg.History())
-			a.scaler.Scale(ctx, &m, int32(ceil), a.cfg.RequiredConsecutiveScaleDowns(*m.Spec.Autoscaling))
+			log.Printf("Average for model %q: %v/%v (normalized ceil: %v), current requests: %v, history: %v", m.Name, flt, m.Spec.TargetRequests, ceil, agg.CurrentRequests(), avg.History())
+			a.scaler.Scale(ctx, &m, int32(ceil), a.cfg.RequiredConsecutiveScaleDowns(*m.Spec.ScaleDownDelaySeconds))
 		}
 	}
 }

@@ -51,17 +51,16 @@ func (s *ModelScaler) ScaleAtLeastOneReplica(ctx context.Context, model string) 
 		return fmt.Errorf("get scale: %w", err)
 	}
 
+	if obj.Spec.AutoscalingDisabled {
+		return nil
+	}
+
 	replicas := int32(0)
 	if obj.Spec.Replicas != nil {
 		replicas = *obj.Spec.Replicas
 	}
 
-	var autoscalingDisabled bool
-	if obj.Spec.Autoscaling != nil {
-		autoscalingDisabled = obj.Spec.Autoscaling.Disabled
-	}
-
-	if replicas == 0 && !autoscalingDisabled {
+	if replicas == 0 && !obj.Spec.AutoscalingDisabled {
 		scale := &autoscalingv1.Scale{
 			Spec: autoscalingv1.ScaleSpec{Replicas: 1},
 		}
@@ -74,7 +73,7 @@ func (s *ModelScaler) ScaleAtLeastOneReplica(ctx context.Context, model string) 
 }
 
 // Scale scales the model to the desired number of replicas, enforcing the min and max replica bounds.
-// Model should have .Spec.Autoscaling defined before calling Scale().
+// Model should have .Spec defined before calling Scale().
 func (s *ModelScaler) Scale(ctx context.Context, model *kubeaiv1.Model, replicas int32, requiredConsecutiveScaleDowns int) error {
 	//obj := &kubeaiv1.Model{}
 	//if err := s.client.Get(ctx, types.NamespacedName{Namespace: s.namespace, Name: model}, obj); err != nil {
@@ -121,10 +120,12 @@ func (s *ModelScaler) Scale(ctx context.Context, model *kubeaiv1.Model, replicas
 }
 
 func enforceReplicaBounds(replicas int32, model *kubeaiv1.Model) int32 {
-	max := model.Spec.Autoscaling.MaxReplicas
-	min := model.Spec.Autoscaling.MinReplicas
-	if replicas > max {
-		return max
+	max := model.Spec.MaxReplicas
+	min := model.Spec.MinReplicas
+	if max != nil {
+		if replicas > *max {
+			return *max
+		}
 	}
 	if replicas < min {
 		return min

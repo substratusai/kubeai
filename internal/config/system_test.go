@@ -5,54 +5,45 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	v1 "github.com/substratusai/kubeai/api/v1"
 	"github.com/substratusai/kubeai/internal/config"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestAutoscalingConfig(t *testing.T) {
 	cases := []struct {
 		name                                  string
-		cfg                                   config.Autoscaling
-		profile                               v1.ModelAutoscaling
+		cfg                                   config.ModelAutoscaling
+		scaleDownDelaySeconds                 int64
 		expectedRequiredConsecutiveScaleDowns int
 		expectedAverageWindowCount            int
 	}{
 		{
 			name: "default",
-			cfg: config.Autoscaling{
+			cfg: config.ModelAutoscaling{
 				Interval:   config.Duration{Duration: 10 * time.Second},
-				TimeWindow: config.Duration{Duration: 3 * time.Minute},
+				TimeWindow: config.Duration{Duration: 10 * time.Minute},
 			},
-			profile: v1.ModelAutoscaling{
-				ScaleDownDelay: metav1.Duration{Duration: 3 * time.Minute},
-			},
-			// (3mins) * (60sec/min) / (10secInterval) = 18
-			expectedRequiredConsecutiveScaleDowns: 18,
-			// (3mins) * (60sec/min) / (10secInterval) = 18
-			expectedAverageWindowCount: 18,
+			scaleDownDelaySeconds:                 30,
+			expectedRequiredConsecutiveScaleDowns: 3,
+			// 10 * 60 / 10
+			expectedAverageWindowCount: 60,
 		},
 		{
 			name: "even",
-			cfg: config.Autoscaling{
+			cfg: config.ModelAutoscaling{
 				Interval:   config.Duration{Duration: 1 * time.Second},
 				TimeWindow: config.Duration{Duration: 10 * time.Second},
 			},
-			profile: v1.ModelAutoscaling{
-				ScaleDownDelay: metav1.Duration{Duration: 10 * time.Second},
-			},
+			scaleDownDelaySeconds:                 10,
 			expectedRequiredConsecutiveScaleDowns: 10,
 			expectedAverageWindowCount:            10,
 		},
 		{
 			name: "with-remainder",
-			cfg: config.Autoscaling{
+			cfg: config.ModelAutoscaling{
 				Interval:   config.Duration{Duration: 2 * time.Second},
 				TimeWindow: config.Duration{Duration: 5 * time.Second},
 			},
-			profile: v1.ModelAutoscaling{
-				ScaleDownDelay: metav1.Duration{Duration: 3 * time.Second},
-			},
+			scaleDownDelaySeconds:                 3,
 			expectedRequiredConsecutiveScaleDowns: 2,
 			expectedAverageWindowCount:            3,
 		},
@@ -60,7 +51,7 @@ func TestAutoscalingConfig(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			require.Equal(t, c.expectedRequiredConsecutiveScaleDowns, c.cfg.RequiredConsecutiveScaleDowns(c.profile))
+			require.Equal(t, c.expectedRequiredConsecutiveScaleDowns, c.cfg.RequiredConsecutiveScaleDowns(c.scaleDownDelaySeconds))
 		})
 	}
 }

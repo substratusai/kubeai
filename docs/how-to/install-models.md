@@ -1,16 +1,6 @@
-# Manage models
+# Install models
 
 This guide provides instructions on how to perform CRUD operations on KubeAI [Models](../concepts/models.md).
-
-## Listing models
-
-You can view all installed models through the Kubernetes API using `kubectl get models` (use the `-o yaml` flag for more details).
-
-You can also list all models via the OpenAI-compatible `/v1/models` endpoint:
-
-```bash
-curl http://your-deployed-kubeai-endpoint/openai/v1/models
-```
 
 ## Installing models with helm
 

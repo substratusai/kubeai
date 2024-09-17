@@ -17,7 +17,6 @@ limitations under the License.
 package v1
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -40,54 +39,32 @@ type ModelSpec struct {
 	// Will be set from the ResourceProfile if not specified.
 	Image string `json:"image,omitempty"`
 
-	// Resources to be allocated to the server process.
-	// Will be set from the ResourceProfile if not specified.
-	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
-
-	// NodeSelector to be added to the server process.
-	// Will be set from the ResourceProfile if not specified.
-	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
-
-	// Affinity to be added to the server process.
-	// Will be set from the ResourceProfile if not specified.
-	Affinity *corev1.Affinity `json:"affinity,omitempty"`
-
-	// Tolerations to be added to the server process.
-	// Will be set from the ResourceProfile if not specified.
-	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
-
 	// Args to be added to the server process.
 	Args []string `json:"args,omitempty"`
 
 	// Env variables to be added to the server process.
 	Env map[string]string `json:"env,omitempty"`
 
-	// AutoscalingProfile to be used for autoscaling.
-	AutoscalingProfile string `json:"autoscalingProfile,omitempty"`
+	// AutoscalingDisabled will stop the controller from managing the replicas
+	// for the Model. If true metrics will not be collected on server Pods.
+	AutoscalingDisabled bool `json:"autoscalingDisabled,omitempty"`
 
-	// Autoscaling configuration.
-	// Will be set from the AutoscalingProfile if not specified.
-	Autoscaling *ModelAutoscaling `json:"autoscaling,omitempty"`
-}
-
-type ModelAutoscaling struct {
-	// Disabled is used to disable autoscaling.
-	Disabled bool `json:"disabled,omitempty"`
 	// TargetRequests is the target number of active requests per Pod.
 	// +kubebuilder:validation:Minimum=1
 	// +kubebuilder:default=100
-	TargetRequests int32 `json:"targetRequests"`
+	TargetRequests *int32 `json:"targetRequests"`
 	// ScaleDownDelay is the minimum time before a deployment is scaled down after
 	// the autoscaling algorithm determines that it should be scaled down.
-	ScaleDownDelay metav1.Duration `json:"scaleDownDelay"`
+	// +kubebuilder:default=30
+	ScaleDownDelaySeconds *int64 `json:"scaleDownDelaySeconds"`
 	// MinReplicas is the minimum number of Pod replicas that the model can scale down to.
 	// Note: 0 is a valid value.
 	// +kubebuilder:validation:Minimum=0
 	MinReplicas int32 `json:"minReplicas"`
 	// MaxReplicas is the maximum number of Pod replicas that the model can scale up to.
+	// Empty value means no limit.
 	// +kubebuilder:validation:Minimum=1
-	// +kubebuilder:default=3
-	MaxReplicas int32 `json:"maxReplicas"`
+	MaxReplicas *int32 `json:"maxReplicas,omitempty"`
 }
 
 // +kubebuilder:validation:Enum=TextGeneration;TextEmbedding;SpeechToText

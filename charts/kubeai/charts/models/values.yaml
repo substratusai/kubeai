@@ -1,7 +1,3 @@
-defaults:
-  minReplicas: 0
-  maxReplicas: 3
-
 catalog:
   # Mistral #
   e5-mistral-7b-instruct-cpu:

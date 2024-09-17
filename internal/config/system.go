@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/go-playground/validator/v10"
-	v1 "github.com/substratusai/kubeai/api/v1"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -31,7 +30,7 @@ type System struct {
 	// AllowPodAddressOverride will allow the pod address to be overridden by the Model objects. This is useful for development purposes.
 	AllowPodAddressOverride bool `json:"allowPodAddressOverride"`
 
-	Autoscaling Autoscaling `json:"autoscaling" validate:"required"`
+	ModelAutoscaling ModelAutoscaling `json:"modelAutoscaling" validate:"required"`
 }
 
 func (s *System) DefaultAndValidate() error {
@@ -48,36 +47,17 @@ func (s *System) DefaultAndValidate() error {
 		}
 	}
 
-	if _, ok := s.Autoscaling.Profiles["default"]; !ok {
-		return errors.New("default autoscaling profile is required")
+	if s.ModelAutoscaling.Interval.Duration == 0 {
+		s.ModelAutoscaling.Interval.Duration = 10 * time.Second
 	}
-
-	if s.Autoscaling.Interval.Duration == 0 {
-		s.Autoscaling.Interval.Duration = 10 * time.Second
-	}
-	if s.Autoscaling.TimeWindow.Duration == 0 {
-		s.Autoscaling.TimeWindow.Duration = 10 * time.Minute
-	}
-
-	for name, profile := range s.Autoscaling.Profiles {
-		// NOTE: Keep in sync with CRD defaults in api pkg.
-		// Those defaults are only applied by the API Server when a user
-		// sets the .spec.autoscaling field directly (outside of using
-		// an autoscaling profile).
-		if profile.MaxReplicas == 0 {
-			profile.MaxReplicas = 3
-		}
-		if profile.TargetRequests == 0 {
-			profile.TargetRequests = 100
-		}
-
-		s.Autoscaling.Profiles[name] = profile
+	if s.ModelAutoscaling.TimeWindow.Duration == 0 {
+		s.ModelAutoscaling.TimeWindow.Duration = 10 * time.Minute
 	}
 
 	return validator.New(validator.WithRequiredStructEnabled()).Struct(s)
 }
 
-type Autoscaling struct {
+type ModelAutoscaling struct {
 	// Interval is the time between each autoscaling check.
 	// Defaults to 10 seconds.
 	Interval Duration `json:"interval" validate:"required"`
@@ -85,22 +65,18 @@ type Autoscaling struct {
 	// calculating the average number of requests.
 	// Defaults to 10 minutes.
 	TimeWindow Duration `json:"timeWindow" validate:"required"`
-	// Profiles is a map of autoscaling profiles that can be used to configure
-	// autoscaling on a model-by-model basis.
-	// A "default" profile is required.
-	Profiles map[string]v1.ModelAutoscaling `json:"profiles" validate:"required"`
 }
 
 // RequiredConsecutiveScaleDowns returns the number of consecutive scale down
 // operations required before the deployment is scaled down. This is calculated
 // by dividing the ScaleDownDelay by the Interval.
-func (a *Autoscaling) RequiredConsecutiveScaleDowns(profile v1.ModelAutoscaling) int {
-	return int(math.Ceil(float64(profile.ScaleDownDelay.Duration) / float64(a.Interval.Duration)))
+func (a *ModelAutoscaling) RequiredConsecutiveScaleDowns(scaleDownDelaySeconds int64) int {
+	return int(math.Ceil(float64(time.Duration(scaleDownDelaySeconds)*time.Second) / float64(a.Interval.Duration)))
 }
 
 // AverageWindowCount returns the number of intervals that will be considered when
 // calculating the average value.
-func (a *Autoscaling) AverageWindowCount() int {
+func (a *ModelAutoscaling) AverageWindowCount() int {
 	return int(math.Ceil(float64(a.TimeWindow.Duration) / float64(a.Interval.Duration)))
 }
 

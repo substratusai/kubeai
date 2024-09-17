@@ -167,7 +167,6 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 		AllowPodAddressOverride: cfg.AllowPodAddressOverride,
 		HuggingfaceSecretName:   cfg.SecretNames.Huggingface,
 		ResourceProfiles:        cfg.ResourceProfiles,
-		AutoscalingProfiles:     cfg.Autoscaling.Profiles,
 		ModelServers:            cfg.ModelServers,
 	}
 	if err = modelReconciler.SetupWithManager(mgr); err != nil {
@@ -188,7 +187,7 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 		leaderElection,
 		modelScaler,
 		modelResolver,
-		cfg.Autoscaling,
+		cfg.ModelAutoscaling,
 	)
 
 	modelProxy := modelproxy.NewHandler(modelScaler, modelResolver, 3, nil)

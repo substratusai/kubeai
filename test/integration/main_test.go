@@ -10,14 +10,12 @@ import (
 	"testing"
 	"time"
 
-	v1 "github.com/substratusai/kubeai/api/v1"
 	"github.com/substratusai/kubeai/internal/config"
 	"github.com/substratusai/kubeai/internal/manager"
 	"gocloud.dev/pubsub"
 	_ "gocloud.dev/pubsub/mempubsub"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
@@ -135,23 +133,9 @@ func sysCfg() config.System {
 				},
 			},
 		},
-		Autoscaling: config.Autoscaling{
+		ModelAutoscaling: config.ModelAutoscaling{
 			Interval:   config.Duration{Duration: 1 * time.Second},
 			TimeWindow: config.Duration{Duration: 5 * time.Second},
-			Profiles: map[string]v1.ModelAutoscaling{
-				"default": {
-					TargetRequests: 1,
-					ScaleDownDelay: metav1.Duration{Duration: 5 * time.Second},
-					MinReplicas:    0,
-					MaxReplicas:    3,
-				},
-				"online": {
-					TargetRequests: 1,
-					ScaleDownDelay: metav1.Duration{Duration: 5 * time.Second},
-					MinReplicas:    1,
-					MaxReplicas:    3,
-				},
-			},
 		},
 		AllowPodAddressOverride: true,
 	}

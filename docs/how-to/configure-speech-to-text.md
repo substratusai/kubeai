@@ -1,4 +1,4 @@
-# Configure Speech To Text
+# Configure speech-to-text
 
 KubeAI provides a Speech to Text endpoint that can be used to transcribe audio files. This guide will walk you through the steps to enable this feature.
 

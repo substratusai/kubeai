@@ -20,15 +20,20 @@ spec:
   env:
   {{ . | toYaml | nindent 4 }}
   {{- end }}
-  {{- with $model.resources}}
-  resources:
-    {{ toYaml . | nindent 4 }}
+  {{- with $model.minReplicas }}
+  minReplicas: {{ . }}
+  {{- end }}
+  {{- with $model.maxReplicas }}
+  maxReplicas: {{ . }}
+  {{- end}}
+  {{- with $model.targetRequests }}
+  targetRequests: {{ . }}
+  {{- end}}
+  {{- with $model.scaleDownDelaySeconds }}
+  scaleDownDelaySeconds: {{ . }}
   {{- end}}
   {{- with $model.resourceProfile }}
   resourceProfile: {{ . }}
-  {{- end}}
-  {{- with $model.autoscalingProfile }}
-  autoscalingProfile: {{ . }}
   {{- end}}
 {{- end}}
 {{- end}}
