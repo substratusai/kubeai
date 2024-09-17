@@ -14,3 +14,5 @@ data:
       {{- .Values.modelServers | toYaml | nindent 6 }}
     modelAutoscaling:
       {{- .Values.modelAutoscaling | toYaml | nindent 6 }}
+    messaging:
+      {{- .Values.messaging | toYaml | nindent 6 }}
