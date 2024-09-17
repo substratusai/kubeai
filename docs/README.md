@@ -106,7 +106,7 @@ List of known adopters:
 | Name | Description | Link |
 | ---- | ----------- | ---- |
 | Telescope | Telescope uses KubeAI for multi-region large scale batch LLM inference. | [trytelescope.ai](https://trytelescope.ai) |
-| Google Cloud Distributed Edge | KubeAI is included as a reference architecture for inferencing at the edge. | [LinkedIn](https://www.linkedin.com/posts/mikeensor_gcp-solutions-public-retail-edge-available-cluster-traits-activity-7237515920259104769-vBs9?utm_source=share&utm_medium=member_desktop) |
+| Google Cloud Distributed Edge | KubeAI is included as a reference architecture for inferencing at the edge. | [LinkedIn](https://www.linkedin.com/posts/mikeensor_gcp-solutions-public-retail-edge-available-cluster-traits-activity-7237515920259104769-vBs9?utm_source=share&utm_medium=member_desktop), [GitLab](https://gitlab.com/gcp-solutions-public/retail-edge/available-cluster-traits/kubeai-cluster-trait) |
 
 If you are using KubeAI and would like to be listed as an adopter, please make a PR.
 
