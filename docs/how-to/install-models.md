@@ -43,7 +43,7 @@ models:
       resourceProfile: CPU:1
 ```
 
-### Installing models with kubectl
+## Installing models with kubectl
 
 You can add your own model by defining a Model yaml file and applying it using `kubectl apply -f model.yaml`.
 
