@@ -58,8 +58,7 @@ helm repo update
 Install KubeAI and wait for all components to be ready (may take a minute).
 
 ```bash
-helm upgrade --install kubeai kubeai/kubeai \
-    --wait --timeout 10m
+helm install kubeai kubeai/kubeai --wait --timeout 10m
 ```
 
 Install some predefined models.
@@ -76,7 +75,7 @@ catalog:
     enabled: true
 EOF
 
-helm upgrade --install kubeai kubeai/models \
+helm install kubeai-models kubeai/models \
     -f ./model-helm-values.yaml
 ```
 

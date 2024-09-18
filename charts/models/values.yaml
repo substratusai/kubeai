@@ -1,4 +1,5 @@
 all:
+  # Enable all models instead of enabling them one-by-one via .catalog.<name>.enabled
   enabled: false
 
 catalog:
@@ -82,4 +83,3 @@ catalog:
     url: "hf://Systran/faster-whisper-medium.en"
     engine: FasterWhisper
     resourceProfile: cpu:1
-
