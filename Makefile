@@ -47,7 +47,7 @@ help: ## Display this help.
 .PHONY: manifests
 manifests: controller-gen yq
 	# Generate CustomResourceDefinition objects.
-	$(CONTROLLER_GEN) crd webhook paths="./..." output:crd:artifacts:config=charts/kubeai/templates/
+	$(CONTROLLER_GEN) crd webhook paths="./..." output:crd:artifacts:config=charts/kubeai/templates/crds/
 
 	# Generate model manifests.
 	rm -f ./manifests/models/*
