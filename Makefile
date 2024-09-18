@@ -45,8 +45,11 @@ help: ## Display this help.
 ##@ Development
 
 .PHONY: manifests
-manifests: controller-gen yq ## Generate CustomResourceDefinition objects.
+manifests: controller-gen yq
+	# Generate CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) crd webhook paths="./..." output:crd:artifacts:config=charts/kubeai/templates/
+
+	# Generate model manifests.
 	rm -f ./manifests/models/*
 	helm template ./charts/models --set all.enabled=true | \
 	$(YQ) -s '"./manifests/models/" + .metadata.name + ".yaml"' --no-doc
