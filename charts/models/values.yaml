@@ -1,3 +1,6 @@
+all:
+  enabled: false
+
 catalog:
   # Mistral #
   e5-mistral-7b-instruct-cpu:

@@ -46,11 +46,19 @@ help: ## Display this help.
 
 .PHONY: manifests
 manifests: controller-gen ## Generate CustomResourceDefinition objects.
-	$(CONTROLLER_GEN) crd webhook paths="./..." output:crd:artifacts:config=charts/kubeai/charts/crds/crds
+	$(CONTROLLER_GEN) crd webhook paths="./..." output:crd:artifacts:config=charts/kubeai/templates/
 
 .PHONY: generate
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
+	rm -f ./manifests/models/*
+	helm template ./charts/models --set all.enabled=true | awk '\
+	  /^---/ { if (filename) close(filename); filename=""; buffer=""; next } \
+	  filename == "" && /^metadata:/ { in_metadata=1 } \
+	  in_metadata && /^[[:space:]]*name:/ { name=$$2; in_metadata=0; filename=sprintf("./manifests/models/%s.yaml", name); print buffer > filename } \
+	  { if (filename) print > filename; else buffer = buffer $$0 "\n" } \
+	'
+
 
 .PHONY: fmt
 fmt: ## Run go fmt against code.

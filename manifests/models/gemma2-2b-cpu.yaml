@@ -1,0 +1,12 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+
+  name: gemma2-2b-cpu
+spec:
+  features: [TextGeneration]
+  owner: google
+  url: ollama://gemma2:2b
+  engine: OLlama
+  resourceProfile: cpu:2

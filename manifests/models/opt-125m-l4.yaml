@@ -1,0 +1,12 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+
+  name: opt-125m-l4
+spec:
+  features: [TextGeneration]
+  owner: facebook
+  url: hf://facebook/opt-125m
+  engine: VLLM
+  resourceProfile: nvidia-gpu-l4:1

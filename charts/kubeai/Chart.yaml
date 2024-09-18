@@ -21,18 +21,6 @@ dependencies:
   - name: openwebui
     condition: openwebui.enabled
     version: 0.1.1
-  # Custom Resource Definitions are cluster scoped. Sometimes cluster admins need to install
-  # these resources as a separate step.
-  # https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/
-  - name: crds
-    condition: crds.enabled
-    version: 0.1.1
-  # Models are the machine learning models that kubeai will serve.
-  # These are instances of the Model custom resource.
-  - name: models
-    condition: models.enabled
-    version: 0.1.1
-
 
 keywords: ["LLM", "AI"]
 
