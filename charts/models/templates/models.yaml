@@ -14,11 +14,11 @@ spec:
   {{- end }}
   {{- with $model.args }}
   args:
-  {{ . | toYaml | nindent 4 }}
+  {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- with $model.env }}
   env:
-  {{ . | toYaml | nindent 4 }}
+  {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- with $model.minReplicas }}
   minReplicas: {{ . }}

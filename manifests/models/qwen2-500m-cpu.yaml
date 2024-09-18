@@ -2,7 +2,6 @@
 apiVersion: kubeai.org/v1
 kind: Model
 metadata:
-
   name: qwen2-500m-cpu
 spec:
   features: [TextGeneration]

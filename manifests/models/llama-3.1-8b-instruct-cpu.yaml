@@ -2,7 +2,6 @@
 apiVersion: kubeai.org/v1
 kind: Model
 metadata:
-
   name: llama-3.1-8b-instruct-cpu
 spec:
   features: [TextGeneration]
@@ -10,10 +9,8 @@ spec:
   url: hf://meta-llama/Meta-Llama-3.1-8B-Instruct
   engine: VLLM
   args:
-  
     - --max-model-len=32768
     - --max-num-batched-token=32768
   env:
-  
     VLLM_CPU_KVCACHE_SPACE: "4"
   resourceProfile: cpu:6

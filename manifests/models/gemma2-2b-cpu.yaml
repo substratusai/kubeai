@@ -2,7 +2,6 @@
 apiVersion: kubeai.org/v1
 kind: Model
 metadata:
-
   name: gemma2-2b-cpu
 spec:
   features: [TextGeneration]

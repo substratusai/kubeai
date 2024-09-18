@@ -45,20 +45,15 @@ help: ## Display this help.
 ##@ Development
 
 .PHONY: manifests
-manifests: controller-gen ## Generate CustomResourceDefinition objects.
+manifests: controller-gen yq ## Generate CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) crd webhook paths="./..." output:crd:artifacts:config=charts/kubeai/templates/
+	rm -f ./manifests/models/*
+	helm template ./charts/models --set all.enabled=true | \
+	$(YQ) -s '"./manifests/models/" + .metadata.name + ".yaml"' --no-doc
 
 .PHONY: generate
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
-	rm -f ./manifests/models/*
-	helm template ./charts/models --set all.enabled=true | awk '\
-	  /^---/ { if (filename) close(filename); filename=""; buffer=""; next } \
-	  filename == "" && /^metadata:/ { in_metadata=1 } \
-	  in_metadata && /^[[:space:]]*name:/ { name=$$2; in_metadata=0; filename=sprintf("./manifests/models/%s.yaml", name); print buffer > filename } \
-	  { if (filename) print > filename; else buffer = buffer $$0 "\n" } \
-	'
-
 
 .PHONY: fmt
 fmt: ## Run go fmt against code.
@@ -143,12 +138,14 @@ CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 GOLANGCI_LINT = $(LOCALBIN)/golangci-lint
 CRD_REF_DOCS ?= $(LOCALBIN)/crd-ref-docs
+YQ ?= $(LOCALBIN)/yq
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v5.4.2
 CONTROLLER_TOOLS_VERSION ?= v0.15.0
 ENVTEST_VERSION ?= release-0.18
 GOLANGCI_LINT_VERSION ?= v1.59.1
+YQ_VERSION ?= v4.44.3
 
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary.
@@ -169,6 +166,11 @@ $(ENVTEST): $(LOCALBIN)
 golangci-lint: $(GOLANGCI_LINT) ## Download golangci-lint locally if necessary.
 $(GOLANGCI_LINT): $(LOCALBIN)
 	$(call go-install-tool,$(GOLANGCI_LINT),github.com/golangci/golangci-lint/cmd/golangci-lint,$(GOLANGCI_LINT_VERSION))
+
+.PHONY: yq
+yq: $(YQ) ## Download yq locally if necessary.
+$(YQ): $(LOCALBIN)
+	$(call go-install-tool,$(YQ),github.com/mikefarah/yq/v4,$(YQ_VERSION))
 
 .PHONY: docs
 docs: generate-kubernetes-api-reference

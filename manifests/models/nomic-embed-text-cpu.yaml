@@ -2,7 +2,6 @@
 apiVersion: kubeai.org/v1
 kind: Model
 metadata:
-
   name: nomic-embed-text-cpu
 spec:
   features: [TextEmbedding]

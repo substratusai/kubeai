@@ -2,7 +2,6 @@
 apiVersion: kubeai.org/v1
 kind: Model
 metadata:
-
   name: llama-3.1-8b-instruct-fp8-l4
 spec:
   features: [TextGeneration]
@@ -10,7 +9,6 @@ spec:
   url: hf://neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8
   engine: VLLM
   args:
-  
     - --max-model-len=16384
     - --max-num-batched-token=16384
     - --gpu-memory-utilization=0.9

@@ -2,7 +2,6 @@
 apiVersion: kubeai.org/v1
 kind: Model
 metadata:
-
   name: opt-125m-l4
 spec:
   features: [TextGeneration]
