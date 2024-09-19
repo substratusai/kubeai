@@ -95,7 +95,7 @@ jobs:
               --git-repo "$repo" \
               --token "${{ secrets.GITHUB_TOKEN }}" \
               --skip-existing \
-              --release-name-template "{{ .Version }}"
+              --release-name-template "kubeai-helm-chart-{{ .Version }}" \
           # update index and push to github pages
           ./cr index \
               --owner "$owner" \
