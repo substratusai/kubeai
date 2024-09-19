@@ -93,13 +93,13 @@ jobs:
               --git-repo "$repo" \
               --token "${{ secrets.GITHUB_TOKEN }}" \
               --skip-existing \
-              --release-name-template "kubeai-helm-chart-{{ .Version }}" \
+              --release-name-template "kubeai-helm-chart-{{ .Name }}-{{ .Version }}" \
           # update index and push to github pages
           ./cr index \
               --owner "$owner" \
               --git-repo "$repo" \
               --token "${{ secrets.GITHUB_TOKEN }}" \
-              --release-name-template "kubeai-helm-chart-{{ .Version }}" \
+              --release-name-template "kubeai-helm-chart-{{ .Name }}-{{ .Version }}" \
               --index-path ./index.yaml \
               --charts-repo https://$owner.github.io/$repo \
               --push
