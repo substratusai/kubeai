@@ -71,10 +71,9 @@ Optionally install preconfigured models.
 
 ```bash
 cat <<EOF > kubeai-models.yaml
-models:
-  catalog:
-    llama-3.1-8b-instruct-fp8-l4:
-      enabled: true
+catalog:
+  llama-3.1-8b-instruct-fp8-l4:
+    enabled: true
 EOF
 
 helm install kubeai-models kubeai/models \
