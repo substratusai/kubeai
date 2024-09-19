@@ -38,7 +38,7 @@ podman machine stop
 podman machine rm
 
 # Init and start a new machine:
-podman machine init --memory 6144
+podman machine init --memory 6144 --disk-size 120
 podman machine start
 ```
 </details>
@@ -61,21 +61,22 @@ Install KubeAI and wait for all components to be ready (may take a minute).
 helm install kubeai kubeai/kubeai --wait --timeout 10m
 ```
 
-Install Gemma 2B using CPU and Ollama:
+Install some predefined models.
 
 ```bash
-kubectl apply -f - <<EOF
-apiVersion: kubeai.org/v1
-kind: Model
-metadata:
-  name: gemma2-2b-cpu
-spec:
-  features: [TextGeneration]
-  url: ollama://gemma2:2b
-  engine: OLlama
-  resourceProfile: cpu:2
-  minReplicas: 1
+cat <<EOF > kubeai-models.yaml
+catalog:
+  gemma2-2b-cpu:
+    enabled: true
+    minReplicas: 1
+  qwen2-500m-cpu:
+    enabled: true
+  nomic-embed-text-cpu:
+    enabled: true
 EOF
+
+helm install kubeai-models kubeai/models \
+    -f ./kubeai-models.yaml
 ```
 
 Before progressing to the next steps, start a watch on Pods in a standalone terminal to see how KubeAI deploys models. 
@@ -97,22 +98,6 @@ kubectl port-forward svc/openwebui 8000:80
 Now open your browser to [localhost:8000](http://localhost:8000) and select the Gemma model to start chatting with.
 
 #### Scale up Qwen2 from Zero
-
-Deploy Qwen2 with minScale set to 0:
-```
-kubectl apply -f - <<EOF
-apiVersion: kubeai.org/v1
-kind: Model
-metadata:
-  name: qwen2-500m-cpu
-spec:
-  features: [TextGeneration]
-  url: ollama://qwen2:0.5b
-  engine: OLlama
-  resourceProfile: cpu:1
-  minReplicas: 0
-EOF
-```
 
 If you go back to the browser and start a chat with Qwen2, you will notice that it will take a while to respond at first. This is because we set `minReplicas: 0` for this model and KubeAI needs to spin up a new Pod (you can verify with `kubectl get models -oyaml qwen2-500m-cpu`).
 
