@@ -1154,7 +1154,7 @@ podman<span class="w"> </span>machine<span class="w"> </span>stop
 podman<span class="w"> </span>machine<span class="w"> </span>rm
 
 <span class="c1"># Init and start a new machine:</span>
-podman<span class="w"> </span>machine<span class="w"> </span>init<span class="w"> </span>--memory<span class="w"> </span><span class="m">6144</span>
+podman<span class="w"> </span>machine<span class="w"> </span>init<span class="w"> </span>--memory<span class="w"> </span><span class="m">6144</span><span class="w"> </span>--disk-size<span class="w"> </span><span class="m">120</span>
 podman<span class="w"> </span>machine<span class="w"> </span>start
 </code></pre></div>
 </details>
@@ -1168,19 +1168,20 @@ helm<span class="w"> </span>repo<span class="w"> </span>update
 <p>Install KubeAI and wait for all components to be ready (may take a minute).</p>
 <div class="highlight"><pre><span></span><code>helm<span class="w"> </span>install<span class="w"> </span>kubeai<span class="w"> </span>kubeai/kubeai<span class="w"> </span>--wait<span class="w"> </span>--timeout<span class="w"> </span>10m
 </code></pre></div>
-<p>Install Gemma 2B using CPU and Ollama:</p>
-<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;EOF</span>
-<span class="s">apiVersion: kubeai.org/v1</span>
-<span class="s">kind: Model</span>
-<span class="s">metadata:</span>
-<span class="s">  name: gemma2-2b-cpu</span>
-<span class="s">spec:</span>
-<span class="s">  features: [TextGeneration]</span>
-<span class="s">  url: ollama://gemma2:2b</span>
-<span class="s">  engine: OLlama</span>
-<span class="s">  resourceProfile: cpu:2</span>
-<span class="s">  minReplicas: 1</span>
+<p>Install some predefined models.</p>
+<div class="highlight"><pre><span></span><code>cat<span class="w"> </span><span class="s">&lt;&lt;EOF &gt; kubeai-models.yaml</span>
+<span class="s">catalog:</span>
+<span class="s">  gemma2-2b-cpu:</span>
+<span class="s">    enabled: true</span>
+<span class="s">    minReplicas: 1</span>
+<span class="s">  qwen2-500m-cpu:</span>
+<span class="s">    enabled: true</span>
+<span class="s">  nomic-embed-text-cpu:</span>
+<span class="s">    enabled: true</span>
 <span class="s">EOF</span>
+
+helm<span class="w"> </span>install<span class="w"> </span>kubeai-models<span class="w"> </span>kubeai/models<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-f<span class="w"> </span>./kubeai-models.yaml
 </code></pre></div>
 <p>Before progressing to the next steps, start a watch on Pods in a standalone terminal to see how KubeAI deploys models. </p>
 <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>--watch
@@ -1192,20 +1193,6 @@ helm<span class="w"> </span>repo<span class="w"> </span>update
 </code></pre></div>
 <p>Now open your browser to <a href="http://localhost:8000">localhost:8000</a> and select the Gemma model to start chatting with.</p>
 <h4 id="scale-up-qwen2-from-zero">Scale up Qwen2 from Zero<a class="headerlink" href="#scale-up-qwen2-from-zero" title="Permanent link">&para;</a></h4>
-<p>Deploy Qwen2 with minScale set to 0:
-<div class="highlight"><pre><span></span><code>kubectl apply -f - &lt;&lt;EOF
-apiVersion: kubeai.org/v1
-kind: Model
-metadata:
-  name: qwen2-500m-cpu
-spec:
-  features: [TextGeneration]
-  url: ollama://qwen2:0.5b
-  engine: OLlama
-  resourceProfile: cpu:1
-  minReplicas: 0
-EOF
-</code></pre></div></p>
 <p>If you go back to the browser and start a chat with Qwen2, you will notice that it will take a while to respond at first. This is because we set <code>minReplicas: 0</code> for this model and KubeAI needs to spin up a new Pod (you can verify with <code>kubectl get models -oyaml qwen2-500m-cpu</code>).</p>
 <p>NOTE: Autoscaling after initial scale-from-zero is not yet supported for the Ollama backend which we use in this local quickstart. KubeAI relies upon backend-specific metrics and the Ollama project has an open issue: https://github.com/ollama/ollama/issues/3144. To see autoscaling in action, checkout the <a href="installation/gke/">GKE install guide</a> which uses the vLLM backend and autoscales across GPU resources.</p>
 <h2 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h2>
