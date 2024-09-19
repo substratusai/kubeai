@@ -39,33 +39,44 @@ TODO: Reference gcloud commands for creating a GKE standard cluster.
 
 ## 2. Install KubeAI
 
-Define the installation values for GKE.
+Add KubeAI Helm repository.
 
 ```bash
-cat <<EOF > helm-values.yaml
-models:
-  catalog:
-    llama-3.1-8b-instruct-fp8-l4:
-      enabled: true
+helm repo add kubeai https://substratusai.github.io/kubeai/
+helm repo update
+```
 
+**Make sure** you have a HuggingFace Hub token set in your environment (`HUGGING_FACE_HUB_TOKEN`).
+
+Install KubeAI with [Helm](https://helm.sh/docs/intro/install/).
+
+```bash
+cat <<EOF > kubeai.yaml
 resourceProfiles:
   nvidia-gpu-l4:
     nodeSelector:
       cloud.google.com/gke-accelerator: "nvidia-l4"
       cloud.google.com/gke-spot: "true"
 EOF
-```
-
-Make sure you have a HuggingFace Hub token set in your environment (`HUGGING_FACE_HUB_TOKEN`).
-
-Install KubeAI with [Helm](https://helm.sh/docs/intro/install/).
-
-```bash
-helm repo add kubeai https://substratusai.github.io/kubeai/
-helm repo update
 
 helm upgrade --install kubeai kubeai/kubeai \
-    -f ./helm-values.yaml \
+    -f ./kubeai.yaml \
     --set secrets.huggingface.token=$HUGGING_FACE_HUB_TOKEN \
     --wait
+```
+
+## 3. Optionally configure models
+
+Optionally install preconfigured models.
+
+```bash
+cat <<EOF > kubeai-models.yaml
+models:
+  catalog:
+    llama-3.1-8b-instruct-fp8-l4:
+      enabled: true
+EOF
+
+helm install kubeai-models kubeai/models \
+    -f ./kubeai-models.yaml
 ```

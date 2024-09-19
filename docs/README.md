@@ -64,7 +64,7 @@ helm install kubeai kubeai/kubeai --wait --timeout 10m
 Install some predefined models.
 
 ```bash
-cat <<EOF > model-helm-values.yaml
+cat <<EOF > kubeai-models.yaml
 catalog:
   gemma2-2b-cpu:
     enabled: true
@@ -76,7 +76,7 @@ catalog:
 EOF
 
 helm install kubeai-models kubeai/models \
-    -f ./model-helm-values.yaml
+    -f ./kubeai-models.yaml
 ```
 
 Before progressing to the next steps, start a watch on Pods in a standalone terminal to see how KubeAI deploys models. 
