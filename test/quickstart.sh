@@ -65,19 +65,18 @@ curl -s -X GET "http://localhost:8000/openai/v1/models" | jq '. | length == 0'
 # By using the --reuse-values flag we can just append models to the previous install
 # while avoiding overriding the image that skaffold originally built and set in the
 # first install.
-helm upgrade --reuse-values --install kubeai ./charts/kubeai -f - <<EOF
-models:
-  catalog:
-    gemma2-2b-cpu:
-      enabled: true
-      minReplicas: 1
-    qwen2-500m-cpu:
-      enabled: true
-    nomic-embed-text-cpu:
-      enabled: true
-    faster-whisper-medium-en-cpu:
-      enabled: true
-      minReplicas: 1
+helm install kubeai-models ./charts/models -f - <<EOF
+catalog:
+  gemma2-2b-cpu:
+    enabled: true
+    minReplicas: 1
+  qwen2-500m-cpu:
+    enabled: true
+  nomic-embed-text-cpu:
+    enabled: true
+  faster-whisper-medium-en-cpu:
+    enabled: true
+    minReplicas: 1
 EOF
 
 

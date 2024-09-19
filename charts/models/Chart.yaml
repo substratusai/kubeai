@@ -22,3 +22,10 @@ version: 0.1.1
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
 appVersion: "1.16.0"
+
+maintainers:
+- name: nstogner
+  url: https://www.linkedin.com/in/nstogner/
+- name: samos123
+  email: sammiestoel@gmail.com
+  url: https://www.linkedin.com/in/samstoelinga/

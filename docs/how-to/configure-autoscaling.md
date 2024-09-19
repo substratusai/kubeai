@@ -4,7 +4,7 @@ This guide with cover how to configure KubeAI [autoscaling](../concepts/autoscal
 
 ## System Settings
 
-KubeAI administrators can define system-wide autoscaling settings by setting the following helm values:
+KubeAI administrators can define system-wide autoscaling settings by setting the following Helm values (for the `kubeai/kubeai` chart):
 
 Example:
 
@@ -24,21 +24,20 @@ The following settings can be configured on a model-by-model basis.
 
 ### Model settings: helm
 
-If you are managing models via Helm, you can use:
+If you are managing models via the `kubeai/models` Helm chart, you can use:
 
 ```yaml
 # helm-values.yaml
-models:
-  catalog:
-    model-a:
-      # ...
-      minReplicas: 1
-      maxReplicas: 9
-      targetRequests: 250
-      scaleDownDelaySeconds: 45
-    model-b:
-      # ...
-      disableAutoscaling: true
+catalog:
+  model-a:
+    # ...
+    minReplicas: 1
+    maxReplicas: 9
+    targetRequests: 250
+    scaleDownDelaySeconds: 45
+  model-b:
+    # ...
+    disableAutoscaling: true
 # ...
 ```
 

@@ -18,17 +18,21 @@ Run the following command to install KubeAI with Gemma 2B:
 
 ```bash
 helm repo add kubeai https://www.kubeai.org
-cat <<EOF > helm-values.yaml
-models:
-  catalog:
-    gemma2-2b-cpu:
-      enabled: true
-      minReplicas: 1
+helm repo update
+
+cat <<EOF > models-helm-values.yaml
+catalog:
+  gemma2-2b-cpu:
+    enabled: true
+    minReplicas: 1
 EOF
 
-helm upgrade --install kubeai kubeai/kubeai \
+helm install kubeai kubeai/kubeai \
     -f ./helm-values.yaml \
     --wait --timeout 10m
+
+helm install kubeai-models kubeai/models \
+    -f ./models-helm-values.yaml
 ```
 
 ## Using LangChain

@@ -58,21 +58,25 @@ helm repo update
 Install KubeAI and wait for all components to be ready (may take a minute).
 
 ```bash
-cat <<EOF > helm-values.yaml
-models:
-  catalog:
-    gemma2-2b-cpu:
-      enabled: true
-      minReplicas: 1
-    qwen2-500m-cpu:
-      enabled: true
-    nomic-embed-text-cpu:
-      enabled: true
+helm install kubeai kubeai/kubeai --wait --timeout 10m
+```
+
+Install some predefined models.
+
+```bash
+cat <<EOF > kubeai-models.yaml
+catalog:
+  gemma2-2b-cpu:
+    enabled: true
+    minReplicas: 1
+  qwen2-500m-cpu:
+    enabled: true
+  nomic-embed-text-cpu:
+    enabled: true
 EOF
 
-helm upgrade --install kubeai kubeai/kubeai \
-    -f ./helm-values.yaml \
-    --wait --timeout 10m
+helm install kubeai-models kubeai/models \
+    -f ./kubeai-models.yaml
 ```
 
 Before progressing to the next steps, start a watch on Pods in a standalone terminal to see how KubeAI deploys models. 

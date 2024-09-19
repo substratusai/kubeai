@@ -1,0 +1,11 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: qwen2-500m-cpu
+spec:
+  features: [TextGeneration]
+  owner: alibaba
+  url: ollama://qwen2:0.5b
+  engine: OLlama
+  resourceProfile: cpu:1
