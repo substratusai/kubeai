@@ -70,11 +70,10 @@ jobs:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           CR_SKIP_EXISTING: "true"
           CR_RELEASE_NAME_TEMPLATE: "kubeai-helm-chart-{{ .Name }}-{{ .Version }}"
+      # TODO (samos123): Remove these comments after next helm release.
       # The chart-releaser action is not able to publish all the the chart on tag push.
-      # It only published the kubeai chart. Below is the original code used.
-      # Workaround for always publishing all charts on tag push.
-      # The workaround may not be needed if we set
-      #    CR_RELEASE_NAME_TEMPLATE: "kubeai-helm-chart-{{ .Name }}-{{ .Version }}"
+      # It only published the kubeai chart.
+      # Workaround that was used for always publishing all charts on tag push.
       # Source: https://github.com/helm/chart-releaser-action/issues/8#issuecomment-962501009
       # - name: Package and upload helm chart
       #   run: |
