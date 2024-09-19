@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.34">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.35">
     
     
       
@@ -928,25 +928,26 @@ No cloud services or external dependencies are required.</p>
 <div class="highlight"><pre><span></span><code>kind<span class="w"> </span>create<span class="w"> </span>cluster<span class="w"> </span><span class="c1"># OR: minikube start</span>
 </code></pre></div></p>
 <p>Install Langtrace:
-<div class="highlight"><pre><span></span><code>helm repo add langtrace https://Scale3-Labs.github.io/langtrace-helm-chart
-helm repo update
-helm install langtrace langtrace/langtrace
-</code></pre></div></p>
-<p>Install KubeAI:
-<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>kubeai<span class="w"> </span>https://substratusai.github.io/kubeai/
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>langtrace<span class="w"> </span>https://Scale3-Labs.github.io/langtrace-helm-chart
 helm<span class="w"> </span>repo<span class="w"> </span>update
-cat<span class="w"> </span><span class="s">&lt;&lt;EOF &gt; helm-values.yaml</span>
-<span class="s">models:</span>
-<span class="s">  catalog:</span>
-<span class="s">    gemma2-2b-cpu:</span>
-<span class="s">      enabled: true</span>
-<span class="s">      minReplicas: 1</span>
+helm<span class="w"> </span>install<span class="w"> </span>langtrace<span class="w"> </span>langtrace/langtrace
+</code></pre></div></p>
+<p>Install KubeAI and wait for all components to be ready (may take a minute).
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>kubeai<span class="w"> </span>https://www.kubeai.org
+helm<span class="w"> </span>repo<span class="w"> </span>update
+helm<span class="w"> </span>install<span class="w"> </span>kubeai<span class="w"> </span>kubeai/kubeai<span class="w"> </span>--wait<span class="w"> </span>--timeout<span class="w"> </span>10m
+</code></pre></div></p>
+<p>Install the gemma2-2b-cpu model:</p>
+<div class="highlight"><pre><span></span><code>cat<span class="w"> </span><span class="s">&lt;&lt;EOF &gt; kubeai-models.yaml</span>
+<span class="s">catalog:</span>
+<span class="s">  gemma2-2b-cpu:</span>
+<span class="s">    enabled: true</span>
+<span class="s">    minReplicas: 1</span>
 <span class="s">EOF</span>
 
-helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>kubeai<span class="w"> </span>kubeai/kubeai<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--wait<span class="w"> </span>--timeout<span class="w"> </span>10m<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>-f<span class="w"> </span>./helm-values.yaml
-</code></pre></div></p>
+helm<span class="w"> </span>install<span class="w"> </span>kubeai-models<span class="w"> </span>kubeai/models<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-f<span class="w"> </span>./kubeai-models.yaml
+</code></pre></div>
 <p>Create a local Python environment and install dependencies:
 <div class="highlight"><pre><span></span><code>python3 -m venv .venv
 source .venv/bin/activate
@@ -1049,7 +1050,7 @@ a project and get the API keys for your langtrace project.</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.07f07601.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
       <script src="../../assets/javascripts/bundle.56dfad97.min.js"></script>

@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.34">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.35">
     
     
       
@@ -1021,17 +1021,21 @@ KubeAI with any framework that supports OpenAI.</p>
 <h2 id="installing-kubeai-with-gemma-2b">Installing KubeAI with Gemma 2B<a class="headerlink" href="#installing-kubeai-with-gemma-2b" title="Permanent link">&para;</a></h2>
 <p>Run the following command to install KubeAI with Gemma 2B:</p>
 <div class="highlight"><pre><span></span><code>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>kubeai<span class="w"> </span>https://www.kubeai.org
-cat<span class="w"> </span><span class="s">&lt;&lt;EOF &gt; helm-values.yaml</span>
-<span class="s">models:</span>
-<span class="s">  catalog:</span>
-<span class="s">    gemma2-2b-cpu:</span>
-<span class="s">      enabled: true</span>
-<span class="s">      minReplicas: 1</span>
+helm<span class="w"> </span>repo<span class="w"> </span>update
+
+cat<span class="w"> </span><span class="s">&lt;&lt;EOF &gt; models-helm-values.yaml</span>
+<span class="s">catalog:</span>
+<span class="s">  gemma2-2b-cpu:</span>
+<span class="s">    enabled: true</span>
+<span class="s">    minReplicas: 1</span>
 <span class="s">EOF</span>
 
-helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>kubeai<span class="w"> </span>kubeai/kubeai<span class="w"> </span><span class="se">\</span>
+helm<span class="w"> </span>install<span class="w"> </span>kubeai<span class="w"> </span>kubeai/kubeai<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>-f<span class="w"> </span>./helm-values.yaml<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--wait<span class="w"> </span>--timeout<span class="w"> </span>10m
+
+helm<span class="w"> </span>install<span class="w"> </span>kubeai-models<span class="w"> </span>kubeai/models<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-f<span class="w"> </span>./models-helm-values.yaml
 </code></pre></div>
 <h2 id="using-langchain">Using LangChain<a class="headerlink" href="#using-langchain" title="Permanent link">&para;</a></h2>
 <p>Install the required Python packages:
@@ -1128,7 +1132,7 @@ and deploy private and secure AI applications with ease.</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.07f07601.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
       <script src="../../assets/javascripts/bundle.56dfad97.min.js"></script>
