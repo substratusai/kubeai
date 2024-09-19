@@ -42,7 +42,7 @@ TODO: Reference gcloud commands for creating a GKE standard cluster.
 Add KubeAI Helm repository.
 
 ```bash
-helm repo add kubeai https://substratusai.github.io/kubeai/
+helm repo add kubeai https://www.kubeai.org
 helm repo update
 ```
 
