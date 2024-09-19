@@ -73,6 +73,8 @@ jobs:
       #    CR_SKIP_EXISTING: "true"
       #    CR_RELEASE_NAME_TEMPLATE: "kubeai-helm-chart-{{ .Version }}"
       # Workaround for always publishing all charts on tag push.
+      # The workaround may not be needed if we set
+      #    CR_RELEASE_NAME_TEMPLATE: "kubeai-helm-chart-{{ .Name }}-{{ .Version }}"
       # Source: https://github.com/helm/chart-releaser-action/issues/8#issuecomment-962501009
       - name: Package and upload helm chart
         run: |
