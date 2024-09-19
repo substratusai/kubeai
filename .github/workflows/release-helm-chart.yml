@@ -69,7 +69,7 @@ jobs:
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           CR_SKIP_EXISTING: "true"
-          CR_RELEASE_NAME_TEMPLATE: "kubeai-helm-chart-{{ .Name }}-{{ .Version }}"
+          CR_RELEASE_NAME_TEMPLATE: "helm-chart-{{ .Name }}-{{ .Version }}"
       # TODO (samos123): Remove these comments after next helm release.
       # The chart-releaser action is not able to publish all the the chart on tag push.
       # It only published the kubeai chart.
