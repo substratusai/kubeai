@@ -3,6 +3,31 @@ entries:
   kubeai:
   - apiVersion: v2
     appVersion: v0.6.0
+    created: "2024-09-20T05:04:49.1994156Z"
+    dependencies:
+    - condition: openwebui.enabled
+      name: openwebui
+      repository: ""
+      version: 0.1.1
+    description: Private Open AI Platform for Kubernetes.
+    digest: 54797afd1abc6395e55a788fa7073bbfa47d3a2369ce4df7d1ffe0a9af3b0126
+    home: https://www.substratus.ai
+    keywords:
+    - LLM
+    - AI
+    maintainers:
+    - name: nstogner
+      url: https://www.linkedin.com/in/nstogner/
+    - email: sammiestoel@gmail.com
+      name: samos123
+      url: https://www.linkedin.com/in/samstoelinga/
+    name: kubeai
+    type: application
+    urls:
+    - https://github.com/substratusai/kubeai/releases/download/helm-chart-kubeai-0.4.1/kubeai-0.4.1.tgz
+    version: 0.4.1
+  - apiVersion: v2
+    appVersion: v0.6.0
     created: "2024-09-19T02:32:35.182549917Z"
     dependencies:
     - condition: openwebui.enabled
@@ -472,4 +497,4 @@ entries:
     urls:
     - https://github.com/substratusai/kubeai/releases/download/kubeai-helm-chart-0.4.1/models-0.4.1.tgz
     version: 0.4.1
-generated: "2024-09-19T05:19:25.56676996Z"
+generated: "2024-09-20T05:04:49.351097179Z"
