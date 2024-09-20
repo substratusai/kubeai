@@ -12,4 +12,5 @@ spec:
     - --max-model-len=16384
     - --max-num-batched-token=16384
     - --gpu-memory-utilization=0.9
+    - --disable-log-requests
   resourceProfile: nvidia-gpu-l4:1
