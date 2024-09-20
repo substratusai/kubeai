@@ -76,7 +76,7 @@ messaging:
 openwebui:
   fullnameOverride: "openwebui"
   image:
-    tag: main
+    tag: v0.3.19
   env:
   - name: WEBUI_AUTH
     value: "False"
