@@ -12,6 +12,20 @@ data:
       {{- .Values.resourceProfiles | toYaml | nindent 6 }}
     modelServers:
       {{- .Values.modelServers | toYaml | nindent 6 }}
+    {{- if .Values.modelServerPods }}
+    modelServerPods:
+      {{- if .Values.modelServerPods.podSecurityContext }}
+      podSecurityContext:
+        {{- .Values.modelServerPods.podSecurityContext | toYaml | nindent 8}}
+      {{- end}}
+      {{- if .Values.modelServerPods.securityContext }}
+      securityContext:
+        {{- .Values.modelServerPods.securityContext | toYaml | nindent 8}}
+      {{- end}}
+      {{- if .Values.modelServiceAccount.create }}
+      serviceAccountName: {{ include "models.serviceAccountName" . }}
+      {{- end}}
+    {{- end }}
     modelAutoscaling:
       {{- .Values.modelAutoscaling | toYaml | nindent 6 }}
     messaging:

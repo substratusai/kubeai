@@ -62,6 +62,17 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
+Create the name of the service account to use for model pods
+*/}}
+{{- define "models.serviceAccountName" -}}
+{{- if .Values.modelServiceAccount.create }}
+{{- default (printf "%s-models" (include "kubeai.fullname" .)) .Values.modelServiceAccount.name }}
+{{- else }}
+{{- default "default" .Values.modelServiceAccount.name }}
+{{- end }}
+{{- end }}
+
+{{/*
 Create the name of the huggingface secret to use
 */}}
 {{- define "kubeai.huggingfaceSecretName" -}}
