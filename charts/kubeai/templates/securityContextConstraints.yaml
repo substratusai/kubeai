@@ -1,9 +1,12 @@
+# Create securityContextConstraints for the model pods if running on OpenShift.
+# This is needed because pods in OpenShift run with the restricted-v2 SCC by
+# default which do not allow a container to start with uid=0
+# (The model pod images run as the root user)
 {{- if .Capabilities.APIVersions.Has "security.openshift.io/v1" }}
-{{- if .Values.modelServiceAccount.create -}}
 apiVersion: security.openshift.io/v1
 kind: SecurityContextConstraints
 metadata:
-  name: kubeai-models
+  name: {{ include "kubeai.fullname" . }}-models
 allowPrivilegeEscalation: false
 readOnlyRootFilesystem: false
 runAsUser:
@@ -16,5 +19,4 @@ requiredDropCapabilities:
   - ALL
 users:
   - system:serviceaccount:{{ .Release.Namespace }}:{{ include "models.serviceAccountName" . }}
-{{- end }}
 {{- end }}
