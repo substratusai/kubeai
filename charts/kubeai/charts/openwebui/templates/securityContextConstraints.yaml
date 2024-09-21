@@ -1,0 +1,20 @@
+{{- if .Capabilities.APIVersions.Has "security.openshift.io/v1" }}
+{{- if .Values.serviceAccount.create }}
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  name: openwebui
+allowPrivilegeEscalation: false
+readOnlyRootFilesystem: false
+runAsUser:
+  type: RunAsAny
+seLinuxContext:
+  type: MustRunAs
+seccompProfiles:
+  - runtime/default
+requiredDropCapabilities:
+  - ALL
+users:
+  - system:serviceaccount:{{ .Release.Namespace }}:{{ include "openwebui.serviceAccountName" . }}
+{{- end }}
+{{- end }}
