@@ -168,6 +168,7 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 		HuggingfaceSecretName:   cfg.SecretNames.Huggingface,
 		ResourceProfiles:        cfg.ResourceProfiles,
 		ModelServers:            cfg.ModelServers,
+		ModelServerPods:         cfg.ModelServerPods,
 	}
 	if err = modelReconciler.SetupWithManager(mgr); err != nil {
 		return fmt.Errorf("unable to create Model controller: %w", err)

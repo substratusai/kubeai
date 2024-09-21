@@ -31,6 +31,8 @@ type System struct {
 	AllowPodAddressOverride bool `json:"allowPodAddressOverride"`
 
 	ModelAutoscaling ModelAutoscaling `json:"modelAutoscaling" validate:"required"`
+
+	ModelServerPods ModelServerPods `json:"modelServerPods,omitempty"`
 }
 
 func (s *System) DefaultAndValidate() error {
@@ -145,4 +147,15 @@ type ModelServers struct {
 
 type ModelServer struct {
 	Images map[string]string `json:"images"`
+}
+
+type ModelServerPods struct {
+	// The service account to use for all model pods
+	ModelServiceAccountName string `json:"serviceAccountName,omitempty"`
+
+	// Security Context for the model pods
+	ModelPodSecurityContext *corev1.PodSecurityContext `json:"podSecurityContext,omitempty"`
+
+	// Security Context for the model pod containers
+	ModelContainerSecurityContext *corev1.SecurityContext `json:"securityContext,omitempty"`
 }

@@ -50,6 +50,7 @@ type ModelReconciler struct {
 	HuggingfaceSecretName   string
 	ResourceProfiles        map[string]config.ResourceProfile
 	ModelServers            config.ModelServers
+	ModelServerPods         config.ModelServerPods
 }
 
 // +kubebuilder:rbac:groups=kubeai.org,resources=models,verbs=get;list;watch;create;update;patch;delete
@@ -250,15 +251,18 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, profile ModelConfig
 			Annotations: ann,
 		},
 		Spec: corev1.PodSpec{
-			NodeSelector: profile.NodeSelector,
-			Affinity:     profile.Affinity,
-			Tolerations:  profile.Tolerations,
+			NodeSelector:       profile.NodeSelector,
+			SecurityContext:    r.ModelServerPods.ModelPodSecurityContext,
+			ServiceAccountName: r.ModelServerPods.ModelServiceAccountName,
+			Affinity:           profile.Affinity,
+			Tolerations:        profile.Tolerations,
 			Containers: []corev1.Container{
 				{
-					Name:  "server",
-					Image: profile.Image,
-					Args:  args,
-					Env:   env,
+					Name:            "server",
+					Image:           profile.Image,
+					Args:            args,
+					Env:             env,
+					SecurityContext: r.ModelServerPods.ModelContainerSecurityContext,
 					Resources: corev1.ResourceRequirements{
 						Requests: profile.Requests,
 						Limits:   profile.Limits,
@@ -400,15 +404,18 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, profile ModelConf
 			Annotations: ann,
 		},
 		Spec: corev1.PodSpec{
-			NodeSelector: profile.NodeSelector,
-			Affinity:     profile.Affinity,
-			Tolerations:  profile.Tolerations,
+			NodeSelector:       profile.NodeSelector,
+			SecurityContext:    r.ModelServerPods.ModelPodSecurityContext,
+			ServiceAccountName: r.ModelServerPods.ModelServiceAccountName,
+			Affinity:           profile.Affinity,
+			Tolerations:        profile.Tolerations,
 			Containers: []corev1.Container{
 				{
-					Name:  "server",
-					Image: profile.Image,
-					Args:  m.Spec.Args,
-					Env:   env,
+					Name:            "server",
+					Image:           profile.Image,
+					Args:            m.Spec.Args,
+					Env:             env,
+					SecurityContext: r.ModelServerPods.ModelContainerSecurityContext,
 					Resources: corev1.ResourceRequirements{
 						Requests: profile.Requests,
 						Limits:   profile.Limits,
@@ -546,15 +553,18 @@ func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, profile Mo
 			Annotations: ann,
 		},
 		Spec: corev1.PodSpec{
-			NodeSelector: profile.NodeSelector,
-			Affinity:     profile.Affinity,
-			Tolerations:  profile.Tolerations,
+			NodeSelector:       profile.NodeSelector,
+			SecurityContext:    r.ModelServerPods.ModelPodSecurityContext,
+			ServiceAccountName: r.ModelServerPods.ModelServiceAccountName,
+			Affinity:           profile.Affinity,
+			Tolerations:        profile.Tolerations,
 			Containers: []corev1.Container{
 				{
-					Name:  "server",
-					Image: profile.Image,
-					Args:  args,
-					Env:   env,
+					Name:            "server",
+					Image:           profile.Image,
+					Args:            args,
+					Env:             env,
+					SecurityContext: r.ModelServerPods.ModelContainerSecurityContext,
 					Resources: corev1.ResourceRequirements{
 						Requests: profile.Requests,
 						Limits:   profile.Limits,
