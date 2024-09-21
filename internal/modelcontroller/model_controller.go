@@ -225,7 +225,8 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, profile ModelConfig
 					LocalObjectReference: corev1.LocalObjectReference{
 						Name: r.HuggingfaceSecretName,
 					},
-					Key: "token",
+					Key:      "token",
+					Optional: ptr.To(true),
 				},
 			},
 		},
