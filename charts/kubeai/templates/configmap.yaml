@@ -22,9 +22,7 @@ data:
       securityContext:
         {{- .Values.modelServerPods.securityContext | toYaml | nindent 8}}
       {{- end}}
-      {{- if .Values.modelServiceAccount.create }}
       serviceAccountName: {{ include "models.serviceAccountName" . }}
-      {{- end}}
     {{- end }}
     modelAutoscaling:
       {{- .Values.modelAutoscaling | toYaml | nindent 6 }}
