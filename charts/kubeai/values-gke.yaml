@@ -3,3 +3,7 @@ resourceProfiles:
     nodeSelector:
       cloud.google.com/gke-accelerator: "nvidia-l4"
       cloud.google.com/gke-spot: "true"
+  nvidia-gpu-h100:
+    nodeSelector:
+      cloud.google.com/gke-accelerator: "nvidia-h100-80gb"
+      cloud.google.com/gke-spot: "true"
