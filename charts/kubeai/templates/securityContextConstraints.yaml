@@ -1,5 +1,5 @@
 {{- if .Capabilities.APIVersions.Has "security.openshift.io/v1" }}
-{{- if .Values.serviceAccount.create -}}
+{{- if .Values.modelServiceAccount.create -}}
 apiVersion: security.openshift.io/v1
 kind: SecurityContextConstraints
 metadata:
