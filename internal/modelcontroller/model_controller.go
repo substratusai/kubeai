@@ -664,6 +664,10 @@ func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, profile ModelCo
 			Value: m.Name,
 		},
 		{
+			Name:  "INFINITY_URL_PREFIX",
+			Value: "/v1",
+		},
+		{
 			Name: "INFINITY_ENGINE",
 			// TODO: switch between optimum backend (cpu), nvidia/amd (torch), inf2 (inferentia) based on what is available.
 			Value: "torch",
@@ -715,7 +719,7 @@ func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, profile ModelCo
 			Containers: []corev1.Container{
 				{
 					Name:  "server",
-					Image: m.Spec.Image,
+					Image: profile.Image,
 					Args:  args,
 					Env:   env,
 					Resources: corev1.ResourceRequirements{
