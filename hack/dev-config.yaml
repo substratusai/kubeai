@@ -27,3 +27,5 @@ resourceProfiles:
       nvidia.com/gpu: "1"
       cpu: "6"
       memory: "24Gi"
+
+allowPodAddressOverride: true

@@ -31,34 +31,37 @@ Nomic embedding model is used instead of text-embedding-ada-002.
 Gemma 2 2B is used instead of gpt-3.5-turbo.
 You could choose to use bigger models depending on your available hardware.
 
-Create a file named `kubeai-values.yaml` with the following content:
+Create a file named `kubeai-model-values.yaml` with the following content:
 ```yaml
-models:
-  catalog:
-    text-embedding-ada-002:
-      enabled: true
-      minReplicas: 1
-      features: ["TextEmbedding"]
-      owner: nomic
-      url: "ollama://nomic-embed-text"
-      engine: OLlama
-      resourceProfile: cpu:1
-    gpt-3.5-turbo:
-      enabled: true
-      minReplicas: 1
-      features: ["TextGeneration"]
-      owner: google
-      url: "ollama://gemma2:2b"
-      engine: OLlama
-      resourceProfile: cpu:2
+catalog:
+  text-embedding-ada-002:
+    enabled: true
+    minReplicas: 1
+    features: ["TextEmbedding"]
+    owner: nomic
+    url: "ollama://nomic-embed-text"
+    engine: OLlama
+    resourceProfile: cpu:1
+  gpt-3.5-turbo:
+    enabled: true
+    minReplicas: 1
+    features: ["TextGeneration"]
+    owner: google
+    url: "ollama://gemma2:2b"
+    engine: OLlama
+    resourceProfile: cpu:2
 ```
 
 Note: It's important that you name the models as `text-embedding-ada-002` and `gpt-3.5-turbo` as Weaviate expects these names.
 
-Run the following command to deploy KubeAI:
+Run the following command to deploy KubeAI and install the configured models:
 ```bash
-helm install kubeai kubeai/kubeai \
-    -f ./kubeai-values.yaml
+helm repo add kubeai https://www.kubeai.org && helm repo update
+
+helm install kubeai kubeai/kubeai
+
+helm install kubeai-models kubeai/models \
+    -f ./kubeai-model-values.yaml
 ```
 
 ## Weaviate Installation
@@ -87,8 +90,9 @@ service:
 
 Install Weaviate by running the following command:
 ```bash
-helm repo add weaviate https://weaviate.github.io/weaviate-helm
-helm upgrade --install \
+helm repo add weaviate https://weaviate.github.io/weaviate-helm && helm repo update
+
+helm install \
   "weaviate" \
   weaviate/weaviate \
   -f weaviate-values.yaml

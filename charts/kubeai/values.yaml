@@ -17,9 +17,9 @@ modelServers:
       # The key is the image name (referenced from resourceProfiles) and the value is the image.
       # The "default" image should always be specified.
       # "default" is used when no imageName is specified or if a specific image is not found.
-      default: "vllm/vllm-openai:v0.5.5"
+      default: "vllm/vllm-openai:v0.6.1.post2"
       cpu: "substratusai/vllm:v0.5.5-cpu"
-      nvidia-gpu: "vllm/vllm-openai:v0.5.5"
+      nvidia-gpu: "vllm/vllm-openai:v0.6.1.post2"
       # TODO publish tpu image.
       google-tpu: "substratusai/vllm-openai-tpu:v0.5.5"
   OLlama:
@@ -33,6 +33,17 @@ modelServers:
     images:
       default: "michaelf34/infinity:latest"
       nvidia-gpu: "michaelf34/infinity:latest"
+
+modelServerPods:
+  # Security Context for the model pods
+  # Needed for OpenShift
+  securityContext:
+    runAsUser: 0
+    readOnlyRootFilesystem: false
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
 
 resourceProfiles:
   cpu:
@@ -48,6 +59,21 @@ resourceProfiles:
       nvidia.com/gpu: "1"
       cpu: "6"
       memory: "24Gi"
+    tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Equal"
+        value: "present"
+        effect: "NoSchedule"
+  nvidia-gpu-h100:
+    imageName: "nvidia-gpu"
+    limits:
+      nvidia.com/gpu: "1"
+    tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Equal"
+        value: "present"
+        effect: "NoSchedule"
+
   # nvidia-gpu-v100:
   # nvidia-gpu-a100:
   # google-tpu-v5e:
@@ -59,16 +85,23 @@ resourceProfiles:
   #   nodeSelector:
   #     cloud.google.com/gke-accelerator-type: tpu-v5-lite-podslice
 
+modelAutoscaling:
+  # Interval that the autoscaler will scrape model server metrics.
+  # and calculate the desired number of replicas.
+  interval: 10s
+  # Time window the autoscaling algorithm will consider when calculating
+  # the desired number of replicas.
+  timeWindow: 10m
+
 messaging:
   errorMaxBackoff: 30s
   streams: []
-
 
 # Configure the openwebui subchart.
 openwebui:
   fullnameOverride: "openwebui"
   image:
-    tag: main
+    tag: v0.3.19
   env:
   - name: WEBUI_AUTH
     value: "False"
@@ -89,6 +122,15 @@ openwebui:
     value: "true"
   - name: ENABLE_LITELLM
     value: "false"
+  # Security Context for the openwebui pod
+  # Needed for OpenShift
+  securityContext:
+    runAsUser: 0
+    readOnlyRootFilesystem: false
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
 
 replicaCount: 1
 
@@ -105,10 +147,7 @@ fullnameOverride: "kubeai"
 command:
 - /app/manager
 
-args:
-- --metrics-bind-address=:8080
-- --leader-elect
-- --health-probe-bind-address=:8081
+args: []
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -118,6 +157,16 @@ serviceAccount:
   # Annotations to add to the service account
   annotations: {}
   # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+modelServiceAccount:
+  # Specifies whether a service account should be created to be used by model pods
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
@@ -181,13 +230,6 @@ readinessProbe:
     port: 8081
   initialDelaySeconds: 5
   periodSeconds: 10
-
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
 
 # Additional volumes on the output Deployment definition.
 volumes: []

@@ -27,7 +27,10 @@ go.work
 *~
 
 # Files that might be committed from running guides
+/kubeai.yaml
+/kubeai-models.yaml
 /helm-values.yaml
+/model-helm-values.yaml
 Chart.lock
 
 # Ignore python virtual env

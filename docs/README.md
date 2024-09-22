@@ -6,7 +6,7 @@ Get inferencing running on Kubernetes: LLMs, Embeddings, Speech-to-Text.
 🧠  Serve top OSS models (LLMs, Whisper, etc.)  
 🚀  Multi-platform: CPU-only, GPU, coming soon: TPU  
 ⚖️  Scale from zero, autoscale based on load  
-🛠️  Zero dependencies (no Istio, Knative, etc.)   
+🛠️  Zero dependencies (does not depend on Istio, Knative, etc.)   
 💬  Chat UI included ([OpenWebUI](https://github.com/open-webui/open-webui))  
 🤖  Operates OSS model servers (vLLM, Ollama, FasterWhisper, Infinity)  
 ✉  Stream/batch inference via messaging integrations (Kafka, PubSub, etc.)  
@@ -38,7 +38,7 @@ podman machine stop
 podman machine rm
 
 # Init and start a new machine:
-podman machine init --memory 6144
+podman machine init --memory 6144 --disk-size 120
 podman machine start
 ```
 </details>
@@ -58,21 +58,25 @@ helm repo update
 Install KubeAI and wait for all components to be ready (may take a minute).
 
 ```bash
-cat <<EOF > helm-values.yaml
-models:
-  catalog:
-    gemma2-2b-cpu:
-      enabled: true
-      minReplicas: 1
-    qwen2-500m-cpu:
-      enabled: true
-    nomic-embed-text-cpu:
-      enabled: true
+helm install kubeai kubeai/kubeai --wait --timeout 10m
+```
+
+Install some predefined models.
+
+```bash
+cat <<EOF > kubeai-models.yaml
+catalog:
+  gemma2-2b-cpu:
+    enabled: true
+    minReplicas: 1
+  qwen2-500m-cpu:
+    enabled: true
+  nomic-embed-text-cpu:
+    enabled: true
 EOF
 
-helm upgrade --install kubeai kubeai/kubeai \
-    -f ./helm-values.yaml \
-    --wait --timeout 10m
+helm install kubeai-models kubeai/models \
+    -f ./kubeai-models.yaml
 ```
 
 Before progressing to the next steps, start a watch on Pods in a standalone terminal to see how KubeAI deploys models. 
@@ -99,24 +103,28 @@ If you go back to the browser and start a chat with Qwen2, you will notice that 
 
 NOTE: Autoscaling after initial scale-from-zero is not yet supported for the Ollama backend which we use in this local quickstart. KubeAI relies upon backend-specific metrics and the Ollama project has an open issue: https://github.com/ollama/ollama/issues/3144. To see autoscaling in action, checkout the [GKE install guide](./installation/gke.md) which uses the vLLM backend and autoscales across GPU resources.
 
-## Supported Models
-
-Any vLLM or Ollama model can be served by KubeAI. Some examples of popular models served on KubeAI include:
-
-* Llama v3.1 (8B, 70B, 405B) 
-* Gemma2 (2B, 9B, 27B)
-* Qwen2 (1.5B, 7B, 72B)
 
 Infinity supports models listed as text-embedding [models, reranking or clip models on huggingface](https://huggingface.co/models?other=text-embeddings-inference&sort=trending).
 
 ## Documentation
 
-Checkout our documenation on [kubeai.org](https://www.kubeai.org) to find info on:
+Checkout our documentation on [kubeai.org](https://www.kubeai.org) to find info on:
 
 * Installing KubeAI in the cloud
 * How to guides (e.g. how to manage models and resource profiles).
 * Concepts (how the components of KubeAI work).
 * How to contribute
+
+## Adopters
+
+List of known adopters:
+
+| Name | Description | Link |
+| ---- | ----------- | ---- |
+| Telescope | Telescope uses KubeAI for multi-region large scale batch LLM inference. | [trytelescope.ai](https://trytelescope.ai) |
+| Google Cloud Distributed Edge | KubeAI is included as a reference architecture for inferencing at the edge. | [LinkedIn](https://www.linkedin.com/posts/mikeensor_gcp-solutions-public-retail-edge-available-cluster-traits-activity-7237515920259104769-vBs9?utm_source=share&utm_medium=member_desktop), [GitLab](https://gitlab.com/gcp-solutions-public/retail-edge/available-cluster-traits/kubeai-cluster-trait) |
+
+If you are using KubeAI and would like to be listed as an adopter, please make a PR.
 
 ## OpenAI API Compatibility
 

@@ -37,4 +37,5 @@ jobs:
          git pull origin main
          cp /tmp/index.yaml docs/index.yaml
          pip install -r docs/requirements.txt
+      - run: make generate-kubernetes-api-reference
       - run: mkdocs gh-deploy

@@ -65,32 +65,42 @@ func (r *Manager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result,
 		if _, exclude := r.ExcludePods[pod.Name]; exclude {
 			continue
 		}
-		if pod.Status.PodIP == "" || !k8sutils.PodIsReady(&pod) {
+		if !k8sutils.PodIsReady(&pod) {
 			continue
 		}
-		var port string
-		if ann := pod.GetAnnotations(); ann != nil {
-			port = ann[kubeaiv1.ModelPodPortAnnotation]
-		}
+
+		// The Model controller should always set the port annotation in the Pods it creates
+		// to communicate the port that the given backend listens on.
+		port := getPodAnnotation(pod, kubeaiv1.ModelPodPortAnnotation)
 		if port == "" {
 			log.Printf("ERROR: No port annotation %q found for pod %s, skipping", kubeaiv1.ModelPodPortAnnotation, pod.Name)
 			continue
 		}
 
 		// Allow overriding the IP address of the pod.
-		if ann := pod.GetAnnotations(); ann != nil {
-			if ip, ok := ann[kubeaiv1.ModelPodIPAnnotation]; ok {
-				addrs[ip+":"+port] = struct{}{}
-				continue
-			}
+		ip := getPodAnnotation(pod, kubeaiv1.ModelPodIPAnnotation)
+		if ip == "" {
+			ip = pod.Status.PodIP
 		}
 
-		addrs[pod.Status.PodIP+":"+port] = struct{}{}
+		// If the pod has no IP address, skip it.
+		if ip == "" {
+			continue
+		}
+
+		addrs[ip+":"+port] = struct{}{}
 	}
 
 	r.getEndpoints(modelName).setAddrs(addrs)
 
 	return ctrl.Result{}, nil
+}
+
+func getPodAnnotation(pod corev1.Pod, key string) string {
+	if ann := pod.GetAnnotations(); ann != nil {
+		return ann[key]
+	}
+	return ""
 }
 
 func (r *Manager) getEndpoints(service string) *endpointGroup {

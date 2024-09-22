@@ -1,5 +1,5 @@
 {{- range $name, $model := .Values.catalog}}
-{{- if $model.enabled}}
+{{- if or $model.enabled $.Values.all.enabled }}
 ---
 apiVersion: kubeai.org/v1
 kind: Model
@@ -14,17 +14,23 @@ spec:
   {{- end }}
   {{- with $model.args }}
   args:
-  {{ . | toYaml | nindent 4 }}
+  {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- with $model.env }}
   env:
-  {{ . | toYaml | nindent 4 }}
+  {{- toYaml . | nindent 4 }}
   {{- end }}
-  minReplicas: {{ $model.minReplicas | default $.Values.defaults.minReplicas}}
-  maxReplicas: {{ $model.maxReplicas | default $.Values.defaults.maxReplicas}}
-  {{- with $model.resources}}
-  resources:
-    {{ toYaml . | nindent 4 }}
+  {{- with $model.minReplicas }}
+  minReplicas: {{ . }}
+  {{- end }}
+  {{- with $model.maxReplicas }}
+  maxReplicas: {{ . }}
+  {{- end}}
+  {{- with $model.targetRequests }}
+  targetRequests: {{ . }}
+  {{- end}}
+  {{- with $model.scaleDownDelaySeconds }}
+  scaleDownDelaySeconds: {{ . }}
   {{- end}}
   {{- with $model.resourceProfile }}
   resourceProfile: {{ . }}

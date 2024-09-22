@@ -17,44 +17,77 @@ limitations under the License.
 package v1
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ModelSpec defines the desired state of Model
+// ModelSpec defines the desired state of Model.
 type ModelSpec struct {
-	Owner string `json:"owner"`
-	URL   string `json:"url"`
+	// URL of the model to be served.
+	// Currently only the following formats are supported:
+	// For VLLM & FasterWhisper engines: "hf://<model-repo>/<model-name>"
+	// For OLlama engine: "ollama://<model>
+	URL string `json:"url"`
 
+	// Features that the model supports.
+	// Dictates the APIs that are available for the model.
 	Features []ModelFeature `json:"features"`
 
+	// Engine to be used for the server process.
 	// +kubebuilder:validation:Enum=OLlama;VLLM;FasterWhisper;Infinity
 	Engine string `json:"engine"`
 
-	Replicas    *int32 `json:"replicas,omitempty"`
-	MinReplicas int32  `json:"minReplicas"`
-	MaxReplicas int32  `json:"maxReplicas"`
-
-	// ResourceProfile maps to specific pre-configured resources.
+	// ResourceProfile required to serve the model.
+	// Use the format "<resource-profile-name>:<count>".
+	// Example: "nvidia-gpu-l4:2" - 2x NVIDIA L4 GPUs.
+	// Must be a valid ResourceProfile defined in the system config.
 	ResourceProfile string `json:"resourceProfile,omitempty"`
 
 	// Image to be used for the server process.
-	// Will be set from the ResourceProfile if provided.
+	// Will be set from ResourceProfile + Engine if not specified.
 	Image string `json:"image,omitempty"`
-
-	// Resources to be allocated to the server process.
-	// Will be set from the ResourceProfile if provided.
-	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
-
-	// NodeSelector to be added to the server process.
-	// Will be set from the ResourceProfile if provided.
-	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 
 	// Args to be added to the server process.
 	Args []string `json:"args,omitempty"`
 
 	// Env variables to be added to the server process.
 	Env map[string]string `json:"env,omitempty"`
+
+	// Replicas is the number of Pod replicas that should be actively
+	// serving the model. KubeAI will manage this field unless AutoscalingDisabled
+	// is set to true.
+	Replicas *int32 `json:"replicas,omitempty"`
+
+	// MinReplicas is the minimum number of Pod replicas that the model can scale down to.
+	// Note: 0 is a valid value.
+	// +kubebuilder:validation:Minimum=0
+	// +kubebuilder:validation:Optional
+	MinReplicas int32 `json:"minReplicas"`
+
+	// MaxReplicas is the maximum number of Pod replicas that the model can scale up to.
+	// Empty value means no limit.
+	// +kubebuilder:validation:Minimum=1
+	MaxReplicas *int32 `json:"maxReplicas,omitempty"`
+
+	// AutoscalingDisabled will stop the controller from managing the replicas
+	// for the Model. When disabled, metrics will not be collected on server Pods.
+	AutoscalingDisabled bool `json:"autoscalingDisabled,omitempty"`
+
+	// TargetRequests is average number of active requests that the autoscaler
+	// will try to maintain on model server Pods.
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:default=100
+	TargetRequests *int32 `json:"targetRequests"`
+
+	// ScaleDownDelay is the minimum time before a deployment is scaled down after
+	// the autoscaling algorithm determines that it should be scaled down.
+	// +kubebuilder:default=30
+	ScaleDownDelaySeconds *int64 `json:"scaleDownDelaySeconds"`
+
+	// Owner of the model. Used solely to populate the owner field in the
+	// OpenAI /v1/models endpoint.
+	// DEPRECATED.
+	// +kubebuilder:validation:Optional
+	Owner string `json:"owner"`
 }
 
 // +kubebuilder:validation:Enum=TextGeneration;TextEmbedding;SpeechToText
@@ -74,7 +107,7 @@ const (
 	InfinityEngine      = "Infinity"
 )
 
-// ModelStatus defines the observed state of Model
+// ModelStatus defines the observed state of Model.
 type ModelStatus struct {
 	Replicas ModelStatusReplicas `json:"replicas,omitempty"`
 }
@@ -88,7 +121,7 @@ type ModelStatusReplicas struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:subresource:scale:specpath=.spec.replicas,statuspath=.status.replicas.all
 
-// Model is the Schema for the models API
+// Model resources define the ML models that will be served by KubeAI.
 type Model struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -99,7 +132,7 @@ type Model struct {
 
 // +kubebuilder:object:root=true
 
-// ModelList contains a list of Model
+// ModelList contains a list of Models.
 type ModelList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

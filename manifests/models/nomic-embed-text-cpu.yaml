@@ -1,0 +1,11 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: nomic-embed-text-cpu
+spec:
+  features: [TextEmbedding]
+  owner: nomic
+  url: ollama://nomic-embed-text
+  engine: OLlama
+  resourceProfile: cpu:1
