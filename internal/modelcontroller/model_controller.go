@@ -640,7 +640,7 @@ func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, profile Mo
 	return pod
 }
 
-func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, index int32) *corev1.Pod {
+func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, profile ModelConfig, index int32) *corev1.Pod {
 	lbs := labelsForModel(m)
 	ann := r.annotationsForModel(m)
 
@@ -656,12 +656,12 @@ func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, index int32) *c
 
 	env := []corev1.EnvVar{
 		{
-			Name:  "INFINITY_MODEL_ID",
+			Name: "INFINITY_MODEL_ID",
 			// TODO: infinity supports multiple models, separate by comma.
 			Value: strings.TrimPrefix(m.Spec.URL, "hf://"),
 		},
 		{
-			Name:  "INFINITY_ENGINE",
+			Name: "INFINITY_ENGINE",
 			// TODO: switch between optimum backend (cpu), nvidia/amd (torch), inf2 (inferentia) based on what is available.
 			Value: "torch",
 		},
@@ -704,14 +704,22 @@ func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, index int32) *c
 			Annotations: ann,
 		},
 		Spec: corev1.PodSpec{
-			NodeSelector: m.Spec.NodeSelector,
+			SecurityContext:    r.ModelServerPods.ModelPodSecurityContext,
+			ServiceAccountName: r.ModelServerPods.ModelServiceAccountName,
+			NodeSelector:       profile.NodeSelector,
+			Affinity:           profile.Affinity,
+			Tolerations:        profile.Tolerations,
 			Containers: []corev1.Container{
 				{
-					Name:      "server",
-					Image:     m.Spec.Image,
-					Args:      args,
-					Env:       env,
-					Resources: *m.Spec.Resources,
+					Name:  "server",
+					Image: m.Spec.Image,
+					Args:  args,
+					Env:   env,
+					Resources: corev1.ResourceRequirements{
+						Requests: profile.Requests,
+						Limits:   profile.Limits,
+					},
+
 					Ports: []corev1.ContainerPort{
 						{
 							ContainerPort: 8000,
