@@ -17,12 +17,10 @@ import (
 
 func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubeaiv1.Model, modelConfig ModelConfig) *podPlan {
 	var desiredReplicas int32
-	// Replicas could be nil if autoscaling is disabled.
+	// NOTE: Replicas could be nil if autoscaling is disabled.
 	if model.Spec.Replicas != nil {
 		desiredReplicas = *model.Spec.Replicas
 	}
-
-	// TODO: Take into account Pods that are in a deletion state.
 
 	var podForModel func(*kubeaiv1.Model, ModelConfig, string) *corev1.Pod
 	switch model.Spec.Engine {

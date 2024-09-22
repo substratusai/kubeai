@@ -31,13 +31,18 @@ func TestModelPodUpdateRollout(t *testing.T) {
 	// Expect 3 Pods to be created with the new arg.
 	require.Eventually(t, func() bool {
 		podList := &corev1.PodList{}
-		require.NoError(t, testK8sClient.List(testCtx, podList, client.InNamespace(testNS), client.MatchingLabels{"model": m.Name}))
+		if !assert.NoError(t, testK8sClient.List(testCtx, podList, client.InNamespace(testNS), client.MatchingLabels{"model": m.Name})) {
+			return false
+		}
+
 		for _, pod := range podList.Items {
 			if !assert.Contains(t, pod.Spec.Containers[0].Args, newArg, "Pod should have the new arg") {
 				return false
 			}
 		}
-		require.Equal(t, 3, len(podList.Items), "Exactly 3 Pods should exist")
+
+		assert.Equal(t, 3, len(podList.Items), "Exactly 3 Pods should exist")
+
 		return true
 	}, time.Second, 100*time.Millisecond, "Exactly 3 Pods should exist (with the new arg)")
 }
