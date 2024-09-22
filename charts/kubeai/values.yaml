@@ -32,6 +32,7 @@ modelServers:
   Infinity:
     images:
       default: "michaelf34/infinity:latest"
+      cpu: "michaelf34/infinity:latest"
       nvidia-gpu: "michaelf34/infinity:latest"
 
 modelServerPods:
