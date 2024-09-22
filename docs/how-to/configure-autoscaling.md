@@ -20,8 +20,6 @@ modelAutoscaling:
 
 The following settings can be configured on a model-by-model basis.
 
-**NOTE:** Updates to model settings will be applied upon scale up of additional model Pods. You can force-restart model servers by running `kubectl delete pods -l model=<model-name>`.
-
 ### Model settings: helm
 
 If you are managing models via the `kubeai/models` Helm chart, you can use:
