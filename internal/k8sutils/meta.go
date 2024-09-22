@@ -2,7 +2,7 @@ package k8sutils
 
 import "sigs.k8s.io/controller-runtime/pkg/client"
 
-func ApplyLabel(obj client.Object, key, value string) {
+func SetLabel(obj client.Object, key, value string) {
 	labels := obj.GetLabels()
 	if labels == nil {
 		labels = make(map[string]string)
@@ -11,7 +11,7 @@ func ApplyLabel(obj client.Object, key, value string) {
 	labels[key] = value
 }
 
-func ApplyAnnotation(obj client.Object, key, value string) {
+func SetAnnotation(obj client.Object, key, value string) {
 	annotations := obj.GetAnnotations()
 	if annotations == nil {
 		annotations = make(map[string]string)
