@@ -61,7 +61,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `url` _string_ | URL of the model to be served.<br />Currently only the following formats are supported:<br />For VLLM & FasterWhisper engines: "hf://<model-repo>/<model-name>"<br />For OLlama engine: "ollama://<model> |  |  |
 | `features` _[ModelFeature](#modelfeature) array_ | Features that the model supports.<br />Dictates the APIs that are available for the model. |  | Enum: [TextGeneration TextEmbedding SpeechToText] <br /> |
-| `engine` _string_ | Engine to be used for the server process. |  | Enum: [OLlama VLLM FasterWhisper] <br /> |
+| `engine` _string_ | Engine to be used for the server process. |  | Enum: [OLlama VLLM FasterWhisper Infinity] <br /> |
 | `resourceProfile` _string_ | ResourceProfile required to serve the model.<br />Use the format "<resource-profile-name>:<count>".<br />Example: "nvidia-gpu-l4:2" - 2x NVIDIA L4 GPUs.<br />Must be a valid ResourceProfile defined in the system config. |  |  |
 | `image` _string_ | Image to be used for the server process.<br />Will be set from ResourceProfile + Engine if not specified. |  |  |
 | `args` _string array_ | Args to be added to the server process. |  |  |
