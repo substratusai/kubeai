@@ -53,7 +53,7 @@ func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubea
 		// TODO: If collisions become an issue, we can add a Model.Status.CollisionCount (new field)
 		// to the PodHash call.
 		expectedPodHash := k8sutils.PodHash(expectedPod.Spec, nil)
-		k8sutils.SetLabel(expectedPod, kubeaiv1.PodSpecHashLabel, expectedPodHash)
+		k8sutils.SetLabel(expectedPod, kubeaiv1.PodHashLabel, expectedPodHash)
 
 		currentPod, ok := podMap[name]
 		if ok {
@@ -63,7 +63,7 @@ func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubea
 			// This is probably OK for now since the proxy will handle
 			// the queuing of incoming requests until the new Pods are ready.
 			// (albeit with some failures).
-			if k8sutils.GetLabel(&currentPod, kubeaiv1.PodSpecHashLabel) != expectedPodHash {
+			if k8sutils.GetLabel(&currentPod, kubeaiv1.PodHashLabel) != expectedPodHash {
 				toDelete = append(toDelete, &currentPod)
 				toCreate = append(toCreate, expectedPod)
 			}
