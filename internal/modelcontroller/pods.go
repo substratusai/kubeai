@@ -59,9 +59,13 @@ func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubea
 
 		currentPod, ok := podMap[name]
 		if ok {
-			// Already exists
-			// TODO: Compare Pod spec to desired spec and recreate if necessary.
-			if podMap[name].Labels[kubeaiv1.PodSpecHashLabel] != expectedPodHash {
+			// Already exists, compare to see if it needs to be recreated.
+			// TODO: Consider implementing a rollout strategy.
+			// Right now, we just delete and recreate all Pods.
+			// This is probably OK for now since the proxy will handle
+			// the queuing of incoming requests until the new Pods are ready.
+			// (albeit with some failures).
+			if k8sutils.GetLabel(&currentPod, kubeaiv1.PodSpecHashLabel) != expectedPodHash {
 				toDelete = append(toDelete, &currentPod)
 				toCreate = append(toCreate, expectedPod)
 			}
@@ -94,20 +98,7 @@ type podPlan struct {
 func (pp *podPlan) execute(ctx context.Context, client client.Client, scheme *runtime.Scheme) error {
 	log := log.FromContext(ctx)
 
-	for _, pod := range pp.toCreate {
-		if err := ctrl.SetControllerReference(pp.model, pod, scheme); err != nil {
-			return fmt.Errorf("setting controller reference: %w", err)
-		}
-		log.Info("Creating Pod", "podName", pod.Name)
-		if err := client.Create(ctx, pod, k8sutils.DefaultCreateOptions()); err != nil {
-			if apierrors.IsAlreadyExists(err) {
-				log.Info("Pod already exists", "podName", pod.Name)
-			} else {
-				return fmt.Errorf("creating pod: %w", err)
-			}
-		}
-	}
-
+	// Delete before create to avoid unnecessary Node scale-ups.
 	for _, pod := range pp.toDelete {
 		log.Info("Deleting Pod", "podName", pod.Name)
 		if err := client.Delete(ctx, &corev1.Pod{
@@ -120,6 +111,20 @@ func (pp *podPlan) execute(ctx context.Context, client client.Client, scheme *ru
 				log.Info("Pod already deleted", "podName", pod.Name)
 			} else {
 				return fmt.Errorf("deleting pod: %w", err)
+			}
+		}
+	}
+
+	for _, pod := range pp.toCreate {
+		if err := ctrl.SetControllerReference(pp.model, pod, scheme); err != nil {
+			return fmt.Errorf("setting controller reference: %w", err)
+		}
+		log.Info("Creating Pod", "podName", pod.Name)
+		if err := client.Create(ctx, pod, k8sutils.DefaultCreateOptions()); err != nil {
+			if apierrors.IsAlreadyExists(err) {
+				log.Info("Pod already exists", "podName", pod.Name)
+			} else {
+				return fmt.Errorf("creating pod: %w", err)
 			}
 		}
 	}
