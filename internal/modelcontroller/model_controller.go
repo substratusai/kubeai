@@ -650,7 +650,6 @@ func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, profile ModelCo
 	args = append(args, m.Spec.Args...)
 
 	if _, ok := ann[kubeaiv1.ModelPodPortAnnotation]; !ok {
-		// Set port to 8000 (vLLM) if not overwritten.
 		ann[kubeaiv1.ModelPodPortAnnotation] = "8000"
 	}
 
@@ -659,6 +658,10 @@ func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, profile ModelCo
 			Name: "INFINITY_MODEL_ID",
 			// TODO: infinity supports multiple models, separate by comma.
 			Value: strings.TrimPrefix(m.Spec.URL, "hf://"),
+		},
+		{
+			Name:  "INFINITY_SERVED_MODEL_NAME",
+			Value: m.Name,
 		},
 		{
 			Name: "INFINITY_ENGINE",
