@@ -29,6 +29,9 @@ modelServers:
     images:
       default: "fedirz/faster-whisper-server:latest-cpu"
       nvidia-gpu: "fedirz/faster-whisper-server:latest-cuda"
+  Infinity:
+    images:
+      default: "michaelf34/infinity:latest"
 
 modelServerPods:
   # Security Context for the model pods

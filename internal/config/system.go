@@ -143,6 +143,7 @@ type ModelServers struct {
 	OLlama        ModelServer `json:"OLlama"`
 	VLLM          ModelServer `json:"VLLM"`
 	FasterWhisper ModelServer `json:"FasterWhisper"`
+	Infinity      ModelServer `json:"Infinity"`
 }
 
 type ModelServer struct {
