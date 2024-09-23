@@ -579,7 +579,7 @@ func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, profile Mo
 	return pod
 }
 
-func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, profile ModelConfig, index int32) *corev1.Pod {
+func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, profile ModelConfig, name string) *corev1.Pod {
 	lbs := labelsForModel(m)
 	ann := r.annotationsForModel(m)
 
@@ -644,7 +644,7 @@ func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, profile ModelCo
 
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        fmt.Sprintf("model-%s-%d", m.Name, index),
+			Name:        name,
 			Namespace:   m.Namespace,
 			Labels:      lbs,
 			Annotations: ann,
