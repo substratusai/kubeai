@@ -19,7 +19,7 @@ package modelcontroller
 import (
 	"context"
 	"fmt"
-	"math"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -71,6 +71,8 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
+	status0 := model.Status.DeepCopy()
+
 	var shouldUpdate bool
 	// Apply self labels based on features so that we can easily filter models.
 	shouldUpdate = r.applySelfLabels(model) || shouldUpdate
@@ -96,74 +98,12 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{}, fmt.Errorf("listing all node pools: %w", err)
 	}
 
-	var scaleDesired int32
-	// Replicas could be nil if autoscaling is disabled.
-	if model.Spec.Replicas != nil {
-		scaleDesired = *model.Spec.Replicas
-	}
-	scaleActual := int32(len(allPods.Items))
-	scaleDiff := scaleActual - scaleDesired
-	scaleDiffAbs := int32(math.Abs(float64(scaleDiff)))
-
-	// TODO: Take into account Pods that are in a deletion state.
-
-	var podForModel func(*kubeaiv1.Model, ModelConfig, int32) *corev1.Pod
-	switch model.Spec.Engine {
-	case kubeaiv1.OLlamaEngine:
-		podForModel = r.oLlamaPodForModel
-	case kubeaiv1.FasterWhisperEngine:
-		podForModel = r.fasterWhisperPodForModel
-	case kubeaiv1.InfinityEngine:
-		podForModel = r.infinityPodForModel
-	default:
-		podForModel = r.vLLMPodForModel
+	plan := r.calculatePodPlan(allPods, model, modelConfig)
+	if err := plan.execute(ctx, r.Client, r.Scheme); err != nil {
+		return ctrl.Result{}, fmt.Errorf("executing pod plan: %w", err)
 	}
 
-	switch {
-	case scaleDiff == 0:
-		// At correct scale.
-		log.Info("Pod count matches", "actualReplicas", scaleActual, "desiredReplicas", scaleDesired)
-	case scaleDiff < 0:
-		// Create Pods.
-		log.Info("Need to add pods", "scaleDiff", scaleDiff)
-
-		var toCreate []*corev1.Pod
-		for i := int32(0); i < scaleDiffAbs; i++ {
-			toCreate = append(toCreate, podForModel(model, modelConfig, scaleActual+i))
-		}
-
-		for _, pod := range toCreate {
-			if err := ctrl.SetControllerReference(model, pod, r.Scheme); err != nil {
-				return ctrl.Result{}, fmt.Errorf("setting controller reference: %w", err)
-			}
-			log.Info("Creating Pod", "podName", pod.Name)
-			if err := r.Client.Create(ctx, pod, k8sutils.DefaultCreateOptions()); err != nil {
-				return ctrl.Result{}, fmt.Errorf("creating pod: %w", err)
-			}
-		}
-	case scaleDiff > 0:
-		// Delete Pods.
-		log.Info("Need to delete pods", "replicaDiff", scaleDiff)
-
-		toDeleteCount := scaleDiffAbs
-		for _, pod := range allPods.Items {
-			if toDeleteCount == 0 {
-				break
-			}
-			log.Info("Deleting Pod", "podName", pod.Name)
-			if err := r.Client.Delete(ctx, &corev1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: pod.Namespace,
-					Name:      pod.Name,
-				},
-			}); err != nil {
-				return ctrl.Result{}, fmt.Errorf("deleting pod: %w", err)
-			}
-			toDeleteCount--
-		}
-	}
-
-	// Summarize all nodes.
+	// Summarize all pods.
 	var readyPods int32
 	for _, pod := range allPods.Items {
 		if utils.PodIsReady(&pod) {
@@ -171,11 +111,10 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 	}
 
-	if statusReplicas := (kubeaiv1.ModelStatusReplicas{
-		All:   int32(len(allPods.Items)),
-		Ready: readyPods,
-	}); statusReplicas != model.Status.Replicas {
-		model.Status.Replicas = statusReplicas
+	model.Status.Replicas.All = int32(len(allPods.Items))
+	model.Status.Replicas.Ready = readyPods
+
+	if !reflect.DeepEqual(status0, model.Status) {
 		if err := r.Status().Update(ctx, model); err != nil {
 			return ctrl.Result{}, fmt.Errorf("updating status: %w", err)
 		}
@@ -201,7 +140,7 @@ func (r *ModelReconciler) apply(ctx context.Context, model *kubeaiv1.Model, obj 
 }
 */
 
-func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, profile ModelConfig, index int32) *corev1.Pod {
+func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, profile ModelConfig, name string) *corev1.Pod {
 	lbs := labelsForModel(m)
 	ann := r.annotationsForModel(m)
 	if _, ok := ann[kubeaiv1.ModelPodPortAnnotation]; !ok {
@@ -248,7 +187,7 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, profile ModelConfig
 
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        fmt.Sprintf("model-%s-%d", m.Name, index),
+			Name:        name,
 			Namespace:   m.Namespace,
 			Labels:      lbs,
 			Annotations: ann,
@@ -340,7 +279,7 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, profile ModelConfig
 	return pod
 }
 
-func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, profile ModelConfig, index int32) *corev1.Pod {
+func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, profile ModelConfig, name string) *corev1.Pod {
 	lbs := labelsForModel(m)
 	ann := r.annotationsForModel(m)
 
@@ -401,7 +340,7 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, profile ModelConf
 
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        fmt.Sprintf("model-%s-%d", m.Name, index),
+			Name:        name,
 			Namespace:   m.Namespace,
 			Labels:      lbs,
 			Annotations: ann,
@@ -502,7 +441,7 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, profile ModelConf
 
 }
 
-func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, profile ModelConfig, index int32) *corev1.Pod {
+func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, profile ModelConfig, name string) *corev1.Pod {
 	lbs := labelsForModel(m)
 	ann := r.annotationsForModel(m)
 	if _, ok := ann[kubeaiv1.ModelPodPortAnnotation]; !ok {
@@ -550,7 +489,7 @@ func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, profile Mo
 
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        fmt.Sprintf("model-%s-%d", m.Name, index),
+			Name:        name,
 			Namespace:   m.Namespace,
 			Labels:      lbs,
 			Annotations: ann,
@@ -640,7 +579,7 @@ func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, profile Mo
 	return pod
 }
 
-func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, profile ModelConfig, index int32) *corev1.Pod {
+func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, profile ModelConfig, name string) *corev1.Pod {
 	lbs := labelsForModel(m)
 	ann := r.annotationsForModel(m)
 
@@ -705,7 +644,7 @@ func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, profile ModelCo
 
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        fmt.Sprintf("model-%s-%d", m.Name, index),
+			Name:        name,
 			Namespace:   m.Namespace,
 			Labels:      lbs,
 			Annotations: ann,
