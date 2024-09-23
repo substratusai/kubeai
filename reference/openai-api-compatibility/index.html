@@ -383,6 +383,27 @@
   
   
     <li class="md-nav__item">
+      <a href="../../how-to/configure-embedding-models/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configure Embedding Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../how-to/configure-resource-profiles/" class="md-nav__link">
         
   
@@ -958,6 +979,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#openai-client-libaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      OpenAI Client libaries
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1066,6 +1096,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#openai-client-libaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      OpenAI Client libaries
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1113,6 +1152,23 @@ POST /v1/completions
 <ul>
 <li>Supported for Models with <code>.spec.features: ["SpeechToText"]</code>.</li>
 </ul>
+<h2 id="openai-client-libaries">OpenAI Client libaries<a class="headerlink" href="#openai-client-libaries" title="Permanent link">&para;</a></h2>
+<p>You can use the official OpenAI client libraries by setting the
+<code>base_url</code> to the KubeAI endpoint.</p>
+<p>For example, you can use the Python client like this:
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">openai</span> <span class="kn">import</span> <span class="n">OpenAI</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">OpenAI</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span><span class="p">,</span>
+                <span class="n">base_url</span><span class="o">=</span><span class="s2">&quot;http://kubeai/openai/v1&quot;</span><span class="p">)</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+  <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gemma2-2b-cpu&quot;</span><span class="p">,</span>
+  <span class="n">messages</span><span class="o">=</span><span class="p">[</span>
+    <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;You are a helpful assistant.&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;Who won the world series in 2020?&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;assistant&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;The Los Angeles Dodgers won the World Series in 2020.&quot;</span><span class="p">},</span>
+    <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;Where was it played?&quot;</span><span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">)</span>
+</code></pre></div></p>
 
 
 
