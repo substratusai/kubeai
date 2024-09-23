@@ -95,7 +95,7 @@ func (a *Autoscaler) Start(ctx context.Context) {
 			flt := avg.Calculate()
 			normalized := flt / float64(*m.Spec.TargetRequests)
 			ceil := math.Ceil(normalized)
-			log.Printf("Average for model %q: %v/%v (normalized ceil: %v), current requests: %v, history: %v", m.Name, flt, m.Spec.TargetRequests, ceil, agg.CurrentRequests(), avg.History())
+			log.Printf("Average for model %q: %v/%v (normalized ceil: %v), current requests: %v, history: %v", m.Name, flt, *m.Spec.TargetRequests, ceil, agg.CurrentRequests(), avg.History())
 			a.scaler.Scale(ctx, &m, int32(ceil), a.cfg.RequiredConsecutiveScaleDowns(*m.Spec.ScaleDownDelaySeconds))
 		}
 	}
