@@ -104,7 +104,6 @@ If you go back to the browser and start a chat with Qwen2, you will notice that 
 NOTE: Autoscaling after initial scale-from-zero is not yet supported for the Ollama backend which we use in this local quickstart. KubeAI relies upon backend-specific metrics and the Ollama project has an open issue: https://github.com/ollama/ollama/issues/3144. To see autoscaling in action, checkout the [GKE install guide](./installation/gke.md) which uses the vLLM backend and autoscales across GPU resources.
 
 
-Infinity supports models listed as text-embedding [models, reranking or clip models on huggingface](https://huggingface.co/models?other=text-embeddings-inference&sort=trending).
 
 ## Documentation
 
