@@ -1072,7 +1072,6 @@
 </code></pre></div>
 <h2 id="model-settings">Model Settings<a class="headerlink" href="#model-settings" title="Permanent link">&para;</a></h2>
 <p>The following settings can be configured on a model-by-model basis.</p>
-<p><strong>NOTE:</strong> Updates to model settings will be applied upon scale up of additional model Pods. You can force-restart model servers by running <code>kubectl delete pods -l model=&lt;model-name&gt;</code>.</p>
 <h3 id="model-settings-helm">Model settings: helm<a class="headerlink" href="#model-settings-helm" title="Permanent link">&para;</a></h3>
 <p>If you are managing models via the <code>kubeai/models</code> Helm chart, you can use:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># helm-values.yaml</span>
