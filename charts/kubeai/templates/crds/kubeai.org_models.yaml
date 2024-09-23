@@ -55,6 +55,7 @@ spec:
                 - OLlama
                 - VLLM
                 - FasterWhisper
+                - Infinity
                 type: string
               env:
                 additionalProperties:

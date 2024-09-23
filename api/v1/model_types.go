@@ -33,7 +33,7 @@ type ModelSpec struct {
 	Features []ModelFeature `json:"features"`
 
 	// Engine to be used for the server process.
-	// +kubebuilder:validation:Enum=OLlama;VLLM;FasterWhisper
+	// +kubebuilder:validation:Enum=OLlama;VLLM;FasterWhisper;Infinity
 	Engine string `json:"engine"`
 
 	// ResourceProfile required to serve the model.
@@ -104,6 +104,7 @@ const (
 	OLlamaEngine        = "OLlama"
 	VLLMEngine          = "VLLM"
 	FasterWhisperEngine = "FasterWhisper"
+	InfinityEngine      = "Infinity"
 )
 
 // ModelStatus defines the observed state of Model.
