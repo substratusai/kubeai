@@ -19,10 +19,9 @@ func PodIsReady(pod *corev1.Pod) bool {
 	return false
 }
 
-// PodHash returns a hash value calculated from Pod spec and
-// a collisionCount to avoid hash collision.
+// PodHash returns a hash value calculated from Pod spec.
 // Inspired by k8s.io/kubernetes/pkg/controller.ComputeHash()
-func PodHash(podSpec corev1.PodSpec, collisionCount *int32) string {
+func PodHash(podSpec corev1.PodSpec) string {
 	podTemplateSpecHasher := fnv.New32a()
 	DeepHashObject(podTemplateSpecHasher, podSpec)
 

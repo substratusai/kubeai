@@ -54,7 +54,7 @@ func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubea
 		expectedPod := podForModel(model, modelConfig, name)
 		// TODO: If collisions become an issue, we can add a Model.Status.CollisionCount (new field)
 		// to the PodHash call.
-		expectedPodHash := k8sutils.PodHash(expectedPod.Spec, nil)
+		expectedPodHash := k8sutils.PodHash(expectedPod.Spec)
 		k8sutils.SetLabel(expectedPod, kubeaiv1.PodHashLabel, expectedPodHash)
 
 		currentPod, ok := podMap[name]
