@@ -737,12 +737,12 @@ func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, profile ModelCo
 }
 
 func labelsForModel(m *kubeaiv1.Model) map[string]string {
+	engineLowerCase := strings.ToLower(m.Spec.Engine)
 	return map[string]string{
 		"app":                          "model",
 		"model":                        m.Name,
-		"app.kubernetes.io/name":       "vllm",
-		"app.kubernetes.io/instance":   "vllm-" + m.Name,
-		"app.kubernetes.io/component":  "kubeai-engine",
+		"app.kubernetes.io/name":       engineLowerCase,
+		"app.kubernetes.io/instance":   engineLowerCase + "-" + m.Name,
 		"app.kubernetes.io/managed-by": "kubeai",
 	}
 }
