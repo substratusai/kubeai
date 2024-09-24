@@ -18,8 +18,8 @@ messaging:
 resourceProfiles:
   cpu:
     requests:
-      cpu: 1
-      memory: 2Gi
+      cpu: 0.5
+      memory: 1Gi
   nvidia-gpu-l4:
     limits:
       nvidia.com/gpu: "1"

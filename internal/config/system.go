@@ -33,6 +33,8 @@ type System struct {
 	ModelAutoscaling ModelAutoscaling `json:"modelAutoscaling" validate:"required"`
 
 	ModelServerPods ModelServerPods `json:"modelServerPods,omitempty"`
+
+	ModelRollouts ModelRollouts `json:"modelRollouts"`
 }
 
 func (s *System) DefaultAndValidate() error {
@@ -56,7 +58,17 @@ func (s *System) DefaultAndValidate() error {
 		s.ModelAutoscaling.TimeWindow.Duration = 10 * time.Minute
 	}
 
+	if s.ModelRollouts.PodReadinessWaitPeriod.Duration == 0 {
+		s.ModelRollouts.PodReadinessWaitPeriod.Duration = 10 * time.Minute
+	}
+
 	return validator.New(validator.WithRequiredStructEnabled()).Struct(s)
+}
+
+type ModelRollouts struct {
+	// PodReadinessWaitPeriod is the time to wait for a Pod to become ready before
+	// progressing to rolling out the next Pod.
+	PodReadinessWaitPeriod Duration `json:"podReadinessWaitPeriod" validate:"required"`
 }
 
 type ModelAutoscaling struct {

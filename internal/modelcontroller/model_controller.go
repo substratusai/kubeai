@@ -51,6 +51,7 @@ type ModelReconciler struct {
 	ResourceProfiles        map[string]config.ResourceProfile
 	ModelServers            config.ModelServers
 	ModelServerPods         config.ModelServerPods
+	ModelRollouts           config.ModelRollouts
 }
 
 // +kubebuilder:rbac:groups=kubeai.org,resources=models,verbs=get;list;watch;create;update;patch;delete
@@ -98,7 +99,7 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{}, fmt.Errorf("listing all node pools: %w", err)
 	}
 
-	plan := r.calculatePodPlan(allPods, model, modelConfig)
+	plan := r.calculatePodPlan(log, allPods, model, modelConfig)
 	if err := plan.execute(ctx, r.Client, r.Scheme); err != nil {
 		return ctrl.Result{}, fmt.Errorf("executing pod plan: %w", err)
 	}
