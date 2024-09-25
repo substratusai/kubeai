@@ -1,0 +1,11 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: bge-embed-text-cpu
+spec:
+  features: [TextEmbedding]
+  owner: baai
+  url: hf://BAAI/bge-small-en-v1.5
+  engine: Infinity
+  resourceProfile: cpu:1
