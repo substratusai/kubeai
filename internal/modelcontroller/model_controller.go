@@ -152,7 +152,7 @@ func (r *ModelReconciler) apply(ctx context.Context, model *kubeaiv1.Model, obj 
 }
 */
 
-func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, profile ModelConfig, name string) *corev1.Pod {
+func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, profile ModelConfig) *corev1.Pod {
 	lbs := labelsForModel(m)
 	ann := r.annotationsForModel(m)
 	if _, ok := ann[kubeaiv1.ModelPodPortAnnotation]; !ok {
@@ -199,7 +199,6 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, profile ModelConfig
 
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        name,
 			Namespace:   m.Namespace,
 			Labels:      lbs,
 			Annotations: ann,
@@ -291,7 +290,7 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, profile ModelConfig
 	return pod
 }
 
-func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, profile ModelConfig, name string) *corev1.Pod {
+func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, profile ModelConfig) *corev1.Pod {
 	lbs := labelsForModel(m)
 	ann := r.annotationsForModel(m)
 
@@ -352,7 +351,6 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, profile ModelConf
 
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        name,
 			Namespace:   m.Namespace,
 			Labels:      lbs,
 			Annotations: ann,
@@ -453,7 +451,7 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, profile ModelConf
 
 }
 
-func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, profile ModelConfig, name string) *corev1.Pod {
+func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, profile ModelConfig) *corev1.Pod {
 	lbs := labelsForModel(m)
 	ann := r.annotationsForModel(m)
 	if _, ok := ann[kubeaiv1.ModelPodPortAnnotation]; !ok {
@@ -501,7 +499,6 @@ func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, profile Mo
 
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        name,
 			Namespace:   m.Namespace,
 			Labels:      lbs,
 			Annotations: ann,
@@ -591,7 +588,7 @@ func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, profile Mo
 	return pod
 }
 
-func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, profile ModelConfig, name string) *corev1.Pod {
+func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, profile ModelConfig) *corev1.Pod {
 	lbs := labelsForModel(m)
 	ann := r.annotationsForModel(m)
 
@@ -656,7 +653,6 @@ func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, profile ModelCo
 
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        name,
 			Namespace:   m.Namespace,
 			Labels:      lbs,
 			Annotations: ann,

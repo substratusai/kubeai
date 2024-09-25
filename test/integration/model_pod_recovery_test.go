@@ -4,7 +4,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/utils/ptr"
@@ -24,19 +23,15 @@ func TestModelPodRecovery(t *testing.T) {
 	// Expect 3 Pods to be created.
 	requireModelPods(t, m, 3, "3 Pods should be created", 2*time.Second)
 
-	// Delete pod-1.
+	podList := &corev1.PodList{}
+	require.NoError(t, testK8sClient.List(testCtx, podList, client.InNamespace(testNS), client.MatchingLabels{"model": m.Name}))
+
+	// Delete pod[1].
 	pod1 := &corev1.Pod{}
-	require.NoError(t, testK8sClient.Get(testCtx, client.ObjectKey{Namespace: testNS, Name: "model-" + m.Name + "-1"}, pod1))
+	require.NoError(t, testK8sClient.Get(testCtx, client.ObjectKeyFromObject(&podList.Items[1]), pod1))
 	require.NoError(t, testK8sClient.Delete(testCtx, pod1))
-	origUID := pod1.UID
 
-	require.Eventually(t, func() bool {
-		newPod1 := &corev1.Pod{}
-		if !assert.NoError(t, testK8sClient.Get(testCtx, client.ObjectKey{Namespace: testNS, Name: "model-" + m.Name + "-1"}, newPod1)) {
-			return false
-		}
-		return newPod1.UID != origUID
-	}, time.Second, 100*time.Millisecond, "Pod-1 should be recreated")
-
-	requireModelPods(t, m, 3, "3 Pods should be exist again", 2*time.Second)
+	// NOTE: Wait time needs to be long enough to take into account
+	// the rate limiting the Model Reconciler has for Pod updates.
+	requireModelPods(t, m, 3, "3 Pods should be exist again", 5*time.Second)
 }

@@ -3,9 +3,9 @@ package modelcontroller
 import (
 	"context"
 	"fmt"
+	"math"
 	"sort"
 	"strings"
-	"time"
 
 	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
 	"github.com/substratusai/kubeai/internal/k8sutils"
@@ -18,238 +18,110 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
+// calculatePodPlan calculates the Pod plan for the given Model.
+// It assumes the list of Pods represents an accurate snapshot of the current state.
+// It returns a Pod plan that contains Pods to create and delete.
+// If a rollout is required, it will return a Pod plan that:
+// - Adds a surge Pod
+// - Recreates any out-of-date Pod that is not Ready immediately
+// - Waits for all Pods to be Ready before recreating any out-of-date Pods that are Ready
 func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubeaiv1.Model, modelConfig ModelConfig) *podPlan {
-	var details []string
+	var podForModel *corev1.Pod
+	switch model.Spec.Engine {
+	case kubeaiv1.OLlamaEngine:
+		podForModel = r.oLlamaPodForModel(model, modelConfig)
+	case kubeaiv1.FasterWhisperEngine:
+		podForModel = r.fasterWhisperPodForModel(model, modelConfig)
+	case kubeaiv1.InfinityEngine:
+		podForModel = r.infinityPodForModel(model, modelConfig)
+	default:
+		podForModel = r.vLLMPodForModel(model, modelConfig)
+	}
+	expectedHash := k8sutils.PodHash(podForModel.Spec)
+	podForModel.GenerateName = fmt.Sprintf("model-%s-%s-", model.Name, expectedHash)
+	k8sutils.SetLabel(podForModel, kubeaiv1.PodHashLabel, expectedHash)
+
+	var (
+		readyAll  int
+		outOfDate []corev1.Pod
+	)
+
+	sortPodsByDeletionOrder(allPods.Items, expectedHash)
+
+	for _, p := range allPods.Items {
+		upToDate := k8sutils.GetLabel(&p, kubeaiv1.PodHashLabel) == expectedHash
+
+		if k8sutils.PodIsReady(&p) {
+			readyAll++
+		}
+
+		if !upToDate {
+			outOfDate = append(outOfDate, p)
+		}
+	}
+
+	var (
+		details  []string
+		toCreate []*corev1.Pod
+		toDelete []*corev1.Pod
+	)
 
 	var desiredReplicas int32
 	// NOTE: Replicas could be nil if autoscaling is disabled.
 	if model.Spec.Replicas != nil {
 		desiredReplicas = *model.Spec.Replicas
 	}
+	if len(outOfDate) > 0 {
+		desiredReplicas += r.ModelRollouts.Surge
+	}
+	observedReplicas := int32(len(allPods.Items))
+	replicaDiff := observedReplicas - desiredReplicas
+	replicaDiffAbs := int32(math.Abs(float64(replicaDiff)))
 
-	var podForModel func(*kubeaiv1.Model, ModelConfig, string) *corev1.Pod
-	switch model.Spec.Engine {
-	case kubeaiv1.OLlamaEngine:
-		podForModel = r.oLlamaPodForModel
-	case kubeaiv1.FasterWhisperEngine:
-		podForModel = r.fasterWhisperPodForModel
-	case kubeaiv1.InfinityEngine:
-		podForModel = r.infinityPodForModel
-	default:
-		podForModel = r.vLLMPodForModel
+	switch {
+	case replicaDiff == 0:
+		// At correct scale.
+	case replicaDiff < 0:
+		// Create Pods.
+		details = append(details, fmt.Sprintf("Creating %d Pods", replicaDiffAbs))
+		for i := int32(0); i < replicaDiffAbs; i++ {
+			toCreate = append(toCreate, podForModel.DeepCopy())
+		}
+	case replicaDiff > 0:
+		// Delete Pods.
+		details = append(details, fmt.Sprintf("Deleting %d Pods", replicaDiffAbs))
+		toDeleteCount := replicaDiffAbs
+		for _, pod := range allPods.Items {
+			if toDeleteCount == 0 {
+				break
+			}
+			toDelete = append(toDelete, &pod)
+			toDeleteCount--
+		}
 	}
 
-	var (
-		toCreate []*corev1.Pod
-		toDelete []*corev1.Pod
-	)
-
-	var existingSparePod corev1.Pod
-	var spareExists bool
-	existingReplicaPodMap := make(map[string]corev1.Pod)
-	readyReplicasByHash := make(map[string]int32)
-	newestReplicaPodByHash := make(map[string]corev1.Pod)
-
-	sortPodsByIndex(allPods.Items)
-
-	const spareSuffix = "spare"
-
-	for _, pod := range allPods.Items {
-		// Omit the spare Pod from calculations.
-		if strings.HasSuffix(pod.Name, spareSuffix) {
-			existingSparePod = pod
-			spareExists = true
+	var recreated int
+	for _, pod := range outOfDate {
+		if !k8sutils.PodIsReady(&pod) {
+			details = append(details, fmt.Sprintf("Out-of-date Pod %q is not ready, immediately recreating", pod.Name))
+			toDelete = append(toDelete, &pod)
+			// Avoid recreating the surge Pod when rollout is complete.
+			if recreated < len(outOfDate)-int(r.ModelRollouts.Surge) {
+				toCreate = append(toCreate, podForModel.DeepCopy())
+				recreated++
+			}
 			continue
 		}
-
-		existingReplicaPodMap[pod.Name] = pod
-
-		hash := k8sutils.GetLabel(&pod, kubeaiv1.PodHashLabel)
-		if k8sutils.PodIsReady(&pod) {
-			readyReplicasByHash[hash]++
-		}
-
-		newest := newestReplicaPodByHash[hash]
-		if pod.CreationTimestamp.After(newest.CreationTimestamp.Time) {
-			newestReplicaPodByHash[hash] = pod
-		}
-	}
-
-	type podPair struct {
-		current  *corev1.Pod
-		expected *corev1.Pod
-	}
-	var readyAndNeedsRecreation []podPair
-
-	nameForPodIndex := func(i int32, spare bool) string {
-		if spare {
-			return fmt.Sprintf("model-%s-%s", model.Name, spareSuffix)
-		}
-		return fmt.Sprintf("model-%s-%d", model.Name, i)
-	}
-
-	whatToDoAboutExpectedPod := func(i int32, spare bool) (pair podPair, create, recreate bool) {
-		name := nameForPodIndex(i, spare)
-		defer delete(existingReplicaPodMap, name)
-
-		expectedPod := podForModel(model, modelConfig, name)
-		pair.expected = expectedPod
-		// TODO: If hash collisions become an issue, we can add a Model.Status.CollisionCount (new field)
-		// to the PodHash call.
-		expectedPodHash := k8sutils.PodHash(expectedPod.Spec)
-		k8sutils.SetLabel(expectedPod, kubeaiv1.PodHashLabel, expectedPodHash)
-		k8sutils.SetLabel(expectedPod, kubeaiv1.PodIndexLabel, fmt.Sprintf("%d", i))
-
-		var currentPod corev1.Pod
-		var exists bool
-		if spare {
-			currentPod = existingSparePod
-			exists = spareExists
-		} else {
-			currentPod, exists = existingReplicaPodMap[name]
-		}
-		if exists {
-			// Already exists, compare to see if it needs to be recreated.
-			if k8sutils.GetLabel(&currentPod, kubeaiv1.PodHashLabel) != expectedPodHash {
-				// Mark that the Pod needs to be recreated.
-				pair.current = &currentPod
-				recreate = true
+		if readyAll == int(desiredReplicas) {
+			details = append(details, fmt.Sprintf("All Pods ready, recreating out-of-date Pod %q", pod.Name))
+			toDelete = append(toDelete, &pod)
+			// Avoid recreating the surge Pod when rollout is complete.
+			if recreated < len(outOfDate)-int(r.ModelRollouts.Surge) {
+				toCreate = append(toCreate, podForModel.DeepCopy())
+				recreated++
 			}
-		} else {
-			create = true
+			break
 		}
-
-		return
-	}
-
-	// Loop through a deterministic list of Pod names and create or delete Pods as needed.
-	// Because the client used to list Pods is a cache client, the exact number of Pods
-	// returned may not be accurate which is why we don't just compare total count of Pods
-	// to desired replicas.
-	for i := int32(0); i < desiredReplicas; i++ {
-		pair, create, recreate := whatToDoAboutExpectedPod(i, false)
-		if create {
-			details = append(details, fmt.Sprintf("Creating Pod %q replica", pair.expected.Name))
-			toCreate = append(toCreate, pair.expected)
-		} else if recreate {
-			if k8sutils.PodIsReady(pair.current) {
-				readyAndNeedsRecreation = append(readyAndNeedsRecreation, pair)
-			} else {
-				// Recreate the Pod immediately if it is not ready.
-				details = append(details, fmt.Sprintf("Recreating outdated Pod %q immediately because it is not ready", pair.current.Name))
-				toDelete = append(toDelete, pair.current)
-				toCreate = append(toCreate, pair.expected)
-			}
-		}
-	}
-
-	/*
-		   Pod update rollout sequence:
-
-		   - Detect rollout needed
-		   - Ensure "-spare" pod exists
-
-		   NOTE: Any old-hash unready Pods will be deleted and recreated immediately.
-
-		   ... Re-reconcile ...
-
-		   - Delete & recreate 1 old pod (lowest index first) if EITHER:
-		      A. The most recent pod with the new hash is ready.
-			    OR
-		      B. The most recent pod with the new hash has taken too long to become ready.
-
-		   TODO: Consider implementing a naming convention for Pods that allows
-		   the surge-Pod to be kept around instead of deleted after the rollout
-		   is complete.
-		   This could probably be done by including the hash in the Pod names.
-		   Note: This is probably not a huge deal since Model rollouts should be
-		   infrequent.
-	*/
-
-	if len(readyAndNeedsRecreation) > 0 {
-		spare, createSpare, recreateSpare := whatToDoAboutExpectedPod(0, true)
-		if createSpare {
-			details = append(details, fmt.Sprintf("Creating spare Pod %q because Pod updates need to be rolled out", spare.expected.Name))
-			toCreate = append(toCreate, spare.expected)
-		} else if recreateSpare {
-			details = append(details, fmt.Sprintf("Recreating spare Pod %q because it is outdated", spare.current.Name))
-			// The spare Pod needs to be recreated - must be from an
-			// older update that never fully rolled out.
-			toDelete = append(toDelete, spare.current)
-			toCreate = append(toCreate, spare.expected)
-		} else if spareExists {
-			// We must have already created the spare Pod for the newest
-			// rollout. Check to see if we should progress to recreate
-			// an old Pod.
-
-			hash := k8sutils.GetLabel(readyAndNeedsRecreation[0].expected, kubeaiv1.PodHashLabel)
-
-			lastUpdatedPod, nonSpareUpdatedPodExists := newestReplicaPodByHash[hash]
-			if !nonSpareUpdatedPodExists {
-				lastUpdatedPod = existingSparePod
-			}
-
-			// We add a wait period because it is possible that there might not
-			// be enough capacity to run all Pods in a replicas+1 scenario.
-			//
-			// NOTE: When checking the age of the Pod, we are relying on a
-			// synced cache. This is not guaranteed to be accurate, but it is likely
-			// due to the sleep in the Reconcile loop after Pod changes are made.
-			timeSince := time.Since(lastUpdatedPod.CreationTimestamp.Time)
-			timeoutReached := timeSince > r.ModelRollouts.PodReadinessWaitPeriod.Duration
-			newestUpdatedPodReady := k8sutils.PodIsReady(&lastUpdatedPod)
-
-			if newestUpdatedPodReady || timeoutReached {
-				if newestUpdatedPodReady {
-					details = append(details, fmt.Sprintf("Pod %q is ready, rollout progressing by replacing Pod %q", lastUpdatedPod.Name, readyAndNeedsRecreation[0].current.Name))
-				} else if timeoutReached {
-					details = append(details, fmt.Sprintf("Timed out (%s) waiting for Pod %q to be ready, rollout progressing by replacing Pod %q", timeSince.String(), lastUpdatedPod.Name, readyAndNeedsRecreation[0].current.Name))
-				}
-				// All Pods with the new hash are ready OR
-				// We are done waiting for the most recent Pod to be ready.
-				toDelete = append(toDelete, readyAndNeedsRecreation[0].current)
-				toCreate = append(toCreate, readyAndNeedsRecreation[0].expected)
-			}
-		}
-	} else {
-		// Account for deleting the spare after a rollout is complete.
-		if spareExists {
-			hash := k8sutils.GetLabel(&existingSparePod, kubeaiv1.PodHashLabel)
-
-			spareNotReady := !k8sutils.PodIsReady(&existingSparePod)
-			allReplicasReady := readyReplicasByHash[hash] == desiredReplicas
-			zeroReplicas := desiredReplicas == 0
-
-			// NOTE: When checking the age of the Pod, we are relying on a
-			// synced cache. This is not guaranteed to be accurate, but it is likely
-			// due to the sleep in the Reconcile loop after Pod changes are made.
-			var timeSince time.Duration
-			var timeout bool
-			if newest, ok := newestReplicaPodByHash[hash]; ok {
-				timeSince = time.Since(newest.CreationTimestamp.Time)
-				timeout = timeSince > r.ModelRollouts.PodReadinessWaitPeriod.Duration
-			}
-			if zeroReplicas || spareNotReady || allReplicasReady || timeout {
-				if zeroReplicas {
-					details = append(details, fmt.Sprintf("Rollout complete, no replicas desired, deleting spare Pod %q", existingSparePod.Name))
-				} else if spareNotReady {
-					details = append(details, fmt.Sprintf("Rollout complete, spare Pod %q not ready, deleting spare", existingSparePod.Name))
-				} else if allReplicasReady {
-					details = append(details, fmt.Sprintf("Rollout complete, all Pods ready, deleting spare Pod %q", existingSparePod.Name))
-				} else if timeout {
-					details = append(details, fmt.Sprintf("Rollout complete, timed out (%s) waiting for all Pods to be ready, deleting spare Pod %q", timeSince.String(), existingSparePod.Name))
-				}
-				// All Pods with the new hash are ready or timeout has been reached.
-				// Delete the spare.
-				toDelete = append(toDelete, &existingSparePod)
-			}
-		}
-	}
-
-	// Delete the excess pods.
-	for _, pod := range existingReplicaPodMap {
-		details = append(details, fmt.Sprintf("Deleting excess Pod %q", pod.Name))
-		toDelete = append(toDelete, &pod)
 	}
 
 	return &podPlan{
@@ -282,7 +154,6 @@ func (pp *podPlan) execute(ctx context.Context, client client.Client, scheme *ru
 
 	// Delete before create to avoid unnecessary Node scale-ups.
 	for _, pod := range pp.toDelete {
-		log.Info("Deleting Pod", "podName", pod.Name)
 		if err := client.Delete(ctx, &corev1.Pod{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: pod.Namespace,
@@ -302,7 +173,6 @@ func (pp *podPlan) execute(ctx context.Context, client client.Client, scheme *ru
 		if err := ctrl.SetControllerReference(pp.model, pod, scheme); err != nil {
 			return changed, fmt.Errorf("setting controller reference: %w", err)
 		}
-		log.Info("Creating Pod", "podName", pod.Name)
 		if err := client.Create(ctx, pod, k8sutils.DefaultCreateOptions()); err != nil {
 			if apierrors.IsAlreadyExists(err) {
 				log.Info("Pod already exists", "podName", pod.Name)
@@ -316,8 +186,34 @@ func (pp *podPlan) execute(ctx context.Context, client client.Client, scheme *ru
 	return changed, nil
 }
 
-func sortPodsByIndex(pods []corev1.Pod) {
-	sort.Slice(pods, func(i, j int) bool {
-		return k8sutils.PodIndex(&pods[i]) < k8sutils.PodIndex(&pods[j])
+// sortPodsByDeletionOrder ensures Pods that are to be deleted/recreated
+// first are lower index.
+func sortPodsByDeletionOrder(pods []corev1.Pod, expectedHash string) {
+	sort.SliceStable(pods, func(i, j int) bool {
+		// Not ready Pods should be deleted first.
+		iReady := k8sutils.PodIsReady(&pods[i])
+		jReady := k8sutils.PodIsReady(&pods[j])
+		if iReady != jReady {
+			return !iReady
+		}
+
+		// Unscheduled Pods should be deleted first.
+		iScheduled := k8sutils.PodIsScheduled(&pods[i])
+		jScheduled := k8sutils.PodIsScheduled(&pods[j])
+		if iScheduled != jScheduled {
+			return !iScheduled
+		}
+
+		// Delete Pods that are from older hash first
+		iHash := k8sutils.GetLabel(&pods[i], kubeaiv1.PodHashLabel)
+		jHash := k8sutils.GetLabel(&pods[j], kubeaiv1.PodHashLabel)
+		if iHash != jHash {
+			return iHash != expectedHash
+		}
+
+		// Younger Pods should be deleted first.
+		iCreationTime := pods[i].CreationTimestamp.Time
+		jCreationTime := pods[j].CreationTimestamp.Time
+		return iCreationTime.After(jCreationTime)
 	})
 }
