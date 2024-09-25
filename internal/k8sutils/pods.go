@@ -10,6 +10,10 @@ import (
 	"k8s.io/apimachinery/pkg/util/rand"
 )
 
+func PodIsScheduled(pod *corev1.Pod) bool {
+	return pod.Spec.NodeName != ""
+}
+
 func PodIsReady(pod *corev1.Pod) bool {
 	for _, cond := range pod.Status.Conditions {
 		if cond.Type == corev1.PodReady && cond.Status == corev1.ConditionTrue {

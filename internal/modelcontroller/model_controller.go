@@ -23,6 +23,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -51,6 +52,7 @@ type ModelReconciler struct {
 	ResourceProfiles        map[string]config.ResourceProfile
 	ModelServers            config.ModelServers
 	ModelServerPods         config.ModelServerPods
+	ModelRollouts           config.ModelRollouts
 }
 
 // +kubebuilder:rbac:groups=kubeai.org,resources=models,verbs=get;list;watch;create;update;patch;delete
@@ -99,8 +101,17 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	}
 
 	plan := r.calculatePodPlan(allPods, model, modelConfig)
-	if err := plan.execute(ctx, r.Client, r.Scheme); err != nil {
-		return ctrl.Result{}, fmt.Errorf("executing pod plan: %w", err)
+	if plan.containsActions() {
+		changed, err := plan.execute(ctx, r.Client, r.Scheme)
+		if changed {
+			// Slow things down to wait for caches to sync.
+			// This is important because the pod plan has some calculations that
+			// assume the cache is up to date.
+			time.Sleep(3 * time.Second)
+		}
+		if err != nil {
+			return ctrl.Result{}, fmt.Errorf("executing pod plan: %w", err)
+		}
 	}
 
 	// Summarize all pods.
@@ -125,6 +136,7 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *ModelReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	// TODO: Set Model concurrency. Pod rollouts can be slow.
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&kubeaiv1.Model{}).
 		Owns(&corev1.Pod{}).
@@ -140,7 +152,7 @@ func (r *ModelReconciler) apply(ctx context.Context, model *kubeaiv1.Model, obj 
 }
 */
 
-func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, profile ModelConfig, name string) *corev1.Pod {
+func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, profile ModelConfig) *corev1.Pod {
 	lbs := labelsForModel(m)
 	ann := r.annotationsForModel(m)
 	if _, ok := ann[kubeaiv1.ModelPodPortAnnotation]; !ok {
@@ -187,7 +199,6 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, profile ModelConfig
 
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        name,
 			Namespace:   m.Namespace,
 			Labels:      lbs,
 			Annotations: ann,
@@ -279,7 +290,7 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, profile ModelConfig
 	return pod
 }
 
-func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, profile ModelConfig, name string) *corev1.Pod {
+func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, profile ModelConfig) *corev1.Pod {
 	lbs := labelsForModel(m)
 	ann := r.annotationsForModel(m)
 
@@ -340,7 +351,6 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, profile ModelConf
 
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        name,
 			Namespace:   m.Namespace,
 			Labels:      lbs,
 			Annotations: ann,
@@ -441,7 +451,7 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, profile ModelConf
 
 }
 
-func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, profile ModelConfig, name string) *corev1.Pod {
+func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, profile ModelConfig) *corev1.Pod {
 	lbs := labelsForModel(m)
 	ann := r.annotationsForModel(m)
 	if _, ok := ann[kubeaiv1.ModelPodPortAnnotation]; !ok {
@@ -489,7 +499,6 @@ func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, profile Mo
 
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        name,
 			Namespace:   m.Namespace,
 			Labels:      lbs,
 			Annotations: ann,
@@ -579,7 +588,7 @@ func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, profile Mo
 	return pod
 }
 
-func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, profile ModelConfig, name string) *corev1.Pod {
+func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, profile ModelConfig) *corev1.Pod {
 	lbs := labelsForModel(m)
 	ann := r.annotationsForModel(m)
 
@@ -644,7 +653,6 @@ func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, profile ModelCo
 
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        name,
 			Namespace:   m.Namespace,
 			Labels:      lbs,
 			Annotations: ann,

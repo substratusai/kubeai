@@ -9,6 +9,8 @@ modelServers:
     images:
       default: "ollama/ollama:latest"
       cpu: "ollama/ollama:0.3.8"
+modelRollouts:
+  surge: 0
 messaging:
   errorMaxBackoff: 30s
   streams: []
@@ -18,8 +20,8 @@ messaging:
 resourceProfiles:
   cpu:
     requests:
-      cpu: 1
-      memory: 2Gi
+      cpu: 0.5
+      memory: 1Gi
   nvidia-gpu-l4:
     limits:
       nvidia.com/gpu: "1"

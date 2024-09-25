@@ -33,6 +33,8 @@ type System struct {
 	ModelAutoscaling ModelAutoscaling `json:"modelAutoscaling" validate:"required"`
 
 	ModelServerPods ModelServerPods `json:"modelServerPods,omitempty"`
+
+	ModelRollouts ModelRollouts `json:"modelRollouts"`
 }
 
 func (s *System) DefaultAndValidate() error {
@@ -57,6 +59,11 @@ func (s *System) DefaultAndValidate() error {
 	}
 
 	return validator.New(validator.WithRequiredStructEnabled()).Struct(s)
+}
+
+type ModelRollouts struct {
+	// Surge is the number of additional Pods to create when rolling out an update.
+	Surge int32 `json:"surge"`
 }
 
 type ModelAutoscaling struct {

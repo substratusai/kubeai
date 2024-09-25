@@ -169,6 +169,7 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 		ResourceProfiles:        cfg.ResourceProfiles,
 		ModelServers:            cfg.ModelServers,
 		ModelServerPods:         cfg.ModelServerPods,
+		ModelRollouts:           cfg.ModelRollouts,
 	}
 	if err = modelReconciler.SetupWithManager(mgr); err != nil {
 		return fmt.Errorf("unable to create Model controller: %w", err)

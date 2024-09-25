@@ -12,6 +12,8 @@ data:
       {{- .Values.resourceProfiles | toYaml | nindent 6 }}
     modelServers:
       {{- .Values.modelServers | toYaml | nindent 6 }}
+    modelRollouts:
+      {{- .Values.modelRollouts | toYaml | nindent 6 }}
     modelServerPods:
       {{- if .Values.modelServerPods }}
       {{- if .Values.modelServerPods.podSecurityContext }}
