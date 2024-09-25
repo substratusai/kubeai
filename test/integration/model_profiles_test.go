@@ -72,5 +72,5 @@ func TestModelProfiles(t *testing.T) {
 		// The Pod should have a single container named "server".
 		container := mustFindPodContainerByName(t, pod, "server")
 		assert.Equal(t, userImage, container.Image)
-	}, 5*time.Second, time.Second/10, "User specified image should be respected")
+	}, 15*time.Second, time.Second/10, "User specified image should be respected")
 }

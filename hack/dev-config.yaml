@@ -9,6 +9,8 @@ modelServers:
     images:
       default: "ollama/ollama:latest"
       cpu: "ollama/ollama:0.3.8"
+modelRollouts:
+  surge: 0
 messaging:
   errorMaxBackoff: 30s
   streams: []
