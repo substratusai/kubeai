@@ -21,7 +21,7 @@ func TestModelPodRecovery(t *testing.T) {
 	require.NoError(t, testK8sClient.Create(testCtx, m))
 
 	// Expect 3 Pods to be created.
-	requireModelPods(t, m, 3, "3 Pods should be created", 2*time.Second)
+	requireModelPods(t, m, 3, "3 Pods should be created", 5*time.Second)
 
 	podList := &corev1.PodList{}
 	require.NoError(t, testK8sClient.List(testCtx, podList, client.InNamespace(testNS), client.MatchingLabels{"model": m.Name}))

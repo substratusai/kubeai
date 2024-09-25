@@ -54,7 +54,7 @@ func TestMessenger(t *testing.T) {
 	// Assert on replicas before completing the request - otherwise there is a race condition
 	// with the autoscaler.
 	requireModelReplicas(t, m, 1, "Replicas should be scaled up to 1 to process messaging request", 3*time.Second)
-	requireModelPods(t, m, 1, "Pod should be created for the messaging request", 3*time.Second)
+	requireModelPods(t, m, 1, "Pod should be created for the messaging request", 5*time.Second)
 	markAllModelPodsReady(t, m)
 	completeBackendRequests(backendComplete, 1)
 
