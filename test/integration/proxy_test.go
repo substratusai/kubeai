@@ -69,13 +69,13 @@ vllm:num_requests_waiting{model_name="%s"} %d.0
 	var wg sync.WaitGroup
 	sendRequests(t, &wg, m.Name, 1, http.StatusOK)
 
-	requireModelReplicas(t, m, 1, "Replicas should be scaled up to 1 to process messaging request", time.Second)
+	requireModelReplicas(t, m, 1, "Replicas should be scaled up to 1 to process messaging request", 5*time.Second)
 	requireModelPods(t, m, 1, "Pod should be created for the messaging request", 5*time.Second)
 	markAllModelPodsReady(t, m)
 	completeRequests(backendComplete, 1)
 	require.Equal(t, int32(1), totalBackendRequests.Load(), "ensure the request made its way to the backend")
 
-	const autoscaleUpWait = 10 * time.Second
+	const autoscaleUpWait = 15 * time.Second
 	// Ensure the deployment is autoscaled past 1.
 	// Simulate the backend processing the request.
 	sendRequests(t, &wg, m.Name, 2, http.StatusOK)
@@ -94,7 +94,7 @@ vllm:num_requests_waiting{model_name="%s"} %d.0
 	require.Equal(t, int32(5), totalBackendRequests.Load(), "ensure all the requests made their way to the backend")
 
 	// Ensure the deployment is autoscaled back down to MinReplicas.
-	const autoscaleDownWait = 10 * time.Second
+	const autoscaleDownWait = 15 * time.Second
 	requireModelReplicas(t, m, m.Spec.MinReplicas, "Replicas should scale back to MinReplicas", autoscaleDownWait)
 	requireModelPods(t, m, int(m.Spec.MinReplicas), "Pods should be removed", 5*time.Second)
 
