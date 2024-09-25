@@ -533,6 +533,22 @@ entries:
   models:
   - apiVersion: v2
     appVersion: 1.16.0
+    created: "2024-09-25T14:16:03.00602873Z"
+    description: A Helm chart for Kubernetes
+    digest: 21b63916f89013e3234ba637709031796f179c1773bca92632e6941c9a07e54b
+    maintainers:
+    - name: nstogner
+      url: https://www.linkedin.com/in/nstogner/
+    - email: sammiestoel@gmail.com
+      name: samos123
+      url: https://www.linkedin.com/in/samstoelinga/
+    name: models
+    type: application
+    urls:
+    - https://github.com/substratusai/kubeai/releases/download/helm-chart-models-0.5.0/models-0.5.0.tgz
+    version: 0.5.0
+  - apiVersion: v2
+    appVersion: 1.16.0
     created: "2024-09-19T05:19:25.566731128Z"
     description: A Helm chart for Kubernetes
     digest: d121cc274f9660f1b9d816b3cd5788483ee1bc8b661945ef7396a72f0fa1e28e
@@ -547,4 +563,4 @@ entries:
     urls:
     - https://github.com/substratusai/kubeai/releases/download/kubeai-helm-chart-0.4.1/models-0.4.1.tgz
     version: 0.4.1
-generated: "2024-09-25T05:50:25.636532941Z"
+generated: "2024-09-25T14:16:03.006081929Z"
