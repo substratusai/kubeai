@@ -10,6 +10,7 @@ catalog:
     owner: intfloat
     url: "hf://intfloat/e5-mistral-7b-instruct"
     engine: VLLM
+    # TODO: Adjust - the memory associated with this request is too low.
     resourceProfile: cpu:1
     args:
     - --gpu-memory-utilization=0.9
@@ -30,27 +31,27 @@ catalog:
     resourceProfile: google-tpu-v5e-1x1:1
     args:
     - --disable-log-requests
-  #gemma2-9b-it-fp8-tpu:
-  #  enabled: false
-  #  features: ["TextGeneration"]
-  #  owner: neuralmagic
-  #  # ValueError: fp8 quantization is currently not supported in TPU Backend.
-  #  #url: "hf://neuralmagic/gemma-2-9b-it-FP8"
-  #  engine: VLLM
-  #  resourceProfile: google-tpu-v5e-1x1:1
-  #  args:
-  #  - --disable-log-requests
-  #gemma2-9b-it-int8-tpu:
-  #  enabled: false
-  #  features: ["TextGeneration"]
-  #  owner: neuralmagic
-  #  # ValueError: compressed-tensors quantization is currently not supported in TPU Backend.
-  #  #url: "hf://neuralmagic/gemma-2-9b-it-quantized.w8a8"
-  #  #url: "hf://neuralmagic/gemma-2-9b-it-quantized.w8a16"
-  #  engine: VLLM
-  #  resourceProfile: google-tpu-v5e-1x1:1
-  #  args:
-  #  - --disable-log-requests
+  # gemma2-9b-it-fp8-tpu:
+  #   enabled: false
+  #   features: ["TextGeneration"]
+  #   owner: neuralmagic
+  #   # vLLM logs: "ValueError: fp8 quantization is currently not supported in TPU Backend."
+  #   #url: "hf://neuralmagic/gemma-2-9b-it-FP8"
+  #   engine: VLLM
+  #   resourceProfile: google-tpu-v5e-1x1:1
+  #   args:
+  #   - --disable-log-requests
+  # gemma2-9b-it-int8-tpu:
+  #   enabled: false
+  #   features: ["TextGeneration"]
+  #   owner: neuralmagic
+  #   # vLLM logs: "ValueError: compressed-tensors quantization is currently not supported in TPU Backend."
+  #   #url: "hf://neuralmagic/gemma-2-9b-it-quantized.w8a8"
+  #   #url: "hf://neuralmagic/gemma-2-9b-it-quantized.w8a16"
+  #   engine: VLLM
+  #   resourceProfile: google-tpu-v5e-1x1:1
+  #   args:
+  #   - --disable-log-requests
   # Llama #
   llama-3.1-8b-instruct-cpu:
     enabled: false
@@ -143,6 +144,7 @@ catalog:
     owner: facebook
     url: "hf://facebook/opt-125m"
     engine: VLLM
+    # TODO: Adjust - the memory associated with this request is too low.
     resourceProfile: cpu:1
   opt-125m-l4:
     enabled: false
