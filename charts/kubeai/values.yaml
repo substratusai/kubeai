@@ -95,6 +95,7 @@ modelAutoscaling:
   # Time window the autoscaling algorithm will consider when calculating
   # the desired number of replicas.
   timeWindow: 10m
+  # minReplicas: 1
 
 messaging:
   errorMaxBackoff: 30s

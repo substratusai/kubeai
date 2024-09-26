@@ -74,6 +74,7 @@ type ModelAutoscaling struct {
 	// calculating the average number of requests.
 	// Defaults to 10 minutes.
 	TimeWindow Duration `json:"timeWindow" validate:"required"`
+	MinReplicas: int?
 }
 
 // RequiredConsecutiveScaleDowns returns the number of consecutive scale down

@@ -114,6 +114,22 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 	}
 
+	// if System.ModelAutoscaling.MinReplicas > 0:
+	//     pdbPlan = generate PDB
+	/*
+	apiVersion: policy/v1
+	kind: PodDisruptionBudget
+	metadata:
+	  name: ${model-name}-pdb
+	  namespace: ${namespace}
+	spec:
+	  minAvailable: System.ModelAutoscaling.MinReplicas
+	  selector:
+	    matchLabels:
+	      model: ${model-name}
+	*/
+	// pdbPlan.execute(ctx, r.Client, r.Scheme)
+
 	// Summarize all pods.
 	var readyPods int32
 	for _, pod := range allPods.Items {

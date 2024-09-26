@@ -136,6 +136,7 @@ func sysCfg() config.System {
 		ModelAutoscaling: config.ModelAutoscaling{
 			Interval:   config.Duration{Duration: 1 * time.Second},
 			TimeWindow: config.Duration{Duration: 5 * time.Second},
+			MinReplicas: 0,
 		},
 		AllowPodAddressOverride: true,
 	}
