@@ -20,8 +20,7 @@ modelServers:
       default: "vllm/vllm-openai:v0.6.1.post2"
       cpu: "substratusai/vllm:v0.5.5-cpu"
       nvidia-gpu: "vllm/vllm-openai:v0.6.1.post2"
-      # TODO publish tpu image.
-      google-tpu: "substratusai/vllm-openai-tpu:v0.5.5"
+      google-tpu: "ghcr.io/substratusai/vllm:v0.6.1-tpu"
   OLlama:
     images:
       default: "ollama/ollama:latest"

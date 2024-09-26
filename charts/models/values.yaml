@@ -21,6 +21,36 @@ catalog:
     url: "ollama://gemma2:2b"
     engine: OLlama
     resourceProfile: cpu:2
+  gemma-2b-it-tpu:
+    enabled: false
+    features: ["TextGeneration"]
+    owner: google
+    url: "hf://google/gemma-2b-it"
+    engine: VLLM
+    resourceProfile: google-tpu-v5e-1x1:1
+    args:
+    - --disable-log-requests
+  #gemma2-9b-it-fp8-tpu:
+  #  enabled: false
+  #  features: ["TextGeneration"]
+  #  owner: neuralmagic
+  #  # ValueError: fp8 quantization is currently not supported in TPU Backend.
+  #  #url: "hf://neuralmagic/gemma-2-9b-it-FP8"
+  #  engine: VLLM
+  #  resourceProfile: google-tpu-v5e-1x1:1
+  #  args:
+  #  - --disable-log-requests
+  #gemma2-9b-it-int8-tpu:
+  #  enabled: false
+  #  features: ["TextGeneration"]
+  #  owner: neuralmagic
+  #  # ValueError: compressed-tensors quantization is currently not supported in TPU Backend.
+  #  #url: "hf://neuralmagic/gemma-2-9b-it-quantized.w8a8"
+  #  #url: "hf://neuralmagic/gemma-2-9b-it-quantized.w8a16"
+  #  engine: VLLM
+  #  resourceProfile: google-tpu-v5e-1x1:1
+  #  args:
+  #  - --disable-log-requests
   # Llama #
   llama-3.1-8b-instruct-cpu:
     enabled: false
@@ -34,6 +64,38 @@ catalog:
     args:
     - --max-model-len=32768
     - --max-num-batched-token=32768
+  llama-3.1-8b-instruct-tpu:
+    enabled: false
+    features: ["TextGeneration"]
+    owner: meta-llama
+    url: "hf://meta-llama/Meta-Llama-3.1-8B-Instruct"
+    engine: VLLM
+    resourceProfile: google-tpu-v5e-2x2:4
+    args:
+    - --disable-log-requests
+    - --swap-space=8
+    - --tensor-parallel-size=4
+    - --num-scheduler-steps=4
+    - --max-model-len=8192
+    # Set backend to ray b/c using "--distributed-executor-backend=mp" (or letting it default)
+    # results in the following error:
+    #
+    # Traceback (most recent call last):
+    #   File "/usr/local/lib/python3.10/multiprocessing/process.py", line 314, in _bootstrap
+    #     self.run()
+    #   File "/usr/local/lib/python3.10/multiprocessing/process.py", line 108, in run
+    #     self._target(*self._args, **self._kwargs)
+    #   File "/workspace/vllm/vllm/entrypoints/openai/rpc/server.py", line 236, in run_rpc_server
+    #     server = AsyncEngineRPCServer(async_engine_args, usage_context, rpc_path)
+    #   File "/workspace/vllm/vllm/entrypoints/openai/rpc/server.py", line 34, in __init__
+    #     self.engine = AsyncLLMEngine.from_engine_args(
+    #   File "/workspace/vllm/vllm/engine/async_llm_engine.py", line 732, in from_engine_args
+    #     executor_class = cls._get_executor_cls(engine_config)
+    #   File "/workspace/vllm/vllm/engine/async_llm_engine.py", line 675, in _get_executor_cls
+    #     assert distributed_executor_backend is None
+    # AssertionError
+    #
+    - --distributed-executor-backend=ray
   llama-3.1-8b-instruct-fp8-l4:
     enabled: false
     features: ["TextGeneration"]

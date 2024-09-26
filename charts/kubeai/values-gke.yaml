@@ -7,3 +7,24 @@ resourceProfiles:
     nodeSelector:
       cloud.google.com/gke-accelerator: "nvidia-h100-80gb"
       cloud.google.com/gke-spot: "true"
+  google-tpu-v5e-1x1:
+    imageName: google-tpu
+    limits:
+      google.com/tpu: 1
+    nodeSelector:
+      cloud.google.com/gke-tpu-accelerator: tpu-v5-lite-podslice
+      cloud.google.com/gke-tpu-topology: "1x1"
+  google-tpu-v5e-2x2:
+    imageName: google-tpu
+    limits:
+      google.com/tpu: 1
+    nodeSelector:
+      cloud.google.com/gke-tpu-accelerator: tpu-v5-lite-podslice
+      cloud.google.com/gke-tpu-topology: "2x2"
+  google-tpu-v5e-2x4:
+    imageName: google-tpu
+    limits:
+      google.com/tpu: 1
+    nodeSelector:
+      cloud.google.com/gke-tpu-accelerator: tpu-v5-lite-podslice
+      cloud.google.com/gke-tpu-topology: "2x4"
