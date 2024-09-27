@@ -124,7 +124,7 @@ catalog:
       - --disable-log-requests
     resourceProfile: nvidia-gpu-h100:2
     targetRequests: 500
-  llama-3.1-405b-instruct-fp8:
+  llama-3.1-405b-instruct-fp8-h100:
     enabled: false
     features: [TextGeneration]
     url: hf://neuralmagic/Meta-Llama-3.1-405B-Instruct-FP8

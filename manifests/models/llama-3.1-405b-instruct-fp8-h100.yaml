@@ -2,7 +2,7 @@
 apiVersion: kubeai.org/v1
 kind: Model
 metadata:
-  name: llama-3.1-405b-instruct-fp8
+  name: llama-3.1-405b-instruct-fp8-h100
 spec:
   features: [TextGeneration]
   owner:
