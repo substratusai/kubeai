@@ -18,9 +18,9 @@ modelServers:
       # The "default" image should always be specified.
       # "default" is used when no imageName is specified or if a specific image is not found.
       default: "vllm/vllm-openai:v0.6.1.post2"
-      cpu: "ghcr.io/substratusai/vllm:v0.6.1-cpu"
+      cpu: "substratusai/vllm:v0.6.1-cpu"
       nvidia-gpu: "vllm/vllm-openai:v0.6.1.post2"
-      google-tpu: "ghcr.io/substratusai/vllm:v0.6.1-tpu"
+      google-tpu: "substratusai/vllm:v0.6.1-tpu"
   OLlama:
     images:
       default: "ollama/ollama:latest"
