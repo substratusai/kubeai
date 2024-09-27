@@ -163,9 +163,6 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, profile ModelConfig
 	args := []string{
 		"--model=" + strings.TrimPrefix(m.Spec.URL, "hf://"),
 		"--served-model-name=" + m.Name,
-		// NOTE: The following flag is a workaround for a known issue with VLLM where metrics wont show.
-		// https://github.com/vllm-project/vllm/issues/7188
-		"--disable-frontend-multiprocessing",
 	}
 	args = append(args, m.Spec.Args...)
 
@@ -213,6 +210,7 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, profile ModelConfig
 				{
 					Name:            "server",
 					Image:           profile.Image,
+					Command:         []string{"python3", "-m", "vllm.entrypoints.openai.api_server"},
 					Args:            args,
 					Env:             env,
 					SecurityContext: r.ModelServerPods.ModelContainerSecurityContext,
@@ -658,11 +656,11 @@ func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, profile ModelCo
 			Annotations: ann,
 		},
 		Spec: corev1.PodSpec{
-			SecurityContext:    r.ModelServerPods.ModelPodSecurityContext,
 			ServiceAccountName: r.ModelServerPods.ModelServiceAccountName,
 			NodeSelector:       profile.NodeSelector,
 			Affinity:           profile.Affinity,
 			Tolerations:        profile.Tolerations,
+			SecurityContext:    r.ModelServerPods.ModelPodSecurityContext,
 			Containers: []corev1.Container{
 				{
 					Name:  "server",

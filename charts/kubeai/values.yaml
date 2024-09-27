@@ -18,10 +18,9 @@ modelServers:
       # The "default" image should always be specified.
       # "default" is used when no imageName is specified or if a specific image is not found.
       default: "vllm/vllm-openai:v0.6.1.post2"
-      cpu: "substratusai/vllm:v0.5.5-cpu"
+      cpu: "substratusai/vllm:v0.6.1-cpu"
       nvidia-gpu: "vllm/vllm-openai:v0.6.1.post2"
-      # TODO publish tpu image.
-      google-tpu: "substratusai/vllm-openai-tpu:v0.5.5"
+      google-tpu: "substratusai/vllm:v0.6.1-tpu"
   OLlama:
     images:
       default: "ollama/ollama:latest"
@@ -53,7 +52,13 @@ resourceProfiles:
     imageName: "cpu"
     requests:
       cpu: 1
+      # TODO: Consider making this a ratio that is more common on cloud machines
+      # such as 1:4 CPU:Mem. NOTE: This might need to be adjusted for local clusters.
       memory: "2Gi"
+      # TODO: Consider adding eph storage requests/limits.
+      # Perhaps this is just needed for GKE Autopilot which defaults
+      # to 1Gi for CPU-only.
+      # ephemeral-storage: "2Gi"
   nvidia-gpu-l4:
     imageName: "nvidia-gpu"
     limits:
