@@ -130,12 +130,13 @@ func (d *Duration) UnmarshalJSON(b []byte) error {
 }
 
 type ResourceProfile struct {
-	ImageName    string              `json:"imageName"`
-	Requests     corev1.ResourceList `json:"requests,omitempty"`
-	Limits       corev1.ResourceList `json:"limits,omitempty"`
-	NodeSelector map[string]string   `json:"nodeSelector,omitempty"`
-	Affinity     *corev1.Affinity    `json:"affinity,omitempty"`
-	Tolerations  []corev1.Toleration `json:"tolerations,omitempty"`
+	ImageName        string              `json:"imageName"`
+	Requests         corev1.ResourceList `json:"requests,omitempty"`
+	Limits           corev1.ResourceList `json:"limits,omitempty"`
+	NodeSelector     map[string]string   `json:"nodeSelector,omitempty"`
+	Affinity         *corev1.Affinity    `json:"affinity,omitempty"`
+	Tolerations      []corev1.Toleration `json:"tolerations,omitempty"`
+	RuntimeClassName *string             `json:"runtimeClassName,omitempty"`
 }
 
 type MessageStream struct {

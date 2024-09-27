@@ -15,7 +15,10 @@ import (
 	"gocloud.dev/pubsub"
 	_ "gocloud.dev/pubsub/mempubsub"
 	corev1 "k8s.io/api/core/v1"
+	nodev1 "k8s.io/api/node/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
@@ -33,7 +36,13 @@ var (
 	testNS        = "default"
 	// testHTTPClient is a client with a long timeout for use in tests
 	// where requests may be held for long periods of time on purpose.
-	testHTTPClient = &http.Client{Timeout: 5 * time.Minute}
+	testHTTPClient  = &http.Client{Timeout: 5 * time.Minute}
+	cpuRuntimeClass = nodev1.RuntimeClass{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: cpuRuntimeClassName,
+		},
+		Handler: "my-cpu-runtime-handler",
+	}
 )
 
 // Messenger //
@@ -55,6 +64,7 @@ const (
 	resourceProfileNvidiaGPU = "nvidia-gpu-l4"
 	testVLLMDefualtImage     = "default-vllm-image:v1.2.3"
 	testVLLMCPUImage         = "cpu-vllm-image:v1.2.3"
+	cpuRuntimeClassName      = "my-cpu-runtime-class"
 )
 
 // sysCfg returns the System configuration for testing.
@@ -103,6 +113,7 @@ func sysCfg() config.System {
 						Effect:   corev1.TaintEffectNoSchedule,
 					},
 				},
+				RuntimeClassName: ptr.To(cpuRuntimeClassName),
 				Affinity: &corev1.Affinity{
 					NodeAffinity: &corev1.NodeAffinity{
 						RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
@@ -159,6 +170,9 @@ func TestMain(m *testing.M) {
 	testK8sClient, err = client.New(k8sCfg, client.Options{Scheme: manager.Scheme})
 	requireNoError(err)
 
+	err = installCommonResources()
+	requireNoError(err)
+
 	// Setup messenger requests.
 	testRequestsTopic, err = pubsub.OpenTopic(testCtx, memRequestsURL)
 	requireNoError(err)
@@ -207,4 +221,11 @@ func requireNoError(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func installCommonResources() error {
+	if err := testK8sClient.Create(testCtx, &cpuRuntimeClass); err != nil {
+		return err
+	}
+	return nil
 }

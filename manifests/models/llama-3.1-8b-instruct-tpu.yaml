@@ -1,0 +1,18 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: llama-3.1-8b-instruct-tpu
+spec:
+  features: [TextGeneration]
+  owner: meta-llama
+  url: hf://meta-llama/Meta-Llama-3.1-8B-Instruct
+  engine: VLLM
+  args:
+    - --disable-log-requests
+    - --swap-space=8
+    - --tensor-parallel-size=4
+    - --num-scheduler-steps=4
+    - --max-model-len=8192
+    - --distributed-executor-backend=ray
+  resourceProfile: google-tpu-v5e-2x2:4

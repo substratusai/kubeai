@@ -36,6 +36,7 @@ resourceProfiles:
       custom.com/gpu: "1"
       cpu: "3"
       memory: "12Gi"
+    runtimeClassName: "my-custom-runtime-class"
 ```
 
 If you need to run custom model server images on your resource profile, make sure to also add those in the `modelServers` section:

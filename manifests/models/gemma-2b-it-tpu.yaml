@@ -1,0 +1,13 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: gemma-2b-it-tpu
+spec:
+  features: [TextGeneration]
+  owner: google
+  url: hf://google/gemma-2b-it
+  engine: VLLM
+  args:
+    - --disable-log-requests
+  resourceProfile: google-tpu-v5e-1x1:1
