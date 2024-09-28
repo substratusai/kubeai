@@ -117,11 +117,29 @@ catalog:
     args:
       - --max-model-len=65536
       - --max-num-batched-token=65536
+      - --max-num-seqs=1024
       - --gpu-memory-utilization=0.9
       - --tensor-parallel-size=2
       - --enable-prefix-caching
       - --disable-log-requests
     resourceProfile: nvidia-gpu-h100:2
+    targetRequests: 500
+  llama-3.1-405b-instruct-fp8-h100:
+    enabled: false
+    features: [TextGeneration]
+    url: hf://neuralmagic/Meta-Llama-3.1-405B-Instruct-FP8
+    engine: VLLM
+    args:
+      - --max-model-len=65536
+      - --max-num-batched-token=65536
+      - --gpu-memory-utilization=0.9
+      - --tensor-parallel-size=8
+      - --enable-prefix-caching
+      - --disable-log-requests
+      - --max-num-seqs=1024
+      - --kv-cache-dtype=fp8
+    # You can also use nvidia-gpu-a100-80gb:8
+    resourceProfile: nvidia-gpu-h100:8
     targetRequests: 500
   nomic-embed-text-cpu:
     enabled: false
