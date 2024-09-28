@@ -54,6 +54,10 @@ kubectl explain models.spec
 kubectl explain models.spec.engine
 ```
 
+## Programmatically installing models
+
+See the [examples](https://github.com/substratusai/kubeai/tree/main/examples/k8s-api-clients).
+
 ## Feedback welcome: A model management UI
 
 We are considering adding a UI for managing models in a running KubeAI instance. Give the [GitHub Issue](https://github.com/substratusai/kubeai/issues/148) a thumbs up if you would be interested in this feature.
