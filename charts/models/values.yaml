@@ -3,6 +3,26 @@ all:
   enabled: false
 
 catalog:
+  llama-3.2-11b-vision-instruct-l4:
+    enabled: false
+    features: [TextGeneration]
+    url: hf://neuralmagic/Llama-3.2-11B-Vision-Instruct-FP8-dynamic
+    engine: VLLM
+    env:
+      VLLM_WORKER_MULTIPROC_METHOD: spawn
+    args:
+      - --max-model-len=8192
+      - --max-num-batched-token=8192
+      - --gpu-memory-utilization=0.99
+      - --enforce-eager
+      - --disable-log-requests
+      - --max-num-seqs=16
+      # Setting this is broken in vllm 0.6.2
+      #    - --kv-cache-dtype=fp8
+    resourceProfile: nvidia-gpu-l4:1
+    minReplicas: 1
+    maxReplicas: 1
+    targetRequests: 32
   # Mistral #
   e5-mistral-7b-instruct-cpu:
     enabled: false
