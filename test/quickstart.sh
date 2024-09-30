@@ -87,9 +87,21 @@ wait_for_pod_ready model=gemma2-2b-cpu
 
 curl -s -X GET "http://localhost:8000/openai/v1/models" | jq '. | length == 4'
 
-curl http://localhost:8000/openai/v1/completions \
-  -H "Content-Type: application/json" \
-  -d '{"model": "gemma2-2b-cpu", "prompt": "Who was the first president of the United States?", "max_tokens": 40}'
+function test_completion() {
+  local url="$1"
+  http_code=$(curl -sw '%{http_code}' ${url} \
+    -H "Content-Type: application/json" \
+    -d '{"model": "gemma2-2b-cpu", "prompt": "Who was the first president of the United States?", "max_tokens": 40}')
+  if [ "$http_code" -ne 200 ]; then
+    echo "Failed to get completions from $url"
+    echo "HTTP code: $http_code"
+    exit 1
+  fi
+}
+
+test_completion "http://localhost:8000/openai/v1/completions"
+# Double slash in the URL should work as well.
+test_completion "http://localhost:8000/openai//v1/completions"
 
 # Test the speech to text endpoint
 wait_for_pod_ready model=faster-whisper-medium-en-cpu
