@@ -8,13 +8,11 @@
       
       
       
-        <link rel="canonical" href="https://www.kubeai.org/concepts/autoscaling/">
+        <link rel="canonical" href="https://www.kubeai.org/benchmarks/llama-3.2-11b-vision/">
       
       
-        <link rel="prev" href="../../how-to/install-models/">
+        <link rel="prev" href="../../reference/openai-api-compatibility/">
       
-      
-        <link rel="next" href="../backend-servers/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +20,7 @@
     
     
       
-        <title>Autoscaling - KubeAI</title>
+        <title>Llama 3.2 11B Vision Instruct vLLM Benchmarks - KubeAI</title>
       
     
     
@@ -72,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#autoscaling" class="md-skip">
+        <a href="#llama-32-11b-vision-instruct-vllm-benchmarks" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +106,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Autoscaling
+              Llama 3.2 11B Vision Instruct vLLM Benchmarks
             
           </span>
         </div>
@@ -473,19 +471,17 @@
       
   
   
-    
   
   
-  
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
         
           
           <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
@@ -499,7 +495,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             Concepts
@@ -510,30 +506,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Autoscaling
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../concepts/autoscaling/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -542,35 +518,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#next" class="md-nav__link">
-    <span class="md-ellipsis">
-      Next
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -583,7 +530,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../backend-servers/" class="md-nav__link">
+      <a href="../../concepts/backend-servers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -604,7 +551,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../resource-profiles/" class="md-nav__link">
+      <a href="../../concepts/resource-profiles/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -625,7 +572,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../storage-caching/" class="md-nav__link">
+      <a href="../../concepts/storage-caching/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -944,17 +891,19 @@
       
   
   
+    
   
   
+  
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
         
           
           <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
@@ -968,7 +917,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_8">
             <span class="md-nav__icon md-icon"></span>
             Benchmarks
@@ -979,10 +928,19 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../benchmarks/llama-3.2-11b-vision/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -991,6 +949,7 @@
   
 
       </a>
+      
     </li>
   
 
@@ -1023,23 +982,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#next" class="md-nav__link">
-    <span class="md-ellipsis">
-      Next
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -1056,12 +998,35 @@
   
 
 
-<h1 id="autoscaling">Autoscaling<a class="headerlink" href="#autoscaling" title="Permanent link">&para;</a></h1>
-<p>KubeAI proxies HTTP and messaging (i.e. Kafka, etc) requests and messages to models. It will adjust the number Pods serving a given model based on metrics reported by those servers. If no Pods are running when a request comes in, KubeAI will hold the request, scale up a Pod and forward the request when the Pod is ready. This process happens in a manner that is transparent to the end client (other than the added delay from a cold-start).</p>
-<p><br>
-<img src="/diagrams/autoscaling.excalidraw.png" width="90%"></img></p>
-<h2 id="next">Next<a class="headerlink" href="#next" title="Permanent link">&para;</a></h2>
-<p>Read about <a href="../../how-to/configure-autoscaling/">how to configure autoscaling</a>.</p>
+<h1 id="llama-32-11b-vision-instruct-vllm-benchmarks">Llama 3.2 11B Vision Instruct vLLM Benchmarks<a class="headerlink" href="#llama-32-11b-vision-instruct-vllm-benchmarks" title="Permanent link">&para;</a></h1>
+<p>Single L4 GPU vLLM 0.6.2
+<div class="highlight"><pre><span></span><code>python3 benchmark_serving.py --backend openai \
+    --base-url http://localhost:8000/openai \
+    --dataset-name=sharegpt --dataset-path=ShareGPT_V3_unfiltered_cleaned_split.json \
+    --model meta-llama-3.2-11b-vision-instruct \
+    --seed 12345 --tokenizer neuralmagic/Llama-3.2-11B-Vision-Instruct-FP8-dynamic
+============ Serving Benchmark Result ============
+Successful requests:                     1000
+Benchmark duration (s):                  681.93
+Total input tokens:                      230969
+Total generated tokens:                  194523
+Request throughput (req/s):              1.47
+Output token throughput (tok/s):         285.25
+Total Token throughput (tok/s):          623.95
+---------------Time to First Token----------------
+Mean TTFT (ms):                          319146.12
+Median TTFT (ms):                        322707.98
+P99 TTFT (ms):                           642512.79
+-----Time per Output Token (excl. 1st token)------
+Mean TPOT (ms):                          54.84
+Median TPOT (ms):                        53.66
+P99 TPOT (ms):                           83.75
+---------------Inter-token Latency----------------
+Mean ITL (ms):                           54.09
+Median ITL (ms):                         47.44
+P99 ITL (ms):                            216.77
+==================================================
+</code></pre></div></p>
 
 
 
