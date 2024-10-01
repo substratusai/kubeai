@@ -1,0 +1,23 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: llama-3.2-11b-vision-instruct-l4
+spec:
+  features: [TextGeneration]
+  owner:
+  url: hf://neuralmagic/Llama-3.2-11B-Vision-Instruct-FP8-dynamic
+  engine: VLLM
+  args:
+    - --max-model-len=8192
+    - --max-num-batched-token=8192
+    - --gpu-memory-utilization=0.99
+    - --enforce-eager
+    - --disable-log-requests
+    - --max-num-seqs=16
+  env:
+    VLLM_WORKER_MULTIPROC_METHOD: spawn
+  minReplicas: 1
+  maxReplicas: 1
+  targetRequests: 32
+  resourceProfile: nvidia-gpu-l4:1
