@@ -2,6 +2,31 @@ apiVersion: v1
 entries:
   kubeai:
   - apiVersion: v2
+    appVersion: v0.8.0
+    created: "2024-10-01T03:28:31.142163686Z"
+    dependencies:
+    - condition: openwebui.enabled
+      name: openwebui
+      repository: ""
+      version: 0.1.1
+    description: Private Open AI Platform for Kubernetes.
+    digest: 58cc38dd61e3d8c9be24763443d0e74e75e8e21890bd6715db06cb39bdb9bbd1
+    home: https://www.substratus.ai
+    keywords:
+    - LLM
+    - AI
+    maintainers:
+    - name: nstogner
+      url: https://www.linkedin.com/in/nstogner/
+    - email: sammiestoel@gmail.com
+      name: samos123
+      url: https://www.linkedin.com/in/samstoelinga/
+    name: kubeai
+    type: application
+    urls:
+    - https://github.com/substratusai/kubeai/releases/download/helm-chart-kubeai-0.6.0/kubeai-0.6.0.tgz
+    version: 0.6.0
+  - apiVersion: v2
     appVersion: v0.7.0
     created: "2024-09-25T16:34:07.050679682Z"
     dependencies:
@@ -558,6 +583,22 @@ entries:
   models:
   - apiVersion: v2
     appVersion: 1.16.0
+    created: "2024-10-01T03:28:31.305488528Z"
+    description: A Helm chart for Kubernetes
+    digest: e918a00f722683f04028a2027929f564527310e142288a65337b4e867ee17085
+    maintainers:
+    - name: nstogner
+      url: https://www.linkedin.com/in/nstogner/
+    - email: sammiestoel@gmail.com
+      name: samos123
+      url: https://www.linkedin.com/in/samstoelinga/
+    name: models
+    type: application
+    urls:
+    - https://github.com/substratusai/kubeai/releases/download/helm-chart-models-0.6.0/models-0.6.0.tgz
+    version: 0.6.0
+  - apiVersion: v2
+    appVersion: 1.16.0
     created: "2024-09-25T14:16:03.00602873Z"
     description: A Helm chart for Kubernetes
     digest: 21b63916f89013e3234ba637709031796f179c1773bca92632e6941c9a07e54b
@@ -588,4 +629,4 @@ entries:
     urls:
     - https://github.com/substratusai/kubeai/releases/download/kubeai-helm-chart-0.4.1/models-0.4.1.tgz
     version: 0.4.1
-generated: "2024-09-25T16:34:07.050818641Z"
+generated: "2024-10-01T03:28:31.305650632Z"
