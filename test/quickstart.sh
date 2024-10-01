@@ -89,12 +89,13 @@ curl -s -X GET "http://localhost:8000/openai/v1/models" | jq '. | length == 4'
 
 function test_completion() {
   local url="$1"
-  http_code=$(curl -L -sw '%{http_code}' ${url} \
+  http_code=$(curl -L -o /tmp/curl-output -w '%{http_code}' ${url} \
     -H "Content-Type: application/json" \
     -d '{"model": "gemma2-2b-cpu", "prompt": "Who was the first president of the United States?", "max_tokens": 40}')
   if [[ "$http_code" != "200" ]]; then
     echo "Failed to get completions from $url"
     echo "HTTP code: $http_code"
+    cat /tmp/curl-output
     exit 1
   fi
 }
