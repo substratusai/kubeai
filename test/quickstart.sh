@@ -92,7 +92,7 @@ function test_completion() {
   http_code=$(curl -L -sw '%{http_code}' ${url} \
     -H "Content-Type: application/json" \
     -d '{"model": "gemma2-2b-cpu", "prompt": "Who was the first president of the United States?", "max_tokens": 40}')
-  if [ "$http_code" -ne 200 ]; then
+  if [[ "$http_code" != "200" ]]; then
     echo "Failed to get completions from $url"
     echo "HTTP code: $http_code"
     exit 1
