@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"sync"
@@ -15,6 +16,7 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -70,6 +72,18 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 		return fmt.Errorf("invalid config: %w", err)
 	}
 
+	// Set up OpenTelemetry.
+	otelShutdown, err := setupOTelSDK(ctx)
+	if err != nil {
+		return err
+	}
+	// Handle shutdown properly so nothing leaks.
+	defer func() {
+		if err = errors.Join(err, otelShutdown(context.Background())); err != nil {
+			Log.Error(err, "error shutting down OpenTelemetry")
+		}
+	}()
+
 	namespace, found := os.LookupEnv("POD_NAMESPACE")
 	if !found {
 		return errors.New("POD_NAMESPACE not set")
@@ -107,7 +121,10 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 	// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.18.4/pkg/metrics/server
 	// - https://book.kubebuilder.io/reference/metrics.html
 	metricsServerOptions := metricsserver.Options{
-		BindAddress:   cfg.MetricsAddr,
+		// Setting to "0" disables the metrics server.
+		// It would be good to re-enable these controller-runtime metrics
+		// once opentelemetry is integrated.
+		BindAddress:   "0", // cfg.MetricsAddr,
 		SecureServing: false,
 	}
 
@@ -196,7 +213,18 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 	openaiHandler := openaiserver.NewHandler(mgr.GetClient(), modelProxy)
 	mux := http.NewServeMux()
 	mux.Handle("/openai/", openaiHandler)
-	apiServer := &http.Server{Addr: ":8000", Handler: mux}
+	apiServer := &http.Server{
+		BaseContext: func(_ net.Listener) context.Context { return ctx },
+		Addr:        ":8000",
+		Handler:     mux,
+	}
+
+	metricsMux := http.NewServeMux()
+	metricsServer := &http.Server{
+		Addr:    cfg.MetricsAddr,
+		Handler: metricsMux,
+	}
+	metricsMux.Handle("/metrics", promhttp.Handler())
 
 	httpClient := &http.Client{}
 
@@ -241,6 +269,22 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 				Log.Info("api server closed")
 			} else {
 				Log.Error(err, "error serving api server")
+				os.Exit(1)
+			}
+		}
+	}()
+	wg.Add(1)
+	go func() {
+		defer func() {
+			Log.Info("metrics server stopped")
+			wg.Done()
+		}()
+		Log.Info("starting metrics server", "addr", metricsServer.Addr)
+		if err := metricsServer.ListenAndServe(); err != nil {
+			if errors.Is(err, http.ErrServerClosed) {
+				Log.Info("metrics server closed")
+			} else {
+				Log.Error(err, "error serving metrics server")
 				os.Exit(1)
 			}
 		}
@@ -296,6 +340,7 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 			}
 		}
 		apiServer.Shutdown(context.Background())
+		metricsServer.Shutdown(context.Background())
 	}()
 
 	Log.Info("run launched all goroutines")

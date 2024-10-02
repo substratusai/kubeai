@@ -9,7 +9,6 @@ import (
 	"mime"
 	"mime/multipart"
 	"net/http"
-	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/prometheus/client_golang/prometheus"
@@ -43,9 +42,10 @@ func newProxyRequest(r *http.Request) *proxyRequest {
 		status: http.StatusOK,
 	}
 
-	pr.timer = prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
-		httpDuration.WithLabelValues(pr.model, strconv.Itoa(pr.status)).Observe(v)
-	}))
+	// TODO: Record the duration of the request.
+	//pr.timer = prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
+	//	httpDuration.WithLabelValues(pr.model, strconv.Itoa(pr.status)).Observe(v)
+	//}))
 
 	return pr
 
@@ -53,7 +53,8 @@ func newProxyRequest(r *http.Request) *proxyRequest {
 
 // done should be called when the original client request is complete.
 func (pr *proxyRequest) done() {
-	pr.timer.ObserveDuration()
+	// TODO: Record the duration of the request.
+	//pr.timer.ObserveDuration()
 }
 
 // parseModel attempts to determine the model from the request.

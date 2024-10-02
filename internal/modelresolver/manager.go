@@ -31,6 +31,9 @@ type Manager struct {
 	endpointsMtx sync.Mutex
 	endpoints    map[string]*endpointGroup
 
+	selfIPsMtx sync.RWMutex
+	selfIPs    []string
+
 	ExcludePods map[string]struct{}
 }
 
@@ -58,6 +61,22 @@ func (r *Manager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result,
 	var podList corev1.PodList
 	if err := r.List(ctx, &podList, client.MatchingLabels{kubeaiv1.PodModelLabel: modelName}); err != nil {
 		return ctrl.Result{}, fmt.Errorf("listing matching pods: %w", err)
+	}
+
+	const (
+		selfLabelKey = "app.kubernetes.io/name"
+		selfLabelVal = "kubeai"
+	)
+	if k8sutils.GetLabel(&pod, selfLabelKey) == selfLabelVal {
+		selfIPs := []string{}
+		for _, pod := range podList.Items {
+			if k8sutils.PodIsReady(&pod) {
+				selfIPs = append(selfIPs, pod.Status.PodIP)
+			}
+		}
+		r.selfIPsMtx.Lock()
+		r.selfIPs = selfIPs
+		r.selfIPsMtx.Unlock()
 	}
 
 	addrs := map[string]struct{}{}
@@ -112,6 +131,12 @@ func (r *Manager) getEndpoints(service string) *endpointGroup {
 	}
 	r.endpointsMtx.Unlock()
 	return e
+}
+
+func (r *Manager) GetSelfIPs() []string {
+	r.selfIPsMtx.RLock()
+	defer r.selfIPsMtx.RUnlock()
+	return r.selfIPs
 }
 
 // AwaitBestAddress returns the "IP:Port" with the lowest number of in-flight requests. It will block until an endpoint

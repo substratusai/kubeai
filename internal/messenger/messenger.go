@@ -13,6 +13,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/substratusai/kubeai/internal/modelmetrics"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 	"gocloud.dev/pubsub"
 )
 
@@ -193,6 +196,13 @@ func (m *Messenger) handleRequest(ctx context.Context, msg *pubsub.Message) {
 		m.sendResponse(req, m.jsonError("error parsing request: %v", err), http.StatusBadRequest)
 		return
 	}
+
+	metricAttrs := metric.WithAttributeSet(attribute.NewSet(
+		modelmetrics.AttrRequestModel.String(req.model),
+		modelmetrics.AttrRequestType.String(modelmetrics.AttrRequestTypeMessage),
+	))
+	modelmetrics.InferenceRequestsActive.Add(ctx, 1, metricAttrs)
+	defer modelmetrics.InferenceRequestsActive.Add(ctx, -1, metricAttrs)
 
 	modelExists, err := m.modelScaler.ModelExists(ctx, req.model)
 	if err != nil {

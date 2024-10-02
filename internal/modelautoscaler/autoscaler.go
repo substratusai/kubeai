@@ -2,6 +2,7 @@ package modelautoscaler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"math"
@@ -68,40 +69,44 @@ func (a *Autoscaler) Start(ctx context.Context) {
 			continue
 		}
 
+		agg := newMetricsAggregation()
+		if err := aggregateAllMetrics(agg, a.resolver.GetSelfIPs()); err != nil {
+			log.Printf("Failed to aggregate metrics: %v", err)
+			continue
+		}
+
 		for _, m := range models {
 			if m.Spec.AutoscalingDisabled {
 				log.Printf("Model %q has autoscaling disabled, skipping", m.Name)
 				continue
 			}
 
-			endpointAddrs := a.resolver.GetAllAddresses(m.Name)
-			if len(endpointAddrs) == 0 {
-				log.Printf("No ready endpoints found for model: %s, skipping", m.Name)
+			activeRequests, ok := agg.activeRequestsByModel[m.Name]
+			if !ok {
+				log.Printf("No metrics found for model %q, skipping", m.Name)
 				continue
 			}
 
-			agg := &vLLMMetrics{}
-			errs := aggregateMetrics(agg, endpointAddrs)
-			if len(errs) != 0 {
-				for _, err := range errs {
-					log.Printf("Failed to aggregate stats: %v", err)
-				}
+			modelEndpoints := a.resolver.GetAllAddresses(m.Name)
+			if len(modelEndpoints) == 0 {
+				log.Printf("No endpoints found for model %q, skipping", m.Name)
 				continue
 			}
 
 			log.Println("Is leader, autoscaling")
-			avg := a.getMovingAvgQueueSize(m.Name)
-			avg.Next(agg.CurrentRequests())
-			flt := avg.Calculate()
-			normalized := flt / float64(*m.Spec.TargetRequests)
+			avg := a.getMovingAvg(m.Name)
+			avg.Next(float64(activeRequests))
+			avgActiveRequests := avg.Calculate()
+			normalized := avgActiveRequests / float64(*m.Spec.TargetRequests)
 			ceil := math.Ceil(normalized)
-			log.Printf("Average for model %q: %v/%v (normalized ceil: %v), current requests: %v, history: %v", m.Name, flt, *m.Spec.TargetRequests, ceil, agg.CurrentRequests(), avg.History())
+			log.Printf("Calculated target replicas for model %q: ceil(%v/%v) = %v, current requests: %v, history: %v",
+				m.Name, avgActiveRequests, *m.Spec.TargetRequests, ceil, activeRequests, avg.History())
 			a.scaler.Scale(ctx, &m, int32(ceil), a.cfg.RequiredConsecutiveScaleDowns(*m.Spec.ScaleDownDelaySeconds))
 		}
 	}
 }
 
-func (r *Autoscaler) getMovingAvgQueueSize(deploymentName string) *movingaverage.Simple {
+func (r *Autoscaler) getMovingAvg(deploymentName string) *movingaverage.Simple {
 	r.movingAvgByModelMtx.Lock()
 	a, ok := r.movingAvgByModel[deploymentName]
 	if !ok {
@@ -112,14 +117,12 @@ func (r *Autoscaler) getMovingAvgQueueSize(deploymentName string) *movingaverage
 	return a
 }
 
-func aggregateMetrics(agg metricsAggregator, endpointAddrs []string) []error {
-	var errs []error
-
+func aggregateAllMetrics(agg *metricsAggregation, endpointAddrs []string) (err error) {
 	for _, addr := range endpointAddrs {
-		if err := scrapeSumMetrics(agg, fmt.Sprintf("http://%s/metrics", addr)); err != nil {
-			errs = append(errs, err)
+		if e := scrapeAndAggregateMetrics(agg, fmt.Sprintf("http://%s/metrics", addr)); e != nil {
+			err = errors.Join(err, e)
 		}
 	}
 
-	return errs
+	return err
 }

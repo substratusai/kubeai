@@ -8,18 +8,10 @@ import (
 	"net/http/httputil"
 	"net/url"
 
-	"github.com/prometheus/client_golang/prometheus"
+	"github.com/substratusai/kubeai/internal/modelmetrics"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 )
-
-var httpDuration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
-	Name:    "http_response_time_seconds",
-	Help:    "Duration of HTTP requests.",
-	Buckets: prometheus.DefBuckets,
-}, []string{"model", "status_code"})
-
-func MustRegister(r prometheus.Registerer) {
-	r.MustRegister(httpDuration)
-}
 
 type ModelScaler interface {
 	ModelExists(ctx context.Context, model string) (bool, error)
@@ -75,6 +67,13 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Println("model:", pr.model)
+
+	metricAttrs := metric.WithAttributeSet(attribute.NewSet(
+		modelmetrics.AttrRequestModel.String(pr.model),
+		modelmetrics.AttrRequestType.String(modelmetrics.AttrRequestTypeHTTP),
+	))
+	modelmetrics.InferenceRequestsActive.Add(pr.r.Context(), 1, metricAttrs)
+	defer modelmetrics.InferenceRequestsActive.Add(pr.r.Context(), -1, metricAttrs)
 
 	modelExists, err := h.modelScaler.ModelExists(r.Context(), pr.model)
 	if err != nil {
