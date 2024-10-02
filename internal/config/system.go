@@ -27,14 +27,17 @@ type System struct {
 	// Defaults to ":8081"
 	HealthAddress string `json:"healthAddress" validate:"required"`
 
-	// AllowPodAddressOverride will allow the pod address to be overridden by the Model objects. This is useful for development purposes.
-	AllowPodAddressOverride bool `json:"allowPodAddressOverride"`
-
 	ModelAutoscaling ModelAutoscaling `json:"modelAutoscaling" validate:"required"`
 
 	ModelServerPods ModelServerPods `json:"modelServerPods,omitempty"`
 
 	ModelRollouts ModelRollouts `json:"modelRollouts"`
+
+	// AllowPodAddressOverride will allow the pod address to be overridden by the Model objects. Useful for development purposes.
+	AllowPodAddressOverride bool `json:"allowPodAddressOverride"`
+
+	// FixedSelfIPs is a list of fixed self IPs that we be used when scraping metrics for autoscaling. Useful for development purposes.
+	FixedSelfIPs []string `json:"fixedSelfIPs,omitempty"`
 }
 
 func (s *System) DefaultAndValidate() error {

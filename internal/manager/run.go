@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strconv"
 	"sync"
 
 	"sigs.k8s.io/yaml"
@@ -172,7 +173,7 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 	}
 	leaderElection := leader.NewElection(clientset, hostname, namespace)
 
-	modelResolver, err := modelresolver.NewManager(mgr)
+	modelResolver, err := modelresolver.NewManager(mgr, cfg.FixedSelfIPs)
 	if err != nil {
 		return fmt.Errorf("unable to setup model resolver: %w", err)
 	}
@@ -202,11 +203,17 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 
 	modelScaler := modelscaler.NewModelScaler(mgr.GetClient(), namespace)
 
+	metricsPort, err := parsePortFromAddr(cfg.MetricsAddr)
+	if err != nil {
+		return fmt.Errorf("unable to parse metrics port: %w", err)
+	}
+
 	modelAutoscaler := modelautoscaler.New(
 		leaderElection,
 		modelScaler,
 		modelResolver,
 		cfg.ModelAutoscaling,
+		metricsPort,
 	)
 
 	modelProxy := modelproxy.NewHandler(modelScaler, modelResolver, 3, nil)
@@ -348,4 +355,16 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 	Log.Info("run goroutines finished")
 
 	return nil
+}
+
+// parsePortFromAddr takes a string like ":8080" and returns 8080.
+func parsePortFromAddr(addr string) (int, error) {
+	if addr == "" {
+		return 0, errors.New("empty address")
+	}
+	_, port, err := net.SplitHostPort(addr)
+	if err != nil {
+		return 0, fmt.Errorf("unable to parse port from address: %w", err)
+	}
+	return strconv.Atoi(port)
 }

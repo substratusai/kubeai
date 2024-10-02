@@ -14,11 +14,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func NewManager(mgr ctrl.Manager) (*Manager, error) {
+func NewManager(mgr ctrl.Manager, fixedSelfIPs []string) (*Manager, error) {
 	r := &Manager{}
 	r.Client = mgr.GetClient()
 	r.endpoints = map[string]*endpointGroup{}
 	r.ExcludePods = map[string]struct{}{}
+	r.fixedSelfIPs = fixedSelfIPs
 	if err := r.SetupWithManager(mgr); err != nil {
 		return nil, err
 	}
@@ -31,8 +32,9 @@ type Manager struct {
 	endpointsMtx sync.Mutex
 	endpoints    map[string]*endpointGroup
 
-	selfIPsMtx sync.RWMutex
-	selfIPs    []string
+	selfIPsMtx   sync.RWMutex
+	selfIPs      []string
+	fixedSelfIPs []string
 
 	ExcludePods map[string]struct{}
 }
@@ -134,6 +136,9 @@ func (r *Manager) getEndpoints(service string) *endpointGroup {
 }
 
 func (r *Manager) GetSelfIPs() []string {
+	if len(r.fixedSelfIPs) > 0 {
+		return r.fixedSelfIPs
+	}
 	r.selfIPsMtx.RLock()
 	defer r.selfIPsMtx.RUnlock()
 	return r.selfIPs

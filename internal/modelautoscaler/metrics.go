@@ -42,11 +42,11 @@ func scrapeAndAggregateMetrics(agg *metricsAggregation, url string) error {
 		return fmt.Errorf("failed to parse metrics: %v", err)
 	}
 
-	if fam, ok := metricFamilies[modelmetrics.PromMetricNameInferenceRequestsActive]; ok {
+	if fam, ok := metricFamilies[modelmetrics.OtelNameToPromName(modelmetrics.InferenceRequestsActiveMetricName)]; ok {
 		for _, m := range fam.Metric {
 			for _, label := range m.Label {
-				if label.GetName() == modelmetrics.PromMetricNameInferenceRequestsActive {
-					agg.activeRequestsByModel[label.GetValue()] = getMetricsValue(fam, m)
+				if label.GetName() == modelmetrics.OtelAttrToPromLabel(modelmetrics.AttrRequestModel) {
+					agg.activeRequestsByModel[label.GetValue()] += getMetricsValue(fam, m)
 				}
 			}
 		}

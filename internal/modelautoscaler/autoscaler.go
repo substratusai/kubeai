@@ -21,6 +21,7 @@ func New(
 	scaler *modelscaler.ModelScaler,
 	resolver *modelresolver.Manager,
 	cfg config.ModelAutoscaling,
+	metricsPort int,
 ) *Autoscaler {
 	a := &Autoscaler{
 		leaderElection:   leaderElection,
@@ -28,6 +29,7 @@ func New(
 		resolver:         resolver,
 		movingAvgByModel: map[string]*movingaverage.Simple{},
 		cfg:              cfg,
+		metricsPort:      metricsPort,
 	}
 	return a
 }
@@ -42,6 +44,8 @@ type Autoscaler struct {
 	resolver *modelresolver.Manager
 
 	cfg config.ModelAutoscaling
+
+	metricsPort int
 
 	movingAvgByModelMtx sync.Mutex
 	movingAvgByModel    map[string]*movingaverage.Simple
@@ -70,7 +74,7 @@ func (a *Autoscaler) Start(ctx context.Context) {
 		}
 
 		agg := newMetricsAggregation()
-		if err := aggregateAllMetrics(agg, a.resolver.GetSelfIPs()); err != nil {
+		if err := aggregateAllMetrics(agg, a.resolver.GetSelfIPs(), a.metricsPort, "/metrics"); err != nil {
 			log.Printf("Failed to aggregate metrics: %v", err)
 			continue
 		}
@@ -80,6 +84,8 @@ func (a *Autoscaler) Start(ctx context.Context) {
 				log.Printf("Model %q has autoscaling disabled, skipping", m.Name)
 				continue
 			}
+
+			fmt.Println("AGG", agg)
 
 			activeRequests, ok := agg.activeRequestsByModel[m.Name]
 			if !ok {
@@ -117,9 +123,9 @@ func (r *Autoscaler) getMovingAvg(deploymentName string) *movingaverage.Simple {
 	return a
 }
 
-func aggregateAllMetrics(agg *metricsAggregation, endpointAddrs []string) (err error) {
-	for _, addr := range endpointAddrs {
-		if e := scrapeAndAggregateMetrics(agg, fmt.Sprintf("http://%s/metrics", addr)); e != nil {
+func aggregateAllMetrics(agg *metricsAggregation, endpointIPs []string, port int, path string) (err error) {
+	for _, ip := range endpointIPs {
+		if e := scrapeAndAggregateMetrics(agg, fmt.Sprintf("http://%s:%d%s", ip, port, path)); e != nil {
 			err = errors.Join(err, e)
 		}
 	}

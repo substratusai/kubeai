@@ -14,9 +14,8 @@ var (
 
 // Metrics used to autoscale models
 var (
-	metricNameInferenceRequestsActive     = "kubeai.inference.requests.active"
-	PromMetricNameInferenceRequestsActive = strings.ReplaceAll(metricNameInferenceRequestsActive, ".", "_")
-	InferenceRequestsActive               metric.Int64UpDownCounter
+	InferenceRequestsActiveMetricName = "kubeai.inference.requests.active"
+	InferenceRequestsActive           metric.Int64UpDownCounter
 )
 
 // Attributes
@@ -32,10 +31,18 @@ const (
 
 func init() {
 	var err error
-	InferenceRequestsActive, err = meter.Int64UpDownCounter(metricNameInferenceRequestsActive,
+	InferenceRequestsActive, err = meter.Int64UpDownCounter(InferenceRequestsActiveMetricName,
 		metric.WithDescription("The number of active requests by model"),
 	)
 	if err != nil {
 		panic(err)
 	}
+}
+
+func OtelNameToPromName(name string) string {
+	return strings.ReplaceAll(name, ".", "_")
+}
+
+func OtelAttrToPromLabel(k attribute.Key) string {
+	return OtelNameToPromName(string(k))
 }
