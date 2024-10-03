@@ -2,8 +2,6 @@ package modelautoscaler
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"log"
 	"math"
 	"sync"
@@ -118,14 +116,4 @@ func (r *Autoscaler) getMovingAvgActiveReqPerModel(model string) *movingaverage.
 	}
 	r.movingAvgByModelMtx.Unlock()
 	return a
-}
-
-func aggregateAllMetrics(agg *metricsAggregation, endpointIPs []string, port int, path string) (err error) {
-	for _, ip := range endpointIPs {
-		if e := scrapeAndAggregateMetrics(agg, fmt.Sprintf("http://%s:%d%s", ip, port, path)); e != nil {
-			err = errors.Join(err, e)
-		}
-	}
-
-	return err
 }

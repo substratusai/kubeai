@@ -1,6 +1,7 @@
 package modelautoscaler
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,6 +11,17 @@ import (
 	"github.com/prometheus/common/expfmt"
 	"github.com/substratusai/kubeai/internal/modelmetrics"
 )
+
+func aggregateAllMetrics(agg *metricsAggregation, endpointIPs []string, port int, path string) (err error) {
+	// TODO: Consider concurrnetly scraping metrics from all endpoints.
+	for _, ip := range endpointIPs {
+		if e := scrapeAndAggregateMetrics(agg, fmt.Sprintf("http://%s:%d%s", ip, port, path)); e != nil {
+			err = errors.Join(err, e)
+		}
+	}
+
+	return err
+}
 
 type metricsAggregation struct {
 	activeRequestsByModel map[string]int64
