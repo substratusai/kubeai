@@ -25,21 +25,21 @@ func scrapeAndAggregateMetrics(agg *metricsAggregation, url string) error {
 	// Perform the HTTP GET request
 	resp, err := http.Get(url)
 	if err != nil {
-		return fmt.Errorf("failed to scrape metrics: %v", err)
+		return fmt.Errorf("failed to scrape metrics: %w", err)
 	}
 	defer resp.Body.Close()
 
 	// Read the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("failed to read response body: %v", err)
+		return fmt.Errorf("failed to read response body: %w", err)
 	}
 
 	// Use the expfmt library to parse the Prometheus metrics
 	parser := expfmt.TextParser{}
 	metricFamilies, err := parser.TextToMetricFamilies(strings.NewReader(string(body)))
 	if err != nil {
-		return fmt.Errorf("failed to parse metrics: %v", err)
+		return fmt.Errorf("failed to parse metrics: %w", err)
 	}
 
 	if fam, ok := metricFamilies[modelmetrics.OtelNameToPromName(modelmetrics.InferenceRequestsActiveMetricName)]; ok {
@@ -63,31 +63,3 @@ func getMetricsValue(mf *io_prometheus_client.MetricFamily, m *io_prometheus_cli
 	}
 	return 0
 }
-
-//type vLLMMetrics struct {
-//	// Metric name: "vllm:num_requests_waiting"
-//	numRequestsWaiting float64
-//	// Metric name: "vllm:num_requests_running"
-//	numRequestsRunning float64
-//}
-//
-//func (v *vLLMMetrics) CurrentRequests() float64 {
-//	return v.numRequestsWaiting + v.numRequestsRunning
-//}
-//
-//func (v *vLLMMetrics) Aggregate(name string, mf *io_prometheus_client.MetricFamily, m *io_prometheus_client.Metric) {
-//	var val float64
-//	if mf.GetType() == io_prometheus_client.MetricType_GAUGE && m.Gauge != nil {
-//		val = m.GetGauge().GetValue()
-//	} else if mf.GetType() == io_prometheus_client.MetricType_COUNTER && m.Counter != nil {
-//		val = m.GetCounter().GetValue()
-//	}
-//
-//	switch name {
-//	case "vllm:num_requests_waiting":
-//		v.numRequestsWaiting += val
-//	case "vllm:num_requests_running":
-//		v.numRequestsRunning += val
-//	}
-//}
-//

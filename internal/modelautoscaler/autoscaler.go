@@ -63,7 +63,7 @@ func (a *Autoscaler) Start(ctx context.Context) {
 			continue
 		}
 
-		log.Println("Calculating scales for all")
+		log.Println("Is leader, autoscaling")
 
 		// TODO: Remove hardcoded Service lookup by name "lingo".
 
@@ -85,8 +85,6 @@ func (a *Autoscaler) Start(ctx context.Context) {
 				continue
 			}
 
-			fmt.Println("AGG", agg)
-
 			activeRequests, ok := agg.activeRequestsByModel[m.Name]
 			if !ok {
 				log.Printf("No metrics found for model %q, skipping", m.Name)
@@ -99,8 +97,7 @@ func (a *Autoscaler) Start(ctx context.Context) {
 				continue
 			}
 
-			log.Println("Is leader, autoscaling")
-			avg := a.getMovingAvg(m.Name)
+			avg := a.getMovingAvgActiveReqPerModel(m.Name)
 			avg.Next(float64(activeRequests))
 			avgActiveRequests := avg.Calculate()
 			normalized := avgActiveRequests / float64(*m.Spec.TargetRequests)
@@ -112,12 +109,12 @@ func (a *Autoscaler) Start(ctx context.Context) {
 	}
 }
 
-func (r *Autoscaler) getMovingAvg(deploymentName string) *movingaverage.Simple {
+func (r *Autoscaler) getMovingAvgActiveReqPerModel(model string) *movingaverage.Simple {
 	r.movingAvgByModelMtx.Lock()
-	a, ok := r.movingAvgByModel[deploymentName]
+	a, ok := r.movingAvgByModel[model]
 	if !ok {
 		a = movingaverage.NewSimple(make([]float64, r.cfg.AverageWindowCount()))
-		r.movingAvgByModel[deploymentName] = a
+		r.movingAvgByModel[model] = a
 	}
 	r.movingAvgByModelMtx.Unlock()
 	return a

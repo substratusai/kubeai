@@ -70,7 +70,7 @@ func (r *Manager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result,
 		selfLabelVal = "kubeai"
 	)
 	if k8sutils.GetLabel(&pod, selfLabelKey) == selfLabelVal {
-		selfIPs := []string{}
+		var selfIPs []string
 		for _, pod := range podList.Items {
 			if k8sutils.PodIsReady(&pod) {
 				selfIPs = append(selfIPs, pod.Status.PodIP)
