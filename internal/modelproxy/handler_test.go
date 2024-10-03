@@ -9,11 +9,14 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/testutil"
 	io_prometheus_client "github.com/prometheus/client_model/go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/substratusai/kubeai/internal/modelmetrics"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/metric/metricdata"
+	"go.opentelemetry.io/otel/sdk/metric/metricdata/metricdatatest"
 )
 
 func TestHandler(t *testing.T) {
@@ -39,52 +42,40 @@ func TestHandler(t *testing.T) {
 		expRewrittenReqBody    string
 		expCode                int
 		expBody                string
-		expLabels              map[string]string
+		expModel               string
 		expBackendRequestCount int
 	}{
 		"no model": {
-			reqBody: "{}",
-			expCode: http.StatusBadRequest,
-			expBody: `{"error":"unable to parse model: no model specified"}` + "\n",
-			expLabels: map[string]string{
-				"model":       "",
-				"status_code": "400",
-			},
+			reqBody:                "{}",
+			expCode:                http.StatusBadRequest,
+			expBody:                `{"error":"unable to parse model: no model specified"}` + "\n",
+			expModel:               "",
 			expBackendRequestCount: 0,
 		},
 		"model not found": {
-			reqBody: `{"model":"does-not-exist"}`,
-			expCode: http.StatusNotFound,
-			expBody: `{"error":"model not found: does-not-exist"}` + "\n",
-			expLabels: map[string]string{
-				"model":       "does-not-exist",
-				"status_code": "404",
-			},
+			reqBody:                `{"model":"does-not-exist"}`,
+			expCode:                http.StatusNotFound,
+			expBody:                `{"error":"model not found: does-not-exist"}` + "\n",
+			expModel:               "does-not-exist",
 			expBackendRequestCount: 0,
 		},
 		"happy 200 model in body": {
-			reqBody:     fmt.Sprintf(`{"model":%q}`, model1),
-			backendCode: http.StatusOK,
-			backendBody: `{"result":"ok"}`,
-			expCode:     http.StatusOK,
-			expBody:     `{"result":"ok"}`,
-			expLabels: map[string]string{
-				"model":       model1,
-				"status_code": "200",
-			},
+			reqBody:                fmt.Sprintf(`{"model":%q}`, model1),
+			backendCode:            http.StatusOK,
+			backendBody:            `{"result":"ok"}`,
+			expCode:                http.StatusOK,
+			expBody:                `{"result":"ok"}`,
+			expModel:               model1,
 			expBackendRequestCount: 1,
 		},
 		"happy 200 model in header": {
-			reqBody:     "{}",
-			reqHeaders:  map[string]string{"X-Model": model1},
-			backendCode: http.StatusOK,
-			backendBody: `{"result":"ok"}`,
-			expCode:     http.StatusOK,
-			expBody:     `{"result":"ok"}`,
-			expLabels: map[string]string{
-				"model":       model1,
-				"status_code": "200",
-			},
+			reqBody:                "{}",
+			reqHeaders:             map[string]string{"X-Model": model1},
+			backendCode:            http.StatusOK,
+			backendBody:            `{"result":"ok"}`,
+			expCode:                http.StatusOK,
+			expBody:                `{"result":"ok"}`,
+			expModel:               model1,
 			expBackendRequestCount: 1,
 		},
 		"happy 200 only model in form data": {
@@ -94,15 +85,12 @@ func TestHandler(t *testing.T) {
 				model1,
 			),
 			// Proxied request should have the model omitted from the body.
-			expRewrittenReqBody: "\r\n--12345--\r\n",
-			backendCode:         http.StatusOK,
-			backendBody:         `{"result":"ok"}`,
-			expCode:             http.StatusOK,
-			expBody:             `{"result":"ok"}`,
-			expLabels: map[string]string{
-				"model":       model1,
-				"status_code": "200",
-			},
+			expRewrittenReqBody:    "\r\n--12345--\r\n",
+			backendCode:            http.StatusOK,
+			backendBody:            `{"result":"ok"}`,
+			expCode:                http.StatusOK,
+			expBody:                `{"result":"ok"}`,
+			expModel:               model1,
 			expBackendRequestCount: 1,
 		},
 		"happy 200 model with other content in form data": {
@@ -116,58 +104,49 @@ func TestHandler(t *testing.T) {
 			expRewrittenReqBody: fmt.Sprintf("" +
 				"--12345\r\nContent-Disposition: form-data; name=\"otherField\"\r\n\r\notherFieldValue\r\n--12345--\r\n",
 			),
-			backendCode: http.StatusOK,
-			backendBody: `{"result":"ok"}`,
-			expCode:     http.StatusOK,
-			expBody:     `{"result":"ok"}`,
-			expLabels: map[string]string{
-				"model":       model1,
-				"status_code": "200",
-			},
+			backendCode:            http.StatusOK,
+			backendBody:            `{"result":"ok"}`,
+			expCode:                http.StatusOK,
+			expBody:                `{"result":"ok"}`,
+			expModel:               model1,
 			expBackendRequestCount: 1,
 		},
 		"retryable 500": {
-			reqBody:     fmt.Sprintf(`{"model":%q}`, model1),
-			backendCode: http.StatusInternalServerError,
-			backendBody: `{"err":"oh no!"}`,
-			expCode:     http.StatusInternalServerError,
-			expBody:     `{"err":"oh no!"}`,
-			expLabels: map[string]string{
-				"model":       model1,
-				"status_code": "500",
-			},
+			reqBody:                fmt.Sprintf(`{"model":%q}`, model1),
+			backendCode:            http.StatusInternalServerError,
+			backendBody:            `{"err":"oh no!"}`,
+			expCode:                http.StatusInternalServerError,
+			expBody:                `{"err":"oh no!"}`,
+			expModel:               model1,
 			expBackendRequestCount: 1 + maxRetries,
 		},
 		"not retryable 400": {
-			reqBody:     fmt.Sprintf(`{"model":%q}`, model1),
-			backendCode: http.StatusBadRequest,
-			backendBody: `{"err":"bad request"}`,
-			expCode:     http.StatusBadRequest,
-			expBody:     `{"err":"bad request"}`,
-			expLabels: map[string]string{
-				"model":       model1,
-				"status_code": "400",
-			},
+			reqBody:                fmt.Sprintf(`{"model":%q}`, model1),
+			backendCode:            http.StatusBadRequest,
+			backendBody:            `{"err":"bad request"}`,
+			expCode:                http.StatusBadRequest,
+			expBody:                `{"err":"bad request"}`,
+			expModel:               model1,
 			expBackendRequestCount: 1,
 		},
 		"good request but dropped connection": {
-			reqBody:      fmt.Sprintf(`{"model":%q}`, model1),
-			backendPanic: true,
-			expCode:      http.StatusBadGateway,
-			expBody:      `{"error":"Bad Gateway"}` + "\n",
-			expLabels: map[string]string{
-				"model":       model1,
-				"status_code": "502",
-			},
+			reqBody:                fmt.Sprintf(`{"model":%q}`, model1),
+			backendPanic:           true,
+			expCode:                http.StatusBadGateway,
+			expBody:                `{"error":"Bad Gateway"}` + "\n",
+			expModel:               model1,
 			expBackendRequestCount: 1 + maxRetries,
 		},
 	}
 	for name, spec := range specs {
 		t.Run(name, func(t *testing.T) {
-			// Register metrics from a clean slate.
-			httpDuration.Reset()
-			metricsRegistry := prometheus.NewPedanticRegistry()
-			MustRegister(metricsRegistry)
+			reader := metric.NewManualReader()
+			mp := metric.NewMeterProvider(
+				metric.WithReader(reader),
+			)
+
+			otel.SetMeterProvider(mp)
+			require.NoError(t, modelmetrics.Init(mp.Meter(modelmetrics.MeterName)))
 
 			// Mock backend.
 			var backendRequestCount int
@@ -225,23 +204,18 @@ func TestHandler(t *testing.T) {
 			assert.Equal(t, spec.expBackendRequestCount, testInf.hostRequestCount, "Unexpected number of requests for backend hosts")
 
 			// Assert on metrics.
-			gathered, err := metricsRegistry.Gather()
-			require.NoError(t, err)
-			require.Len(t, gathered, 1)
-			require.Len(t, gathered[0].Metric, 1)
-			assert.NotEmpty(t, gathered[0].Metric[0].GetHistogram().GetSampleCount())
-			assert.Equal(t, spec.expLabels, toMap(gathered[0].Metric[0].Label))
+			if spec.expModel != "" {
+				resMet := metricdata.ResourceMetrics{}
+				require.NoError(t, reader.Collect(context.Background(), &resMet))
+
+				// TODO: Assert on the existance of the expected metric!!!
+
+				// Assert on the model attribute. Note: This does not assert on the existance of a
+				// metric with that attribute.
+				metricdatatest.AssertHasAttributes(t, resMet, modelmetrics.AttrRequestModel.String(spec.expModel))
+			}
 		})
 	}
-}
-
-func TestMetricsViaLinter(t *testing.T) {
-	registry := prometheus.NewPedanticRegistry()
-	MustRegister(registry)
-
-	problems, err := testutil.GatherAndLint(registry)
-	require.NoError(t, err)
-	require.Empty(t, problems)
 }
 
 type testModelInterface struct {

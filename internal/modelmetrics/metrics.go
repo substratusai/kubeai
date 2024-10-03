@@ -8,8 +8,8 @@ import (
 	"go.opentelemetry.io/otel/metric"
 )
 
-var (
-	meter = otel.Meter("kubeai.org")
+const (
+	MeterName = "kubeai.org"
 )
 
 // Metrics used to autoscale models
@@ -30,13 +30,21 @@ const (
 )
 
 func init() {
+	if err := Init(otel.Meter(MeterName)); err != nil {
+		panic(err)
+	}
+}
+
+func Init(meter metric.Meter) error {
 	var err error
 	InferenceRequestsActive, err = meter.Int64UpDownCounter(InferenceRequestsActiveMetricName,
 		metric.WithDescription("The number of active requests by model"),
 	)
 	if err != nil {
-		panic(err)
+		return err
 	}
+
+	return nil
 }
 
 func OtelNameToPromName(name string) string {
