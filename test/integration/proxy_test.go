@@ -12,15 +12,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/substratusai/kubeai/internal/config"
-	"github.com/substratusai/kubeai/internal/metrics"
-	"go.opentelemetry.io/otel"
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func TestProxy(t *testing.T) {
-	require.NoError(t, metrics.Init(otel.Meter(metrics.MeterName)))
-
 	sysCfg := baseSysCfg()
 	sysCfg.ModelAutoscaling.TimeWindow = config.Duration{Duration: 6 * time.Second}
 	sysCfg.ModelAutoscaling.Interval = config.Duration{Duration: time.Second}
@@ -31,7 +27,6 @@ func TestProxy(t *testing.T) {
 	t.Cleanup(func() {
 		// Finish all requests
 		close(backendComplete)
-		//testCancel()
 	})
 
 	m := modelForTest(t)
