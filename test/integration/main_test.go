@@ -18,6 +18,7 @@ import (
 	nodev1 "k8s.io/api/node/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/rest"
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -31,6 +32,7 @@ import (
 var (
 	testEnv       *envtest.Environment
 	testK8sClient client.Client
+	testK8sConfig *rest.Config
 	testCtx       context.Context
 	testCancel    context.CancelFunc
 	testNS        = "default"
@@ -67,10 +69,83 @@ const (
 	cpuRuntimeClassName      = "my-cpu-runtime-class"
 )
 
-// sysCfg returns the System configuration for testing.
+// TestMain performs setup and teardown for integration tests - i.e. all Test*()
+// functions in this package.
+func TestMain(m *testing.M) {
+	logf.SetLogger(zap.New(zap.UseDevMode(true)))
+
+	testCtx, testCancel = context.WithCancel(ctrl.SetupSignalHandler())
+
+	// Setup Kubernetes environment.
+	testEnv = &envtest.Environment{
+		CRDDirectoryPaths:     []string{"../../charts/kubeai/templates/crds"},
+		ErrorIfCRDPathMissing: true,
+	}
+	var err error
+	testK8sConfig, err = testEnv.Start()
+	requireNoError(err)
+
+	testK8sClient, err = client.New(testK8sConfig, client.Options{Scheme: manager.Scheme})
+	requireNoError(err)
+
+	err = installCommonResources()
+	requireNoError(err)
+
+	// Configure the manager.
+	os.Setenv("POD_NAMESPACE", testNS)
+
+	// Test Cases //
+
+	log.Println("running tests")
+	code := m.Run()
+
+	// Teardown //
+
+	// TODO: Run cleanup on ctrl-C, etc.
+	log.Println("cancelling main test context")
+	testCancel()
+	log.Println("stopping test environment")
+	requireNoError(testEnv.Stop())
+
+	os.Exit(code)
+}
+
+func requireNoError(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func installCommonResources() error {
+	if err := testK8sClient.Create(testCtx, &cpuRuntimeClass); err != nil {
+		return err
+	}
+	return nil
+}
+
+func initTest(t *testing.T, cfg config.System) {
+	var wg sync.WaitGroup
+	ctx, cancel := context.WithCancel(testCtx)
+	t.Cleanup(func() {
+		cancel()
+		t.Logf("Waiting for manager to stop")
+		wg.Wait()
+		t.Logf("Manager stopped")
+	})
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		if err := manager.Run(ctx, testK8sConfig, cfg); err != nil && !errors.Is(err, context.Canceled) {
+			log.Fatal(err)
+		}
+	}()
+}
+
+// baseSysCfg returns the System configuration for testing.
 // A function is used to avoid test cases accidentally modifying a global configuration variable
 // which would be tricky to debug.
-func sysCfg() config.System {
+func baseSysCfg() config.System {
 	return config.System{
 		MetricsAddr:   "127.0.0.1:8080",
 		HealthAddress: "127.0.0.1:8081",
@@ -82,14 +157,6 @@ func sysCfg() config.System {
 				Images: map[string]string{
 					"default":  testVLLMDefualtImage,
 					"cpu-only": testVLLMCPUImage,
-				},
-			},
-		},
-		Messaging: config.Messaging{
-			Streams: []config.MessageStream{
-				{
-					RequestsURL:  memRequestsURL,
-					ResponsesURL: memResponsesURL,
 				},
 			},
 		},
@@ -144,88 +211,16 @@ func sysCfg() config.System {
 				},
 			},
 		},
-		ModelAutoscaling: config.ModelAutoscaling{
-			Interval:   config.Duration{Duration: 1 * time.Second},
-			TimeWindow: config.Duration{Duration: 5 * time.Second},
+		LeaderElection: config.LeaderElection{
+			// Speed up the election process for tests.
+			// This is important because the manager is restarted for each test case.
+			LeaseDuration: config.Duration{Duration: 1 * time.Second},
+			RenewDeadline: config.Duration{Duration: time.Second / 2},
+			RetryPeriod:   config.Duration{Duration: time.Second / 10},
 		},
 		AllowPodAddressOverride: true,
+		// FixedSelfIPs is used to tell the autoscaler to scrape metrics from the local host
+		// (because KubeAI is not running in a Pod).
+		FixedSelfMetricAddrs: []string{"127.0.0.1:8080"},
 	}
-}
-
-// TestMain performs setup and teardown for integration tests - i.e. all Test*()
-// functions in this package.
-func TestMain(m *testing.M) {
-	logf.SetLogger(zap.New(zap.UseDevMode(true)))
-
-	testCtx, testCancel = context.WithCancel(ctrl.SetupSignalHandler())
-
-	// Setup Kubernetes environment.
-	testEnv = &envtest.Environment{
-		CRDDirectoryPaths:     []string{"../../charts/kubeai/templates/crds"},
-		ErrorIfCRDPathMissing: true,
-	}
-	k8sCfg, err := testEnv.Start()
-	requireNoError(err)
-
-	testK8sClient, err = client.New(k8sCfg, client.Options{Scheme: manager.Scheme})
-	requireNoError(err)
-
-	err = installCommonResources()
-	requireNoError(err)
-
-	// Setup messenger requests.
-	testRequestsTopic, err = pubsub.OpenTopic(testCtx, memRequestsURL)
-	requireNoError(err)
-
-	// Run the manager.
-	os.Setenv("POD_NAMESPACE", testNS)
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		if err := manager.Run(testCtx, k8sCfg, sysCfg()); err != nil && !errors.Is(err, context.Canceled) {
-			log.Fatal(err)
-		}
-	}()
-
-	// Create the responses subscription to use for test assertions.
-	// NOTE: This must be done after Run() is called because the mempubsub implementation
-	// creates the the topic when OpenTopic() is called  and we need that topic to exist before
-	// creating the subscription. We sleep for a few seconds to ensure that the asynchronous
-	// execution of OpenTopic() has been run.
-	time.Sleep(3 * time.Second)
-	testResponsesSubscription, err = pubsub.OpenSubscription(testCtx, memResponsesURL)
-	requireNoError(err)
-
-	// Test Cases //
-
-	log.Println("running tests")
-	code := m.Run()
-
-	// Teardown //
-
-	// TODO: Run cleanup on ctrl-C, etc.
-	log.Println("stopping manager")
-	testCancel()
-	log.Println("stopping test environment")
-	requireNoError(testEnv.Stop())
-
-	log.Println("Waiting for Run() to finish")
-	wg.Wait()
-	log.Println("Run() finished")
-
-	os.Exit(code)
-}
-
-func requireNoError(err error) {
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func installCommonResources() error {
-	if err := testK8sClient.Create(testCtx, &cpuRuntimeClass); err != nil {
-		return err
-	}
-	return nil
 }

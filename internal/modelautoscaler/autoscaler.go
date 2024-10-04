@@ -2,14 +2,15 @@ package modelautoscaler
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"math"
 	"sync"
 	"time"
 
 	"github.com/substratusai/kubeai/internal/config"
+	"github.com/substratusai/kubeai/internal/endpoints"
 	"github.com/substratusai/kubeai/internal/leader"
-	"github.com/substratusai/kubeai/internal/modelresolver"
 	"github.com/substratusai/kubeai/internal/modelscaler"
 	"github.com/substratusai/kubeai/internal/movingaverage"
 )
@@ -17,17 +18,19 @@ import (
 func New(
 	leaderElection *leader.Election,
 	scaler *modelscaler.ModelScaler,
-	resolver *modelresolver.Manager,
+	resolver *endpoints.Resolver,
 	cfg config.ModelAutoscaling,
 	metricsPort int,
+	fixedSelfMetricAddrs []string,
 ) *Autoscaler {
 	a := &Autoscaler{
-		leaderElection:   leaderElection,
-		scaler:           scaler,
-		resolver:         resolver,
-		movingAvgByModel: map[string]*movingaverage.Simple{},
-		cfg:              cfg,
-		metricsPort:      metricsPort,
+		leaderElection:       leaderElection,
+		scaler:               scaler,
+		resolver:             resolver,
+		movingAvgByModel:     map[string]*movingaverage.Simple{},
+		cfg:                  cfg,
+		metricsPort:          metricsPort,
+		fixedSelfMetricAddrs: fixedSelfMetricAddrs,
 	}
 	return a
 }
@@ -39,7 +42,7 @@ type Autoscaler struct {
 	leaderElection *leader.Election
 
 	scaler   *modelscaler.ModelScaler
-	resolver *modelresolver.Manager
+	resolver *endpoints.Resolver
 
 	cfg config.ModelAutoscaling
 
@@ -47,6 +50,8 @@ type Autoscaler struct {
 
 	movingAvgByModelMtx sync.Mutex
 	movingAvgByModel    map[string]*movingaverage.Simple
+
+	fixedSelfMetricAddrs []string
 }
 
 func (a *Autoscaler) Start(ctx context.Context) {
@@ -72,7 +77,16 @@ func (a *Autoscaler) Start(ctx context.Context) {
 		}
 
 		agg := newMetricsAggregation()
-		if err := aggregateAllMetrics(agg, a.resolver.GetSelfIPs(), a.metricsPort, "/metrics"); err != nil {
+		var selfAddrs []string
+		if len(a.fixedSelfMetricAddrs) > 0 {
+			selfAddrs = a.fixedSelfMetricAddrs
+		} else {
+			selfIPs := a.resolver.GetSelfIPs()
+			for _, ip := range selfIPs {
+				selfAddrs = append(selfAddrs, fmt.Sprintf("%s:%d", ip, a.metricsPort))
+			}
+		}
+		if err := aggregateAllMetrics(agg, selfAddrs, "/metrics"); err != nil {
 			log.Printf("Failed to aggregate metrics: %v", err)
 			continue
 		}
@@ -88,15 +102,13 @@ func (a *Autoscaler) Start(ctx context.Context) {
 				log.Printf("No metrics found for model %q, skipping", m.Name)
 				continue
 			}
-
-			modelEndpoints := a.resolver.GetAllAddresses(m.Name)
-			if len(modelEndpoints) == 0 {
-				log.Printf("No endpoints found for model %q, skipping", m.Name)
-				continue
+			var activeRequestSum int64
+			for _, req := range activeRequests {
+				activeRequestSum += req
 			}
 
 			avg := a.getMovingAvgActiveReqPerModel(m.Name)
-			avg.Next(float64(activeRequests))
+			avg.Next(float64(activeRequestSum))
 			avgActiveRequests := avg.Calculate()
 			normalized := avgActiveRequests / float64(*m.Spec.TargetRequests)
 			ceil := math.Ceil(normalized)

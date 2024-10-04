@@ -8,7 +8,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 
-	"github.com/substratusai/kubeai/internal/modelmetrics"
+	"github.com/substratusai/kubeai/internal/metrics"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 )
@@ -18,30 +18,30 @@ type ModelScaler interface {
 	ScaleAtLeastOneReplica(ctx context.Context, model string) error
 }
 
-type ModelResolver interface {
+type EndpointResolver interface {
 	AwaitBestAddress(ctx context.Context, model string) (string, func(), error)
 }
 
 // Handler serves http requests for end-clients.
 // It is also responsible for triggering scale-from-zero.
 type Handler struct {
-	modelScaler   ModelScaler
-	modelResolver ModelResolver
-	maxRetries    int
-	retryCodes    map[int]struct{}
+	modelScaler ModelScaler
+	resolver    EndpointResolver
+	maxRetries  int
+	retryCodes  map[int]struct{}
 }
 
 func NewHandler(
 	modelScaler ModelScaler,
-	modelResolver ModelResolver,
+	resolver EndpointResolver,
 	maxRetries int,
 	retryCodes map[int]struct{},
 ) *Handler {
 	return &Handler{
-		modelScaler:   modelScaler,
-		modelResolver: modelResolver,
-		maxRetries:    maxRetries,
-		retryCodes:    retryCodes,
+		modelScaler: modelScaler,
+		resolver:    resolver,
+		maxRetries:  maxRetries,
+		retryCodes:  retryCodes,
 	}
 }
 
@@ -58,7 +58,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Proxy", "lingo")
 
 	pr := newProxyRequest(r)
-	defer pr.done()
 
 	// TODO: Only parse model for paths that would have a model.
 	if err := pr.parseModel(); err != nil {
@@ -69,11 +68,11 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Println("model:", pr.model)
 
 	metricAttrs := metric.WithAttributeSet(attribute.NewSet(
-		modelmetrics.AttrRequestModel.String(pr.model),
-		modelmetrics.AttrRequestType.String(modelmetrics.AttrRequestTypeHTTP),
+		metrics.AttrRequestModel.String(pr.model),
+		metrics.AttrRequestType.String(metrics.AttrRequestTypeHTTP),
 	))
-	modelmetrics.InferenceRequestsActive.Add(pr.r.Context(), 1, metricAttrs)
-	defer modelmetrics.InferenceRequestsActive.Add(pr.r.Context(), -1, metricAttrs)
+	metrics.InferenceRequestsActive.Add(pr.r.Context(), 1, metricAttrs)
+	defer metrics.InferenceRequestsActive.Add(pr.r.Context(), -1, metricAttrs)
 
 	modelExists, err := h.modelScaler.ModelExists(r.Context(), pr.model)
 	if err != nil {
@@ -101,7 +100,7 @@ var AdditionalProxyRewrite = func(*httputil.ProxyRequest) {}
 func (h *Handler) proxyHTTP(w http.ResponseWriter, pr *proxyRequest) {
 	log.Printf("Waiting for host: %v", pr.id)
 
-	addr, decrementInflight, err := h.modelResolver.AwaitBestAddress(pr.r.Context(), pr.model)
+	addr, decrementInflight, err := h.resolver.AwaitBestAddress(pr.r.Context(), pr.model)
 	if err != nil {
 		switch {
 		case errors.Is(err, context.Canceled):

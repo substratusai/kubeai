@@ -16,6 +16,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
+	"k8s.io/utils/ptr"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -26,12 +27,12 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
+	"github.com/substratusai/kubeai/internal/endpoints"
 	"github.com/substratusai/kubeai/internal/leader"
 	"github.com/substratusai/kubeai/internal/messenger"
 	"github.com/substratusai/kubeai/internal/modelautoscaler"
 	"github.com/substratusai/kubeai/internal/modelcontroller"
 	"github.com/substratusai/kubeai/internal/modelproxy"
-	"github.com/substratusai/kubeai/internal/modelresolver"
 	"github.com/substratusai/kubeai/internal/modelscaler"
 	"github.com/substratusai/kubeai/internal/openaiserver"
 
@@ -138,6 +139,9 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 		LeaderElection:          true,
 		LeaderElectionID:        "cc6bca10.substratus.ai",
 		LeaderElectionNamespace: namespace,
+		LeaseDuration:           ptr.To(cfg.LeaderElection.LeaseDuration.Duration),
+		RenewDeadline:           ptr.To(cfg.LeaderElection.RenewDeadline.Duration),
+		RetryPeriod:             ptr.To(cfg.LeaderElection.RetryPeriod.Duration),
 		Cache: cache.Options{
 			Scheme: Scheme, //mgr.GetScheme(),
 			DefaultNamespaces: map[string]cache.Config{
@@ -171,9 +175,13 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 	if err != nil {
 		return fmt.Errorf("unable to get hostname: %w", err)
 	}
-	leaderElection := leader.NewElection(clientset, hostname, namespace)
+	leaderElection := leader.NewElection(clientset, hostname, namespace,
+		cfg.LeaderElection.LeaseDuration.Duration,
+		cfg.LeaderElection.RenewDeadline.Duration,
+		cfg.LeaderElection.RetryPeriod.Duration,
+	)
 
-	modelResolver, err := modelresolver.NewManager(mgr, cfg.FixedSelfIPs)
+	endpointManager, err := endpoints.NewResolver(mgr)
 	if err != nil {
 		return fmt.Errorf("unable to setup model resolver: %w", err)
 	}
@@ -211,12 +219,13 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 	modelAutoscaler := modelautoscaler.New(
 		leaderElection,
 		modelScaler,
-		modelResolver,
+		endpointManager,
 		cfg.ModelAutoscaling,
 		metricsPort,
+		cfg.FixedSelfMetricAddrs,
 	)
 
-	modelProxy := modelproxy.NewHandler(modelScaler, modelResolver, 3, nil)
+	modelProxy := modelproxy.NewHandler(modelScaler, endpointManager, 3, nil)
 	openaiHandler := openaiserver.NewHandler(mgr.GetClient(), modelProxy)
 	mux := http.NewServeMux()
 	mux.Handle("/openai/", openaiHandler)
@@ -244,7 +253,7 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 			stream.MaxHandlers,
 			cfg.Messaging.ErrorMaxBackoff.Duration,
 			modelScaler,
-			modelResolver,
+			endpointManager,
 			httpClient,
 		)
 		if err != nil {

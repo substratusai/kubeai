@@ -7,16 +7,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
+	"time"
 
-	io_prometheus_client "github.com/prometheus/client_model/go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/substratusai/kubeai/internal/modelmetrics"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/sdk/metric"
-	"go.opentelemetry.io/otel/sdk/metric/metricdata"
-	"go.opentelemetry.io/otel/sdk/metric/metricdata/metricdatatest"
+	"github.com/substratusai/kubeai/internal/metrics/metricstest"
 )
 
 func TestHandler(t *testing.T) {
@@ -31,6 +28,10 @@ func TestHandler(t *testing.T) {
 		model2: "deploy2",
 	}
 
+	type metricsTestSpec struct {
+		expModel string
+	}
+
 	specs := map[string]struct {
 		reqBody    string
 		reqHeaders map[string]string
@@ -42,40 +43,42 @@ func TestHandler(t *testing.T) {
 		expRewrittenReqBody    string
 		expCode                int
 		expBody                string
-		expModel               string
+		expMetrics             *metricsTestSpec
 		expBackendRequestCount int
 	}{
 		"no model": {
 			reqBody:                "{}",
 			expCode:                http.StatusBadRequest,
 			expBody:                `{"error":"unable to parse model: no model specified"}` + "\n",
-			expModel:               "",
 			expBackendRequestCount: 0,
 		},
 		"model not found": {
 			reqBody:                `{"model":"does-not-exist"}`,
 			expCode:                http.StatusNotFound,
 			expBody:                `{"error":"model not found: does-not-exist"}` + "\n",
-			expModel:               "does-not-exist",
 			expBackendRequestCount: 0,
 		},
 		"happy 200 model in body": {
-			reqBody:                fmt.Sprintf(`{"model":%q}`, model1),
-			backendCode:            http.StatusOK,
-			backendBody:            `{"result":"ok"}`,
-			expCode:                http.StatusOK,
-			expBody:                `{"result":"ok"}`,
-			expModel:               model1,
+			reqBody:     fmt.Sprintf(`{"model":%q}`, model1),
+			backendCode: http.StatusOK,
+			backendBody: `{"result":"ok"}`,
+			expCode:     http.StatusOK,
+			expBody:     `{"result":"ok"}`,
+			expMetrics: &metricsTestSpec{
+				expModel: model1,
+			},
 			expBackendRequestCount: 1,
 		},
 		"happy 200 model in header": {
-			reqBody:                "{}",
-			reqHeaders:             map[string]string{"X-Model": model1},
-			backendCode:            http.StatusOK,
-			backendBody:            `{"result":"ok"}`,
-			expCode:                http.StatusOK,
-			expBody:                `{"result":"ok"}`,
-			expModel:               model1,
+			reqBody:     "{}",
+			reqHeaders:  map[string]string{"X-Model": model1},
+			backendCode: http.StatusOK,
+			backendBody: `{"result":"ok"}`,
+			expCode:     http.StatusOK,
+			expBody:     `{"result":"ok"}`,
+			expMetrics: &metricsTestSpec{
+				expModel: model1,
+			},
 			expBackendRequestCount: 1,
 		},
 		"happy 200 only model in form data": {
@@ -85,12 +88,14 @@ func TestHandler(t *testing.T) {
 				model1,
 			),
 			// Proxied request should have the model omitted from the body.
-			expRewrittenReqBody:    "\r\n--12345--\r\n",
-			backendCode:            http.StatusOK,
-			backendBody:            `{"result":"ok"}`,
-			expCode:                http.StatusOK,
-			expBody:                `{"result":"ok"}`,
-			expModel:               model1,
+			expRewrittenReqBody: "\r\n--12345--\r\n",
+			backendCode:         http.StatusOK,
+			backendBody:         `{"result":"ok"}`,
+			expCode:             http.StatusOK,
+			expBody:             `{"result":"ok"}`,
+			expMetrics: &metricsTestSpec{
+				expModel: model1,
+			},
 			expBackendRequestCount: 1,
 		},
 		"happy 200 model with other content in form data": {
@@ -104,53 +109,61 @@ func TestHandler(t *testing.T) {
 			expRewrittenReqBody: fmt.Sprintf("" +
 				"--12345\r\nContent-Disposition: form-data; name=\"otherField\"\r\n\r\notherFieldValue\r\n--12345--\r\n",
 			),
-			backendCode:            http.StatusOK,
-			backendBody:            `{"result":"ok"}`,
-			expCode:                http.StatusOK,
-			expBody:                `{"result":"ok"}`,
-			expModel:               model1,
+			backendCode: http.StatusOK,
+			backendBody: `{"result":"ok"}`,
+			expCode:     http.StatusOK,
+			expBody:     `{"result":"ok"}`,
+			expMetrics: &metricsTestSpec{
+				expModel: model1,
+			},
 			expBackendRequestCount: 1,
 		},
 		"retryable 500": {
-			reqBody:                fmt.Sprintf(`{"model":%q}`, model1),
-			backendCode:            http.StatusInternalServerError,
-			backendBody:            `{"err":"oh no!"}`,
-			expCode:                http.StatusInternalServerError,
-			expBody:                `{"err":"oh no!"}`,
-			expModel:               model1,
+			reqBody:     fmt.Sprintf(`{"model":%q}`, model1),
+			backendCode: http.StatusInternalServerError,
+			backendBody: `{"err":"oh no!"}`,
+			expCode:     http.StatusInternalServerError,
+			expBody:     `{"err":"oh no!"}`,
+			expMetrics: &metricsTestSpec{
+				expModel: model1,
+			},
 			expBackendRequestCount: 1 + maxRetries,
 		},
 		"not retryable 400": {
-			reqBody:                fmt.Sprintf(`{"model":%q}`, model1),
-			backendCode:            http.StatusBadRequest,
-			backendBody:            `{"err":"bad request"}`,
-			expCode:                http.StatusBadRequest,
-			expBody:                `{"err":"bad request"}`,
-			expModel:               model1,
+			reqBody:     fmt.Sprintf(`{"model":%q}`, model1),
+			backendCode: http.StatusBadRequest,
+			backendBody: `{"err":"bad request"}`,
+			expCode:     http.StatusBadRequest,
+			expBody:     `{"err":"bad request"}`,
+			expMetrics: &metricsTestSpec{
+				expModel: model1,
+			},
 			expBackendRequestCount: 1,
 		},
 		"good request but dropped connection": {
-			reqBody:                fmt.Sprintf(`{"model":%q}`, model1),
-			backendPanic:           true,
-			expCode:                http.StatusBadGateway,
-			expBody:                `{"error":"Bad Gateway"}` + "\n",
-			expModel:               model1,
+			reqBody:      fmt.Sprintf(`{"model":%q}`, model1),
+			backendPanic: true,
+			expCode:      http.StatusBadGateway,
+			expBody:      `{"error":"Bad Gateway"}` + "\n",
+			expMetrics: &metricsTestSpec{
+				expModel: model1,
+			},
 			expBackendRequestCount: 1 + maxRetries,
 		},
 	}
 	for name, spec := range specs {
 		t.Run(name, func(t *testing.T) {
-			reader := metric.NewManualReader()
-			mp := metric.NewMeterProvider(
-				metric.WithReader(reader),
-			)
-
-			otel.SetMeterProvider(mp)
-			require.NoError(t, modelmetrics.Init(mp.Meter(modelmetrics.MeterName)))
+			metricstest.Init(t)
 
 			// Mock backend.
 			var backendRequestCount int
+			sendResponse := make(chan struct{})
 			backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				defer func() {
+					t.Log("waiting for response to be allowed")
+					<-sendResponse
+					t.Log("sending response")
+				}()
 				backendRequestCount++
 
 				bdy, err := io.ReadAll(r.Body)
@@ -191,8 +204,30 @@ func TestHandler(t *testing.T) {
 			for k, v := range spec.reqHeaders {
 				req.Header.Add(k, v)
 			}
-			resp, err := client.Do(req)
-			require.NoError(t, err, "The client request should not fail")
+
+			var resp *http.Response
+
+			var wg sync.WaitGroup
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				var err error
+				resp, err = client.Do(req)
+				require.NoError(t, err, "The client request should not fail")
+			}()
+
+			// Assertions based on active requests should go here.
+			if spec.expMetrics != nil {
+				// Give the metrics some time to be collected.
+				time.Sleep(time.Second)
+
+				mets := metricstest.Collect(t)
+				metricstest.RequireActiveRequestsMetric(t, mets, spec.expMetrics.expModel, 1)
+			}
+
+			close(sendResponse)
+			wg.Wait()
+
 			defer resp.Body.Close()
 			respBody, err := io.ReadAll(resp.Body)
 			require.NoError(t, err)
@@ -203,16 +238,10 @@ func TestHandler(t *testing.T) {
 			assert.Equal(t, spec.expBackendRequestCount, backendRequestCount, "Unexpected number of requests sent to backend")
 			assert.Equal(t, spec.expBackendRequestCount, testInf.hostRequestCount, "Unexpected number of requests for backend hosts")
 
-			// Assert on metrics.
-			if spec.expModel != "" {
-				resMet := metricdata.ResourceMetrics{}
-				require.NoError(t, reader.Collect(context.Background(), &resMet))
-
-				// TODO: Assert on the existance of the expected metric!!!
-
-				// Assert on the model attribute. Note: This does not assert on the existance of a
-				// metric with that attribute.
-				metricdatatest.AssertHasAttributes(t, resMet, modelmetrics.AttrRequestModel.String(spec.expModel))
+			// Assert on metrics after the request is responded to.
+			if spec.expMetrics != nil {
+				mets := metricstest.Collect(t)
+				metricstest.RequireActiveRequestsMetric(t, mets, spec.expMetrics.expModel, 0)
 			}
 		})
 	}
@@ -241,12 +270,4 @@ func (t *testModelInterface) AwaitBestAddress(ctx context.Context, model string)
 	t.hostRequestCount++
 	t.requestedModel = model
 	return t.address, func() {}, nil
-}
-
-func toMap(s []*io_prometheus_client.LabelPair) map[string]string {
-	r := make(map[string]string, len(s))
-	for _, v := range s {
-		r[v.GetName()] = v.GetValue()
-	}
-	return r
 }

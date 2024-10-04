@@ -13,7 +13,11 @@ import (
 	"k8s.io/client-go/util/flowcontrol"
 )
 
-func NewElection(clientset kubernetes.Interface, id, namespace string) *Election {
+func NewElection(clientset kubernetes.Interface, id, namespace string,
+	leaseDuration time.Duration,
+	renewDeadline time.Duration,
+	retryPeriod time.Duration,
+) *Election {
 	lock := &resourcelock.LeaseLock{
 		LeaseMeta: metav1.ObjectMeta{
 			Name:      "kubeai.org",
@@ -31,9 +35,9 @@ func NewElection(clientset kubernetes.Interface, id, namespace string) *Election
 		Lock: lock,
 		// TODO: Set to true after ensuring autoscaling is done before cancel:
 		ReleaseOnCancel: false,
-		LeaseDuration:   15 * time.Second,
-		RenewDeadline:   10 * time.Second,
-		RetryPeriod:     2 * time.Second,
+		LeaseDuration:   leaseDuration,
+		RenewDeadline:   renewDeadline,
+		RetryPeriod:     retryPeriod,
 		Callbacks: leaderelection.LeaderCallbacks{
 			OnStartedLeading: func(ctx context.Context) {
 				log.Printf("%q started leading", id)
@@ -67,7 +71,7 @@ type Election struct {
 
 func (le *Election) Start(ctx context.Context) error {
 	backoff := flowcontrol.NewBackOff(1*time.Second, 15*time.Second)
-	const backoffID = "lingo-leader-election"
+	const backoffID = "kubeai-leader-election"
 	for {
 		leaderelection.RunOrDie(ctx, le.config)
 		backoff.Next(backoffID, backoff.Clock.Now())

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/substratusai/kubeai/internal/config"
 	"gocloud.dev/pubsub"
 )
 
@@ -17,6 +18,25 @@ import (
 // The test spins up a test backend server that emulates the expected behavior of a model Pod
 // (NOTE: Pod containers are never actually run in integration tests).
 func TestMessenger(t *testing.T) {
+	var err error
+	testRequestsTopic, err = pubsub.OpenTopic(testCtx, memRequestsURL)
+	require.NoError(t, err)
+
+	sysCfg := baseSysCfg()
+	sysCfg.Messaging = config.Messaging{
+		Streams: []config.MessageStream{
+			{
+				RequestsURL:  memRequestsURL,
+				ResponsesURL: memResponsesURL,
+			},
+		},
+	}
+	initTest(t, sysCfg)
+
+	time.Sleep(3 * time.Second)
+	testResponsesSubscription, err = pubsub.OpenSubscription(testCtx, memResponsesURL)
+	require.NoError(t, err)
+
 	m := modelForTest(t)
 	require.NoError(t, testK8sClient.Create(testCtx, m))
 

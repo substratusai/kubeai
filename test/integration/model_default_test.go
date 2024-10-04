@@ -11,6 +11,8 @@ import (
 
 // TestModelDefaults tests that defaults are applied as expected.
 func TestModelDefaults(t *testing.T) {
+	initTest(t, baseSysCfg())
+
 	// Construct a Model object with MinReplicas set to 0.
 	m := modelForTest(t)
 	require.NoError(t, testK8sClient.Create(testCtx, m))

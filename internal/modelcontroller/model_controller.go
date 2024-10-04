@@ -107,6 +107,7 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			// Slow things down to wait for caches to sync.
 			// This is important because the pod plan has some calculations that
 			// assume the cache is up to date.
+			// TODO: Use "epectations" instead of a wait - see the ReplicaSet controller.
 			time.Sleep(3 * time.Second)
 		}
 		if err != nil {

@@ -32,4 +32,4 @@ resourceProfiles:
 
 # Dev-only configuration.
 allowPodAddressOverride: true
-fixedSelfIPs: ["127.0.0.1"]
+fixedSelfMetricAddrs: ["127.0.0.1:"]

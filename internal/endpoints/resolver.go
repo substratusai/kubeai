@@ -1,4 +1,4 @@
-package modelresolver
+package endpoints
 
 import (
 	"context"
@@ -14,38 +14,36 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func NewManager(mgr ctrl.Manager, fixedSelfIPs []string) (*Manager, error) {
-	r := &Manager{}
+func NewResolver(mgr ctrl.Manager) (*Resolver, error) {
+	r := &Resolver{}
 	r.Client = mgr.GetClient()
 	r.endpoints = map[string]*endpointGroup{}
 	r.ExcludePods = map[string]struct{}{}
-	r.fixedSelfIPs = fixedSelfIPs
 	if err := r.SetupWithManager(mgr); err != nil {
 		return nil, err
 	}
 	return r, nil
 }
 
-type Manager struct {
+type Resolver struct {
 	client.Client
 
 	endpointsMtx sync.Mutex
 	endpoints    map[string]*endpointGroup
 
-	selfIPsMtx   sync.RWMutex
-	selfIPs      []string
-	fixedSelfIPs []string
+	selfIPsMtx sync.RWMutex
+	selfIPs    []string
 
 	ExcludePods map[string]struct{}
 }
 
-func (r *Manager) SetupWithManager(mgr ctrl.Manager) error {
+func (r *Resolver) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1.Pod{}).
 		Complete(r)
 }
 
-func (r *Manager) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *Resolver) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	var pod corev1.Pod
 	if err := r.Get(ctx, req.NamespacedName, &pod); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
@@ -124,7 +122,7 @@ func getPodAnnotation(pod corev1.Pod, key string) string {
 	return ""
 }
 
-func (r *Manager) getEndpoints(service string) *endpointGroup {
+func (r *Resolver) getEndpoints(service string) *endpointGroup {
 	r.endpointsMtx.Lock()
 	e, ok := r.endpoints[service]
 	if !ok {
@@ -135,10 +133,7 @@ func (r *Manager) getEndpoints(service string) *endpointGroup {
 	return e
 }
 
-func (r *Manager) GetSelfIPs() []string {
-	if len(r.fixedSelfIPs) > 0 {
-		return r.fixedSelfIPs
-	}
+func (r *Resolver) GetSelfIPs() []string {
 	r.selfIPsMtx.RLock()
 	defer r.selfIPsMtx.RUnlock()
 	return r.selfIPs
@@ -147,11 +142,11 @@ func (r *Manager) GetSelfIPs() []string {
 // AwaitBestAddress returns the "IP:Port" with the lowest number of in-flight requests. It will block until an endpoint
 // becomes available or the context times out. It returns a function that should be called when the
 // request is complete to decrement the in-flight count.
-func (r *Manager) AwaitBestAddress(ctx context.Context, model string) (string, func(), error) {
+func (r *Resolver) AwaitBestAddress(ctx context.Context, model string) (string, func(), error) {
 	return r.getEndpoints(model).getBestAddr(ctx)
 }
 
 // GetAllHosts retrieves the list of all hosts for a given model.
-func (r *Manager) GetAllAddresses(model string) []string {
+func (r *Resolver) GetAllAddresses(model string) []string {
 	return r.getEndpoints(model).getAllAddrs()
 }

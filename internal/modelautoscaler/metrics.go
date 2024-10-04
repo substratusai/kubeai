@@ -9,13 +9,13 @@ import (
 
 	io_prometheus_client "github.com/prometheus/client_model/go"
 	"github.com/prometheus/common/expfmt"
-	"github.com/substratusai/kubeai/internal/modelmetrics"
+	"github.com/substratusai/kubeai/internal/metrics"
 )
 
-func aggregateAllMetrics(agg *metricsAggregation, endpointIPs []string, port int, path string) (err error) {
+func aggregateAllMetrics(agg *metricsAggregation, addrs []string, path string) (err error) {
 	// TODO: Consider concurrnetly scraping metrics from all endpoints.
-	for _, ip := range endpointIPs {
-		if e := scrapeAndAggregateMetrics(agg, fmt.Sprintf("http://%s:%d%s", ip, port, path)); e != nil {
+	for _, addr := range addrs {
+		if e := scrapeAndAggregateMetrics(agg, fmt.Sprintf("http://%s%s", addr, path)); e != nil {
 			err = errors.Join(err, e)
 		}
 	}
@@ -24,12 +24,12 @@ func aggregateAllMetrics(agg *metricsAggregation, endpointIPs []string, port int
 }
 
 type metricsAggregation struct {
-	activeRequestsByModel map[string]int64
+	activeRequestsByModel map[string][]int64
 }
 
 func newMetricsAggregation() *metricsAggregation {
 	return &metricsAggregation{
-		activeRequestsByModel: make(map[string]int64),
+		activeRequestsByModel: make(map[string][]int64),
 	}
 }
 
@@ -54,11 +54,14 @@ func scrapeAndAggregateMetrics(agg *metricsAggregation, url string) error {
 		return fmt.Errorf("failed to parse metrics: %w", err)
 	}
 
-	if fam, ok := metricFamilies[modelmetrics.OtelNameToPromName(modelmetrics.InferenceRequestsActiveMetricName)]; ok {
+	if fam, ok := metricFamilies[metrics.OtelNameToPromName(metrics.InferenceRequestsActiveMetricName)]; ok {
 		for _, m := range fam.Metric {
 			for _, label := range m.Label {
-				if label.GetName() == modelmetrics.OtelAttrToPromLabel(modelmetrics.AttrRequestModel) {
-					agg.activeRequestsByModel[label.GetValue()] += getMetricsValue(fam, m)
+				if label.GetName() == metrics.OtelAttrToPromLabel(metrics.AttrRequestModel) {
+					agg.activeRequestsByModel[label.GetValue()] = append(
+						agg.activeRequestsByModel[label.GetValue()],
+						getMetricsValue(fam, m),
+					)
 				}
 			}
 		}

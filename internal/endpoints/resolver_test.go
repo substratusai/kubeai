@@ -1,4 +1,4 @@
-package modelresolver
+package endpoints
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 func TestAwaitBestHost(t *testing.T) {
 	const myModel = "myModel"
 
-	manager := &Manager{endpoints: make(map[string]*endpointGroup, 1)}
+	manager := &Resolver{endpoints: make(map[string]*endpointGroup, 1)}
 	manager.getEndpoints(myModel).
 		setAddrs(map[string]struct{}{myModel: {}})
 

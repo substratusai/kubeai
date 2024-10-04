@@ -11,7 +11,6 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/prometheus/client_golang/prometheus"
 )
 
 // proxyRequest keeps track of the state of a request that is to be proxied.
@@ -29,10 +28,6 @@ type proxyRequest struct {
 	status  int
 	model   string
 	attempt int
-
-	// metrics:
-
-	timer *prometheus.Timer
 }
 
 func newProxyRequest(r *http.Request) *proxyRequest {
@@ -42,19 +37,8 @@ func newProxyRequest(r *http.Request) *proxyRequest {
 		status: http.StatusOK,
 	}
 
-	// TODO: Record the duration of the request.
-	//pr.timer = prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
-	//	httpDuration.WithLabelValues(pr.model, strconv.Itoa(pr.status)).Observe(v)
-	//}))
-
 	return pr
 
-}
-
-// done should be called when the original client request is complete.
-func (pr *proxyRequest) done() {
-	// TODO: Record the duration of the request.
-	//pr.timer.ObserveDuration()
 }
 
 // parseModel attempts to determine the model from the request.

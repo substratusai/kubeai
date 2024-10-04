@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/substratusai/kubeai/internal/metrics"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/exporters/stdout/stdoutlog"
@@ -58,6 +59,11 @@ func setupOTelSDK(ctx context.Context) (shutdown func(context.Context) error, er
 	}
 	shutdownFuncs = append(shutdownFuncs, meterProvider.Shutdown)
 	otel.SetMeterProvider(meterProvider)
+
+	if initErr := metrics.Init(otel.Meter(metrics.MeterName)); initErr != nil {
+		handleErr(initErr)
+		return
+	}
 
 	// Set up logger provider.
 	//loggerProvider, err := newLoggerProvider()
