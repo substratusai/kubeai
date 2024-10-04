@@ -123,6 +123,9 @@ func installCommonResources() error {
 	return nil
 }
 
+// initTest initializes the manager with the given System configuration
+// and shuts it down when the test is done.
+// SHOULD BE CALLED AT THE BEGINNING OF EACH TEST CASE.
 func initTest(t *testing.T, cfg config.System) {
 	var wg sync.WaitGroup
 	ctx, cancel := context.WithCancel(testCtx)
