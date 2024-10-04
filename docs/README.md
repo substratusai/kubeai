@@ -101,10 +101,6 @@ Now open your browser to [localhost:8000](http://localhost:8000) and select the 
 
 If you go back to the browser and start a chat with Qwen2, you will notice that it will take a while to respond at first. This is because we set `minReplicas: 0` for this model and KubeAI needs to spin up a new Pod (you can verify with `kubectl get models -oyaml qwen2-500m-cpu`).
 
-NOTE: Autoscaling after initial scale-from-zero is not yet supported for the Ollama backend which we use in this local quickstart. KubeAI relies upon backend-specific metrics and the Ollama project has an open issue: https://github.com/ollama/ollama/issues/3144. To see autoscaling in action, checkout the [GKE install guide](./installation/gke.md) which uses the vLLM backend and autoscales across GPU resources.
-
-
-
 ## Documentation
 
 Checkout our documentation on [kubeai.org](https://www.kubeai.org) to find info on:

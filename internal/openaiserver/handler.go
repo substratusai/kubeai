@@ -7,32 +7,39 @@ import (
 	"net/http"
 
 	"github.com/substratusai/kubeai/internal/modelproxy"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type Handler struct {
 	ModelProxy *modelproxy.Handler
 	K8sClient  client.Client
-	mux        *http.ServeMux
+	http.Handler
 }
 
 func NewHandler(k8sClient client.Client, modelProxy *modelproxy.Handler) *Handler {
 	h := &Handler{
 		K8sClient: k8sClient,
-		mux:       http.NewServeMux(),
 	}
 
-	h.mux.Handle("/openai/v1/chat/completions", http.StripPrefix("/openai", modelProxy))
-	h.mux.Handle("/openai/v1/completions", http.StripPrefix("/openai", modelProxy))
-	h.mux.Handle("/openai/v1/embeddings", http.StripPrefix("/openai", modelProxy))
-	h.mux.Handle("/openai/v1/audio/transcriptions", http.StripPrefix("/openai", modelProxy))
-	h.mux.HandleFunc("/openai/v1/models", h.getModels)
+	mux := http.NewServeMux()
+	// handle is a replacement for mux.Handle
+	// which enriches the handler's HTTP instrumentation with the pattern as the http.route.
+	handle := func(pattern string, routeHandler http.Handler) {
+		// Configure the "http.route" for the HTTP instrumentation.
+		mux.Handle(pattern, otelhttp.WithRouteTag(pattern, routeHandler))
+	}
+
+	handle("/openai/v1/chat/completions", http.StripPrefix("/openai", modelProxy))
+	handle("/openai/v1/completions", http.StripPrefix("/openai", modelProxy))
+	handle("/openai/v1/embeddings", http.StripPrefix("/openai", modelProxy))
+	handle("/openai/v1/audio/transcriptions", http.StripPrefix("/openai", modelProxy))
+	handle("/openai/v1/models", http.HandlerFunc(h.getModels))
+
+	// Add HTTP instrumentation for the whole server.
+	h.Handler = otelhttp.NewHandler(mux, "/")
 
 	return h
-}
-
-func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	h.mux.ServeHTTP(w, r)
 }
 
 func sendErrorResponse(w http.ResponseWriter, status int, format string, args ...interface{}) {

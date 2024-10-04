@@ -110,13 +110,13 @@ func updateModelWithBackend(t *testing.T, m *v1.Model, testModelBackend *httptes
 	}, "Set model IP/port annotations to direct requests to testBackend instead of the Pod's (non-existant) IP")
 }
 
-func sendRequests(t *testing.T, wg *sync.WaitGroup, modelName string, n int, expCode int) {
+func sendRequests(t *testing.T, wg *sync.WaitGroup, modelName string, n int, expCode int, msg string) {
 	for i := 0; i < n; i++ {
-		sendRequest(t, wg, modelName, expCode)
+		sendRequest(t, wg, modelName, expCode, msg)
 	}
 }
 
-func sendRequest(t *testing.T, wg *sync.WaitGroup, modelName string, expCode int) {
+func sendRequest(t *testing.T, wg *sync.WaitGroup, modelName string, expCode int, msg string) {
 	t.Helper()
 	wg.Add(1)
 	go func() {
@@ -124,11 +124,19 @@ func sendRequest(t *testing.T, wg *sync.WaitGroup, modelName string, expCode int
 
 		body := []byte(fmt.Sprintf(`{"model": %q}`, modelName))
 		req, err := http.NewRequest(http.MethodPost, "http://localhost:8000/openai/v1/completions", bytes.NewReader(body))
-		requireNoError(err)
+		if t.Failed() {
+			// Don't report errors if the test already failed - confusing.
+			return
+		}
+		require.NoError(t, err, msg)
 
 		res, err := testHTTPClient.Do(req)
-		require.NoError(t, err)
-		require.Equal(t, expCode, res.StatusCode)
+		if t.Failed() {
+			// Don't report errors if the test already failed - confusing.
+			return
+		}
+		require.NoError(t, err, msg)
+		require.Equal(t, expCode, res.StatusCode, msg)
 	}()
 }
 

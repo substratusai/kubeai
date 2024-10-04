@@ -27,14 +27,19 @@ type System struct {
 	// Defaults to ":8081"
 	HealthAddress string `json:"healthAddress" validate:"required"`
 
-	// AllowPodAddressOverride will allow the pod address to be overridden by the Model objects. This is useful for development purposes.
-	AllowPodAddressOverride bool `json:"allowPodAddressOverride"`
-
 	ModelAutoscaling ModelAutoscaling `json:"modelAutoscaling" validate:"required"`
 
 	ModelServerPods ModelServerPods `json:"modelServerPods,omitempty"`
 
 	ModelRollouts ModelRollouts `json:"modelRollouts"`
+
+	LeaderElection LeaderElection `json:"leaderElection"`
+
+	// AllowPodAddressOverride will allow the pod address to be overridden by the Model objects. Useful for development purposes.
+	AllowPodAddressOverride bool `json:"allowPodAddressOverride"`
+
+	// FixedSelfMetricAddrs is a list of fixed addresses to be used when scraping metrics for autoscaling. Useful for development purposes.
+	FixedSelfMetricAddrs []string `json:"fixedSelfMetricAddrs,omitempty"`
 }
 
 func (s *System) DefaultAndValidate() error {
@@ -58,7 +63,44 @@ func (s *System) DefaultAndValidate() error {
 		s.ModelAutoscaling.TimeWindow.Duration = 10 * time.Minute
 	}
 
+	if s.LeaderElection.LeaseDuration.Duration == 0 {
+		s.LeaderElection.LeaseDuration.Duration = 15 * time.Second
+	}
+	if s.LeaderElection.RenewDeadline.Duration == 0 {
+		s.LeaderElection.RenewDeadline.Duration = 10 * time.Second
+	}
+	if s.LeaderElection.RetryPeriod.Duration == 0 {
+		s.LeaderElection.RetryPeriod.Duration = 2 * time.Second
+	}
+
 	return validator.New(validator.WithRequiredStructEnabled()).Struct(s)
+}
+
+type LeaderElection struct {
+	// LeaseDuration is the duration that non-leader candidates will
+	// wait to force acquire leadership. This is measured against time of
+	// last observed ack.
+	//
+	// A client needs to wait a full LeaseDuration without observing a change to
+	// the record before it can attempt to take over. When all clients are
+	// shutdown and a new set of clients are started with different names against
+	// the same leader record, they must wait the full LeaseDuration before
+	// attempting to acquire the lease. Thus LeaseDuration should be as short as
+	// possible (within your tolerance for clock skew rate) to avoid a possible
+	// long waits in the scenario.
+	//
+	// Defaults to 15 seconds.
+	LeaseDuration Duration `json:"leaseDuration"`
+	// RenewDeadline is the duration that the acting master will retry
+	// refreshing leadership before giving up.
+	//
+	// Defaults to 10 seconds.
+	RenewDeadline Duration `json:"renewDeadline"`
+	// RetryPeriod is the duration the LeaderElector clients should wait
+	// between tries of actions.
+	//
+	// Defaults to 2 seconds.
+	RetryPeriod Duration `json:"retryPeriod"`
 }
 
 type ModelRollouts struct {

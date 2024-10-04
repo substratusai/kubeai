@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
+	"strconv"
 	"sync"
 
 	"sigs.k8s.io/yaml"
@@ -14,7 +16,9 @@ import (
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
+	"k8s.io/utils/ptr"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -23,12 +27,12 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
+	"github.com/substratusai/kubeai/internal/endpoints"
 	"github.com/substratusai/kubeai/internal/leader"
 	"github.com/substratusai/kubeai/internal/messenger"
 	"github.com/substratusai/kubeai/internal/modelautoscaler"
 	"github.com/substratusai/kubeai/internal/modelcontroller"
 	"github.com/substratusai/kubeai/internal/modelproxy"
-	"github.com/substratusai/kubeai/internal/modelresolver"
 	"github.com/substratusai/kubeai/internal/modelscaler"
 	"github.com/substratusai/kubeai/internal/openaiserver"
 
@@ -70,6 +74,18 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 		return fmt.Errorf("invalid config: %w", err)
 	}
 
+	// Set up OpenTelemetry.
+	otelShutdown, err := setupOTelSDK(ctx)
+	if err != nil {
+		return err
+	}
+	// Handle shutdown properly so nothing leaks.
+	defer func() {
+		if err = errors.Join(err, otelShutdown(context.Background())); err != nil {
+			Log.Error(err, "error shutting down OpenTelemetry")
+		}
+	}()
+
 	namespace, found := os.LookupEnv("POD_NAMESPACE")
 	if !found {
 		return errors.New("POD_NAMESPACE not set")
@@ -107,7 +123,10 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 	// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.18.4/pkg/metrics/server
 	// - https://book.kubebuilder.io/reference/metrics.html
 	metricsServerOptions := metricsserver.Options{
-		BindAddress:   cfg.MetricsAddr,
+		// Setting to "0" disables the metrics server.
+		// It would be good to re-enable these controller-runtime metrics
+		// once opentelemetry is integrated.
+		BindAddress:   "0", // cfg.MetricsAddr,
 		SecureServing: false,
 	}
 
@@ -120,6 +139,9 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 		LeaderElection:          true,
 		LeaderElectionID:        "cc6bca10.substratus.ai",
 		LeaderElectionNamespace: namespace,
+		LeaseDuration:           ptr.To(cfg.LeaderElection.LeaseDuration.Duration),
+		RenewDeadline:           ptr.To(cfg.LeaderElection.RenewDeadline.Duration),
+		RetryPeriod:             ptr.To(cfg.LeaderElection.RetryPeriod.Duration),
 		Cache: cache.Options{
 			Scheme: Scheme, //mgr.GetScheme(),
 			DefaultNamespaces: map[string]cache.Config{
@@ -153,9 +175,13 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 	if err != nil {
 		return fmt.Errorf("unable to get hostname: %w", err)
 	}
-	leaderElection := leader.NewElection(clientset, hostname, namespace)
+	leaderElection := leader.NewElection(clientset, hostname, namespace,
+		cfg.LeaderElection.LeaseDuration.Duration,
+		cfg.LeaderElection.RenewDeadline.Duration,
+		cfg.LeaderElection.RetryPeriod.Duration,
+	)
 
-	modelResolver, err := modelresolver.NewManager(mgr)
+	endpointManager, err := endpoints.NewResolver(mgr)
 	if err != nil {
 		return fmt.Errorf("unable to setup model resolver: %w", err)
 	}
@@ -185,18 +211,36 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 
 	modelScaler := modelscaler.NewModelScaler(mgr.GetClient(), namespace)
 
+	metricsPort, err := parsePortFromAddr(cfg.MetricsAddr)
+	if err != nil {
+		return fmt.Errorf("unable to parse metrics port: %w", err)
+	}
+
 	modelAutoscaler := modelautoscaler.New(
 		leaderElection,
 		modelScaler,
-		modelResolver,
+		endpointManager,
 		cfg.ModelAutoscaling,
+		metricsPort,
+		cfg.FixedSelfMetricAddrs,
 	)
 
-	modelProxy := modelproxy.NewHandler(modelScaler, modelResolver, 3, nil)
+	modelProxy := modelproxy.NewHandler(modelScaler, endpointManager, 3, nil)
 	openaiHandler := openaiserver.NewHandler(mgr.GetClient(), modelProxy)
 	mux := http.NewServeMux()
 	mux.Handle("/openai/", openaiHandler)
-	apiServer := &http.Server{Addr: ":8000", Handler: mux}
+	apiServer := &http.Server{
+		BaseContext: func(_ net.Listener) context.Context { return ctx },
+		Addr:        ":8000",
+		Handler:     mux,
+	}
+
+	metricsMux := http.NewServeMux()
+	metricsServer := &http.Server{
+		Addr:    cfg.MetricsAddr,
+		Handler: metricsMux,
+	}
+	metricsMux.Handle("/metrics", promhttp.Handler())
 
 	httpClient := &http.Client{}
 
@@ -209,7 +253,7 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 			stream.MaxHandlers,
 			cfg.Messaging.ErrorMaxBackoff.Duration,
 			modelScaler,
-			modelResolver,
+			endpointManager,
 			httpClient,
 		)
 		if err != nil {
@@ -241,6 +285,22 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 				Log.Info("api server closed")
 			} else {
 				Log.Error(err, "error serving api server")
+				os.Exit(1)
+			}
+		}
+	}()
+	wg.Add(1)
+	go func() {
+		defer func() {
+			Log.Info("metrics server stopped")
+			wg.Done()
+		}()
+		Log.Info("starting metrics server", "addr", metricsServer.Addr)
+		if err := metricsServer.ListenAndServe(); err != nil {
+			if errors.Is(err, http.ErrServerClosed) {
+				Log.Info("metrics server closed")
+			} else {
+				Log.Error(err, "error serving metrics server")
 				os.Exit(1)
 			}
 		}
@@ -296,6 +356,7 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 			}
 		}
 		apiServer.Shutdown(context.Background())
+		metricsServer.Shutdown(context.Background())
 	}()
 
 	Log.Info("run launched all goroutines")
@@ -303,4 +364,16 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 	Log.Info("run goroutines finished")
 
 	return nil
+}
+
+// parsePortFromAddr takes a string like ":8080" and returns 8080.
+func parsePortFromAddr(addr string) (int, error) {
+	if addr == "" {
+		return 0, errors.New("empty address")
+	}
+	_, port, err := net.SplitHostPort(addr)
+	if err != nil {
+		return 0, fmt.Errorf("unable to parse port from address: %w", err)
+	}
+	return strconv.Atoi(port)
 }

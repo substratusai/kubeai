@@ -1,4 +1,4 @@
-package modelresolver
+package endpoints
 
 import (
 	"context"

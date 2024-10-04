@@ -1,7 +1,6 @@
 package integration
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -12,17 +11,22 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/substratusai/kubeai/internal/config"
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func TestProxy(t *testing.T) {
+	sysCfg := baseSysCfg()
+	sysCfg.ModelAutoscaling.TimeWindow = config.Duration{Duration: 6 * time.Second}
+	sysCfg.ModelAutoscaling.Interval = config.Duration{Duration: time.Second}
+	initTest(t, sysCfg)
+
 	backendComplete := make(chan struct{})
 
 	t.Cleanup(func() {
 		// Finish all requests
 		close(backendComplete)
-		//testCancel()
 	})
 
 	m := modelForTest(t)
@@ -36,20 +40,6 @@ func TestProxy(t *testing.T) {
 	backendRequests := &atomic.Int32{}
 	totalBackendRequests := &atomic.Int32{}
 	testModelBackend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodGet && r.URL.Path == "/metrics" {
-			vllmMetrics := fmt.Sprintf(`# HELP vllm:num_requests_running Number of requests currently running on GPU.
-# TYPE vllm:num_requests_running gauge
-vllm:num_requests_running{model_name="%s"} %d.0
-# HELP vllm:num_requests_waiting Number of requests waiting to be processed.
-# TYPE vllm:num_requests_waiting gauge
-vllm:num_requests_waiting{model_name="%s"} %d.0
-`, m.Name, backendRequests.Load(), m.Name, 0)
-			t.Log("Serving metrics request from testBackends")
-			fmt.Println(vllmMetrics)
-			w.Write([]byte(vllmMetrics))
-			return
-		}
-
 		log.Println("Serving request from testBackend")
 		totalBackendRequests.Add(1)
 		backendRequests.Add(1)
@@ -67,7 +57,7 @@ vllm:num_requests_waiting{model_name="%s"} %d.0
 
 	// Send request number 1
 	var wg sync.WaitGroup
-	sendRequests(t, &wg, m.Name, 1, http.StatusOK)
+	sendRequests(t, &wg, m.Name, 1, http.StatusOK, "request 1")
 
 	requireModelReplicas(t, m, 1, "Replicas should be scaled up to 1 to process messaging request", 5*time.Second)
 	requireModelPods(t, m, 1, "Pod should be created for the messaging request", 5*time.Second)
@@ -75,16 +65,16 @@ vllm:num_requests_waiting{model_name="%s"} %d.0
 	completeRequests(backendComplete, 1)
 	require.Equal(t, int32(1), totalBackendRequests.Load(), "ensure the request made its way to the backend")
 
-	const autoscaleUpWait = 15 * time.Second
+	const autoscaleUpWait = 25 * time.Second
 	// Ensure the deployment is autoscaled past 1.
 	// Simulate the backend processing the request.
-	sendRequests(t, &wg, m.Name, 2, http.StatusOK)
+	sendRequests(t, &wg, m.Name, 2, http.StatusOK, "request 2,3")
 	requireModelReplicas(t, m, 2, "Replicas should be scaled up to 2 to process pending messaging request", autoscaleUpWait)
 	requireModelPods(t, m, 2, "2 Pods should be created for the messaging requests", 5*time.Second)
 	markAllModelPodsReady(t, m)
 
 	// Make sure deployment will not be scaled past max (3).
-	sendRequests(t, &wg, m.Name, 2, http.StatusOK)
+	sendRequests(t, &wg, m.Name, 2, http.StatusOK, "request 4,5")
 	require.Never(t, func() bool {
 		assert.NoError(t, testK8sClient.Get(testCtx, client.ObjectKeyFromObject(m), m))
 		return *m.Spec.Replicas > *m.Spec.MaxReplicas
@@ -94,7 +84,7 @@ vllm:num_requests_waiting{model_name="%s"} %d.0
 	require.Equal(t, int32(5), totalBackendRequests.Load(), "ensure all the requests made their way to the backend")
 
 	// Ensure the deployment is autoscaled back down to MinReplicas.
-	const autoscaleDownWait = 15 * time.Second
+	const autoscaleDownWait = 25 * time.Second
 	requireModelReplicas(t, m, m.Spec.MinReplicas, "Replicas should scale back to MinReplicas", autoscaleDownWait)
 	requireModelPods(t, m, int(m.Spec.MinReplicas), "Pods should be removed", 5*time.Second)
 

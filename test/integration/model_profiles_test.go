@@ -14,6 +14,8 @@ import (
 
 // TestModelProfiles tests that profiles are applied as expected.
 func TestModelProfiles(t *testing.T) {
+	initTest(t, baseSysCfg())
+
 	// Construct a Model object with MinReplicas set to 0.
 	m := modelForTest(t)
 	// Make sure there is a Pod created to run assertions against.
@@ -46,9 +48,9 @@ func TestModelProfiles(t *testing.T) {
 		container := mustFindPodContainerByName(t, pod, "server")
 		assert.Equal(t, expectedResources, container.Resources)
 		assert.Equal(t, ptr.To(cpuRuntimeClassName), pod.Spec.RuntimeClassName)
-		assert.Contains(t, pod.Spec.Tolerations, sysCfg().ResourceProfiles[resourceProfileCPU].Tolerations[0])
-		assert.Equal(t, sysCfg().ResourceProfiles[resourceProfileCPU].Affinity, pod.Spec.Affinity)
-		assert.Equal(t, sysCfg().ResourceProfiles[resourceProfileCPU].NodeSelector, pod.Spec.NodeSelector)
+		assert.Contains(t, pod.Spec.Tolerations, baseSysCfg().ResourceProfiles[resourceProfileCPU].Tolerations[0])
+		assert.Equal(t, baseSysCfg().ResourceProfiles[resourceProfileCPU].Affinity, pod.Spec.Affinity)
+		assert.Equal(t, baseSysCfg().ResourceProfiles[resourceProfileCPU].NodeSelector, pod.Spec.NodeSelector)
 	}, 5*time.Second, time.Second/10, "Resource profile should be applied to the model Pod object")
 
 	const userImage = "my-repo.com/my-repo/my-image:latest"

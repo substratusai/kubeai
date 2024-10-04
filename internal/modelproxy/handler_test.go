@@ -7,13 +7,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
+	"time"
 
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/testutil"
-	io_prometheus_client "github.com/prometheus/client_model/go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/substratusai/kubeai/internal/metrics/metricstest"
 )
 
 func TestHandler(t *testing.T) {
@@ -28,6 +28,10 @@ func TestHandler(t *testing.T) {
 		model2: "deploy2",
 	}
 
+	type metricsTestSpec struct {
+		expModel string
+	}
+
 	specs := map[string]struct {
 		reqBody    string
 		reqHeaders map[string]string
@@ -39,27 +43,19 @@ func TestHandler(t *testing.T) {
 		expRewrittenReqBody    string
 		expCode                int
 		expBody                string
-		expLabels              map[string]string
+		expMetrics             *metricsTestSpec
 		expBackendRequestCount int
 	}{
 		"no model": {
-			reqBody: "{}",
-			expCode: http.StatusBadRequest,
-			expBody: `{"error":"unable to parse model: no model specified"}` + "\n",
-			expLabels: map[string]string{
-				"model":       "",
-				"status_code": "400",
-			},
+			reqBody:                "{}",
+			expCode:                http.StatusBadRequest,
+			expBody:                `{"error":"unable to parse model: no model specified"}` + "\n",
 			expBackendRequestCount: 0,
 		},
 		"model not found": {
-			reqBody: `{"model":"does-not-exist"}`,
-			expCode: http.StatusNotFound,
-			expBody: `{"error":"model not found: does-not-exist"}` + "\n",
-			expLabels: map[string]string{
-				"model":       "does-not-exist",
-				"status_code": "404",
-			},
+			reqBody:                `{"model":"does-not-exist"}`,
+			expCode:                http.StatusNotFound,
+			expBody:                `{"error":"model not found: does-not-exist"}` + "\n",
 			expBackendRequestCount: 0,
 		},
 		"happy 200 model in body": {
@@ -68,9 +64,8 @@ func TestHandler(t *testing.T) {
 			backendBody: `{"result":"ok"}`,
 			expCode:     http.StatusOK,
 			expBody:     `{"result":"ok"}`,
-			expLabels: map[string]string{
-				"model":       model1,
-				"status_code": "200",
+			expMetrics: &metricsTestSpec{
+				expModel: model1,
 			},
 			expBackendRequestCount: 1,
 		},
@@ -81,9 +76,8 @@ func TestHandler(t *testing.T) {
 			backendBody: `{"result":"ok"}`,
 			expCode:     http.StatusOK,
 			expBody:     `{"result":"ok"}`,
-			expLabels: map[string]string{
-				"model":       model1,
-				"status_code": "200",
+			expMetrics: &metricsTestSpec{
+				expModel: model1,
 			},
 			expBackendRequestCount: 1,
 		},
@@ -99,9 +93,8 @@ func TestHandler(t *testing.T) {
 			backendBody:         `{"result":"ok"}`,
 			expCode:             http.StatusOK,
 			expBody:             `{"result":"ok"}`,
-			expLabels: map[string]string{
-				"model":       model1,
-				"status_code": "200",
+			expMetrics: &metricsTestSpec{
+				expModel: model1,
 			},
 			expBackendRequestCount: 1,
 		},
@@ -120,9 +113,8 @@ func TestHandler(t *testing.T) {
 			backendBody: `{"result":"ok"}`,
 			expCode:     http.StatusOK,
 			expBody:     `{"result":"ok"}`,
-			expLabels: map[string]string{
-				"model":       model1,
-				"status_code": "200",
+			expMetrics: &metricsTestSpec{
+				expModel: model1,
 			},
 			expBackendRequestCount: 1,
 		},
@@ -132,9 +124,8 @@ func TestHandler(t *testing.T) {
 			backendBody: `{"err":"oh no!"}`,
 			expCode:     http.StatusInternalServerError,
 			expBody:     `{"err":"oh no!"}`,
-			expLabels: map[string]string{
-				"model":       model1,
-				"status_code": "500",
+			expMetrics: &metricsTestSpec{
+				expModel: model1,
 			},
 			expBackendRequestCount: 1 + maxRetries,
 		},
@@ -144,9 +135,8 @@ func TestHandler(t *testing.T) {
 			backendBody: `{"err":"bad request"}`,
 			expCode:     http.StatusBadRequest,
 			expBody:     `{"err":"bad request"}`,
-			expLabels: map[string]string{
-				"model":       model1,
-				"status_code": "400",
+			expMetrics: &metricsTestSpec{
+				expModel: model1,
 			},
 			expBackendRequestCount: 1,
 		},
@@ -155,23 +145,25 @@ func TestHandler(t *testing.T) {
 			backendPanic: true,
 			expCode:      http.StatusBadGateway,
 			expBody:      `{"error":"Bad Gateway"}` + "\n",
-			expLabels: map[string]string{
-				"model":       model1,
-				"status_code": "502",
+			expMetrics: &metricsTestSpec{
+				expModel: model1,
 			},
 			expBackendRequestCount: 1 + maxRetries,
 		},
 	}
 	for name, spec := range specs {
 		t.Run(name, func(t *testing.T) {
-			// Register metrics from a clean slate.
-			httpDuration.Reset()
-			metricsRegistry := prometheus.NewPedanticRegistry()
-			MustRegister(metricsRegistry)
+			metricstest.Init(t)
 
 			// Mock backend.
 			var backendRequestCount int
+			sendResponse := make(chan struct{})
 			backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				defer func() {
+					t.Log("waiting for response to be allowed")
+					<-sendResponse
+					t.Log("sending response")
+				}()
 				backendRequestCount++
 
 				bdy, err := io.ReadAll(r.Body)
@@ -212,8 +204,30 @@ func TestHandler(t *testing.T) {
 			for k, v := range spec.reqHeaders {
 				req.Header.Add(k, v)
 			}
-			resp, err := client.Do(req)
-			require.NoError(t, err, "The client request should not fail")
+
+			var resp *http.Response
+
+			var wg sync.WaitGroup
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				var err error
+				resp, err = client.Do(req)
+				require.NoError(t, err, "The client request should not fail")
+			}()
+
+			// Assertions based on active requests should go here.
+			if spec.expMetrics != nil {
+				// Give the metrics some time to be collected.
+				time.Sleep(time.Second)
+
+				mets := metricstest.Collect(t)
+				metricstest.RequireActiveRequestsMetric(t, mets, spec.expMetrics.expModel, 1)
+			}
+
+			close(sendResponse)
+			wg.Wait()
+
 			defer resp.Body.Close()
 			respBody, err := io.ReadAll(resp.Body)
 			require.NoError(t, err)
@@ -224,24 +238,13 @@ func TestHandler(t *testing.T) {
 			assert.Equal(t, spec.expBackendRequestCount, backendRequestCount, "Unexpected number of requests sent to backend")
 			assert.Equal(t, spec.expBackendRequestCount, testInf.hostRequestCount, "Unexpected number of requests for backend hosts")
 
-			// Assert on metrics.
-			gathered, err := metricsRegistry.Gather()
-			require.NoError(t, err)
-			require.Len(t, gathered, 1)
-			require.Len(t, gathered[0].Metric, 1)
-			assert.NotEmpty(t, gathered[0].Metric[0].GetHistogram().GetSampleCount())
-			assert.Equal(t, spec.expLabels, toMap(gathered[0].Metric[0].Label))
+			// Assert on metrics after the request is responded to.
+			if spec.expMetrics != nil {
+				mets := metricstest.Collect(t)
+				metricstest.RequireActiveRequestsMetric(t, mets, spec.expMetrics.expModel, 0)
+			}
 		})
 	}
-}
-
-func TestMetricsViaLinter(t *testing.T) {
-	registry := prometheus.NewPedanticRegistry()
-	MustRegister(registry)
-
-	problems, err := testutil.GatherAndLint(registry)
-	require.NoError(t, err)
-	require.Empty(t, problems)
 }
 
 type testModelInterface struct {
@@ -267,12 +270,4 @@ func (t *testModelInterface) AwaitBestAddress(ctx context.Context, model string)
 	t.hostRequestCount++
 	t.requestedModel = model
 	return t.address, func() {}, nil
-}
-
-func toMap(s []*io_prometheus_client.LabelPair) map[string]string {
-	r := make(map[string]string, len(s))
-	for _, v := range s {
-		r[v.GetName()] = v.GetValue()
-	}
-	return r
 }

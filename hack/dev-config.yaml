@@ -30,4 +30,6 @@ resourceProfiles:
       cpu: "6"
       memory: "24Gi"
 
+# Dev-only configuration.
 allowPodAddressOverride: true
+fixedSelfMetricAddrs: ["127.0.0.1:"]

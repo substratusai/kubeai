@@ -13,6 +13,8 @@ import (
 // TestModelPodRecovery tests that if a Pod is deleted, it is recreated
 // with the same name.
 func TestModelPodRecovery(t *testing.T) {
+	initTest(t, baseSysCfg())
+
 	// Create a Model object.
 	m := modelForTest(t)
 	m.Spec.MinReplicas = 3
