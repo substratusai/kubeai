@@ -86,6 +86,10 @@ func (a *Autoscaler) Start(ctx context.Context) {
 				selfAddrs = append(selfAddrs, fmt.Sprintf("%s:%d", ip, a.metricsPort))
 			}
 		}
+		if len(selfAddrs) == 0 {
+			log.Println("Unable to resolve KubeAI addresses, skipping")
+			continue
+		}
 		if err := aggregateAllMetrics(agg, selfAddrs, "/metrics"); err != nil {
 			log.Printf("Failed to aggregate metrics: %v", err)
 			continue

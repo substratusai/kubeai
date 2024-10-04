@@ -53,21 +53,16 @@ func (r *Resolver) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result
 	if labels == nil {
 		return ctrl.Result{}, nil
 	}
-	modelName, ok := labels[kubeaiv1.PodModelLabel]
-	if !ok {
-		return ctrl.Result{}, nil
-	}
-
-	var podList corev1.PodList
-	if err := r.List(ctx, &podList, client.MatchingLabels{kubeaiv1.PodModelLabel: modelName}); err != nil {
-		return ctrl.Result{}, fmt.Errorf("listing matching pods: %w", err)
-	}
 
 	const (
 		selfLabelKey = "app.kubernetes.io/name"
 		selfLabelVal = "kubeai"
 	)
-	if k8sutils.GetLabel(&pod, selfLabelKey) == selfLabelVal {
+	if labels[selfLabelKey] == selfLabelVal {
+		var podList corev1.PodList
+		if err := r.List(ctx, &podList, client.MatchingLabels{selfLabelKey: selfLabelKey}); err != nil {
+			return ctrl.Result{}, fmt.Errorf("listing matching pods: %w", err)
+		}
 		var selfIPs []string
 		for _, pod := range podList.Items {
 			if k8sutils.PodIsReady(&pod) {
@@ -77,6 +72,17 @@ func (r *Resolver) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result
 		r.selfIPsMtx.Lock()
 		r.selfIPs = selfIPs
 		r.selfIPsMtx.Unlock()
+		return ctrl.Result{}, nil
+	}
+
+	modelName, ok := labels[kubeaiv1.PodModelLabel]
+	if !ok {
+		return ctrl.Result{}, nil
+	}
+
+	var podList corev1.PodList
+	if err := r.List(ctx, &podList, client.MatchingLabels{kubeaiv1.PodModelLabel: modelName}); err != nil {
+		return ctrl.Result{}, fmt.Errorf("listing matching pods: %w", err)
 	}
 
 	addrs := map[string]struct{}{}
