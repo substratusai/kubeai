@@ -3,17 +3,12 @@ package manager
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/substratusai/kubeai/internal/metrics"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/prometheus"
-	"go.opentelemetry.io/otel/exporters/stdout/stdoutlog"
-	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/propagation"
-	"go.opentelemetry.io/otel/sdk/log"
 	"go.opentelemetry.io/otel/sdk/metric"
-	"go.opentelemetry.io/otel/sdk/trace"
 )
 
 // setupOTelSDK bootstraps the OpenTelemetry pipeline.
@@ -84,20 +79,20 @@ func newPropagator() propagation.TextMapPropagator {
 	)
 }
 
-func newTraceProvider() (*trace.TracerProvider, error) {
-	traceExporter, err := stdouttrace.New(
-		stdouttrace.WithPrettyPrint())
-	if err != nil {
-		return nil, err
-	}
-
-	traceProvider := trace.NewTracerProvider(
-		trace.WithBatcher(traceExporter,
-			// Default is 5s. Set to 1s for demonstrative purposes.
-			trace.WithBatchTimeout(time.Second)),
-	)
-	return traceProvider, nil
-}
+//func newTraceProvider() (*trace.TracerProvider, error) {
+//	traceExporter, err := stdouttrace.New(
+//		stdouttrace.WithPrettyPrint())
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	traceProvider := trace.NewTracerProvider(
+//		trace.WithBatcher(traceExporter,
+//			// Default is 5s. Set to 1s for demonstrative purposes.
+//			trace.WithBatchTimeout(time.Second)),
+//	)
+//	return traceProvider, nil
+//}
 
 func newMeterProvider() (*metric.MeterProvider, error) {
 	//stdoutExporter, err := stdoutmetric.New()
@@ -119,14 +114,14 @@ func newMeterProvider() (*metric.MeterProvider, error) {
 	return meterProvider, nil
 }
 
-func newLoggerProvider() (*log.LoggerProvider, error) {
-	logExporter, err := stdoutlog.New()
-	if err != nil {
-		return nil, err
-	}
-
-	loggerProvider := log.NewLoggerProvider(
-		log.WithProcessor(log.NewBatchProcessor(logExporter)),
-	)
-	return loggerProvider, nil
-}
+//func newLoggerProvider() (*log.LoggerProvider, error) {
+//	logExporter, err := stdoutlog.New()
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	loggerProvider := log.NewLoggerProvider(
+//		log.WithProcessor(log.NewBatchProcessor(logExporter)),
+//	)
+//	return loggerProvider, nil
+//}
