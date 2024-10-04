@@ -9,6 +9,8 @@ import (
 	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
 	"github.com/substratusai/kubeai/internal/k8sutils"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/utils/ptr"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -39,6 +41,7 @@ type Resolver struct {
 
 func (r *Resolver) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
+		WithOptions(controller.Options{NeedLeaderElection: ptr.To(false)}).
 		For(&corev1.Pod{}).
 		Complete(r)
 }
@@ -60,13 +63,13 @@ func (r *Resolver) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result
 	)
 	if labels[selfLabelKey] == selfLabelVal {
 		var podList corev1.PodList
-		if err := r.List(ctx, &podList, client.MatchingLabels{selfLabelKey: selfLabelKey}); err != nil {
+		if err := r.List(ctx, &podList, client.InNamespace(pod.Namespace), client.MatchingLabels{selfLabelKey: selfLabelVal}); err != nil {
 			return ctrl.Result{}, fmt.Errorf("listing matching pods: %w", err)
 		}
 		var selfIPs []string
-		for _, pod := range podList.Items {
-			if k8sutils.PodIsReady(&pod) {
-				selfIPs = append(selfIPs, pod.Status.PodIP)
+		for _, p := range podList.Items {
+			if k8sutils.PodIsReady(&p) {
+				selfIPs = append(selfIPs, p.Status.PodIP)
 			}
 		}
 		r.selfIPsMtx.Lock()
@@ -81,7 +84,7 @@ func (r *Resolver) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result
 	}
 
 	var podList corev1.PodList
-	if err := r.List(ctx, &podList, client.MatchingLabels{kubeaiv1.PodModelLabel: modelName}); err != nil {
+	if err := r.List(ctx, &podList, client.InNamespace(pod.Namespace), client.MatchingLabels{kubeaiv1.PodModelLabel: modelName}); err != nil {
 		return ctrl.Result{}, fmt.Errorf("listing matching pods: %w", err)
 	}
 

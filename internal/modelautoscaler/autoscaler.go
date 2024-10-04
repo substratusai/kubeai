@@ -76,7 +76,6 @@ func (a *Autoscaler) Start(ctx context.Context) {
 			continue
 		}
 
-		agg := newMetricsAggregation()
 		var selfAddrs []string
 		if len(a.fixedSelfMetricAddrs) > 0 {
 			selfAddrs = a.fixedSelfMetricAddrs
@@ -90,6 +89,9 @@ func (a *Autoscaler) Start(ctx context.Context) {
 			log.Println("Unable to resolve KubeAI addresses, skipping")
 			continue
 		}
+
+		log.Printf("Aggregating metrics from KubeAI addresses %v", selfAddrs)
+		agg := newMetricsAggregation()
 		if err := aggregateAllMetrics(agg, selfAddrs, "/metrics"); err != nil {
 			log.Printf("Failed to aggregate metrics: %v", err)
 			continue
@@ -116,8 +118,8 @@ func (a *Autoscaler) Start(ctx context.Context) {
 			avgActiveRequests := avg.Calculate()
 			normalized := avgActiveRequests / float64(*m.Spec.TargetRequests)
 			ceil := math.Ceil(normalized)
-			log.Printf("Calculated target replicas for model %q: ceil(%v/%v) = %v, current requests: %v, history: %v",
-				m.Name, avgActiveRequests, *m.Spec.TargetRequests, ceil, activeRequests, avg.History())
+			log.Printf("Calculated target replicas for model %q: ceil(%v/%v) = %v, current requests: sum(%v) = %v, history: %v",
+				m.Name, avgActiveRequests, *m.Spec.TargetRequests, ceil, activeRequests, activeRequestSum, avg.History())
 			a.scaler.Scale(ctx, &m, int32(ceil), a.cfg.RequiredConsecutiveScaleDowns(*m.Spec.ScaleDownDelaySeconds))
 		}
 	}
