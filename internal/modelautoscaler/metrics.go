@@ -13,7 +13,7 @@ import (
 )
 
 func aggregateAllMetrics(agg *metricsAggregation, addrs []string, path string) (err error) {
-	// TODO: Consider concurrnetly scraping metrics from all endpoints.
+	// TODO: Consider concurrently scraping metrics from all endpoints.
 	for _, addr := range addrs {
 		if e := scrapeAndAggregateMetrics(agg, fmt.Sprintf("http://%s%s", addr, path)); e != nil {
 			err = errors.Join(err, e)
