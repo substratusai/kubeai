@@ -161,6 +161,28 @@ catalog:
     # You can also use nvidia-gpu-a100-80gb:8
     resourceProfile: nvidia-gpu-h100:8
     targetRequests: 500
+  llama-3.1-405b-instruct-fp8-a100-80b:
+    features: [TextGeneration]
+    url: hf://neuralmagic/Meta-Llama-3.1-405B-Instruct-FP8
+    engine: VLLM
+    env:
+      VLLM_ATTENTION_BACKEND: FLASHINFER
+    args:
+      - --max-model-len=65536
+      - --max-num-batched-token=65536
+      - --gpu-memory-utilization=0.98
+      - --tensor-parallel-size=8
+      - --enable-prefix-caching
+      - --disable-log-requests
+      - --max-num-seqs=128
+      - --kv-cache-dtype=fp8
+      - --enforce-eager
+      - --enable-chunked-prefill=false
+      - --num-scheduler-steps=8
+    targetRequests: 128
+    minReplicas: 1
+    maxReplicas: 1
+    resourceProfile: nvidia-gpu-a100-80gb:8
   nomic-embed-text-cpu:
     enabled: false
     features: ["TextEmbedding"]

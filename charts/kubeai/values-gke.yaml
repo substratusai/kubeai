@@ -7,6 +7,14 @@ resourceProfiles:
     nodeSelector:
       cloud.google.com/gke-accelerator: "nvidia-h100-80gb"
       cloud.google.com/gke-spot: "true"
+  nvidia-gpu-a100-80gb:
+    nodeSelector:
+      cloud.google.com/gke-accelerator: "nvidia-a100-80gb"
+      cloud.google.com/gke-spot: "true"
+  nvidia-gpu-a100-40gb:
+    nodeSelector:
+      cloud.google.com/gke-accelerator: "nvidia-tesla-a100"
+      cloud.google.com/gke-spot: "true"
   google-tpu-v5e-1x1:
     imageName: google-tpu
     limits:

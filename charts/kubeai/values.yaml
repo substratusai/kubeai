@@ -81,17 +81,24 @@ resourceProfiles:
         operator: "Equal"
         value: "present"
         effect: "NoSchedule"
-
-  # nvidia-gpu-v100:
-  # nvidia-gpu-a100:
-  # google-tpu-v5e:
-  #   imageName: "google-tpu"
-  #   requests:
-  #     google.com/tpu: 4
-  #   limits:
-  #     google.com/tpu: 4
-  #   nodeSelector:
-  #     cloud.google.com/gke-accelerator-type: tpu-v5-lite-podslice
+  nvidia-gpu-a100-80gb:
+    imageName: "nvidia-gpu"
+    limits:
+      nvidia.com/gpu: "1"
+    tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Equal"
+        value: "present"
+        effect: "NoSchedule"
+  nvidia-gpu-a100-40gb:
+    imageName: "nvidia-gpu"
+    limits:
+      nvidia.com/gpu: "1"
+    tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Equal"
+        value: "present"
+        effect: "NoSchedule"
 
 modelAutoscaling:
   # Interval that the autoscaler will scrape model server metrics.
