@@ -128,7 +128,6 @@ func (pr *proxyRequest) parseModel() error {
 			return fmt.Errorf("closing multipart writer: %w", err)
 		}
 		pr.body = buf.Bytes()
-		fmt.Println("pr.body:", string(pr.body))
 		// Set a new content length based on the new body - which had the "model" field removed.
 		pr.r.ContentLength = int64(len(pr.body))
 

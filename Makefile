@@ -3,6 +3,7 @@ IMG ?= controller:latest
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.30.0
 CRD_REF_DOCS_VERSION = v0.1.0
+SKAFFOLD_VERSION = v2.13.2
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -70,10 +71,21 @@ vet: ## Run go vet against code.
 test: manifests generate fmt vet envtest ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test -v $$(go list ./... | grep -v /e2e) -coverprofile cover.out
 
-# Utilize Kind or modify the e2e tests to load the image locally, enabling compatibility with other vendors.
-.PHONY: test-e2e  # Run the e2e tests against a Kind k8s instance that is spun up.
-test-e2e:
-	go test ./test/e2e/ -v -ginkgo.v
+# TODO: Run all e2e tests and setup and remove kind clusters.
+#.PHONY: test-e2e
+#test-e2e:
+
+.PHONY: test-e2e-quickstart
+test-e2e-quickstart:
+	./test/e2e/run.sh quickstart
+
+.PHONY: test-e2e-faster-whisper
+test-e2e-faster-whisper:
+	./test/e2e/run.sh faster-whisper --profile kubeai-only
+
+.PHONY: test-e2e-openai-python-client
+test-e2e-openai-python-client:
+	./test/e2e/run.sh openai-python-client --profile kubeai-only
 
 .PHONY: lint
 lint: golangci-lint ## Run golangci-lint linter
@@ -141,6 +153,7 @@ CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 GOLANGCI_LINT = $(LOCALBIN)/golangci-lint
 CRD_REF_DOCS ?= $(LOCALBIN)/crd-ref-docs
+SKAFFOLD ?= $(LOCALBIN)/skaffold
 YQ ?= $(LOCALBIN)/yq
 
 ## Tool Versions
@@ -198,8 +211,14 @@ generate-kubernetes-api-reference: crd-ref-docs
 .PHONY: crd-ref-docs
 crd-ref-docs: $(CRD_REF_DOCS) ## Download crd-ref-docs.
 $(CRD_REF_DOCS): $(LOCALBIN)
-	test -s $(LOCALBIN)/crd-ref-docs || \
-	GOBIN=$(LOCALBIN) go install github.com/elastic/crd-ref-docs@$(CRD_REF_DOCS_VERSION)
+	$(call go-install-tool,$(CRD_REF_DOCS),github.com/elastic/crd-ref-docs,$(CRD_REF_DOCS_VERSION))
+
+SKAFFOLD_PLATFORM ?= $(shell go env GOOS)-$(shell go env GOARCH)
+.PHONY: skaffold
+skaffold: $(SKAFFOLD) ## Download skaffold.
+$(SKAFFOLD): $(LOCALBIN)
+	curl -Lo $(SKAFFOLD) https://storage.googleapis.com/skaffold/releases/$(SKAFFOLD_VERSION)/skaffold-$(SKAFFOLD_PLATFORM)
+	chmod +x $(SKAFFOLD)
 
 # go-install-tool will 'go install' any package with custom target and name of binary, if it doesn't exist
 # $1 - target path with name of binary
