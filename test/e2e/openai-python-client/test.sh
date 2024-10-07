@@ -1,20 +1,24 @@
 #!/bin/bash
 
-source $REPO_ROOT/test/e2e/common.sh
+source $REPO_DIR/test/e2e/common.sh
 
-kubectl apply -f $REPO_ROOT/manifests/models/opt-125m-cpu.yaml
+kubectl apply -f $REPO_DIR/manifests/models/opt-125m-cpu.yaml
 
-python -m venv $TEST_CASE/venv
+python -m venv $TEST_DIR/venv
 
 cleanup() {
-    echo "Running test case cleanup..."
+    echo "Running openai-python-client test case cleanup..."
+    kubectl delete -f $REPO_DIR/manifests/models/opt-125m-cpu.yaml
     deactivate
 }
 trap cleanup EXIT
 
-source $TEST_CASE/venv/bin/activate
+source $TEST_DIR/venv/bin/activate
 
 which pip
-pip install -r $TEST_CASE/requirements.txt
+pip install -r $TEST_DIR/requirements.txt
 
-pytest $TEST_CASE/test.py
+# Wait for models to sync.
+sleep 3
+
+pytest $TEST_DIR/test.py

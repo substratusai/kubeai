@@ -1,15 +1,23 @@
 #!/bin/bash
 
-source $REPO_ROOT/test/e2e/common.sh
+source $REPO_DIR/test/e2e/common.sh
 
 model=faster-whisper-medium-en-cpu
-kubectl apply -f $REPO_ROOT/manifests/models/$model.yaml
 
-audio_file=$REPO_ROOT/tmp/kubeai.mp4
+cleanup() {
+    echo "Running faster-whisper test case cleanup..."
+    kubectl delete -f $REPO_DIR/manifests/models/$model.yaml
+    deactivate
+}
+trap cleanup EXIT
+
+kubectl apply -f $REPO_DIR/manifests/models/$model.yaml
+
+audio_file=$REPO_DIR/tmp/kubeai.mp4
 curl -L -o $audio_file https://github.com/user-attachments/assets/711d1279-6af9-4c6c-a052-e59e7730b757
 
-transcription_file=$REPO_ROOT/tmp/transcription.json
-retry 3 curl http://localhost:8000/openai/v1/audio/transcriptions \
+transcription_file=$REPO_DIR/tmp/transcription.json
+curl http://localhost:8000/openai/v1/audio/transcriptions \
   -F "file=@$audio_file" \
   -F "language=en" \
   -F "model=$model" > $transcription_file
@@ -19,6 +27,6 @@ if [ "$result_contains_kubernetes" = "true" ]; then
   echo "The transcript contains 'kubernetes'."
 else
   echo "The text does not contain 'kubernetes':"
-  echo $result
+  cat $transcription_file
   exit 1
 fi

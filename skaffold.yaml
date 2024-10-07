@@ -40,4 +40,3 @@ profiles:
         chartPath: ./charts/kubeai
         setValueTemplates:
           openwebui.enabled: false
-  

@@ -67,13 +67,13 @@ fmt: ## Run go fmt against code.
 vet: ## Run go vet against code.
 	go vet ./...
 
-.PHONY: test
-test: manifests generate fmt vet envtest ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test -v $$(go list ./... | grep -v /e2e) -coverprofile cover.out
+.PHONY: test-unit
+test-unit: manifests generate fmt vet
+	go test -v ./internal/... -coverprofile cover.unit.out
 
-# TODO: Run all e2e tests and setup and remove kind clusters.
-#.PHONY: test-e2e
-#test-e2e:
+.PHONY: test-integration
+test-integration: manifests generate fmt vet envtest
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test -v ./test/integration -coverprofile cover.integration.out
 
 .PHONY: test-e2e-quickstart
 test-e2e-quickstart:
