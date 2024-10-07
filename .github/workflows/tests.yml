@@ -13,11 +13,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-#
-#      - name: Setup Go
-#        uses: actions/setup-go@v5
-#        with:
-#          go-version: ">=1.21.0"
 
       - name: Run unit tests
         run: make test-unit
@@ -26,8 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: unit
     steps:
-#      - name: Checkout code
-#        uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
       - name: Run integration tests
         run: make test-integration
@@ -50,6 +45,9 @@ jobs:
           curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
           chmod 700 get_helm.sh
           ./get_helm.sh
+
+      - name: Start kind cluster
+        run: kind create cluster
 
       - name: Run the quickstart tests
         run: make test-e2e-quickstart
