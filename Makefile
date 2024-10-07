@@ -76,15 +76,15 @@ test-integration: manifests generate fmt vet envtest
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test -v ./test/integration -coverprofile cover.integration.out
 
 .PHONY: test-e2e-quickstart
-test-e2e-quickstart:
+test-e2e-quickstart: skaffold
 	./test/e2e/run.sh quickstart
 
 .PHONY: test-e2e-faster-whisper
-test-e2e-faster-whisper:
+test-e2e-faster-whisper: skaffold
 	./test/e2e/run.sh faster-whisper --profile kubeai-only
 
 .PHONY: test-e2e-openai-python-client
-test-e2e-openai-python-client:
+test-e2e-openai-python-client: skaffold
 	./test/e2e/run.sh openai-python-client --profile kubeai-only
 
 .PHONY: lint
