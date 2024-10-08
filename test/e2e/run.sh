@@ -70,7 +70,7 @@ skaffold run -f $REPO_DIR/skaffold.yaml --tail --port-forward > $skaffold_flags 
 skaffold_pid=$!
 
 echo "Waiting for skaffold to be ready..."
-retry 600 curl http://localhost:8000/openai/v1/models
+retry 600 curl -s http://localhost:8000/openai/v1/models
 
 $REPO_DIR/test/e2e/$testcase/test.sh
 
