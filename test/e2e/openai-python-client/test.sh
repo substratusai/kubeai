@@ -7,7 +7,7 @@ kubectl apply -f $REPO_DIR/manifests/models/opt-125m-cpu.yaml
 python -m venv $TEST_DIR/venv
 
 cleanup() {
-    output "Running openai-python-client test case cleanup..."
+    echo "Running openai-python-client test case cleanup..."
     kubectl delete -f $REPO_DIR/manifests/models/opt-125m-cpu.yaml
     deactivate
 }

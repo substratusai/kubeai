@@ -1,9 +1,5 @@
 set -e
 
-output() {
-  ( set +x; echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*" )
-}
-
 retry() {
   local retries=$1
   shift

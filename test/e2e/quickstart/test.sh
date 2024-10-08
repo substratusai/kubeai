@@ -5,7 +5,7 @@ source $REPO_DIR/test/e2e/common.sh
 models_release="kubeai-models"
 
 cleanup() {
-    output "Running quickstart cleanup..."
+    echo "Running quickstart cleanup..."
     helm uninstall --ignore-not-found $models_release
 }
 trap cleanup EXIT

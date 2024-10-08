@@ -31,27 +31,27 @@ fi
 
 # Function to handle errors
 error_handler() {
-    output "Tests failed. Printing logs..."
+    echo "Tests failed. Printing logs..."
     if [ -f $skaffold_log_file ]; then
-        output "--- Skaffold Logs ---"
+        echo "--- Skaffold Logs ---"
         cat $skaffold_log_file
     fi
-    output "--- Nodes ---"
+    echo "--- Nodes ---"
     kubectl get nodes -owide
-    output "--- Pods ---"
+    echo "--- Pods ---"
     kubectl get pods -owide
-    output "--- Events ---"
+    echo "--- Events ---"
     kubectl get events
-    output "--- Models ---"
+    echo "--- Models ---"
     kubectl get crds models.kubeai.org && kubectl get models -oyaml
-    output "!!! FAIL !!!"
+    echo "!!! FAIL !!!"
     exit 1
 }
 trap 'error_handler' ERR
 
 skaffold_pid=9999999999999999
 cleanup() {
-    output "Running test framework cleanup..."
+    echo "Running test framework cleanup..."
     if [ $skaffold_pid != 9999999999999999 ]; then
         kill $skaffold_pid
         wait $skaffold_pid
@@ -62,16 +62,16 @@ trap cleanup EXIT
 
 # Assert that PATH is configured correctly.
 if [ "$(which skaffold)" != "$REPO_DIR/bin/skaffold" ]; then
-    output "Tools are not set up correctly. Probably need to run via Makefile."
+    echo "Tools are not set up correctly. Probably need to run via Makefile."
     exit 1
 fi
 
 skaffold run -f $REPO_DIR/skaffold.yaml --tail --port-forward > $skaffold_flags &
 skaffold_pid=$!
 
-output "Waiting for port-forward to be ready..."
-retry 6 curl http://localhost:8000/openai/v1/models
+echo "Waiting for skaffold to be ready..."
+retry 600 curl http://localhost:8000/openai/v1/models
 
 $REPO_DIR/test/e2e/$testcase/test.sh
 
-output "!!! PASS !!!"
+echo "!!! PASS !!!"
