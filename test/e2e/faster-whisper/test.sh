@@ -12,10 +12,10 @@ trap cleanup EXIT
 
 kubectl apply -f $REPO_DIR/manifests/models/$model.yaml
 
-audio_file=$REPO_DIR/tmp/kubeai.mp4
+audio_file=$TMP_DIR/kubeai.mp4
 curl -L -o $audio_file https://github.com/user-attachments/assets/711d1279-6af9-4c6c-a052-e59e7730b757
 
-transcription_file=$REPO_DIR/tmp/transcription.json
+transcription_file=$TMP_DIR/transcription.json
 curl http://localhost:8000/openai/v1/audio/transcriptions \
   -F "file=@$audio_file" \
   -F "language=en" \
