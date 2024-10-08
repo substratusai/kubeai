@@ -7,7 +7,6 @@ model=faster-whisper-medium-en-cpu
 cleanup() {
     echo "Running faster-whisper test case cleanup..."
     kubectl delete -f $REPO_DIR/manifests/models/$model.yaml
-    deactivate
 }
 trap cleanup EXIT
 
