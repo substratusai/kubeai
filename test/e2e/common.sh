@@ -21,9 +21,3 @@ retry() {
   echo ""
   set -x
 }
-
-wait_for_kubeai_api() {
-  echo "Waiting for KubeAI API on localhost:8000"
-  retry 600 curl -s http://localhost:8000/openai/v1/models
-  echo "KubeAI API is ready"
-}
