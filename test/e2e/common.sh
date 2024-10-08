@@ -18,12 +18,12 @@ retry() {
       return $exit_code
     fi
   done || true  # Prevent 'set -e' from exiting on failed command
+  echo ""
   set -x
 }
 
 wait_for_kubeai_api() {
   echo "Waiting for KubeAI API on localhost:8000"
   retry 600 curl -s http://localhost:8000/openai/v1/models
-  echo ""
   echo "KubeAI API is ready"
 }
