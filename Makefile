@@ -68,11 +68,11 @@ vet: ## Run go vet against code.
 	go vet ./...
 
 .PHONY: test-unit
-test-unit: manifests generate fmt vet
+test-unit: fmt vet
 	go test -v ./internal/... -coverprofile cover.unit.out
 
 .PHONY: test-integration
-test-integration: manifests generate fmt vet envtest
+test-integration: fmt vet envtest
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test -v ./test/integration -coverprofile cover.integration.out
 
 .PHONY: test-e2e-quickstart
