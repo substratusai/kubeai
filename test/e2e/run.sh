@@ -13,6 +13,15 @@ export TEST_DIR=$REPO_DIR/test/e2e/$testcase
 export PATH=$REPO_DIR/bin:$PATH
 export DOCKER_BUILDKIT=1
 
+# Avoid using an unintended kubectl context.
+expected_kubectl_context=${TEST_KUBECTL_CONTEXT:-kind-kind}
+current_kubectl_context=$(kubectl config current-context)
+if [ "$current_kubectl_context" != "$expected_kubectl_context" ]; then
+    echo "Current kubectl context is $current_kubectl_context, expected $expected_kubectl_context"
+    echo "Set TEST_KUBECTL_CONTEXT to override the expected context."
+    exit 1
+fi
+
 mkdir -p $REPO_DIR/tmp
 
 # Function to handle errors

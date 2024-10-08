@@ -27,9 +27,12 @@ jobs:
       - name: Run integration tests
         run: make test-integration
 
-  e2e-quickstart:
+  e2e:
     runs-on: ubuntu-latest
     needs: integration
+    strategy:
+      matrix:
+        testcase: ["quickstart", "openai-python-client", "faster-whisper"]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -50,4 +53,4 @@ jobs:
         run: kind create cluster
 
       - name: Run the quickstart tests
-        run: make test-e2e-quickstart
+        run: make test-e2e-${{ matrix.testcase }}
