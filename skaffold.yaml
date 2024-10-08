@@ -5,20 +5,38 @@ metadata:
 build:
   artifacts:
   - image: substratusai/kubeai
+    # NOTE: If you run into this error:
+    #
+    # Checking cache...
+    #  - substratusai/kubeai: Error checking cache.
+    # getting hash for artifact "substratusai/kubeai": getting dependencies for "substratusai/kubeai": parsing ONBUILD instructions: retrieving image "gcr.io/distroless/static:nonroot": GET https://gcr.io/v2/token?scope=repository%3Adistroless%2Fstatic%3Apull&service=gcr.io: UNAUTHORIZED: authentication failed
+    #
+    # Then run "docker pull gcr.io/distroless/static:nonroot" and retry.
+    # Disabling cache for the image that uses distroless/static:nonroot does not appear to work:
+    #
+    # docker:
+    #   noCache: true
+    #
   local:
     push: false
 deploy:
   helm:
     releases:
     - name: kubeai
-      chartPath: charts/kubeai
-      valuesFiles:
-      - charts/kubeai/values.yaml
-      setValueTemplates:
-        image.tag: "{{.DIGEST_HEX}}"
+      chartPath: ./charts/kubeai
 portForward:
 - resourceType: service
   resourceName: kubeai
   namespace: default
   port: 80
   localPort: 8000
+
+profiles:
+- name: kubeai-only
+  deploy:
+    helm:
+      releases:
+      - name: kubeai
+        chartPath: ./charts/kubeai
+        setValueTemplates:
+          openwebui.enabled: false

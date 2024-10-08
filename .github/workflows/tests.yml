@@ -8,38 +8,44 @@ on:
   pull_request:
 
 jobs:
-  unit-integration:
+  unit-and-integration:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: ">=1.21.0"
+      - name: Run unit tests
+        run: make test-unit
 
-      - name: Run unit & integration tests
-        run: make test
-  e2e-quickstart:
+      - name: Run integration tests
+        run: make test-integration
+
+  e2e:
     runs-on: ubuntu-latest
+    # NOTE: Uncomment if we start getting limited on number of concurrent jobs
+    # (due to rapid pushes, etc).
+    #needs: unit-and-integration # No use in running e2e tests if integration tests fail.
+    strategy:
+      matrix:
+        testcase: ["quickstart", "openai-python-client", "faster-whisper"]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
       - name: Install kind
         run: |
           curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.24.0/kind-linux-amd64
           chmod +x ./kind
           sudo mv ./kind /usr/local/bin/kind
+
       - name: Install helm
         run: |
           curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
           chmod 700 get_helm.sh
           ./get_helm.sh
-      - name: Install skaffold
-        run: |
-          curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64
-          chmod +x skaffold
-          sudo mv skaffold /usr/local/bin
-      - name: Run the quickstart tests
-        run: test/quickstart.sh
+
+      - name: Start kind cluster
+        run: kind create cluster
+
+      - name: Run the e2e testcase
+        run: make test-e2e-${{ matrix.testcase }}

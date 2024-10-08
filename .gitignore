@@ -37,3 +37,5 @@ Chart.lock
 .venv
 *__pycache__
 site
+
+/tmp
