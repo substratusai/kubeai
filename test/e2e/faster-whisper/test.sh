@@ -5,7 +5,7 @@ source $REPO_DIR/test/e2e/common.sh
 model=faster-whisper-medium-en-cpu
 
 cleanup() {
-    echo "Running faster-whisper test case cleanup..."
+    output "Running faster-whisper test case cleanup..."
     kubectl delete -f $REPO_DIR/manifests/models/$model.yaml
 }
 trap cleanup EXIT
@@ -23,9 +23,9 @@ curl http://localhost:8000/openai/v1/audio/transcriptions \
   
 result_contains_kubernetes=$(cat $transcription_file | jq '.text | ascii_downcase | contains("kubernetes")')
 if [ "$result_contains_kubernetes" = "true" ]; then
-  echo "The transcript contains 'kubernetes'."
+  output "The transcript contains 'kubernetes'."
 else
-  echo "The text does not contain 'kubernetes':"
+  output "The text does not contain 'kubernetes':"
   cat $transcription_file
   exit 1
 fi

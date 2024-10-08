@@ -16,40 +16,42 @@ export DOCKER_BUILDKIT=1
 
 mkdir -p $REPO_DIR/tmp
 
+source $REPO_DIR/test/e2e/common.sh
+
 skaffold_log_file=$TMP_DIR/skaffold.log
 
 # Avoid using an unintended kubectl context.
 expected_kubectl_context=${TEST_KUBECTL_CONTEXT:-kind-kind}
 current_kubectl_context=$(kubectl config current-context)
 if [ "$current_kubectl_context" != "$expected_kubectl_context" ]; then
-    echo "Current kubectl context is $current_kubectl_context, expected $expected_kubectl_context"
-    echo "Set TEST_KUBECTL_CONTEXT to override the expected context."
+    output "Current kubectl context is $current_kubectl_context, expected $expected_kubectl_context"
+    output "Set TEST_KUBECTL_CONTEXT to override the expected context."
     exit 1
 fi
 
 # Function to handle errors
 error_handler() {
-    echo "Tests failed. Printing logs..."
+    output "Tests failed. Printing logs..."
     if [ -f $skaffold_log_file ]; then
-        echo "--- Skaffold Logs ---"
+        output "--- Skaffold Logs ---"
         cat $skaffold_log_file
     fi
-    echo "--- Nodes ---"
+    output "--- Nodes ---"
     kubectl get nodes -owide
-    echo "--- Pods ---"
+    output "--- Pods ---"
     kubectl get pods -owide
-    echo "--- Events ---"
+    output "--- Events ---"
     kubectl get events
-    echo "--- Models ---"
-    kubectl get models -oyaml
-    echo "!!! FAIL !!!"
+    output "--- Models ---"
+    kubectl get crds models.kubeai.org && kubectl get models -oyaml
+    output "!!! FAIL !!!"
     exit 1
 }
 trap 'error_handler' ERR
 
 skaffold_pid=9999999999999999
 cleanup() {
-    echo "Running test framework cleanup..."
+    output "Running test framework cleanup..."
     if [ $skaffold_pid != 9999999999999999 ]; then
         kill $skaffold_pid
         wait $skaffold_pid
@@ -60,18 +62,16 @@ trap cleanup EXIT
 
 # Assert that PATH is configured correctly.
 if [ "$(which skaffold)" != "$REPO_DIR/bin/skaffold" ]; then
-    echo "Tools are not set up correctly. Probably need to run via Makefile."
+    output "Tools are not set up correctly. Probably need to run via Makefile."
     exit 1
 fi
 
 skaffold run -f $REPO_DIR/skaffold.yaml --tail --port-forward > $skaffold_flags &
 skaffold_pid=$!
 
-source $REPO_DIR/test/e2e/common.sh
-
-echo "Waiting for port-forward to be ready..."
+output "Waiting for port-forward to be ready..."
 retry 6 curl http://localhost:8000/openai/v1/models
 
 $REPO_DIR/test/e2e/$testcase/test.sh
 
-echo "!!! PASS !!!"
+output "!!! PASS !!!"
