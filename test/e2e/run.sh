@@ -66,11 +66,13 @@ if [ "$(which skaffold)" != "$REPO_DIR/bin/skaffold" ]; then
     exit 1
 fi
 
-skaffold run -f $REPO_DIR/skaffold.yaml --tail --port-forward > $skaffold_flags &
+skaffold_build_file=$TMP_DIR/skaffold-build.json
+skaffold build -f $REPO_DIR/skaffold.yaml --file-output=$skaffold_build_file $skaffold_flags
+skaffold deploy -f $REPO_DIR/skaffold.yaml --tail --port-forward --build-artifacts=$skaffold_build_file $skaffold_flags > $skaffold_log_file &
 skaffold_pid=$!
 
-echo "Waiting for skaffold to be ready..."
-retry 600 curl -s http://localhost:8000/openai/v1/models
+echo "Waiting for skaffold port-forward to be ready..."
+( set +x retry 600 curl -s http://localhost:8000/openai/v1/models )
 
 $REPO_DIR/test/e2e/$testcase/test.sh
 
