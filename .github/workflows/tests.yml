@@ -8,7 +8,7 @@ on:
   pull_request:
 
 jobs:
-  unit:
+  unit-and-integration:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -17,19 +17,12 @@ jobs:
       - name: Run unit tests
         run: make test-unit
 
-  integration:
-    runs-on: ubuntu-latest
-    needs: unit # No use in running integration tests if unit tests fail.
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
       - name: Run integration tests
         run: make test-integration
 
   e2e:
     runs-on: ubuntu-latest
-    needs: integration # No use in running e2e tests if integration tests fail.
+    needs: unit-and-integration # No use in running e2e tests if integration tests fail.
     strategy:
       matrix:
         testcase: ["quickstart", "openai-python-client", "faster-whisper"]
