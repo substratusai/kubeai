@@ -10,8 +10,13 @@ skaffold_flags=$@
 
 export REPO_DIR=$(git rev-parse --show-toplevel)
 export TEST_DIR=$REPO_DIR/test/e2e/$testcase
+export TMP_DIR=$REPO_DIR/tmp
 export PATH=$REPO_DIR/bin:$PATH
 export DOCKER_BUILDKIT=1
+
+mkdir -p $REPO_DIR/tmp
+
+skaffold_log_file=$TMP_DIR/skaffold.log
 
 # Avoid using an unintended kubectl context.
 expected_kubectl_context=${TEST_KUBECTL_CONTEXT:-kind-kind}
@@ -22,11 +27,22 @@ if [ "$current_kubectl_context" != "$expected_kubectl_context" ]; then
     exit 1
 fi
 
-mkdir -p $REPO_DIR/tmp
-
 # Function to handle errors
 error_handler() {
-    echo "--- FAIL ---"
+    echo "Tests failed. Printing logs..."
+    if [ -f $skaffold_log_file ]; then
+        echo "--- Skaffold Logs ---"
+        cat $skaffold_log_file
+    fi
+    echo "--- Nodes ---"
+    kubectl get nodes -owide
+    echo "--- Pods ---"
+    kubectl get pods -owide
+    echo "--- Events ---"
+    kubectl get events
+    echo "--- Models ---"
+    kubectl get models -oyaml
+    echo "!!! FAIL !!!"
     exit 1
 }
 trap 'error_handler' ERR
@@ -48,13 +64,14 @@ if [ "$(which skaffold)" != "$REPO_DIR/bin/skaffold" ]; then
     exit 1
 fi
 
-skaffold run -f $REPO_DIR/skaffold.yaml --tail --port-forward $skaffold_flags &
+skaffold run -f $REPO_DIR/skaffold.yaml --tail --port-forward > $skaffold_flags &
 skaffold_pid=$!
 
-# Wait for port-forward to be ready.
 source $REPO_DIR/test/e2e/common.sh
-retry 600 curl http://localhost:8000/openai/v1/models
+
+echo "Waiting for port-forward to be ready..."
+retry 6 curl http://localhost:8000/openai/v1/models
 
 $REPO_DIR/test/e2e/$testcase/test.sh
 
-echo "--- PASS ---"
+echo "!!! PASS !!!"
