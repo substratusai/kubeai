@@ -174,7 +174,7 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 	}
 
 	// Create a new client for the autoscaler to use. This client will not use
-	// a cache and will be ready to user immediately.
+	// a cache and will be ready to use immediately.
 	k8sClient, err := client.New(mgr.GetConfig(), client.Options{Scheme: mgr.GetScheme()})
 	if err != nil {
 		return fmt.Errorf("unable to create client: %w", err)

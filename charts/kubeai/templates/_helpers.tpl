@@ -91,7 +91,7 @@ Create the name of the huggingface secret to use
 {{- end }}
 
 {{/*
-Set the name of the configmap to use for storing model autosacling state
+Set the name of the configmap to use for storing model autoscaling state
 */}}
 {{- define "models.autoscalerStateConfigMapName" -}}
 {{- default (printf "%s-autoscaler-state" (include "kubeai.fullname" .)) .Values.modelAutoscaling.stateConfigMapName }}
