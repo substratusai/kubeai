@@ -1,4 +1,4 @@
-set -e
+set -euxo pipefail
 
 retry() {
   local retries=$1
