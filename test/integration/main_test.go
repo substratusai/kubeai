@@ -6,10 +6,12 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
 	"github.com/substratusai/kubeai/internal/config"
 	"github.com/substratusai/kubeai/internal/manager"
 	"gocloud.dev/pubsub"
@@ -127,6 +129,14 @@ func installCommonResources() error {
 // and shuts it down when the test is done.
 // SHOULD BE CALLED AT THE BEGINNING OF EACH TEST CASE.
 func initTest(t *testing.T, cfg config.System) {
+	autoscalerStateConfigMap := corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      cfg.ModelAutoscaling.StateConfigMapName,
+			Namespace: testNS,
+		},
+	}
+	require.NoError(t, testK8sClient.Create(testCtx, &autoscalerStateConfigMap))
+
 	var wg sync.WaitGroup
 	ctx, cancel := context.WithCancel(testCtx)
 	t.Cleanup(func() {
@@ -148,7 +158,7 @@ func initTest(t *testing.T, cfg config.System) {
 // baseSysCfg returns the System configuration for testing.
 // A function is used to avoid test cases accidentally modifying a global configuration variable
 // which would be tricky to debug.
-func baseSysCfg() config.System {
+func baseSysCfg(t *testing.T) config.System {
 	return config.System{
 		MetricsAddr:   "127.0.0.1:8080",
 		HealthAddress: "127.0.0.1:8081",
@@ -213,6 +223,9 @@ func baseSysCfg() config.System {
 					"compute-type": "gpu",
 				},
 			},
+		},
+		ModelAutoscaling: config.ModelAutoscaling{
+			StateConfigMapName: strings.ToLower(t.Name()) + "-autoscaler-state",
 		},
 		LeaderElection: config.LeaderElection{
 			// Speed up the election process for tests.

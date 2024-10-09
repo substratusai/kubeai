@@ -13,32 +13,56 @@ import (
 	"github.com/substratusai/kubeai/internal/leader"
 	"github.com/substratusai/kubeai/internal/modelscaler"
 	"github.com/substratusai/kubeai/internal/movingaverage"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func New(
+	ctx context.Context,
+	k8sClient client.Client,
 	leaderElection *leader.Election,
 	scaler *modelscaler.ModelScaler,
 	resolver *endpoints.Resolver,
 	cfg config.ModelAutoscaling,
 	metricsPort int,
+	stateConfigMapRef types.NamespacedName,
 	fixedSelfMetricAddrs []string,
-) *Autoscaler {
+) (*Autoscaler, error) {
 	a := &Autoscaler{
+		k8sClient:            k8sClient,
 		leaderElection:       leaderElection,
 		scaler:               scaler,
 		resolver:             resolver,
 		movingAvgByModel:     map[string]*movingaverage.Simple{},
 		cfg:                  cfg,
 		metricsPort:          metricsPort,
+		stateConfigMapRef:    stateConfigMapRef,
 		fixedSelfMetricAddrs: fixedSelfMetricAddrs,
 	}
-	return a
+	lastModelState, err := a.loadLastTotalModelState(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("loading last state of models: %w", err)
+	}
+	log.Printf("Loaded last state of models: %d total, last calculated on %s", len(lastModelState.Models), lastModelState.LastCalculationTime)
+	for m, s := range lastModelState.Models {
+		// Preload moving averages with the last known state.
+		// If the last known state was 5.5, the preloaded moving average
+		// would look like [5.5, 5.5, 5.5, ...].
+		preloaded := newPrefilledFloat64Slice(a.cfg.AverageWindowCount(), s.AverageActiveRequests)
+		a.movingAvgByModel[m] = movingaverage.NewSimple(preloaded)
+	}
+
+	return a, nil
 }
 
 // Autoscaler is responsible for making continuous adjustments to
 // the scale of the backend. It is not responsible for scale-from-zero.
 // Each deployment has its own autoscaler.
 type Autoscaler struct {
+	k8sClient client.Client
+
+	stateConfigMapRef types.NamespacedName
+
 	leaderElection *leader.Election
 
 	scaler   *modelscaler.ModelScaler
@@ -75,6 +99,8 @@ func (a *Autoscaler) Start(ctx context.Context) {
 			log.Printf("Failed to list models: %v", err)
 			continue
 		}
+
+		nextModelState := newTotalModelState()
 
 		var selfAddrs []string
 		if len(a.fixedSelfMetricAddrs) > 0 {
@@ -121,17 +147,33 @@ func (a *Autoscaler) Start(ctx context.Context) {
 			log.Printf("Calculated target replicas for model %q: ceil(%v/%v) = %v, current requests: sum(%v) = %v, history: %v",
 				m.Name, avgActiveRequests, *m.Spec.TargetRequests, ceil, activeRequests, activeRequestSum, avg.History())
 			a.scaler.Scale(ctx, &m, int32(ceil), a.cfg.RequiredConsecutiveScaleDowns(*m.Spec.ScaleDownDelaySeconds))
+
+			nextModelState.Models[m.Name] = modelState{
+				AverageActiveRequests: avgActiveRequests,
+			}
+		}
+
+		if err := a.saveTotalModelState(ctx, nextModelState); err != nil {
+			log.Printf("Failed to save model state: %v", err)
 		}
 	}
 }
 
-func (r *Autoscaler) getMovingAvgActiveReqPerModel(model string) *movingaverage.Simple {
-	r.movingAvgByModelMtx.Lock()
-	a, ok := r.movingAvgByModel[model]
+func (a *Autoscaler) getMovingAvgActiveReqPerModel(model string) *movingaverage.Simple {
+	a.movingAvgByModelMtx.Lock()
+	avg, ok := a.movingAvgByModel[model]
 	if !ok {
-		a = movingaverage.NewSimple(make([]float64, r.cfg.AverageWindowCount()))
-		r.movingAvgByModel[model] = a
+		avg = movingaverage.NewSimple(make([]float64, a.cfg.AverageWindowCount()))
+		a.movingAvgByModel[model] = avg
 	}
-	r.movingAvgByModelMtx.Unlock()
-	return a
+	a.movingAvgByModelMtx.Unlock()
+	return avg
+}
+
+func newPrefilledFloat64Slice(length int, value float64) []float64 {
+	s := make([]float64, length)
+	for i := range s {
+		s[i] = value
+	}
+	return s
 }

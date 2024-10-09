@@ -107,6 +107,9 @@ modelAutoscaling:
   # Time window the autoscaling algorithm will consider when calculating
   # the desired number of replicas.
   timeWindow: 10m
+  # The name of the ConfigMap that stores the state of the autoscaler.
+  # Defaults to "{fullname}-autoscaler-state".
+  # stateConfigMapName: "kubeai-autoscaler-state"
 
 messaging:
   errorMaxBackoff: 30s

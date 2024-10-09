@@ -55,10 +55,14 @@ func updateModel(t *testing.T, m *v1.Model, modify func(), msg string) {
 
 func requireModelReplicas(t *testing.T, m *v1.Model, expectedReplicas int32, msg string, after time.Duration) {
 	require.EventuallyWithT(t, func(t *assert.CollectT) {
-		assert.NoError(t, testK8sClient.Get(testCtx, client.ObjectKeyFromObject(m), m))
+		if !assert.NoError(t, testK8sClient.Get(testCtx, client.ObjectKeyFromObject(m), m)) {
+			return
+		}
 		//jsn, _ := json.MarshalIndent(m, "", "  ")
 		//fmt.Println(string(jsn))
-		assert.NotNil(t, m.Spec.Replicas)
+		if !assert.NotNil(t, m.Spec.Replicas) {
+			return
+		}
 		assert.Equal(t, expectedReplicas, *m.Spec.Replicas)
 	}, after, time.Second/10, "Model Replicas should match: "+msg)
 }
@@ -66,15 +70,21 @@ func requireModelReplicas(t *testing.T, m *v1.Model, expectedReplicas int32, msg
 func requireModelPods(t *testing.T, m *v1.Model, expectedPods int, msg string, after time.Duration) {
 	require.EventuallyWithT(t, func(t *assert.CollectT) {
 		podList := &corev1.PodList{}
-		assert.NoError(t, testK8sClient.List(testCtx, podList, client.InNamespace(testNS), client.MatchingLabels{"model": m.Name}))
-		assert.Len(t, podList.Items, expectedPods)
+		if !assert.NoError(t, testK8sClient.List(testCtx, podList, client.InNamespace(testNS), client.MatchingLabels{"model": m.Name})) {
+			return
+		}
+		if !assert.Len(t, podList.Items, expectedPods) {
+			return
+		}
 	}, after, time.Second/10, "Model Pods should match: "+msg)
 }
 
 func markAllModelPodsReady(t *testing.T, m *v1.Model) {
 	require.EventuallyWithT(t, func(t *assert.CollectT) {
 		podList := &corev1.PodList{}
-		require.NoError(t, testK8sClient.List(testCtx, podList, client.InNamespace(testNS), client.MatchingLabels{"model": m.Name}))
+		if !assert.NoError(t, testK8sClient.List(testCtx, podList, client.InNamespace(testNS), client.MatchingLabels{"model": m.Name})) {
+			return
+		}
 		for _, pod := range podList.Items {
 			pod.Status.Phase = corev1.PodRunning
 			pod.Status.Conditions = []corev1.PodCondition{{Type: corev1.PodReady, Status: corev1.ConditionTrue}}

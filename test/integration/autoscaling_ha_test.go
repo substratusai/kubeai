@@ -25,7 +25,7 @@ func TestAutoscalingHA(t *testing.T) {
 	s2 := newTestMetricsServer(t, m.Name)
 	s3 := newTestMetricsServer(t, m.Name)
 
-	sysCfg := baseSysCfg()
+	sysCfg := baseSysCfg(t)
 	sysCfg.ModelAutoscaling.TimeWindow = config.Duration{Duration: 1 * time.Second}
 	sysCfg.ModelAutoscaling.Interval = config.Duration{Duration: time.Second / 4}
 	sysCfg.FixedSelfMetricAddrs = []string{

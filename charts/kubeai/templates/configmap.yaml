@@ -27,6 +27,8 @@ data:
       {{- end}}
       serviceAccountName: {{ include "models.serviceAccountName" . }}
     modelAutoscaling:
-      {{- .Values.modelAutoscaling | toYaml | nindent 6 }}
+      interval: {{ .Values.modelAutoscaling.interval }}
+      timeWindow: {{ .Values.modelAutoscaling.timeWindow }}
+      stateConfigMapName: {{ include "models.autoscalerStateConfigMapName" . }}
     messaging:
       {{- .Values.messaging | toYaml | nindent 6 }}

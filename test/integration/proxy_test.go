@@ -17,7 +17,7 @@ import (
 )
 
 func TestProxy(t *testing.T) {
-	sysCfg := baseSysCfg()
+	sysCfg := baseSysCfg(t)
 	sysCfg.ModelAutoscaling.TimeWindow = config.Duration{Duration: 6 * time.Second}
 	sysCfg.ModelAutoscaling.Interval = config.Duration{Duration: time.Second}
 	initTest(t, sysCfg)
