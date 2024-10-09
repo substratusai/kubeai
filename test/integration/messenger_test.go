@@ -22,7 +22,7 @@ func TestMessenger(t *testing.T) {
 	testRequestsTopic, err = pubsub.OpenTopic(testCtx, memRequestsURL)
 	require.NoError(t, err)
 
-	sysCfg := baseSysCfg()
+	sysCfg := baseSysCfg(t)
 	sysCfg.Messaging = config.Messaging{
 		Streams: []config.MessageStream{
 			{

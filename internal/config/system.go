@@ -116,6 +116,12 @@ type ModelAutoscaling struct {
 	// calculating the average number of requests.
 	// Defaults to 10 minutes.
 	TimeWindow Duration `json:"timeWindow" validate:"required"`
+	// StateConfigMapName is the name of the ConfigMap that will be used
+	// to store the state of the autoscaler. This ConfigMap ensures that
+	// the autoscaler can recover from crashes and restarts without losing
+	// its state.
+	// Required.
+	StateConfigMapName string `json:"stateConfigMapName" validate:"required"`
 }
 
 // RequiredConsecutiveScaleDowns returns the number of consecutive scale down

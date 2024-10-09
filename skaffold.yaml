@@ -40,3 +40,13 @@ profiles:
         chartPath: ./charts/kubeai
         setValueTemplates:
           openwebui.enabled: false
+- name: kubeai-only-rapid-scaling
+  deploy:
+    helm:
+      releases:
+      - name: kubeai
+        chartPath: ./charts/kubeai
+        setValueTemplates:
+          openwebui.enabled: false
+          modelAutoscaling.interval: 1s
+          modelAutoscaling.timeWindow: 30s

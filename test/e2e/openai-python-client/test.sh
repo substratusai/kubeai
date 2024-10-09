@@ -6,13 +6,6 @@ kubectl apply -f $REPO_DIR/manifests/models/opt-125m-cpu.yaml
 
 python -m venv $TEST_DIR/venv
 
-cleanup() {
-    echo "Running openai-python-client test case cleanup..."
-    kubectl delete -f $REPO_DIR/manifests/models/opt-125m-cpu.yaml
-    deactivate
-}
-trap cleanup EXIT
-
 source $TEST_DIR/venv/bin/activate
 
 which pip

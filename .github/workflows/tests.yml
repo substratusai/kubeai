@@ -27,7 +27,7 @@ jobs:
     #needs: unit-and-integration # No use in running e2e tests if integration tests fail.
     strategy:
       matrix:
-        testcase: ["quickstart", "openai-python-client", "faster-whisper"]
+        testcase: ["quickstart", "openai-python-client", "faster-whisper", "autoscaler-restart"]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2

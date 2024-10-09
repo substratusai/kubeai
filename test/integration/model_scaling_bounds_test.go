@@ -15,7 +15,7 @@ import (
 // MinReplicas and MaxReplicas set in the Model spec.
 // NOTE: This does not test scale-from-zero or autoscaling code paths!
 func TestModelScalingBounds(t *testing.T) {
-	initTest(t, baseSysCfg())
+	initTest(t, baseSysCfg(t))
 
 	// Construct a Model object with MinReplicas set to 0.
 	m := modelForTest(t)

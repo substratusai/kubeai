@@ -15,7 +15,7 @@ import (
 // TestModelPodUpdateRollout tests that an update to a Model object triggers the recreation
 // of the corresponding Pods.
 func TestModelPodUpdateRollout(t *testing.T) {
-	initTest(t, baseSysCfg())
+	initTest(t, baseSysCfg(t))
 
 	// Create a Model object.
 	m := modelForTest(t)
