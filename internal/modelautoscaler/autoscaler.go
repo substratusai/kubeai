@@ -39,6 +39,18 @@ func New(
 		stateConfigMapRef:    stateConfigMapRef,
 		fixedSelfMetricAddrs: fixedSelfMetricAddrs,
 	}
+
+	// Load preloaded moving averages from the last known state.
+	//
+	// NOTE: There is an edge case where this might load an empty state:
+	// 1. KubeAI running with active requests.
+	// 2. KubeAI saves request states.
+	// 3. KubeAI is restarted.
+	// 4. Leader election occurs and KubeAI saves request states before any requests come in (empty state).
+	// 5. KubeAI restarted again (before requests come in).
+	// 6. New KubeAI instance starts and loads the empty state.
+	// 7. Leader election occurs and KubeAI scales down Model replicas.
+	//
 	lastModelState, err := a.loadLastTotalModelState(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("loading last state of models: %w", err)
@@ -50,6 +62,7 @@ func New(
 		// would look like [5.5, 5.5, 5.5, ...].
 		preloaded := newPrefilledFloat64Slice(a.cfg.AverageWindowCount(), s.AverageActiveRequests)
 		a.movingAvgByModel[m] = movingaverage.NewSimple(preloaded)
+		log.Printf("Preloaded moving average for model %q with %v", m, preloaded)
 	}
 
 	return a, nil
