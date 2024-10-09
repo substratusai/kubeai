@@ -109,7 +109,7 @@ modelAutoscaling:
   timeWindow: 10m
   # The name of the ConfigMap that stores the state of the autoscaler.
   # Defaults to "{fullname}-autoscaler-state".
-  # stateConfigMapName: "kubeai-autoscaler-state"
+  stateConfigMapName: ""
 
 messaging:
   errorMaxBackoff: 30s

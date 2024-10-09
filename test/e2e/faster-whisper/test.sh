@@ -4,12 +4,6 @@ source $REPO_DIR/test/e2e/common.sh
 
 model=faster-whisper-medium-en-cpu
 
-cleanup() {
-    echo "Running faster-whisper test case cleanup..."
-    kubectl delete -f $REPO_DIR/manifests/models/$model.yaml
-}
-trap cleanup EXIT
-
 kubectl apply -f $REPO_DIR/manifests/models/$model.yaml
 
 audio_file=$TMP_DIR/kubeai.mp4

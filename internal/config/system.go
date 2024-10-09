@@ -62,9 +62,6 @@ func (s *System) DefaultAndValidate() error {
 	if s.ModelAutoscaling.TimeWindow.Duration == 0 {
 		s.ModelAutoscaling.TimeWindow.Duration = 10 * time.Minute
 	}
-	if s.ModelAutoscaling.StateConfigMapName == "" {
-		s.ModelAutoscaling.StateConfigMapName = "kubeai-autoscaler-state"
-	}
 
 	if s.LeaderElection.LeaseDuration.Duration == 0 {
 		s.LeaderElection.LeaseDuration.Duration = 15 * time.Second
@@ -123,7 +120,7 @@ type ModelAutoscaling struct {
 	// to store the state of the autoscaler. This ConfigMap ensures that
 	// the autoscaler can recover from crashes and restarts without losing
 	// its state.
-	// Defaults to "kubeai-autoscaler-state".
+	// Required.
 	StateConfigMapName string `json:"stateConfigMapName" validate:"required"`
 }
 
