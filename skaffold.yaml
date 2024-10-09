@@ -49,4 +49,4 @@ profiles:
         setValueTemplates:
           openwebui.enabled: false
           modelAutoscaling.interval: 1s
-          modelAutoscaling.window: 30s
+          modelAutoscaling.timeWindow: 30s

@@ -1,9 +1,14 @@
 import http from 'k6/http';
 
 export const options = {
-  stages: [
-    { duration: '10m', target: 3 },
-  ],
+  discardResponseBodies: true,
+  scenarios: {
+    contacts: {
+      executor: 'constant-vus',
+      vus: 3,
+      duration: '10m',
+    },
+  },
 };
 
 export default function () {
