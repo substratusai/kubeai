@@ -54,16 +54,9 @@ helm repo update
 Install KubeAI with [Helm](https://helm.sh/docs/intro/install/).
 
 ```bash
-cat <<EOF > kubeai.yaml
-resourceProfiles:
-  nvidia-gpu-l4:
-    nodeSelector:
-      cloud.google.com/gke-accelerator: "nvidia-l4"
-      cloud.google.com/gke-spot: "true"
-EOF
-
+curl -L -O https://raw.githubusercontent.com/substratusai/kubeai/refs/heads/main/charts/kubeai/values-gke.yaml
 helm upgrade --install kubeai kubeai/kubeai \
-    -f ./kubeai.yaml \
+    -f values-gke.yaml \
     --set secrets.huggingface.token=$HUGGING_FACE_HUB_TOKEN \
     --wait
 ```
