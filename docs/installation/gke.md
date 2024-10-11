@@ -4,7 +4,8 @@
 <summary>TIP: Make sure you have enough quota in your GCP project.</summary>
 Open the cloud console quotas page: https://console.cloud.google.com/iam-admin/quotas. Make sure your project is selected in the top left.
 
-There are 3 critical quotas you will need to verify for this guide. The minimum value here is assuming that you have nothing else running in your project.
+You will need to verify that you have enough quota for the accelerators you want to use.
+Below is table of common quotas you will have to increase depending on your needs.
 
 | Quota                      | Location      | Min Value |
 |----------------------------|---------------|-----------|
