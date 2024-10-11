@@ -8,11 +8,14 @@ There are 3 critical quotas you will need to verify for this guide. The minimum 
 
 | Quota                      | Location      | Min Value |
 |----------------------------|---------------|-----------|
+| Preemptible TPU v5 Lite Podslice chips | `<your-region>` | 8 |
 | Preemptible NVIDIA L4 GPUs | `<your-region>` | 2       |
 | GPUs (all regions)         | -             | 2         |
 | CPUs (all regions)         | -             | 24        |
 
 See the following screenshot examples of how these quotas appear in the console:
+
+![Preemptible TPU v5 Lite Podslice chips](../screenshots/gcp-tpu-preemptible-v5e-quota.png)
 
 ![Regional Preemptible L4 Quota Screenshot](../screenshots/gcp-quota-preemptible-nvidia-l4-gpus-regional.png)
 
