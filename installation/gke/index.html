@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.40">
     
     
       
@@ -1144,7 +1144,8 @@
 <details>
 <summary>TIP: Make sure you have enough quota in your GCP project.</summary>
 <p>Open the cloud console quotas page: https://console.cloud.google.com/iam-admin/quotas. Make sure your project is selected in the top left.</p>
-<p>There are 3 critical quotas you will need to verify for this guide. The minimum value here is assuming that you have nothing else running in your project.</p>
+<p>You will need to verify that you have enough quota for the accelerators you want to use.
+Below is table of common quotas you will have to increase depending on your needs.</p>
 <table>
 <thead>
 <tr>
@@ -1154,6 +1155,11 @@
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>Preemptible TPU v5 Lite Podslice chips</td>
+<td><code>&lt;your-region&gt;</code></td>
+<td>8</td>
+</tr>
 <tr>
 <td>Preemptible NVIDIA L4 GPUs</td>
 <td><code>&lt;your-region&gt;</code></td>
@@ -1172,6 +1178,7 @@
 </tbody>
 </table>
 <p>See the following screenshot examples of how these quotas appear in the console:</p>
+<p><img alt="Preemptible TPU v5 Lite Podslice chips" src="../../screenshots/gcp-tpu-preemptible-v5e-quota.png" /></p>
 <p><img alt="Regional Preemptible L4 Quota Screenshot" src="../../screenshots/gcp-quota-preemptible-nvidia-l4-gpus-regional.png" /></p>
 <p><img alt="Global GPUs Quota Screenshot" src="../../screenshots/gcp-gpus-all-regions.png" /></p>
 <p><img alt="Global CPUs Quota Screenshot" src="../../screenshots/gcp-cpus-all-regions.png" /></p>
@@ -1191,16 +1198,9 @@ helm<span class="w"> </span>repo<span class="w"> </span>update
 </code></pre></div>
 <p><strong>Make sure</strong> you have a HuggingFace Hub token set in your environment (<code>HUGGING_FACE_HUB_TOKEN</code>).</p>
 <p>Install KubeAI with <a href="https://helm.sh/docs/intro/install/">Helm</a>.</p>
-<div class="highlight"><pre><span></span><code>cat<span class="w"> </span><span class="s">&lt;&lt;EOF &gt; kubeai.yaml</span>
-<span class="s">resourceProfiles:</span>
-<span class="s">  nvidia-gpu-l4:</span>
-<span class="s">    nodeSelector:</span>
-<span class="s">      cloud.google.com/gke-accelerator: &quot;nvidia-l4&quot;</span>
-<span class="s">      cloud.google.com/gke-spot: &quot;true&quot;</span>
-<span class="s">EOF</span>
-
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-L<span class="w"> </span>-O<span class="w"> </span>https://raw.githubusercontent.com/substratusai/kubeai/refs/heads/main/charts/kubeai/values-gke.yaml
 helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>kubeai<span class="w"> </span>kubeai/kubeai<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>-f<span class="w"> </span>./kubeai.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-f<span class="w"> </span>values-gke.yaml<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--set<span class="w"> </span>secrets.huggingface.token<span class="o">=</span><span class="nv">$HUGGING_FACE_HUB_TOKEN</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--wait
 </code></pre></div>
