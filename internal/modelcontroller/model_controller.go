@@ -33,8 +33,10 @@ import (
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
+	"github.com/pkg/errors"
 	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
 	"github.com/substratusai/kubeai/internal/config"
 	"github.com/substratusai/kubeai/internal/k8sutils"
@@ -103,6 +105,9 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	if model.Spec.CacheProfile != "" {
 		res, err := r.reconcileCache(ctx, model, modelConfig)
 		if err != nil {
+			if errors.Cause(err) == errRequeue {
+				return res, nil
+			}
 			return res, fmt.Errorf("reconciling cache: %w", err)
 		}
 		if !res.IsZero() {
@@ -163,20 +168,48 @@ func (r *ModelReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
+var errRequeue = fmt.Errorf("requeue")
+
 func (r *ModelReconciler) reconcileCache(ctx context.Context, model *kubeaiv1.Model, cfg ModelConfig) (ctrl.Result, error) {
 	// Create PVC if not exists.
 	pvc := &corev1.PersistentVolumeClaim{}
+	var createPVC bool
 	if err := r.Client.Get(ctx, types.NamespacedName{
 		Namespace: model.Namespace,
 		Name:      cachePVCName(model, cfg),
-	}, pvc); err != nil && apierrors.IsNotFound(err) {
+	}, pvc); err != nil {
+		if apierrors.IsNotFound(err) {
+			createPVC = true
+		} else {
+			return ctrl.Result{}, fmt.Errorf("getting cache PVC: %w", err)
+		}
+	}
+
+	if createPVC {
 		pvc = r.cachePVCForModel(model, cfg)
-		// TODO: Ensure multiple owners are set PVCs shared across multiple Models.
-		if err := ctrl.SetControllerReference(model, pvc, r.Scheme); err != nil {
+		if err := controllerutil.SetOwnerReference(model, pvc, r.Scheme); err != nil {
 			return ctrl.Result{}, fmt.Errorf("setting controller reference on pvc: %w", err)
 		}
 		if err := r.Create(ctx, pvc); err != nil {
 			return ctrl.Result{}, fmt.Errorf("creating cache PVC: %w", err)
+		}
+	} else {
+		// Add owner reference to PVC if needed.
+		// This accounts for PVCs that are used by multiple Models.
+		var alreadyOwned bool
+		for _, owner := range pvc.GetOwnerReferences() {
+			if owner.UID == model.UID {
+				alreadyOwned = true
+				break
+			}
+		}
+		if !alreadyOwned {
+			if err := controllerutil.SetOwnerReference(model, pvc, r.Scheme); err != nil {
+				return ctrl.Result{}, fmt.Errorf("adding model to PVC owner references: %w", err)
+			}
+			if err := r.Update(ctx, pvc); err != nil {
+				return ctrl.Result{}, fmt.Errorf("updating PVC: %w", err)
+			}
 		}
 	}
 
@@ -211,11 +244,11 @@ func (r *ModelReconciler) reconcileCache(ctx context.Context, model *kubeaiv1.Mo
 			if err := r.Create(ctx, job); err != nil {
 				return ctrl.Result{}, fmt.Errorf("creating job: %w", err)
 			}
-			return ctrl.Result{}, nil
+			return ctrl.Result{}, errRequeue
 		}
 
 		if !k8sutils.JobIsCompleted(job) {
-			return ctrl.Result{}, nil
+			return ctrl.Result{}, errRequeue
 		}
 
 		if err := r.updatePVCModelAnnotation(ctx, pvc, model.Name, pvcModelAnnVal{

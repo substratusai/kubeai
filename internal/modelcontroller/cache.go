@@ -2,6 +2,7 @@ package modelcontroller
 
 import (
 	"fmt"
+	"strings"
 
 	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
 	batchv1 "k8s.io/api/batch/v1"
@@ -63,15 +64,16 @@ func (r *ModelReconciler) cacheJobForModel(m *kubeaiv1.Model, c ModelConfig) *ba
 							Name: "downloader",
 							VolumeMounts: []corev1.VolumeMount{
 								{
-									Name:      "models",
-									MountPath: "/models",
+									Name:      "model",
+									MountPath: modelCacheDir(m),
+									SubPath:   strings.TrimPrefix(modelCacheDir(m), "/"),
 								},
 							},
 						},
 					},
 					Volumes: []corev1.Volume{
 						{
-							Name: "models",
+							Name: "model",
 							VolumeSource: corev1.VolumeSource{
 								PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
 									ClaimName: cachePVCName(m, c),
@@ -86,19 +88,17 @@ func (r *ModelReconciler) cacheJobForModel(m *kubeaiv1.Model, c ModelConfig) *ba
 
 	switch c.Source.typ {
 	case modelSourceTypeHuggingface:
-		job.Spec.Template.Spec.Containers = []corev1.Container{
-			{
-				Name:  "downloader",
-				Image: r.ModelDownloaders.Huggingface.Image,
-				Command: []string{
-					"huggingface-cli",
-					"download",
-					"--local-dir",
-					modelCacheDir(m),
-					c.Source.huggingface.repo,
-				},
+		job.Spec.Template.Spec.Containers[0].Image = r.ModelDownloaders.Huggingface.Image
+		job.Spec.Template.Spec.Containers[0].Env = append(job.Spec.Template.Spec.Containers[0].Env,
+			corev1.EnvVar{
+				Name:  "MODEL_DIR",
+				Value: modelCacheDir(m),
 			},
-		}
+			corev1.EnvVar{
+				Name:  "MODEL_REPO",
+				Value: c.Source.huggingface.repo,
+			},
+		)
 	default:
 		panic("unsupported model source, this point should not be reached")
 	}
@@ -128,6 +128,7 @@ func patchServerCacheVolumes(podSpec *corev1.PodSpec, m *kubeaiv1.Model, c Model
 			podSpec.Containers[i].VolumeMounts = append(podSpec.Containers[i].VolumeMounts, corev1.VolumeMount{
 				Name:      "models",
 				MountPath: modelCacheDir(m),
+				SubPath:   strings.TrimPrefix(modelCacheDir(m), "/"),
 				ReadOnly:  true,
 			})
 		}

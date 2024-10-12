@@ -2,18 +2,29 @@ secretNames:
   huggingface: huggingface
 
 modelServers:
-  vLLM:
+  VLLM:
     images:
-      default: "vllm/vllm-openai:latest"
-      cpu: "us-central1-docker.pkg.dev/substratus-dev/default/vllm-cpu:v0.5.4-118-gfc93e561"
-  ollama:
+      # The key is the image name (referenced from resourceProfiles) and the value is the image.
+      # The "default" image should always be specified.
+      # "default" is used when no imageName is specified or if a specific image is not found.
+      default: "vllm/vllm-openai:v0.6.2"
+      cpu: "substratusai/vllm:v0.6.1-cpu"
+      nvidia-gpu: "vllm/vllm-openai:v0.6.2"
+      google-tpu: "substratusai/vllm:v0.6.1-tpu"
+  OLlama:
     images:
       default: "ollama/ollama:latest"
-      cpu: "ollama/ollama:0.3.8"
+  FasterWhisper:
+    images:
+      default: "fedirz/faster-whisper-server:latest-cpu"
+      nvidia-gpu: "fedirz/faster-whisper-server:latest-cuda"
+  Infinity:
+    images:
+      default: "michaelf34/infinity:latest"
 
 modelDownloaders:
   huggingface:
-    image: "us-central1-docker.pkg.dev/substratus-dev/default/huggingface-model-downloader:latest"
+    image: "us-central1-docker.pkg.dev/substratus-dev/default/huggingface-model-downloader:v0.0.1"
 
 modelRollouts:
   surge: 0
@@ -25,9 +36,17 @@ messaging:
   #  maxHandlers: 1
 resourceProfiles:
   cpu:
+    imageName: "cpu"
     requests:
-      cpu: 0.5
-      memory: 1Gi
+      # Kind
+      #cpu: 0.5
+      #memory: 1Gi
+      # GKE
+      cpu: 1
+      memory: 4Gi
+    limits:
+      cpu: 1
+      memory: 8Gi
   nvidia-gpu-l4:
     limits:
       nvidia.com/gpu: "1"

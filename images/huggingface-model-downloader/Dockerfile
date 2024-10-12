@@ -14,4 +14,4 @@ RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
 COPY download.sh /app/download.sh
 RUN chmod +x /app/download.sh
 
-CMD ["huggingface-cli", "download"]
+CMD ["/app/download.sh"]
