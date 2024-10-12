@@ -15,7 +15,11 @@ type System struct {
 
 	ModelServers ModelServers `json:"modelServers" validate:"required"`
 
+	ModelDownloaders ModelDownloaders `json:"modelDownloaders" validate:"required"`
+
 	ResourceProfiles map[string]ResourceProfile `json:"resourceProfiles" validate:"required"`
+
+	CacheProfiles map[string]CacheProfile `json:"cacheProfiles"`
 
 	Messaging Messaging `json:"messaging"`
 
@@ -71,6 +75,10 @@ func (s *System) DefaultAndValidate() error {
 	}
 	if s.LeaderElection.RetryPeriod.Duration == 0 {
 		s.LeaderElection.RetryPeriod.Duration = 2 * time.Second
+	}
+
+	if s.CacheProfiles == nil {
+		s.CacheProfiles = map[string]CacheProfile{}
 	}
 
 	return validator.New(validator.WithRequiredStructEnabled()).Struct(s)
@@ -187,6 +195,15 @@ type ResourceProfile struct {
 	RuntimeClassName *string             `json:"runtimeClassName,omitempty"`
 }
 
+type CacheProfile struct {
+	SharedFilesystem *CacheSharedFilesystem `json:"sharedFilesystem,omitempty"`
+}
+
+type CacheSharedFilesystem struct {
+	// StorageClassName is the name of the StorageClass to use for the shared filesystem.
+	StorageClassName string `json:"storageClassName" validate:"required"`
+}
+
 type MessageStream struct {
 	RequestsURL  string `json:"requestsURL"`
 	ResponsesURL string `json:"responsesURL"`
@@ -204,6 +221,15 @@ type ModelServers struct {
 
 type ModelServer struct {
 	Images map[string]string `json:"images"`
+}
+
+type ModelDownloaders struct {
+	Huggingface ModelDownloader `json:"huggingface" validate:"required"`
+}
+
+type ModelDownloader struct {
+	// Image is the image to use for the downloader.
+	Image string `json:"image" validate:"required"`
 }
 
 type ModelServerPods struct {

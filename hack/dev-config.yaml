@@ -1,5 +1,6 @@
 secretNames:
   huggingface: huggingface
+
 modelServers:
   vLLM:
     images:
@@ -9,6 +10,11 @@ modelServers:
     images:
       default: "ollama/ollama:latest"
       cpu: "ollama/ollama:0.3.8"
+
+modelDownloaders:
+  huggingface:
+    image: "us-central1-docker.pkg.dev/substratus-dev/default/huggingface-model-downloader:latest"
+
 modelRollouts:
   surge: 0
 messaging:
@@ -30,6 +36,16 @@ resourceProfiles:
       cpu: "6"
       memory: "24Gi"
 
+cacheProfiles:
+  fstore:
+    sharedFilesystem:
+      storageClassName: "kubeai-filestore"
+
 # Dev-only configuration.
 allowPodAddressOverride: true
 fixedSelfMetricAddrs: ["127.0.0.1:"]
+
+modelAutoscaling:
+  interval: 10s
+  timeWindow: 60s
+  stateConfigMapName: kubeai-autoscaler-state

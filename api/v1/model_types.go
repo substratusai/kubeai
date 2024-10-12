@@ -42,6 +42,10 @@ type ModelSpec struct {
 	// Must be a valid ResourceProfile defined in the system config.
 	ResourceProfile string `json:"resourceProfile,omitempty"`
 
+	// CacheProfile to be used for caching model artifacts.
+	// Must be a valid CacheProfile defined in the system config.
+	CacheProfile string `json:"cacheProfile,omitempty"`
+
 	// Image to be used for the server process.
 	// Will be set from ResourceProfile + Engine if not specified.
 	Image string `json:"image,omitempty"`
@@ -110,11 +114,16 @@ const (
 // ModelStatus defines the observed state of Model.
 type ModelStatus struct {
 	Replicas ModelStatusReplicas `json:"replicas,omitempty"`
+	Cache    *ModelStatusCache   `json:"cache,omitempty"`
 }
 
 type ModelStatusReplicas struct {
 	All   int32 `json:"all"`
 	Ready int32 `json:"ready"`
+}
+
+type ModelStatusCache struct {
+	Downloaded bool `json:"downloaded"`
 }
 
 // +kubebuilder:object:root=true

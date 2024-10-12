@@ -49,6 +49,11 @@ spec:
                   AutoscalingDisabled will stop the controller from managing the replicas
                   for the Model. When disabled, metrics will not be collected on server Pods.
                 type: boolean
+              cacheProfile:
+                description: |-
+                  CacheProfile to be used for caching model artifacts.
+                  Must be a valid CacheProfile defined in the system config.
+                type: string
               engine:
                 description: Engine to be used for the server process.
                 enum:
@@ -144,6 +149,13 @@ spec:
           status:
             description: ModelStatus defines the observed state of Model.
             properties:
+              cache:
+                properties:
+                  downloaded:
+                    type: boolean
+                required:
+                - downloaded
+                type: object
               replicas:
                 properties:
                   all:

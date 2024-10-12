@@ -10,9 +10,12 @@ metadata:
 spec:
   features: ["TextGeneration"]
   owner: alibaba
-  url: "ollama://qwen2:0.5b"
-  engine: OLlama
+  #url: "ollama://qwen2:0.5b"
+  #engine: OLlama
+  url: hf://facebook/opt-125m
+  engine: VLLM
   resourceProfile: cpu:1
+  cacheProfile: fstore
   minReplicas: 1
   maxReplicas: 3
 ---

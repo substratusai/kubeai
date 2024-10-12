@@ -15,3 +15,7 @@ const (
 	ModelPodIPAnnotation   = "model-pod-ip"
 	ModelPodPortAnnotation = "model-pod-port"
 )
+
+func PVCModelAnnotation(modelName string) string {
+	return "models.kubeai.org/" + modelName
+}
