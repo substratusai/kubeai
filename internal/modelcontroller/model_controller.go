@@ -18,7 +18,6 @@ package modelcontroller
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -29,18 +28,15 @@ import (
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	"github.com/pkg/errors"
 	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
 	"github.com/substratusai/kubeai/internal/config"
 	"github.com/substratusai/kubeai/internal/k8sutils"
-	utils "github.com/substratusai/kubeai/internal/k8sutils"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -73,7 +69,7 @@ type ModelReconciler struct {
 //+kubebuilder:rbac:groups="",resources=pods/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups="",resources=pods/finalizers,verbs=update
 
-func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (res ctrl.Result, resErr error) {
 	log := log.FromContext(ctx)
 	log.Info("Reconciling Model")
 
@@ -83,6 +79,17 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	}
 
 	status0 := model.Status.DeepCopy()
+
+	defer func() {
+		if !reflect.DeepEqual(status0, model.Status) && model.DeletionTimestamp == nil {
+			if err := r.Status().Update(ctx, model); err != nil {
+				log.Error(err, "Failed to update Model status")
+				if err == nil { // Only override if no other error has occurred
+					resErr = err
+				}
+			}
+		}
+	}()
 
 	var shouldUpdate bool
 	// Apply self labels based on features so that we can easily filter models.
@@ -102,16 +109,39 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{}, fmt.Errorf("getting model profile: %w", err)
 	}
 
-	if model.Spec.CacheProfile != "" {
-		res, err := r.reconcileCache(ctx, model, modelConfig)
-		if err != nil {
-			if errors.Cause(err) == errRequeue {
-				return res, nil
+	if model.DeletionTimestamp != nil {
+		// Get rid of all Pods for the Model.
+		// This should help avoid any issues with cache cleanup.
+		if err := r.DeleteAllOf(ctx, &corev1.Pod{}, client.InNamespace(model.Namespace), client.MatchingLabels{
+			kubeaiv1.PodModelLabel: model.Name,
+		}); err != nil {
+			if !apierrors.IsNotFound(err) {
+				return ctrl.Result{}, fmt.Errorf("deleting all pods: %w", err)
 			}
-			return res, fmt.Errorf("reconciling cache: %w", err)
+		}
+		if model.Spec.CacheProfile != "" {
+			if err := r.finalizeCache(ctx, model, modelConfig); err != nil {
+				if errors.Cause(err) == errReturnEarly {
+					return ctrl.Result{}, nil
+				} else {
+					return ctrl.Result{}, fmt.Errorf("finalizing cache: %w", err)
+				}
+			}
+		}
+
+		return ctrl.Result{}, nil
+	}
+
+	if model.Spec.CacheProfile != "" {
+		cacheRes, err := r.reconcileCache(ctx, model, modelConfig)
+		if err != nil {
+			if errors.Cause(err) == errReturnEarly {
+				return cacheRes, nil
+			}
+			return cacheRes, fmt.Errorf("reconciling cache: %w", err)
 		}
 		if !res.IsZero() {
-			return res, nil
+			return cacheRes, nil
 		}
 	}
 
@@ -121,6 +151,16 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	}); err != nil {
 		return ctrl.Result{}, fmt.Errorf("listing all node pools: %w", err)
 	}
+
+	// Summarize all pods.
+	var readyPods int32
+	for _, pod := range allPods.Items {
+		if k8sutils.PodIsReady(&pod) {
+			readyPods++
+		}
+	}
+	model.Status.Replicas.All = int32(len(allPods.Items))
+	model.Status.Replicas.Ready = readyPods
 
 	plan := r.calculatePodPlan(allPods, model, modelConfig)
 	if plan.containsActions() {
@@ -134,23 +174,6 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 		if err != nil {
 			return ctrl.Result{}, fmt.Errorf("executing pod plan: %w", err)
-		}
-	}
-
-	// Summarize all pods.
-	var readyPods int32
-	for _, pod := range allPods.Items {
-		if utils.PodIsReady(&pod) {
-			readyPods++
-		}
-	}
-
-	model.Status.Replicas.All = int32(len(allPods.Items))
-	model.Status.Replicas.Ready = readyPods
-
-	if !reflect.DeepEqual(status0, model.Status) {
-		if err := r.Status().Update(ctx, model); err != nil {
-			return ctrl.Result{}, fmt.Errorf("updating status: %w", err)
 		}
 	}
 
@@ -168,133 +191,7 @@ func (r *ModelReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-var errRequeue = fmt.Errorf("requeue")
-
-func (r *ModelReconciler) reconcileCache(ctx context.Context, model *kubeaiv1.Model, cfg ModelConfig) (ctrl.Result, error) {
-	// Create PVC if not exists.
-	pvc := &corev1.PersistentVolumeClaim{}
-	var createPVC bool
-	if err := r.Client.Get(ctx, types.NamespacedName{
-		Namespace: model.Namespace,
-		Name:      cachePVCName(model, cfg),
-	}, pvc); err != nil {
-		if apierrors.IsNotFound(err) {
-			createPVC = true
-		} else {
-			return ctrl.Result{}, fmt.Errorf("getting cache PVC: %w", err)
-		}
-	}
-
-	if createPVC {
-		pvc = r.cachePVCForModel(model, cfg)
-		if err := controllerutil.SetOwnerReference(model, pvc, r.Scheme); err != nil {
-			return ctrl.Result{}, fmt.Errorf("setting controller reference on pvc: %w", err)
-		}
-		if err := r.Create(ctx, pvc); err != nil {
-			return ctrl.Result{}, fmt.Errorf("creating cache PVC: %w", err)
-		}
-	} else {
-		// Add owner reference to PVC if needed.
-		// This accounts for PVCs that are used by multiple Models.
-		var alreadyOwned bool
-		for _, owner := range pvc.GetOwnerReferences() {
-			if owner.UID == model.UID {
-				alreadyOwned = true
-				break
-			}
-		}
-		if !alreadyOwned {
-			if err := controllerutil.SetOwnerReference(model, pvc, r.Scheme); err != nil {
-				return ctrl.Result{}, fmt.Errorf("adding model to PVC owner references: %w", err)
-			}
-			if err := r.Update(ctx, pvc); err != nil {
-				return ctrl.Result{}, fmt.Errorf("updating PVC: %w", err)
-			}
-		}
-	}
-
-	job := &batchv1.Job{}
-	var jobExists bool
-	if err := r.Client.Get(ctx, types.NamespacedName{
-		Namespace: model.Namespace,
-		Name:      cacheJobName(model),
-	}, job); err != nil {
-		if apierrors.IsNotFound(err) {
-			jobExists = false
-		} else {
-			return ctrl.Result{}, fmt.Errorf("getting cache job: %w", err)
-		}
-	} else {
-		jobExists = true
-	}
-
-	pvcModelAnn, err := parsePVCModelAnnotation(pvc, model.Name)
-	if err != nil {
-		return ctrl.Result{}, fmt.Errorf("parsing pvc model annotation: %w", err)
-	}
-
-	// Run Job to populate PVC if not already downloaded.
-	if pvcModelAnn.UID != string(model.UID) {
-		// Ensure the download job exists.
-		if !jobExists {
-			job = r.cacheJobForModel(model, cfg)
-			if err := ctrl.SetControllerReference(model, job, r.Scheme); err != nil {
-				return ctrl.Result{}, fmt.Errorf("setting controller reference on job: %w", err)
-			}
-			if err := r.Create(ctx, job); err != nil {
-				return ctrl.Result{}, fmt.Errorf("creating job: %w", err)
-			}
-			return ctrl.Result{}, errRequeue
-		}
-
-		if !k8sutils.JobIsCompleted(job) {
-			return ctrl.Result{}, errRequeue
-		}
-
-		if err := r.updatePVCModelAnnotation(ctx, pvc, model.Name, pvcModelAnnVal{
-			UID: string(model.UID),
-		}); err != nil {
-			return ctrl.Result{}, fmt.Errorf("setting pvc model annotation: %w", err)
-		}
-	}
-
-	if jobExists {
-		// Delete Job.
-		if err := r.Delete(ctx, job); err != nil {
-			return ctrl.Result{}, fmt.Errorf("deleting job: %w", err)
-		}
-	}
-
-	return ctrl.Result{}, nil
-}
-
-type pvcModelAnnVal struct {
-	UID string `json:"uid"`
-}
-
-func parsePVCModelAnnotation(pvc *corev1.PersistentVolumeClaim, modelName string) (pvcModelAnnVal, error) {
-	pvcModelStatusJSON := k8sutils.GetAnnotation(pvc, kubeaiv1.PVCModelAnnotation(modelName))
-	if pvcModelStatusJSON == "" {
-		return pvcModelAnnVal{}, nil
-	}
-	var status pvcModelAnnVal
-	if err := json.Unmarshal([]byte(pvcModelStatusJSON), &status); err != nil {
-		return pvcModelAnnVal{}, fmt.Errorf("unmarshalling pvc model status: %w", err)
-	}
-	return status, nil
-}
-
-func (r *ModelReconciler) updatePVCModelAnnotation(ctx context.Context, pvc *corev1.PersistentVolumeClaim, modelName string, status pvcModelAnnVal) error {
-	statusJSON, err := json.Marshal(status)
-	if err != nil {
-		return fmt.Errorf("marshalling pvc model status: %w", err)
-	}
-	k8sutils.SetAnnotation(pvc, kubeaiv1.PVCModelAnnotation(modelName), string(statusJSON))
-	if err := r.Client.Update(ctx, pvc); err != nil {
-		return fmt.Errorf("updating pvc: %w", err)
-	}
-	return nil
-}
+var errReturnEarly = fmt.Errorf("return early")
 
 func labelsForModel(m *kubeaiv1.Model) map[string]string {
 	engineLowerCase := strings.ToLower(m.Spec.Engine)
