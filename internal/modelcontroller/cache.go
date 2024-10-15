@@ -97,7 +97,7 @@ func (r *ModelReconciler) reconcileCache(ctx context.Context, model *kubeaiv1.Mo
 	var jobExists bool
 	if err := r.Client.Get(ctx, types.NamespacedName{
 		Namespace: model.Namespace,
-		Name:      cacheJobName(model),
+		Name:      loadCacheJobName(model),
 	}, job); err != nil {
 		if apierrors.IsNotFound(err) {
 			jobExists = false
@@ -117,7 +117,7 @@ func (r *ModelReconciler) reconcileCache(ctx context.Context, model *kubeaiv1.Mo
 	if pvcModelAnn.UID != string(model.UID) {
 		// Ensure the download job exists.
 		if !jobExists {
-			job = r.cacheJobForModel(model, cfg)
+			job = r.loadCacheJobForModel(model, cfg)
 			if err := ctrl.SetControllerReference(model, job, r.Scheme); err != nil {
 				return ctrl.Result{}, fmt.Errorf("setting controller reference on job: %w", err)
 			}
@@ -183,7 +183,7 @@ func (r *ModelReconciler) finalizeCache(ctx context.Context, model *kubeaiv1.Mod
 		var jobExists bool
 		if err := r.Client.Get(ctx, types.NamespacedName{
 			Namespace: model.Namespace,
-			Name:      cacheDeleteJobName(model),
+			Name:      evictCacheJobName(model),
 		}, job); err != nil {
 			if apierrors.IsNotFound(err) {
 				jobExists = false
@@ -195,7 +195,7 @@ func (r *ModelReconciler) finalizeCache(ctx context.Context, model *kubeaiv1.Mod
 		}
 
 		if !jobExists {
-			job := r.cacheDeleteJob(model, cfg)
+			job := r.evictCacheJobForModel(model, cfg)
 			if err := ctrl.SetControllerReference(model, job, r.Scheme); err != nil {
 				return fmt.Errorf("setting controller reference on cache deletion job: %w", err)
 			}
@@ -235,8 +235,8 @@ func (r *ModelReconciler) finalizeCache(ctx context.Context, model *kubeaiv1.Mod
 
 func (r *ModelReconciler) deleteAllCacheJobsAndPods(ctx context.Context, model *kubeaiv1.Model) error {
 	jobNames := []string{
-		cacheJobName(model),
-		cacheDeleteJobName(model),
+		loadCacheJobName(model),
+		evictCacheJobName(model),
 	}
 
 	for _, jobName := range jobNames {
@@ -324,10 +324,10 @@ func cachePVCName(m *kubeaiv1.Model, c ModelConfig) string {
 	}
 }
 
-func (r *ModelReconciler) cacheJobForModel(m *kubeaiv1.Model, c ModelConfig) *batchv1.Job {
+func (r *ModelReconciler) loadCacheJobForModel(m *kubeaiv1.Model, c ModelConfig) *batchv1.Job {
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      cacheJobName(m),
+			Name:      loadCacheJobName(m),
 			Namespace: m.Namespace,
 		},
 		Spec: batchv1.JobSpec{
@@ -339,7 +339,7 @@ func (r *ModelReconciler) cacheJobForModel(m *kubeaiv1.Model, c ModelConfig) *ba
 					RestartPolicy: corev1.RestartPolicyOnFailure,
 					Containers: []corev1.Container{
 						{
-							Name: "downloader",
+							Name: "loader",
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      "model",
@@ -366,7 +366,7 @@ func (r *ModelReconciler) cacheJobForModel(m *kubeaiv1.Model, c ModelConfig) *ba
 
 	switch c.Source.typ {
 	case modelSourceTypeHuggingface:
-		job.Spec.Template.Spec.Containers[0].Image = r.ModelDownloaders.Huggingface.Image
+		job.Spec.Template.Spec.Containers[0].Image = r.ModelLoaders.Huggingface.Image
 		job.Spec.Template.Spec.Containers[0].Env = append(job.Spec.Template.Spec.Containers[0].Env,
 			corev1.EnvVar{
 				Name:  "MODEL_DIR",
@@ -396,10 +396,10 @@ func (r *ModelReconciler) cacheJobForModel(m *kubeaiv1.Model, c ModelConfig) *ba
 	return job
 }
 
-func (r *ModelReconciler) cacheDeleteJob(m *kubeaiv1.Model, c ModelConfig) *batchv1.Job {
+func (r *ModelReconciler) evictCacheJobForModel(m *kubeaiv1.Model, c ModelConfig) *batchv1.Job {
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      cacheDeleteJobName(m),
+			Name:      evictCacheJobName(m),
 			Namespace: m.Namespace,
 		},
 		Spec: batchv1.JobSpec{
@@ -411,7 +411,7 @@ func (r *ModelReconciler) cacheDeleteJob(m *kubeaiv1.Model, c ModelConfig) *batc
 					RestartPolicy: corev1.RestartPolicyOnFailure,
 					Containers: []corev1.Container{
 						{
-							Name: "downloader",
+							Name: "evictor",
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      "model",
@@ -439,7 +439,7 @@ func (r *ModelReconciler) cacheDeleteJob(m *kubeaiv1.Model, c ModelConfig) *batc
 	if c.CacheProfile.SharedFilesystem != nil {
 		switch c.Source.typ {
 		case modelSourceTypeHuggingface:
-			job.Spec.Template.Spec.Containers[0].Image = r.ModelDownloaders.Huggingface.Image
+			job.Spec.Template.Spec.Containers[0].Image = r.ModelLoaders.Huggingface.Image
 			job.Spec.Template.Spec.Containers[0].Command = []string{"bash", "-c", "rm -rf " + modelCacheDir(m)}
 		default:
 			panic("unsupported model source, this point should not be reached")
@@ -453,12 +453,12 @@ func modelCacheDir(m *kubeaiv1.Model) string {
 	return fmt.Sprintf("/models/%s-%s", m.Name, m.UID)
 }
 
-func cacheJobName(m *kubeaiv1.Model) string {
-	return fmt.Sprintf("model-%s-cache", m.Name)
+func loadCacheJobName(m *kubeaiv1.Model) string {
+	return fmt.Sprintf("load-cache-%s", m.Name)
 }
 
-func cacheDeleteJobName(m *kubeaiv1.Model) string {
-	return fmt.Sprintf("model-%s-cache-delete", m.Name)
+func evictCacheJobName(m *kubeaiv1.Model) string {
+	return fmt.Sprintf("evict-cache-%s", m.Name)
 }
 
 func patchServerCacheVolumes(podSpec *corev1.PodSpec, m *kubeaiv1.Model, c ModelConfig) {

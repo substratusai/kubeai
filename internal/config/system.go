@@ -15,7 +15,7 @@ type System struct {
 
 	ModelServers ModelServers `json:"modelServers" validate:"required"`
 
-	ModelDownloaders ModelDownloaders `json:"modelDownloaders" validate:"required"`
+	ModelLoaders ModelLoaders `json:"modelLoaders" validate:"required"`
 
 	ResourceProfiles map[string]ResourceProfile `json:"resourceProfiles" validate:"required"`
 
@@ -226,7 +226,7 @@ type ModelServer struct {
 	Images map[string]string `json:"images"`
 }
 
-type ModelDownloaders struct {
+type ModelLoaders struct {
 	Huggingface ModelDownloader `json:"huggingface" validate:"required"`
 }
 

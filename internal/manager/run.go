@@ -205,7 +205,7 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 		CacheProfiles:           cfg.CacheProfiles,
 		ModelServers:            cfg.ModelServers,
 		ModelServerPods:         cfg.ModelServerPods,
-		ModelDownloaders:        cfg.ModelDownloaders,
+		ModelLoaders:            cfg.ModelLoaders,
 		ModelRollouts:           cfg.ModelRollouts,
 	}
 	if err = modelReconciler.SetupWithManager(mgr); err != nil {

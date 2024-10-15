@@ -56,7 +56,7 @@ type ModelReconciler struct {
 	CacheProfiles           map[string]config.CacheProfile
 	ModelServers            config.ModelServers
 	ModelServerPods         config.ModelServerPods
-	ModelDownloaders        config.ModelDownloaders
+	ModelLoaders            config.ModelLoaders
 	ModelRollouts           config.ModelRollouts
 }
 
