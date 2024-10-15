@@ -1,7 +1,5 @@
 package v1
 
-import "time"
-
 const (
 	PodModelLabel = "model"
 	// PodHashLabel is a label key used to store the hash of the Pod spec
@@ -19,11 +17,6 @@ const (
 
 	ModelCacheDeletionFinalizer = "kubeai.org/cache-deletion"
 )
-
-type PVCModelAnnotationValue struct {
-	UID       string    `json:"uid"`
-	Timestamp time.Time `json:"timestamp"`
-}
 
 func PVCModelAnnotation(modelName string) string {
 	return "models.kubeai.org/" + modelName

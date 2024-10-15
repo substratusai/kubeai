@@ -18,6 +18,10 @@ spec:
   cacheProfile: fstore
   minReplicas: 1
   maxReplicas: 3
+  #url: hf://meta-llama/Meta-Llama-3.1-8B-Instruct
+  #args:
+  #  - --max-model-len=32768
+  #  - --max-num-batched-token=32768
 ---
 # Service for port-fowarding to the model:
 #

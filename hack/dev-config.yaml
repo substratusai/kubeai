@@ -42,11 +42,11 @@ resourceProfiles:
       #cpu: 0.5
       #memory: 1Gi
       # GKE
-      cpu: 1
-      memory: 4Gi
+      cpu: 3
+      memory: 12Gi
     limits:
-      cpu: 1
-      memory: 8Gi
+      cpu: 3
+      memory: 12Gi
   nvidia-gpu-l4:
     limits:
       nvidia.com/gpu: "1"
@@ -58,7 +58,8 @@ resourceProfiles:
 cacheProfiles:
   fstore:
     sharedFilesystem:
-      storageClassName: "kubeai-filestore"
+      #storageClassName: "kubeai-filestore"
+      persistentVolumeName: "preprov1"
 
 # Dev-only configuration.
 allowPodAddressOverride: true

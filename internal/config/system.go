@@ -201,7 +201,10 @@ type CacheProfile struct {
 
 type CacheSharedFilesystem struct {
 	// StorageClassName is the name of the StorageClass to use for the shared filesystem.
-	StorageClassName string `json:"storageClassName" validate:"required"`
+	StorageClassName string `json:"storageClassName,omitempty" validate:"required_without=PersistentVolumeName"`
+	// PersistentVolumeName is the name of the PersistentVolume to use for the shared filesystem.
+	// This is usually used if you have an existing filesystem that you want to use.
+	PersistentVolumeName string `json:"persistentVolumeName,omitempty" validate:"required_without=StorageClassName"`
 }
 
 type MessageStream struct {

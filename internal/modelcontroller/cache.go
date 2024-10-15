@@ -21,6 +21,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
+type PVCModelAnnotationValue struct {
+	UID       string    `json:"uid"`
+	Timestamp time.Time `json:"timestamp"`
+}
+
 func (r *ModelReconciler) reconcileCache(ctx context.Context, model *kubeaiv1.Model, cfg ModelConfig) (ctrl.Result, error) {
 	if model.Status.Cache == nil {
 		model.Status.Cache = &kubeaiv1.ModelStatusCache{}
@@ -125,7 +130,7 @@ func (r *ModelReconciler) reconcileCache(ctx context.Context, model *kubeaiv1.Mo
 		if !k8sutils.JobIsCompleted(job) {
 			return ctrl.Result{}, errReturnEarly
 		}
-		if err := r.updatePVCModelAnnotation(ctx, pvc, model.Name, kubeaiv1.PVCModelAnnotationValue{
+		if err := r.updatePVCModelAnnotation(ctx, pvc, model.Name, PVCModelAnnotationValue{
 			UID:       string(model.UID),
 			Timestamp: time.Now(),
 		}); err != nil {
@@ -260,19 +265,19 @@ func (r *ModelReconciler) deleteAllCacheJobsAndPods(ctx context.Context, model *
 	return nil
 }
 
-func parsePVCModelAnnotation(pvc *corev1.PersistentVolumeClaim, modelName string) (kubeaiv1.PVCModelAnnotationValue, error) {
+func parsePVCModelAnnotation(pvc *corev1.PersistentVolumeClaim, modelName string) (PVCModelAnnotationValue, error) {
 	pvcModelStatusJSON := k8sutils.GetAnnotation(pvc, kubeaiv1.PVCModelAnnotation(modelName))
 	if pvcModelStatusJSON == "" {
-		return kubeaiv1.PVCModelAnnotationValue{}, nil
+		return PVCModelAnnotationValue{}, nil
 	}
-	var status kubeaiv1.PVCModelAnnotationValue
+	var status PVCModelAnnotationValue
 	if err := json.Unmarshal([]byte(pvcModelStatusJSON), &status); err != nil {
-		return kubeaiv1.PVCModelAnnotationValue{}, fmt.Errorf("unmarshalling pvc model status: %w", err)
+		return PVCModelAnnotationValue{}, fmt.Errorf("unmarshalling pvc model status: %w", err)
 	}
 	return status, nil
 }
 
-func (r *ModelReconciler) updatePVCModelAnnotation(ctx context.Context, pvc *corev1.PersistentVolumeClaim, modelName string, status kubeaiv1.PVCModelAnnotationValue) error {
+func (r *ModelReconciler) updatePVCModelAnnotation(ctx context.Context, pvc *corev1.PersistentVolumeClaim, modelName string, status PVCModelAnnotationValue) error {
 	statusJSON, err := json.Marshal(status)
 	if err != nil {
 		return fmt.Errorf("marshalling pvc model status: %w", err)
@@ -292,14 +297,18 @@ func (r *ModelReconciler) cachePVCForModel(m *kubeaiv1.Model, c ModelConfig) *co
 		},
 		Spec: corev1.PersistentVolumeClaimSpec{},
 	}
-	if c.CacheProfile.SharedFilesystem != nil {
-		pvc.Spec.AccessModes = []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce}
+	switch {
+	case c.CacheProfile.SharedFilesystem != nil:
+		pvc.Spec.AccessModes = []corev1.PersistentVolumeAccessMode{corev1.ReadWriteMany}
 		storageClassName := c.CacheProfile.SharedFilesystem.StorageClassName
 		pvc.Spec.StorageClassName = &storageClassName
+		pvc.Spec.VolumeName = c.CacheProfile.SharedFilesystem.PersistentVolumeName
 		pvc.Spec.Resources.Requests = corev1.ResourceList{
 			// https://discuss.huggingface.co/t/how-to-get-model-size/11038/7
 			corev1.ResourceStorage: resource.MustParse("10Gi"),
 		}
+	default:
+		panic("unsupported cache profile, this point should not be reached")
 	}
 	return &pvc
 }
