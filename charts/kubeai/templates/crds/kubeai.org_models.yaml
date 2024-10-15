@@ -151,10 +151,10 @@ spec:
             properties:
               cache:
                 properties:
-                  downloaded:
+                  loaded:
                     type: boolean
                 required:
-                - downloaded
+                - loaded
                 type: object
               replicas:
                 properties:

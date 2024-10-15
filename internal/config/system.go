@@ -227,10 +227,10 @@ type ModelServer struct {
 }
 
 type ModelLoaders struct {
-	Huggingface ModelDownloader `json:"huggingface" validate:"required"`
+	Huggingface ModelLoader `json:"huggingface" validate:"required"`
 }
 
-type ModelDownloader struct {
+type ModelLoader struct {
 	// Image is the image to use for the downloader.
 	Image string `json:"image" validate:"required"`
 }

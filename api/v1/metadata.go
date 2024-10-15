@@ -15,7 +15,7 @@ const (
 	ModelPodIPAnnotation   = "model-pod-ip"
 	ModelPodPortAnnotation = "model-pod-port"
 
-	ModelCacheDeletionFinalizer = "kubeai.org/cache-deletion"
+	ModelCacheEvictionFinalizer = "kubeai.org/cache-eviction"
 )
 
 func PVCModelAnnotation(modelName string) string {

@@ -83,7 +83,7 @@ func (r *ModelReconciler) reconcileCache(ctx context.Context, model *kubeaiv1.Mo
 
 	// Caches that are shared across multiple Models require model-specific cleanup.
 	if cfg.CacheProfile.SharedFilesystem != nil {
-		if controllerutil.AddFinalizer(model, kubeaiv1.ModelCacheDeletionFinalizer) {
+		if controllerutil.AddFinalizer(model, kubeaiv1.ModelCacheEvictionFinalizer) {
 			if err := r.Update(ctx, model); err != nil {
 				return ctrl.Result{}, fmt.Errorf("adding cache deletion finalizer: %w", err)
 			}
@@ -140,12 +140,13 @@ func (r *ModelReconciler) reconcileCache(ctx context.Context, model *kubeaiv1.Mo
 
 	if jobExists {
 		// Delete Job.
-		if err := r.Delete(ctx, job); err != nil {
+		// Use foreground deletion policy to ensure the Pods are deleted as well.
+		if err := r.Delete(ctx, job, client.PropagationPolicy(metav1.DeletePropagationForeground)); err != nil {
 			return ctrl.Result{}, fmt.Errorf("deleting job: %w", err)
 		}
 	}
 
-	model.Status.Cache.Downloaded = pvcModelAnn.UID == string(model.UID)
+	model.Status.Cache.Loaded = pvcModelAnn.UID == string(model.UID)
 
 	return ctrl.Result{}, nil
 }
@@ -170,7 +171,7 @@ func (r *ModelReconciler) finalizeCache(ctx context.Context, model *kubeaiv1.Mod
 		if err := r.deleteAllCacheJobsAndPods(ctx, model); err != nil {
 			return fmt.Errorf("deleting all cache jobs and pods: %w", err)
 		}
-		if controllerutil.RemoveFinalizer(model, kubeaiv1.ModelCacheDeletionFinalizer) {
+		if controllerutil.RemoveFinalizer(model, kubeaiv1.ModelCacheEvictionFinalizer) {
 			if err := r.Update(ctx, model); err != nil {
 				return fmt.Errorf("removing cache deletion finalizer: %w", err)
 			}
@@ -178,7 +179,7 @@ func (r *ModelReconciler) finalizeCache(ctx context.Context, model *kubeaiv1.Mod
 		return nil
 	}
 
-	if controllerutil.ContainsFinalizer(model, kubeaiv1.ModelCacheDeletionFinalizer) {
+	if controllerutil.ContainsFinalizer(model, kubeaiv1.ModelCacheEvictionFinalizer) {
 		job := &batchv1.Job{}
 		var jobExists bool
 		if err := r.Client.Get(ctx, types.NamespacedName{
@@ -220,7 +221,7 @@ func (r *ModelReconciler) finalizeCache(ctx context.Context, model *kubeaiv1.Mod
 			}
 		}
 
-		controllerutil.RemoveFinalizer(model, kubeaiv1.ModelCacheDeletionFinalizer)
+		controllerutil.RemoveFinalizer(model, kubeaiv1.ModelCacheEvictionFinalizer)
 		if err := r.Update(ctx, model); err != nil {
 			return fmt.Errorf("removing cache deletion finalizer: %w", err)
 		}

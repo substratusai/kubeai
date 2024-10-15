@@ -85,6 +85,7 @@ func Test_getModelConfig(t *testing.T) {
 				Spec: v1.ModelSpec{
 					Engine:          v1.VLLMEngine,
 					ResourceProfile: "my-gpu:2",
+					URL:             "hf://some-repo/some-model",
 				},
 			},
 			expected: ModelConfig{

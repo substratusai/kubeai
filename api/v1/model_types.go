@@ -123,7 +123,7 @@ type ModelStatusReplicas struct {
 }
 
 type ModelStatusCache struct {
-	Downloaded bool `json:"downloaded"`
+	Loaded bool `json:"loaded"`
 }
 
 // +kubebuilder:object:root=true
