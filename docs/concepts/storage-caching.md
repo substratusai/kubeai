@@ -30,6 +30,9 @@ Building a model into a container image can provide a simple way to take advanta
 
 KubeAI can manage model caches on a shared filesystem (i.e. AWS [EFS](https://aws.amazon.com/efs/), GCP [Filestore](https://cloud.google.com/filestore/docs/overview), NFS). It manages the full lifecycle of a cached model: loading, serving, and cache eviction (on deletion of the Model).
 
+<br>
+<img src="/diagrams/caching-shared-filesystem.excalidraw.png" width="90%"></img>
+
 ## C. Model on read-only-many disk
 
 **Status:** [Planned](https://github.com/substratusai/kubeai/blob/main/proposals/model-storage.md).
