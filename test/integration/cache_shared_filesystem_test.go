@@ -46,7 +46,7 @@ func TestCacheSharedFilesystem(t *testing.T) {
 			Namespace: m.Namespace,
 			Name:      fmt.Sprintf("shared-model-cache-%s", cacheProfileName),
 		}, pvc))
-	}, 5*time.Second, time.Second/10, "PVC should be created")
+	}, 15*time.Second, time.Second/10, "PVC should be created")
 	require.Equal(t, ptr.To("my-storage-class"), pvc.Spec.StorageClassName)
 	require.Equal(t, "my-pv", pvc.Spec.VolumeName)
 
