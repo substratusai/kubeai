@@ -50,3 +50,11 @@ profiles:
           openwebui.enabled: false
           modelAutoscaling.interval: 1s
           modelAutoscaling.timeWindow: 30s
+- name: e2e-test-cache-shared-filesystem
+  deploy:
+    helm:
+      releases:
+      - name: kubeai
+        chartPath: ./charts/kubeai
+        valuesFiles:
+        - ./test/e2e/cache-shared-filesystem/values.yaml

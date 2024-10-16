@@ -1,0 +1,7 @@
+openwebui:
+  enabled: false
+
+cacheProfiles:
+  kindpv:
+    sharedFilesystem:
+      persistentVolumeName: "kind-hostpath"

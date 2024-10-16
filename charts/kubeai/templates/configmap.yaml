@@ -10,8 +10,12 @@ data:
       huggingface: {{ include "kubeai.huggingfaceSecretName" . }}
     resourceProfiles:
       {{- .Values.resourceProfiles | toYaml | nindent 6 }}
+    cacheProfiles:
+      {{- .Values.cacheProfiles | toYaml | nindent 6 }}
     modelServers:
       {{- .Values.modelServers | toYaml | nindent 6 }}
+    modelLoaders:
+      {{- .Values.modelLoaders | toYaml | nindent 6 }}
     modelRollouts:
       {{- .Values.modelRollouts | toYaml | nindent 6 }}
     modelServerPods:

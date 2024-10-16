@@ -91,6 +91,10 @@ test-e2e-openai-python-client: skaffold
 test-e2e-autoscaler-restart: skaffold
 	./test/e2e/run.sh autoscaler-restart --profile kubeai-only-rapid-scaling
 
+.PHONY: test-e2e-cache-shared-filesystem
+test-e2e-cache-shared-filesystem: skaffold
+	./test/e2e/run.sh cache-shared-filesystem --profile e2e-test-cache-shared-filesystem
+
 .PHONY: lint
 lint: golangci-lint ## Run golangci-lint linter
 	$(GOLANGCI_LINT) run

@@ -32,6 +32,10 @@ modelServers:
     images:
       default: "michaelf34/infinity:latest"
 
+modelLoaders:
+  huggingface:
+    image: "us-central1-docker.pkg.dev/substratus-dev/default/huggingface-model-downloader:v0.0.1"
+
 modelServerPods:
   # Security Context for the model pods
   # Needed for OpenShift
@@ -99,6 +103,8 @@ resourceProfiles:
         operator: "Equal"
         value: "present"
         effect: "NoSchedule"
+
+cacheProfiles: {}
 
 modelAutoscaling:
   # Interval that the autoscaler will scrape model server metrics.
