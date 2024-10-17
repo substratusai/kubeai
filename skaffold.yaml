@@ -40,6 +40,21 @@ profiles:
         chartPath: ./charts/kubeai
         setValueTemplates:
           openwebui.enabled: false
+
+- name: kubeai-only-gke
+  build:
+    artifacts:
+    - image: substratusai/kubeai
+  deploy:
+    helm:
+      releases:
+      - name: kubeai
+        chartPath: ./charts/kubeai
+        setValueTemplates:
+          openwebui.enabled: false
+        valuesFiles:
+        - ./charts/kubeai/values-gke.yaml
+
 - name: kubeai-only-rapid-scaling
   deploy:
     helm:

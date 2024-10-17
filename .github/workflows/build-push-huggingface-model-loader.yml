@@ -15,7 +15,7 @@ env:
   IMAGE_NAME: substratusai/huggingface-model-loader
 
 jobs:
-  kubeai:
+  huggingface-model-loader:
     runs-on: ubuntu-latest
     # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
     permissions:

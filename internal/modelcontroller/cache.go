@@ -61,25 +61,7 @@ func (r *ModelReconciler) reconcileCache(ctx context.Context, model *kubeaiv1.Mo
 				return ctrl.Result{}, fmt.Errorf("creating cache PVC: %w", err)
 			}
 		}
-	} /*else {
-		// Add owner reference to PVC if needed.
-		// This accounts for PVCs that are used by multiple Models.
-		var alreadyOwned bool
-		for _, owner := range pvc.GetOwnerReferences() {
-			if owner.UID == model.UID {
-				alreadyOwned = true
-				break
-			}
-		}
-		if !alreadyOwned {
-			if err := controllerutil.SetOwnerReference(model, pvc, r.Scheme); err != nil {
-				return ctrl.Result{}, fmt.Errorf("adding model to PVC owner references: %w", err)
-			}
-			if err := r.Update(ctx, pvc); err != nil {
-				return ctrl.Result{}, fmt.Errorf("updating PVC: %w", err)
-			}
-		}
-	}*/
+	}
 
 	// Caches that are shared across multiple Models require model-specific cleanup.
 	if cfg.CacheProfile.SharedFilesystem != nil {
