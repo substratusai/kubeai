@@ -43,8 +43,8 @@ profiles:
 
 - name: kubeai-only-gke
   build:
-    artifacts:
-    - image: substratusai/kubeai
+    local:
+      push: true
   deploy:
     helm:
       releases:

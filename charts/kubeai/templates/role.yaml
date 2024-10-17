@@ -9,10 +9,10 @@ rules:
   - ""
   resources:
   - pods
-  - persistentvolumeclaims
   verbs:
   - create
   - delete
+  - deletecollection
   - get
   - list
   - patch
@@ -22,6 +22,19 @@ rules:
   - "batch"
   resources:
   - jobs
+  verbs:
+  - create
+  - delete
+  - deletecollection
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims
   verbs:
   - create
   - delete
