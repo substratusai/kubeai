@@ -88,9 +88,8 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (res 
 		}
 	}()
 
-	var shouldUpdate bool
 	// Apply self labels based on features so that we can easily filter models.
-	shouldUpdate = r.applySelfLabels(model) || shouldUpdate
+	shouldUpdate := r.applySelfLabels(model)
 	// Apply replica bounds to handle cases where min/max replicas were updated but a scale event was not triggered.
 	if !model.Spec.AutoscalingDisabled {
 		shouldUpdate = r.applyAutoscalingReplicaBounds(model) || shouldUpdate
