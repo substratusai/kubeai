@@ -139,20 +139,6 @@ func TestModelValidation(t *testing.T) {
 		},
 		{
 			model: v1.Model{
-				ObjectMeta: metadata("replicas-1-3-2-invalid"),
-				Spec: v1.ModelSpec{
-					URL:         "hf://test-repo/test-model",
-					Engine:      "VLLM",
-					Features:    []v1.ModelFeature{},
-					MinReplicas: 1,
-					Replicas:    ptr.To[int32](3),
-					MaxReplicas: ptr.To[int32](2),
-				},
-			},
-			expErrContain: "replicas should be in the range minReplicas..maxReplicas",
-		},
-		{
-			model: v1.Model{
 				ObjectMeta: metadata("replicas-3-nil-2-invalid"),
 				Spec: v1.ModelSpec{
 					URL:         "hf://test-repo/test-model",

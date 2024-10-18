@@ -22,7 +22,6 @@ import (
 
 // ModelSpec defines the desired state of Model.
 // +kubebuilder:validation:XValidation:rule="!has(self.cacheProfile) || self.url.startsWith(\"hf://\")", message="cacheProfile is only supported with a huggingface url (\"hf://...\") at the moment."
-// +kubebuilder:validation:XValidation:rule="!has(self.replicas) || (self.minReplicas <= self.replicas) && (!has(self.maxReplicas) || self.replicas <= self.maxReplicas)", message="replicas should be in the range minReplicas..maxReplicas."
 // +kubebuilder:validation:XValidation:rule="!has(self.maxReplicas) || self.minReplicas <= self.maxReplicas", message="minReplicas should be less than or equal to maxReplicas."
 type ModelSpec struct {
 	// URL of the model to be served.

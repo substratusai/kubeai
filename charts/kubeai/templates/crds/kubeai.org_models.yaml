@@ -158,9 +158,6 @@ spec:
             - message: cacheProfile is only supported with a huggingface url ("hf://...")
                 at the moment.
               rule: '!has(self.cacheProfile) || self.url.startsWith("hf://")'
-            - message: replicas should be in the range minReplicas..maxReplicas.
-              rule: '!has(self.replicas) || (self.minReplicas <= self.replicas) &&
-                (!has(self.maxReplicas) || self.replicas <= self.maxReplicas)'
             - message: minReplicas should be less than or equal to maxReplicas.
               rule: '!has(self.maxReplicas) || self.minReplicas <= self.maxReplicas'
           status:
