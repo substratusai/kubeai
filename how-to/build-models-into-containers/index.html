@@ -14,7 +14,7 @@
         <link rel="prev" href="../../installation/gke/">
       
       
-        <link rel="next" href="../configure-autoscaling/">
+        <link rel="next" href="../cache-models-with-gcp-filestore/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -364,6 +364,27 @@
 
       </a>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cache-models-with-gcp-filestore/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Cache models with GCP Filestore
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -1010,7 +1031,7 @@
 </code></pre></div></p>
 <p>Build and push image. Note: building (downloading base image &amp; model) and pushing (uploading image &amp; model) can take a while depending on the size of the model.</p>
 <div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/substratusai/kubeai
-<span class="nb">cd</span><span class="w"> </span>./kubeai/images/ollama-builtin
+<span class="nb">cd</span><span class="w"> </span>./kubeai/examples/ollama-builtin
 
 docker<span class="w"> </span>build<span class="w"> </span>--build-arg<span class="w"> </span><span class="nv">MODEL_URL</span><span class="o">=</span><span class="nv">$MODEL_URL</span><span class="w"> </span>-t<span class="w"> </span><span class="nv">$IMAGE</span><span class="w"> </span>.
 docker<span class="w"> </span>push<span class="w"> </span><span class="nv">$IMAGE</span>

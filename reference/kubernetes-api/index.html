@@ -364,6 +364,27 @@
   
   
     <li class="md-nav__item">
+      <a href="../../how-to/cache-models-with-gcp-filestore/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Cache models with GCP Filestore
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../how-to/configure-autoscaling/" class="md-nav__link">
         
   
@@ -960,6 +981,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#modelstatuscache" class="md-nav__link">
+    <span class="md-ellipsis">
+      ModelStatusCache
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#modelstatusreplicas" class="md-nav__link">
     <span class="md-ellipsis">
       ModelStatusReplicas
@@ -1170,6 +1200,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#modelstatuscache" class="md-nav__link">
+    <span class="md-ellipsis">
+      ModelStatusCache
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#modelstatusreplicas" class="md-nav__link">
     <span class="md-ellipsis">
       ModelStatusReplicas
@@ -1285,7 +1324,7 @@
 <td><code>url</code> <em>string</em></td>
 <td>URL of the model to be served.<br />Currently only the following formats are supported:<br />For VLLM &amp; FasterWhisper engines: "hf://<model-repo>/<model-name>"<br />For OLlama engine: "ollama://<model></td>
 <td></td>
-<td></td>
+<td>Required: {} <br /></td>
 </tr>
 <tr>
 <td><code>features</code> <em><a href="#modelfeature">ModelFeature</a> array</em></td>
@@ -1297,11 +1336,17 @@
 <td><code>engine</code> <em>string</em></td>
 <td>Engine to be used for the server process.</td>
 <td></td>
-<td>Enum: [OLlama VLLM FasterWhisper Infinity] <br /></td>
+<td>Enum: [OLlama VLLM FasterWhisper Infinity] <br />Required: {} <br /></td>
 </tr>
 <tr>
 <td><code>resourceProfile</code> <em>string</em></td>
 <td>ResourceProfile required to serve the model.<br />Use the format "<resource-profile-name>:<count>".<br />Example: "nvidia-gpu-l4:2" - 2x NVIDIA L4 GPUs.<br />Must be a valid ResourceProfile defined in the system config.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>cacheProfile</code> <em>string</em></td>
+<td>CacheProfile to be used for caching model artifacts.<br />Must be a valid CacheProfile defined in the system config.</td>
 <td></td>
 <td></td>
 </tr>
@@ -1383,6 +1428,33 @@
 <tbody>
 <tr>
 <td><code>replicas</code> <em><a href="#modelstatusreplicas">ModelStatusReplicas</a></em></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>cache</code> <em><a href="#modelstatuscache">ModelStatusCache</a></em></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="modelstatuscache">ModelStatusCache<a class="headerlink" href="#modelstatuscache" title="Permanent link">&para;</a></h4>
+<p><em>Appears in:</em>
+- <a href="#modelstatus">ModelStatus</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>loaded</code> <em>boolean</em></td>
 <td></td>
 <td></td>
 <td></td>

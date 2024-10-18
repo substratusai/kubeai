@@ -364,6 +364,27 @@
   
   
     <li class="md-nav__item">
+      <a href="../../how-to/cache-models-with-gcp-filestore/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Cache models with GCP Filestore
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../how-to/configure-autoscaling/" class="md-nav__link">
         
   
@@ -1209,6 +1230,7 @@ helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class=
 
 <span class="c1"># OPTION B #</span>
 <span class="c1"># For quick local interation (run KubeAI outside of cluster)</span>
+kubectl<span class="w"> </span>create<span class="w"> </span>cm<span class="w"> </span>kubeai-autoscaler-state<span class="w"> </span>-oyaml<span class="w"> </span>--dry-run<span class="o">=</span>client<span class="w"> </span><span class="p">|</span><span class="w"> </span>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>-
 <span class="nv">CONFIG_PATH</span><span class="o">=</span>./hack/dev-config.yaml<span class="w"> </span><span class="nv">POD_NAMESPACE</span><span class="o">=</span>default<span class="w"> </span>go<span class="w"> </span>run<span class="w"> </span>./cmd/main.go
 
 <span class="c1"># In another terminal:</span>

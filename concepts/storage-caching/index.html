@@ -364,6 +364,27 @@
   
   
     <li class="md-nav__item">
+      <a href="../../how-to/cache-models-with-gcp-filestore/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Cache models with GCP Filestore
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../how-to/configure-autoscaling/" class="md-nav__link">
         
   
@@ -1121,8 +1142,9 @@
 <li><a href="../../how-to/build-models-into-containers/">How to build models into container images</a></li>
 </ul>
 <h2 id="b-model-on-shared-filesystem-read-write-many">B. Model on shared filesystem (read-write-many)<a class="headerlink" href="#b-model-on-shared-filesystem-read-write-many" title="Permanent link">&para;</a></h2>
-<p><strong>Status:</strong> <a href="https://github.com/substratusai/kubeai/blob/main/proposals/model-storage.md">Planned</a>.</p>
-<p>Examples: <a href="https://aws.amazon.com/efs/">AWS EFS</a></p>
+<p>KubeAI can manage model caches on a shared filesystem (i.e. AWS <a href="https://aws.amazon.com/efs/">EFS</a>, GCP <a href="https://cloud.google.com/filestore/docs/overview">Filestore</a>, NFS). It manages the full lifecycle of a cached model: loading, serving, and cache eviction (on deletion of the Model).</p>
+<p><br>
+<img src="/diagrams/caching-shared-filesystem.excalidraw.png" width="90%"></img></p>
 <h2 id="c-model-on-read-only-many-disk">C. Model on read-only-many disk<a class="headerlink" href="#c-model-on-read-only-many-disk" title="Permanent link">&para;</a></h2>
 <p><strong>Status:</strong> <a href="https://github.com/substratusai/kubeai/blob/main/proposals/model-storage.md">Planned</a>.</p>
 <p>Examples: <a href="https://cloud.google.com/compute/docs/disks/hyperdisks">GCP Hyperdisk ML</a></p>

@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://www.kubeai.org/tutorials/langchain/">
+        <link rel="canonical" href="https://www.kubeai.org/how-to/cache-models-with-gcp-filestore/">
       
       
-        <link rel="prev" href="../../concepts/storage-caching/">
+        <link rel="prev" href="../build-models-into-containers/">
       
       
-        <link rel="next" href="../langtrace/">
+        <link rel="next" href="../configure-autoscaling/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Using LangChain with KubeAI - KubeAI</title>
+        <title>Cache models with GCP Filestore - KubeAI</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#using-langchain-with-kubeai" class="md-skip">
+        <a href="#cache-models-with-gcp-filestore" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Using LangChain with KubeAI
+              Cache models with GCP Filestore
             
           </span>
         </div>
@@ -305,17 +305,19 @@
       
   
   
+    
   
   
+  
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -329,7 +331,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             How to
@@ -343,7 +345,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/build-models-into-containers/" class="md-nav__link">
+      <a href="../build-models-into-containers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -361,10 +363,30 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../how-to/cache-models-with-gcp-filestore/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Cache models with GCP Filestore
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -373,6 +395,68 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Troubleshooting
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#filestore-csi-driver" class="md-nav__link">
+    <span class="md-ellipsis">
+      Filestore CSI Driver
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#persistentvolumes" class="md-nav__link">
+    <span class="md-ellipsis">
+      PersistentVolumes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#model-loading-job" class="md-nav__link">
+    <span class="md-ellipsis">
+      Model Loading Job
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -385,7 +469,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/configure-autoscaling/" class="md-nav__link">
+      <a href="../configure-autoscaling/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -406,7 +490,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/configure-embedding-models/" class="md-nav__link">
+      <a href="../configure-embedding-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -427,7 +511,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/configure-resource-profiles/" class="md-nav__link">
+      <a href="../configure-resource-profiles/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -448,7 +532,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/configure-speech-to-text/" class="md-nav__link">
+      <a href="../configure-speech-to-text/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -469,7 +553,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/install-models/" class="md-nav__link">
+      <a href="../install-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -620,19 +704,17 @@
       
   
   
-    
   
   
-  
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
         
           
           <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
@@ -646,7 +728,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             Tutorials
@@ -657,30 +739,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Using LangChain with KubeAI
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../tutorials/langchain/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -689,53 +751,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
-    <span class="md-ellipsis">
-      Prerequisites
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#installing-kubeai-with-gemma-2b" class="md-nav__link">
-    <span class="md-ellipsis">
-      Installing KubeAI with Gemma 2B
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#using-langchain" class="md-nav__link">
-    <span class="md-ellipsis">
-      Using LangChain
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -748,7 +763,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../langtrace/" class="md-nav__link">
+      <a href="../../tutorials/langtrace/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -769,7 +784,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../weaviate/" class="md-nav__link">
+      <a href="../../tutorials/weaviate/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1069,29 +1084,44 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
+  <a href="#troubleshooting" class="md-nav__link">
     <span class="md-ellipsis">
-      Prerequisites
+      Troubleshooting
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#filestore-csi-driver" class="md-nav__link">
+    <span class="md-ellipsis">
+      Filestore CSI Driver
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#installing-kubeai-with-gemma-2b" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#persistentvolumes" class="md-nav__link">
     <span class="md-ellipsis">
-      Installing KubeAI with Gemma 2B
+      PersistentVolumes
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#using-langchain" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#model-loading-job" class="md-nav__link">
     <span class="md-ellipsis">
-      Using LangChain
+      Model Loading Job
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1113,84 +1143,69 @@
   
 
 
-<h1 id="using-langchain-with-kubeai">Using LangChain with KubeAI<a class="headerlink" href="#using-langchain-with-kubeai" title="Permanent link">&para;</a></h1>
-<p>LangChain makes it easy to build applications powered by LLMs.
-<a href="https://github.com/substratusai/kubeai">KubeAI</a> makes
-it easy to deploy and manage LLMs at scale. Together, they make it easy to
-build and deploy private and secure AI applications.</p>
-<p>In this tutorial, we'll show you how to use LangChain with KubeAI's OpenAI
-compatible API. The beauty of KubeAI's OpenAI compatibility is that you can use
-KubeAI with any framework that supports OpenAI.</p>
-<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
-<p>A K8s cluster. You can use a local cluster like <a href="https://kind.sigs.k8s.io/">kind</a>.</p>
-<h2 id="installing-kubeai-with-gemma-2b">Installing KubeAI with Gemma 2B<a class="headerlink" href="#installing-kubeai-with-gemma-2b" title="Permanent link">&para;</a></h2>
-<p>Run the following command to install KubeAI with Gemma 2B:</p>
-<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>kubeai<span class="w"> </span>https://www.kubeai.org
-helm<span class="w"> </span>repo<span class="w"> </span>update
-
-cat<span class="w"> </span><span class="s">&lt;&lt;EOF &gt; models-helm-values.yaml</span>
+<h1 id="cache-models-with-gcp-filestore">Cache models with GCP Filestore<a class="headerlink" href="#cache-models-with-gcp-filestore" title="Permanent link">&para;</a></h1>
+<p>KubeAI can manage model caches. GCP Filestore is supported as a pluggable backend store.</p>
+<p><br>
+<img src="/diagrams/caching-shared-filesystem.excalidraw.png" width="90%"></img></p>
+<p>Follow the <a href="../../installation/gke/">GKE install guide</a>.</p>
+<p>Ensure that the Filestore API is enabled.</p>
+<div class="highlight"><pre><span></span><code>gcloud<span class="w"> </span>services<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>file.googleapis.com
+</code></pre></div>
+<p>Apply a Model with the cache profile set to <code>standard-filestore</code> (defined in the reference <a href="https://github.com/substratusai/kubeai/blob/main/charts/kubeai/values-gke.yaml">GKE Helm values file</a>).</p>
+<details>
+<summary>TIP: If you want to use `premium-filestore` you will need to ensure you have quota.</summary>
+<p>Open the cloud console quotas page: https://console.cloud.google.com/iam-admin/quotas. Make sure your project is selected in the top left.</p>
+<p>Ensure that you have at least 2.5Tb of <code>PremiumStorageGbPerRegion</code> quota in the region where your cluster is deployed.</p>
+<p><img alt="Premium Storage Quota Screenshot" src="../screenshots/gcp-quota-premium-storage-gb-per-region" /></p>
+</details>
+<p><br></p>
+<p>NOTE: If you already installed the models chart, you will need to edit you values file and run <code>helm upgrade</code>.</p>
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>install<span class="w"> </span>kubeai-models<span class="w"> </span>kubeai/models<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;EOF</span>
 <span class="s">catalog:</span>
-<span class="s">  gemma2-2b-cpu:</span>
+<span class="s">  llama-3.1-8b-instruct-fp8-l4:</span>
 <span class="s">    enabled: true</span>
-<span class="s">    minReplicas: 1</span>
+<span class="s">    cacheProfile: standard-filestore</span>
 <span class="s">EOF</span>
-
-helm<span class="w"> </span>install<span class="w"> </span>kubeai<span class="w"> </span>kubeai/kubeai<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>-f<span class="w"> </span>./helm-values.yaml<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--wait<span class="w"> </span>--timeout<span class="w"> </span>10m
-
-helm<span class="w"> </span>install<span class="w"> </span>kubeai-models<span class="w"> </span>kubeai/models<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>-f<span class="w"> </span>./models-helm-values.yaml
 </code></pre></div>
-<h2 id="using-langchain">Using LangChain<a class="headerlink" href="#using-langchain" title="Permanent link">&para;</a></h2>
-<p>Install the required Python packages:
-<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>langchain_openai
-</code></pre></div></p>
-<p>Let's access the KubeAI OpenAI compatible API locally to make it easier.</p>
-<p>Run the following command to port-forward to the KubeAI service:
-<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>port-forward<span class="w"> </span>svc/kubeai<span class="w"> </span><span class="m">8000</span>:80
+<p>Wait for the Model to be fully cached. This may take a while if the Filestore instance needs to be created.</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--timeout<span class="w"> </span>10m<span class="w"> </span>--for<span class="o">=</span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.status.cache.loaded}&#39;</span><span class="o">=</span><span class="nb">true</span><span class="w"> </span>model/llama-3.1-8b-instruct-fp8-l4
 </code></pre></div>
-Now the KubeAI OpenAI compatible API is available at <code>http://localhost:8000/openai</code>
-from your local machine.</p>
-<p>Let's create a simple Python script that uses LangChain and is connected to KubeAI.</p>
-<p>Create a file named <code>test-langchain.py</code> with the following content:
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">langchain_openai</span> <span class="kn">import</span> <span class="n">ChatOpenAI</span>
-
-<span class="n">llm</span> <span class="o">=</span> <span class="n">ChatOpenAI</span><span class="p">(</span>
-    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gemma2-2b-cpu&quot;</span><span class="p">,</span>
-    <span class="n">temperature</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">max_tokens</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">max_retries</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-    <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;thisIsIgnored&quot;</span><span class="p">,</span>
-    <span class="n">base_url</span><span class="o">=</span><span class="s2">&quot;http://localhost:8000/openai/v1&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-
-<span class="n">messages</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">(</span>
-        <span class="s2">&quot;system&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;You are a helpful assistant that translates English to French. Translate the user sentence.&quot;</span><span class="p">,</span>
-    <span class="p">),</span>
-    <span class="p">(</span><span class="s2">&quot;human&quot;</span><span class="p">,</span> <span class="s2">&quot;I love programming.&quot;</span><span class="p">),</span>
-<span class="p">]</span>
-<span class="n">ai_msg</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="n">messages</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">ai_msg</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
-</code></pre></div></p>
-<p>Run the Python script:
-<div class="highlight"><pre><span></span><code>python<span class="w"> </span>test-langchain.py
-</code></pre></div></p>
-<p>Notice that we set base_url to <code>http://localhost:8000/openai/v1</code>. This tells
-LangChain to use our local KubeAI OpenAI compatible AP instead of the default
-OpenAI public API.</p>
-<p>If you run langchain within the K8s cluster, you can use the following base_url instead:
-<code>http://kubeai/openai/v1</code>. So the code would look like this:
-<div class="highlight"><pre><span></span><code><span class="n">llm</span> <span class="o">=</span> <span class="n">ChatOpenAI</span><span class="p">(</span>
-    <span class="o">...</span>
-    <span class="n">base_url</span><span class="o">=</span><span class="s2">&quot;http://kubeai/openai/v1&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-</code></pre></div></p>
-<p>That's it! You've successfully used LangChain with KubeAI. Now you can build
-and deploy private and secure AI applications with ease.</p>
+<p>This model will now be loaded from Filestore when it is served.</p>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<h3 id="filestore-csi-driver">Filestore CSI Driver<a class="headerlink" href="#filestore-csi-driver" title="Permanent link">&para;</a></h3>
+<p>Ensure that the Filestore CSI driver is enabled by checking for the existance of Kubernetes storage classes. If they are not found, follow the <a href="https://cloud.google.com/filestore/docs/csi-driver#existing">GCP guide</a> for enabling the CSI driver.</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>get<span class="w"> </span>storageclass<span class="w"> </span>standard-rwx<span class="w"> </span>premium-rwx
+</code></pre></div>
+<h3 id="persistentvolumes">PersistentVolumes<a class="headerlink" href="#persistentvolumes" title="Permanent link">&para;</a></h3>
+<p>Check the PersistentVolumeClaim (that should be created by KubeAI).</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>describe<span class="w"> </span>pvc<span class="w"> </span>shared-model-cache-
+</code></pre></div>
+<details>
+<summary>Example: Out-of-quota error</summary>
+<div class="highlight"><pre><span></span><code>  Warning  ProvisioningFailed    11m (x26 over 21m)  filestore.csi.storage.gke.io_gke-50826743a27a4d52bf5b-7fac-9607-vm_b4bdb2ec-b58b-4363-adec-15c270a14066  failed to provision volume with StorageClass &quot;premium-rwx&quot;: rpc error: code = ResourceExhausted desc = googleapi: Error 429: Quota limit &#39;PremiumStorageGbPerRegion&#39; has been exceeded. Limit: 0 in region us-central1.
+Details:
+[
+  {
+    &quot;@type&quot;: &quot;type.googleapis.com/google.rpc.QuotaFailure&quot;,
+    &quot;violations&quot;: [
+      {
+        &quot;description&quot;: &quot;Quota &#39;PremiumStorageGbPerRegion&#39; exhausted. Limit 0 in region us-central1&quot;,
+        &quot;subject&quot;: &quot;project:819220466562&quot;
+      }
+    ]
+  }
+]
+</code></pre></div>
+</details>
+<p>Check to see if the PersistentVolume has been fully provisioned.</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>get<span class="w"> </span>pv
+<span class="c1"># Find name of corresponding pv...</span>
+kubectl<span class="w"> </span>describe<span class="w"> </span>pv<span class="w"> </span>&lt;name&gt;
+</code></pre></div>
+<h3 id="model-loading-job">Model Loading Job<a class="headerlink" href="#model-loading-job" title="Permanent link">&para;</a></h3>
+<p>Check to see if there is an ongoing model loader Job.</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>get<span class="w"> </span><span class="nb">jobs</span>
+</code></pre></div>
 
 
 
