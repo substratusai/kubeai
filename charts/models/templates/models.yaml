@@ -35,5 +35,8 @@ spec:
   {{- with $model.resourceProfile }}
   resourceProfile: {{ . }}
   {{- end}}
+  {{- with $model.cacheProfile }}
+  cacheProfile: {{ . }}
+  {{- end}}
 {{- end}}
 {{- end}}

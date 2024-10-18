@@ -75,6 +75,9 @@ echo "Waiting for KubeAI API on localhost:8000"
 retry 600 curl -s http://localhost:8000/openai/v1/models
 echo "KubeAI API is ready"
 
+# Apply common manifests.
+kubectl apply -f $REPO_DIR/test/e2e/common-manifests.yaml
+
 $REPO_DIR/test/e2e/$testcase/test.sh
 
 echo "!!! PASS !!!"

@@ -1,4 +1,4 @@
-name: Build and Push Docker image
+name: Build and Push huggingface-model-loader Docker image
 on:
   push:
     branches:
@@ -12,10 +12,10 @@ on:
 # Defines two custom environment variables for the workflow. These are used for the Container registry domain, and a name for the Docker image that this workflow builds.
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: substratusai/kubeai
+  IMAGE_NAME: substratusai/huggingface-model-loader
 
 jobs:
-  kubeai:
+  huggingface-model-loader:
     runs-on: ubuntu-latest
     # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
     permissions:
@@ -52,7 +52,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./components/huggingface-model-loader
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name == 'push' }}
           tags: ${{ steps.meta.outputs.tags }}

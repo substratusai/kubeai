@@ -79,17 +79,21 @@ test-integration: fmt vet envtest
 test-e2e-quickstart: skaffold
 	./test/e2e/run.sh quickstart
 
-.PHONY: test-e2e-faster-whisper
-test-e2e-faster-whisper: skaffold
-	./test/e2e/run.sh faster-whisper --profile kubeai-only
-
 .PHONY: test-e2e-openai-python-client
 test-e2e-openai-python-client: skaffold
-	./test/e2e/run.sh openai-python-client --profile kubeai-only
+	./test/e2e/run.sh openai-python-client --profile e2e-test-default
 
 .PHONY: test-e2e-autoscaler-restart
 test-e2e-autoscaler-restart: skaffold
-	./test/e2e/run.sh autoscaler-restart --profile kubeai-only-rapid-scaling
+	./test/e2e/run.sh autoscaler-restart --profile e2e-test-autoscaler-restart
+
+.PHONY: test-e2e-cache-shared-filesystem
+test-e2e-cache-shared-filesystem: skaffold
+	./test/e2e/run.sh cache-shared-filesystem --profile e2e-test-default
+
+.PHONY: test-e2e-engine
+test-e2e-engine: skaffold
+	CACHE_PROFILE=$(CACHE_PROFILE) ./test/e2e/run.sh engine-$(ENGINE) --profile e2e-test-default
 
 .PHONY: lint
 lint: golangci-lint ## Run golangci-lint linter

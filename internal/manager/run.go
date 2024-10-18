@@ -202,8 +202,10 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 		AllowPodAddressOverride: cfg.AllowPodAddressOverride,
 		HuggingfaceSecretName:   cfg.SecretNames.Huggingface,
 		ResourceProfiles:        cfg.ResourceProfiles,
+		CacheProfiles:           cfg.CacheProfiles,
 		ModelServers:            cfg.ModelServers,
 		ModelServerPods:         cfg.ModelServerPods,
+		ModelLoaders:            cfg.ModelLoaders,
 		ModelRollouts:           cfg.ModelRollouts,
 	}
 	if err = modelReconciler.SetupWithManager(mgr); err != nil {

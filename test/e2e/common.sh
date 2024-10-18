@@ -21,3 +21,8 @@ retry() {
   echo ""
   set -x
 }
+
+apply_model() {
+  model_name=$1
+  yq eval ".spec.cacheProfile = \"$CACHE_PROFILE\"" $REPO_DIR/manifests/models/$model_name.yaml | kubectl apply -f -
+}

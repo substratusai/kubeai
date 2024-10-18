@@ -36,3 +36,11 @@ resourceProfiles:
     nodeSelector:
       cloud.google.com/gke-tpu-accelerator: tpu-v5-lite-podslice
       cloud.google.com/gke-tpu-topology: "2x4"
+
+cacheProfiles:
+  standard-filestore:
+    sharedFilesystem:
+      storageClassName: "standard-rwx"
+  premium-filestore:
+    sharedFilesystem:
+      storageClassName: "premium-rwx"

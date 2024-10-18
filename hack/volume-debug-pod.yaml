@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: volume-debug-pod
+spec:
+  containers:
+  - name: main
+    image: ubuntu
+    command: ["sleep", "10000"]
+    volumeMounts:
+    - name: models
+      mountPath: /my-mnt
+  volumes:
+  - name: models
+    persistentVolumeClaim:
+      claimName: shared-model-cache-fstore

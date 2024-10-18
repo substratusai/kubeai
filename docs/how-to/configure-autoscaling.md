@@ -1,6 +1,6 @@
 # Configure autoscaling
 
-This guide with cover how to configure KubeAI [autoscaling](../concepts/autoscaling.md) parameters.
+This guide will cover how to configure KubeAI [autoscaling](../concepts/autoscaling.md) parameters.
 
 ## System Settings
 

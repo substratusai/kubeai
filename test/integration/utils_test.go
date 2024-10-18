@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	v1 "github.com/substratusai/kubeai/api/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -154,4 +155,27 @@ func completeRequests(c chan struct{}, n int) {
 	for i := 0; i < n; i++ {
 		c <- struct{}{}
 	}
+}
+
+func requireUpdateJobAsCompleted(t *testing.T, job *batchv1.Job) {
+	require.EventuallyWithT(t, func(t *assert.CollectT) {
+		setJobCompletedStatus(job)
+		if !assert.NoError(t, testK8sClient.Status().Update(testCtx, job)) {
+			assert.NoError(t, testK8sClient.Get(testCtx, client.ObjectKeyFromObject(job), job))
+		}
+	}, 2*time.Second, time.Second/10)
+}
+
+func setJobCompletedStatus(job *batchv1.Job) {
+	job.Status.Succeeded = *job.Spec.Completions
+	for i := range job.Status.Conditions {
+		if job.Status.Conditions[i].Type == batchv1.JobComplete {
+			job.Status.Conditions[i].Status = corev1.ConditionTrue
+			return
+		}
+	}
+	job.Status.Conditions = append(job.Status.Conditions, batchv1.JobCondition{
+		Type:   batchv1.JobComplete,
+		Status: corev1.ConditionTrue,
+	})
 }

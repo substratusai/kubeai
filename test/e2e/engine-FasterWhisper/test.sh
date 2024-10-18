@@ -4,7 +4,7 @@ source $REPO_DIR/test/e2e/common.sh
 
 model=faster-whisper-medium-en-cpu
 
-kubectl apply -f $REPO_DIR/manifests/models/$model.yaml
+apply_model $model
 
 audio_file=$TMP_DIR/kubeai.mp4
 curl -L -o $audio_file https://github.com/user-attachments/assets/711d1279-6af9-4c6c-a052-e59e7730b757
