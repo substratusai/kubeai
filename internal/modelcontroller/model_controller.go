@@ -83,7 +83,6 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (res 
 	defer func() {
 		if !reflect.DeepEqual(status0, model.Status) && model.DeletionTimestamp == nil {
 			if err := r.Status().Update(ctx, model); err != nil {
-				log.Error(err, "Failed to update Model status")
 				resErr = errors.Join(resErr, err)
 			}
 		}
