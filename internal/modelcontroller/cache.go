@@ -109,7 +109,7 @@ func (r *ModelReconciler) reconcileCache(ctx context.Context, model *kubeaiv1.Mo
 			return ctrl.Result{}, errReturnEarly
 		}
 
-		if !k8sutils.JobIsCompleted(job) {
+		if !k8sutils.IsJobCompleted(job) {
 			return ctrl.Result{}, errReturnEarly
 		}
 		if err := r.updatePVCModelAnnotation(ctx, pvc, model.Name, PVCModelAnnotationValue{
@@ -188,12 +188,12 @@ func (r *ModelReconciler) finalizeCache(ctx context.Context, model *kubeaiv1.Mod
 			return errReturnEarly
 		} else {
 			// Wait for the Job to complete.
-			if !k8sutils.JobIsCompleted(job) {
+			if !k8sutils.IsJobCompleted(job) {
 				return errReturnEarly
 			}
 
 			// Delete the Model from the PVC annotation.
-			if pvc != nil && pvc.Annotations != nil {
+			if pvc.Annotations != nil {
 				if _, ok := pvc.Annotations[kubeaiv1.PVCModelAnnotation(model.Name)]; ok {
 					delete(pvc.Annotations, kubeaiv1.PVCModelAnnotation(model.Name))
 					if err := r.Update(ctx, pvc); err != nil {

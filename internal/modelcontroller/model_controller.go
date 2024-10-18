@@ -18,6 +18,7 @@ package modelcontroller
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -33,7 +34,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	"github.com/pkg/errors"
 	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
 	"github.com/substratusai/kubeai/internal/config"
 	"github.com/substratusai/kubeai/internal/k8sutils"
@@ -84,9 +84,7 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (res 
 		if !reflect.DeepEqual(status0, model.Status) && model.DeletionTimestamp == nil {
 			if err := r.Status().Update(ctx, model); err != nil {
 				log.Error(err, "Failed to update Model status")
-				if err == nil { // Only override if no other error has occurred
-					resErr = err
-				}
+				resErr = errors.Join(resErr, err)
 			}
 		}
 	}()
@@ -121,7 +119,7 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (res 
 		}
 		if model.Spec.CacheProfile != "" {
 			if err := r.finalizeCache(ctx, model, modelConfig); err != nil {
-				if errors.Cause(err) == errReturnEarly {
+				if errors.Is(err, errReturnEarly) {
 					return ctrl.Result{}, nil
 				} else {
 					return ctrl.Result{}, fmt.Errorf("finalizing cache: %w", err)
@@ -135,7 +133,7 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (res 
 	if model.Spec.CacheProfile != "" {
 		cacheRes, err := r.reconcileCache(ctx, model, modelConfig)
 		if err != nil {
-			if errors.Cause(err) == errReturnEarly {
+			if errors.Is(err, errReturnEarly) {
 				return cacheRes, nil
 			}
 			return cacheRes, fmt.Errorf("reconciling cache: %w", err)

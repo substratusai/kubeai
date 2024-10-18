@@ -22,7 +22,6 @@ func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, c ModelCon
 
 	whisperModel := c.Source.huggingface.repo
 	if m.Spec.CacheProfile != "" {
-		// TODO: Verify loading from dir works.
 		whisperModel = modelCacheDir(m)
 	}
 

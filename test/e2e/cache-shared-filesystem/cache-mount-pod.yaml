@@ -13,4 +13,4 @@ spec:
   volumes:
   - name: models
     persistentVolumeClaim:
-      claimName: shared-model-cache-kindpv
+      claimName: shared-model-cache-e2e-test-kind-pv
