@@ -75,12 +75,12 @@ func (r *ModelReconciler) reconcileCache(ctx context.Context, model *kubeaiv1.Mo
 	// NOTE: .Spec.CacheProfile and .Spec.URL are immutable, so we don't need to check if they
 	// have changed in order to evict a stale cache.
 
-	job := &batchv1.Job{}
+	loadJob := &batchv1.Job{}
 	var jobExists bool
 	if err := r.Client.Get(ctx, types.NamespacedName{
 		Namespace: model.Namespace,
 		Name:      loadCacheJobName(model),
-	}, job); err != nil {
+	}, loadJob); err != nil {
 		if apierrors.IsNotFound(err) {
 			jobExists = false
 		} else {
@@ -99,17 +99,17 @@ func (r *ModelReconciler) reconcileCache(ctx context.Context, model *kubeaiv1.Mo
 	if pvcModelAnn.UID != string(model.UID) {
 		// Ensure the download job exists.
 		if !jobExists {
-			job = r.loadCacheJobForModel(model, cfg)
-			if err := ctrl.SetControllerReference(model, job, r.Scheme); err != nil {
+			loadJob = r.loadCacheJobForModel(model, cfg)
+			if err := ctrl.SetControllerReference(model, loadJob, r.Scheme); err != nil {
 				return ctrl.Result{}, fmt.Errorf("setting controller reference on job: %w", err)
 			}
-			if err := r.Create(ctx, job); err != nil {
+			if err := r.Create(ctx, loadJob); err != nil {
 				return ctrl.Result{}, fmt.Errorf("creating job: %w", err)
 			}
 			return ctrl.Result{}, errReturnEarly
 		}
 
-		if !k8sutils.IsJobCompleted(job) {
+		if !k8sutils.IsJobCompleted(loadJob) {
 			return ctrl.Result{}, errReturnEarly
 		}
 		if err := r.updatePVCModelAnnotation(ctx, pvc, model.Name, PVCModelAnnotationValue{
@@ -119,35 +119,34 @@ func (r *ModelReconciler) reconcileCache(ctx context.Context, model *kubeaiv1.Mo
 			return ctrl.Result{}, fmt.Errorf("setting pvc model annotation: %w", err)
 		}
 	}
+	model.Status.Cache.Loaded = pvcModelAnn.UID == string(model.UID)
 
 	if jobExists {
-		// Delete Job.
+		// Cache loading completed, delete Job to avoid accumulating a mess of completed Jobs.
 		// Use foreground deletion policy to ensure the Pods are deleted as well.
-		if err := r.Delete(ctx, job, client.PropagationPolicy(metav1.DeletePropagationForeground)); err != nil {
+		if err := r.Delete(ctx, loadJob, client.PropagationPolicy(metav1.DeletePropagationForeground)); err != nil {
 			return ctrl.Result{}, fmt.Errorf("deleting job: %w", err)
 		}
 	}
-
-	model.Status.Cache.Loaded = pvcModelAnn.UID == string(model.UID)
 
 	return ctrl.Result{}, nil
 }
 
 func (r *ModelReconciler) finalizeCache(ctx context.Context, model *kubeaiv1.Model, cfg ModelConfig) error {
 	pvc := &corev1.PersistentVolumeClaim{}
-	var pvcNotFound bool
+	var pvcExists bool
 	if err := r.Client.Get(ctx, types.NamespacedName{
 		Namespace: model.Namespace,
 		Name:      cachePVCName(model, cfg),
 	}, pvc); err != nil {
-		if apierrors.IsNotFound(err) {
-			pvcNotFound = true
-		} else {
+		if !apierrors.IsNotFound(err) {
 			return fmt.Errorf("getting cache PVC: %w", err)
 		}
+	} else {
+		pvcExists = true
 	}
 
-	if pvcNotFound || pvc.DeletionTimestamp != nil {
+	if !pvcExists || pvc.DeletionTimestamp != nil {
 		// If the PVC is not found or is already being deleted, delete all cache jobs and pods.
 		// No need trying to update the PVC annotations or perform other cleanup.
 		if err := r.deleteAllCacheJobsAndPods(ctx, model); err != nil {
@@ -162,12 +161,12 @@ func (r *ModelReconciler) finalizeCache(ctx context.Context, model *kubeaiv1.Mod
 	}
 
 	if controllerutil.ContainsFinalizer(model, kubeaiv1.ModelCacheEvictionFinalizer) {
-		job := &batchv1.Job{}
+		evictJob := &batchv1.Job{}
 		var jobExists bool
 		if err := r.Client.Get(ctx, types.NamespacedName{
 			Namespace: model.Namespace,
 			Name:      evictCacheJobName(model),
-		}, job); err != nil {
+		}, evictJob); err != nil {
 			if apierrors.IsNotFound(err) {
 				jobExists = false
 			} else {
@@ -188,7 +187,7 @@ func (r *ModelReconciler) finalizeCache(ctx context.Context, model *kubeaiv1.Mod
 			return errReturnEarly
 		} else {
 			// Wait for the Job to complete.
-			if !k8sutils.IsJobCompleted(job) {
+			if !k8sutils.IsJobCompleted(evictJob) {
 				return errReturnEarly
 			}
 

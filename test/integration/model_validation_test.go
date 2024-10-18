@@ -219,9 +219,7 @@ func TestModelValidation(t *testing.T) {
 			expErrContain: "cacheProfile is immutable",
 		},
 	}
-	for i := range cases {
-		// Copy case to avoid parallel access issues with the use of range.
-		c := cases[i]
+	for _, c := range cases {
 		t.Run(c.model.Name, func(t *testing.T) {
 			t.Parallel()
 
