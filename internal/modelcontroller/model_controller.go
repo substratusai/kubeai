@@ -18,15 +18,17 @@ package modelcontroller
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"reflect"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
 
+	batchv1 "k8s.io/api/batch/v1"
+
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -35,12 +37,13 @@ import (
 	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
 	"github.com/substratusai/kubeai/internal/config"
 	"github.com/substratusai/kubeai/internal/k8sutils"
-	utils "github.com/substratusai/kubeai/internal/k8sutils"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const modelReconcilerName = "kubeai-model-controller"
+const (
+	modelReconcilerName = "kubeai-model-controller"
+	serverContainerName = "server"
+)
 
 // ModelReconciler reconciles a Model object
 type ModelReconciler struct {
@@ -50,8 +53,10 @@ type ModelReconciler struct {
 	AllowPodAddressOverride bool
 	HuggingfaceSecretName   string
 	ResourceProfiles        map[string]config.ResourceProfile
+	CacheProfiles           map[string]config.CacheProfile
 	ModelServers            config.ModelServers
 	ModelServerPods         config.ModelServerPods
+	ModelLoaders            config.ModelLoaders
 	ModelRollouts           config.ModelRollouts
 }
 
@@ -64,7 +69,7 @@ type ModelReconciler struct {
 //+kubebuilder:rbac:groups="",resources=pods/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups="",resources=pods/finalizers,verbs=update
 
-func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (res ctrl.Result, resErr error) {
 	log := log.FromContext(ctx)
 	log.Info("Reconciling Model")
 
@@ -75,9 +80,16 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	status0 := model.Status.DeepCopy()
 
-	var shouldUpdate bool
+	defer func() {
+		if !reflect.DeepEqual(status0, model.Status) && model.DeletionTimestamp == nil {
+			if err := r.Status().Update(ctx, model); err != nil {
+				resErr = errors.Join(resErr, err)
+			}
+		}
+	}()
+
 	// Apply self labels based on features so that we can easily filter models.
-	shouldUpdate = r.applySelfLabels(model) || shouldUpdate
+	shouldUpdate := r.applySelfLabels(model)
 	// Apply replica bounds to handle cases where min/max replicas were updated but a scale event was not triggered.
 	if !model.Spec.AutoscalingDisabled {
 		shouldUpdate = r.applyAutoscalingReplicaBounds(model) || shouldUpdate
@@ -93,12 +105,58 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{}, fmt.Errorf("getting model profile: %w", err)
 	}
 
+	if model.DeletionTimestamp != nil {
+		// Get rid of all Pods for the Model.
+		// This should help avoid any issues with cache cleanup.
+		if err := r.DeleteAllOf(ctx, &corev1.Pod{}, client.InNamespace(model.Namespace), client.MatchingLabels{
+			kubeaiv1.PodModelLabel: model.Name,
+		}); err != nil {
+			if !apierrors.IsNotFound(err) {
+				return ctrl.Result{}, fmt.Errorf("deleting all pods: %w", err)
+			}
+		}
+		if model.Spec.CacheProfile != "" {
+			if err := r.finalizeCache(ctx, model, modelConfig); err != nil {
+				if errors.Is(err, errReturnEarly) {
+					return ctrl.Result{}, nil
+				} else {
+					return ctrl.Result{}, fmt.Errorf("finalizing cache: %w", err)
+				}
+			}
+		}
+
+		return ctrl.Result{}, nil
+	}
+
+	if model.Spec.CacheProfile != "" {
+		cacheRes, err := r.reconcileCache(ctx, model, modelConfig)
+		if err != nil {
+			if errors.Is(err, errReturnEarly) {
+				return cacheRes, nil
+			}
+			return cacheRes, fmt.Errorf("reconciling cache: %w", err)
+		}
+		if !res.IsZero() {
+			return cacheRes, nil
+		}
+	}
+
 	allPods := &corev1.PodList{}
 	if err := r.List(ctx, allPods, client.InNamespace(model.Namespace), client.MatchingLabels{
 		kubeaiv1.PodModelLabel: model.Name,
 	}); err != nil {
 		return ctrl.Result{}, fmt.Errorf("listing all node pools: %w", err)
 	}
+
+	// Summarize all pods.
+	var readyPods int32
+	for _, pod := range allPods.Items {
+		if k8sutils.PodIsReady(&pod) {
+			readyPods++
+		}
+	}
+	model.Status.Replicas.All = int32(len(allPods.Items))
+	model.Status.Replicas.Ready = readyPods
 
 	plan := r.calculatePodPlan(allPods, model, modelConfig)
 	if plan.containsActions() {
@@ -115,23 +173,6 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 	}
 
-	// Summarize all pods.
-	var readyPods int32
-	for _, pod := range allPods.Items {
-		if utils.PodIsReady(&pod) {
-			readyPods++
-		}
-	}
-
-	model.Status.Replicas.All = int32(len(allPods.Items))
-	model.Status.Replicas.Ready = readyPods
-
-	if !reflect.DeepEqual(status0, model.Status) {
-		if err := r.Status().Update(ctx, model); err != nil {
-			return ctrl.Result{}, fmt.Errorf("updating status: %w", err)
-		}
-	}
-
 	return ctrl.Result{}, nil
 }
 
@@ -141,611 +182,12 @@ func (r *ModelReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&kubeaiv1.Model{}).
 		Owns(&corev1.Pod{}).
+		Owns(&corev1.PersistentVolumeClaim{}).
+		Owns(&batchv1.Job{}).
 		Complete(r)
 }
 
-/*
-func (r *ModelReconciler) apply(ctx context.Context, model *kubeaiv1.Model, obj client.Object) error {
-	if err := ctrlutil.SetControllerReference(model, obj, r.Scheme); err != nil {
-		return fmt.Errorf("setting controller reference: %w", err)
-	}
-	return utils.ServerSideApply(ctx, r.Client, obj, modelReconcilerName)
-}
-*/
-
-func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, profile ModelConfig) *corev1.Pod {
-	lbs := labelsForModel(m)
-	ann := r.annotationsForModel(m)
-	if _, ok := ann[kubeaiv1.ModelPodPortAnnotation]; !ok {
-		// Set port to 8000 (vLLM) if not overwritten.
-		ann[kubeaiv1.ModelPodPortAnnotation] = "8000"
-	}
-
-	args := []string{
-		"--model=" + strings.TrimPrefix(m.Spec.URL, "hf://"),
-		"--served-model-name=" + m.Name,
-	}
-	args = append(args, m.Spec.Args...)
-
-	env := []corev1.EnvVar{
-		{
-			// TODO: Conditionally set this token based on whether
-			// huggingface is the model source.
-			Name: "HF_TOKEN",
-			ValueFrom: &corev1.EnvVarSource{
-				SecretKeyRef: &corev1.SecretKeySelector{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: r.HuggingfaceSecretName,
-					},
-					Key:      "token",
-					Optional: ptr.To(true),
-				},
-			},
-		},
-	}
-	var envKeys []string
-	for key := range m.Spec.Env {
-		envKeys = append(envKeys, key)
-	}
-	sort.Strings(envKeys)
-	for _, key := range envKeys {
-		env = append(env, corev1.EnvVar{
-			Name:  key,
-			Value: m.Spec.Env[key],
-		})
-	}
-
-	pod := &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace:   m.Namespace,
-			Labels:      lbs,
-			Annotations: ann,
-		},
-		Spec: corev1.PodSpec{
-			NodeSelector:       profile.NodeSelector,
-			Affinity:           profile.Affinity,
-			Tolerations:        profile.Tolerations,
-			RuntimeClassName:   profile.RuntimeClassName,
-			ServiceAccountName: r.ModelServerPods.ModelServiceAccountName,
-			SecurityContext:    r.ModelServerPods.ModelPodSecurityContext,
-			Containers: []corev1.Container{
-				{
-					Name:            "server",
-					Image:           profile.Image,
-					Command:         []string{"python3", "-m", "vllm.entrypoints.openai.api_server"},
-					Args:            args,
-					Env:             env,
-					SecurityContext: r.ModelServerPods.ModelContainerSecurityContext,
-					Resources: corev1.ResourceRequirements{
-						Requests: profile.Requests,
-						Limits:   profile.Limits,
-					},
-					Ports: []corev1.ContainerPort{
-						{
-							ContainerPort: 8000,
-							Protocol:      corev1.ProtocolTCP,
-							Name:          "http",
-						},
-					},
-					StartupProbe: &corev1.Probe{
-						// TODO: Decrease the default and make it configurable.
-						// Give the model 3 hours to start up.
-						FailureThreshold: 5400,
-						PeriodSeconds:    2,
-						TimeoutSeconds:   2,
-						SuccessThreshold: 1,
-						ProbeHandler: corev1.ProbeHandler{
-							HTTPGet: &corev1.HTTPGetAction{
-								Path: "/health",
-								Port: intstr.FromString("http"),
-							},
-						},
-					},
-					ReadinessProbe: &corev1.Probe{
-						FailureThreshold: 3,
-						PeriodSeconds:    10,
-						TimeoutSeconds:   2,
-						SuccessThreshold: 1,
-						ProbeHandler: corev1.ProbeHandler{
-							HTTPGet: &corev1.HTTPGetAction{
-								Path: "/health",
-								Port: intstr.FromString("http"),
-							},
-						},
-					},
-					LivenessProbe: &corev1.Probe{
-						FailureThreshold: 3,
-						PeriodSeconds:    30,
-						TimeoutSeconds:   3,
-						SuccessThreshold: 1,
-						ProbeHandler: corev1.ProbeHandler{
-							HTTPGet: &corev1.HTTPGetAction{
-								Path: "/health",
-								Port: intstr.FromString("http"),
-							},
-						},
-					},
-					VolumeMounts: []corev1.VolumeMount{
-						{
-							Name:      "dshm",
-							MountPath: "/dev/shm",
-						},
-					},
-				},
-			},
-			Volumes: []corev1.Volume{
-				{
-					Name: "dshm",
-					VolumeSource: corev1.VolumeSource{
-						EmptyDir: &corev1.EmptyDirVolumeSource{
-							Medium: corev1.StorageMediumMemory,
-							// TODO: Set size limit
-						},
-					},
-				},
-			},
-		},
-	}
-
-	return pod
-}
-
-func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, profile ModelConfig) *corev1.Pod {
-	lbs := labelsForModel(m)
-	ann := r.annotationsForModel(m)
-
-	if _, ok := ann[kubeaiv1.ModelPodPortAnnotation]; !ok {
-		// Set port to 8000 (vLLM) if not overwritten.
-		ann[kubeaiv1.ModelPodPortAnnotation] = "8000"
-	}
-
-	env := []corev1.EnvVar{
-		{
-			Name:  "OLLAMA_HOST",
-			Value: "0.0.0.0:8000",
-		},
-		{
-			// Ollama server typically operates in a 1:N server-to-model mode so it
-			// swaps models in and out of memory. In our case we are deploying 1:1
-			// model-to-server-pod so we want to always keep the model in memory.
-			Name: "OLLAMA_KEEP_ALIVE",
-			// Ollama treates 0 as "no keep alive" so we need to set a large value.
-			Value: "999999h",
-		},
-	}
-	var envKeys []string
-	for key := range m.Spec.Env {
-		envKeys = append(envKeys, key)
-	}
-	sort.Strings(envKeys)
-	for _, key := range envKeys {
-		env = append(env, corev1.EnvVar{
-			Name:  key,
-			Value: m.Spec.Env[key],
-		})
-	}
-
-	ollamaModelRef := strings.TrimPrefix(m.Spec.URL, "ollama://")
-
-	featuresMap := map[kubeaiv1.ModelFeature]struct{}{}
-	for _, f := range m.Spec.Features {
-		featuresMap[f] = struct{}{}
-	}
-
-	// Pull model and copy to rename it to Model.metadata.name.
-	// See Ollama issue for rename/copy workaround: https://github.com/ollama/ollama/issues/5914
-	// NOTE: The cp command should just create a pointer to the old model, not copy data
-	// (see https://github.com/ollama/ollama/issues/5914#issuecomment-2248168474).
-	// Use `ollama run` to send a single prompt to ollama to load the model into memory
-	// before the Pod becomes Ready. (by default it will load on the first prompt request).
-	startupProbeScript := fmt.Sprintf("/bin/ollama pull %s && /bin/ollama cp %s %s",
-		ollamaModelRef, ollamaModelRef, m.Name)
-	if _, ok := featuresMap[kubeaiv1.ModelFeatureTextGeneration]; ok {
-		// NOTE: Embedding text models do not support "ollama run":
-		//
-		// ollama run nomic-embed-text hey
-		// Error: "nomic-embed-text" does not support generate
-		//
-		startupProbeScript += fmt.Sprintf(" && /bin/ollama run %s hi", m.Name)
-	}
-
-	pod := &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace:   m.Namespace,
-			Labels:      lbs,
-			Annotations: ann,
-		},
-		Spec: corev1.PodSpec{
-			NodeSelector:       profile.NodeSelector,
-			Affinity:           profile.Affinity,
-			Tolerations:        profile.Tolerations,
-			RuntimeClassName:   profile.RuntimeClassName,
-			ServiceAccountName: r.ModelServerPods.ModelServiceAccountName,
-			SecurityContext:    r.ModelServerPods.ModelPodSecurityContext,
-			Containers: []corev1.Container{
-				{
-					Name:            "server",
-					Image:           profile.Image,
-					Args:            m.Spec.Args,
-					Env:             env,
-					SecurityContext: r.ModelServerPods.ModelContainerSecurityContext,
-					Resources: corev1.ResourceRequirements{
-						Requests: profile.Requests,
-						Limits:   profile.Limits,
-					},
-					Ports: []corev1.ContainerPort{
-						{
-							ContainerPort: 8000,
-							Protocol:      corev1.ProtocolTCP,
-							Name:          "http",
-						},
-					},
-					// Use a startup probe to pull the model because ollama server needs
-					// to be running already (`ollama pull` issues a HTTP request to the server).
-					// Example log from ollama server when a model is pulled:
-					// [GIN] 2024/08/20 - 15:12:28 | 200 |  981.561436ms |       127.0.0.1 | POST     "/api/pull"
-					StartupProbe: &corev1.Probe{
-						InitialDelaySeconds: 1,
-						PeriodSeconds:       3,
-						FailureThreshold:    10,
-						// Give the model pull 180 minutes to complete.
-						TimeoutSeconds: 60 * 180,
-						ProbeHandler: corev1.ProbeHandler{
-							Exec: &corev1.ExecAction{
-								Command: []string{
-									"bash", "-c",
-									startupProbeScript,
-								},
-							},
-						},
-					},
-					ReadinessProbe: &corev1.Probe{
-						FailureThreshold: 3,
-						// Will be delayed by the startup probe, so no need to delay here.
-						InitialDelaySeconds: 0,
-						PeriodSeconds:       10,
-						TimeoutSeconds:      2,
-						SuccessThreshold:    1,
-						ProbeHandler: corev1.ProbeHandler{
-							HTTPGet: &corev1.HTTPGetAction{
-								Path: "/",
-								Port: intstr.FromString("http"),
-							},
-						},
-					},
-					LivenessProbe: &corev1.Probe{
-						FailureThreshold:    3,
-						InitialDelaySeconds: 900,
-						TimeoutSeconds:      3,
-						PeriodSeconds:       30,
-						SuccessThreshold:    1,
-						ProbeHandler: corev1.ProbeHandler{
-							HTTPGet: &corev1.HTTPGetAction{
-								Path: "/",
-								Port: intstr.FromString("http"),
-							},
-						},
-					},
-					VolumeMounts: []corev1.VolumeMount{
-						{
-							Name:      "dshm",
-							MountPath: "/dev/shm",
-						},
-					},
-				},
-			},
-			Volumes: []corev1.Volume{
-				{
-					Name: "dshm",
-					VolumeSource: corev1.VolumeSource{
-						EmptyDir: &corev1.EmptyDirVolumeSource{
-							Medium: corev1.StorageMediumMemory,
-							// TODO: Set size limit
-						},
-					},
-				},
-			},
-		},
-	}
-
-	return pod
-
-}
-
-func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, profile ModelConfig) *corev1.Pod {
-	lbs := labelsForModel(m)
-	ann := r.annotationsForModel(m)
-	if _, ok := ann[kubeaiv1.ModelPodPortAnnotation]; !ok {
-		ann[kubeaiv1.ModelPodPortAnnotation] = "8000"
-	}
-
-	args := []string{}
-	args = append(args, m.Spec.Args...)
-
-	env := []corev1.EnvVar{
-		{
-			Name:  "WHISPER__MODEL",
-			Value: strings.TrimPrefix(m.Spec.URL, "hf://"),
-		},
-		{
-			Name:  "ENABLE_UI",
-			Value: "false",
-		},
-		{
-			// TODO: Conditionally set this token based on whether
-			// huggingface is the model source.
-			Name: "HF_TOKEN",
-			ValueFrom: &corev1.EnvVarSource{
-				SecretKeyRef: &corev1.SecretKeySelector{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: r.HuggingfaceSecretName,
-					},
-					Key:      "token",
-					Optional: ptr.To(true),
-				},
-			},
-		},
-	}
-	var envKeys []string
-	for key := range m.Spec.Env {
-		envKeys = append(envKeys, key)
-	}
-	sort.Strings(envKeys)
-	for _, key := range envKeys {
-		env = append(env, corev1.EnvVar{
-			Name:  key,
-			Value: m.Spec.Env[key],
-		})
-	}
-
-	pod := &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace:   m.Namespace,
-			Labels:      lbs,
-			Annotations: ann,
-		},
-		Spec: corev1.PodSpec{
-			NodeSelector:       profile.NodeSelector,
-			Affinity:           profile.Affinity,
-			Tolerations:        profile.Tolerations,
-			RuntimeClassName:   profile.RuntimeClassName,
-			ServiceAccountName: r.ModelServerPods.ModelServiceAccountName,
-			SecurityContext:    r.ModelServerPods.ModelPodSecurityContext,
-			Containers: []corev1.Container{
-				{
-					Name:            "server",
-					Image:           profile.Image,
-					Args:            args,
-					Env:             env,
-					SecurityContext: r.ModelServerPods.ModelContainerSecurityContext,
-					Resources: corev1.ResourceRequirements{
-						Requests: profile.Requests,
-						Limits:   profile.Limits,
-					},
-					Ports: []corev1.ContainerPort{
-						{
-							ContainerPort: 8000,
-							Protocol:      corev1.ProtocolTCP,
-							Name:          "http",
-						},
-					},
-					StartupProbe: &corev1.Probe{
-						// Give the model 30 minutes to start up.
-						FailureThreshold: 900,
-						PeriodSeconds:    2,
-						TimeoutSeconds:   2,
-						SuccessThreshold: 1,
-						ProbeHandler: corev1.ProbeHandler{
-							HTTPGet: &corev1.HTTPGetAction{
-								Path: "/health",
-								Port: intstr.FromString("http"),
-							},
-						},
-					},
-					ReadinessProbe: &corev1.Probe{
-						FailureThreshold: 3,
-						PeriodSeconds:    10,
-						TimeoutSeconds:   2,
-						SuccessThreshold: 1,
-						ProbeHandler: corev1.ProbeHandler{
-							HTTPGet: &corev1.HTTPGetAction{
-								Path: "/health",
-								Port: intstr.FromString("http"),
-							},
-						},
-					},
-					LivenessProbe: &corev1.Probe{
-						FailureThreshold: 3,
-						PeriodSeconds:    30,
-						TimeoutSeconds:   3,
-						SuccessThreshold: 1,
-						ProbeHandler: corev1.ProbeHandler{
-							HTTPGet: &corev1.HTTPGetAction{
-								Path: "/health",
-								Port: intstr.FromString("http"),
-							},
-						},
-					},
-					VolumeMounts: []corev1.VolumeMount{
-						{
-							Name:      "dshm",
-							MountPath: "/dev/shm",
-						},
-					},
-				},
-			},
-			Volumes: []corev1.Volume{
-				{
-					Name: "dshm",
-					VolumeSource: corev1.VolumeSource{
-						EmptyDir: &corev1.EmptyDirVolumeSource{
-							Medium: corev1.StorageMediumMemory,
-						},
-					},
-				},
-			},
-		},
-	}
-
-	return pod
-}
-
-func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, profile ModelConfig) *corev1.Pod {
-	lbs := labelsForModel(m)
-	ann := r.annotationsForModel(m)
-
-	args := []string{
-		"v2",
-	}
-	args = append(args, m.Spec.Args...)
-
-	if _, ok := ann[kubeaiv1.ModelPodPortAnnotation]; !ok {
-		ann[kubeaiv1.ModelPodPortAnnotation] = "8000"
-	}
-
-	env := []corev1.EnvVar{
-		{
-			Name: "INFINITY_MODEL_ID",
-			// TODO: infinity supports multiple models, separate by comma.
-			Value: strings.TrimPrefix(m.Spec.URL, "hf://"),
-		},
-		{
-			Name:  "INFINITY_SERVED_MODEL_NAME",
-			Value: m.Name,
-		},
-		{
-			Name:  "INFINITY_URL_PREFIX",
-			Value: "/v1",
-		},
-		{
-			Name: "INFINITY_ENGINE",
-			// TODO: switch between optimum backend (cpu), nvidia/amd (torch), inf2 (inferentia) based on what is available.
-			Value: "torch",
-		},
-		{
-			Name:  "INFINITY_PORT",
-			Value: "8000",
-		},
-		{
-			// TODO: Conditionally set this token based on whether
-			// huggingface is the model source.
-			Name: "HF_TOKEN",
-			ValueFrom: &corev1.EnvVarSource{
-				SecretKeyRef: &corev1.SecretKeySelector{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: r.HuggingfaceSecretName,
-					},
-					Key:      "token",
-					Optional: ptr.To(true),
-				},
-			},
-		},
-	}
-	var envKeys []string
-	for key := range m.Spec.Env {
-		envKeys = append(envKeys, key)
-	}
-	sort.Strings(envKeys)
-	for _, key := range envKeys {
-		env = append(env, corev1.EnvVar{
-			Name:  key,
-			Value: m.Spec.Env[key],
-		})
-	}
-
-	pod := &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace:   m.Namespace,
-			Labels:      lbs,
-			Annotations: ann,
-		},
-		Spec: corev1.PodSpec{
-			NodeSelector:       profile.NodeSelector,
-			Affinity:           profile.Affinity,
-			Tolerations:        profile.Tolerations,
-			RuntimeClassName:   profile.RuntimeClassName,
-			ServiceAccountName: r.ModelServerPods.ModelServiceAccountName,
-			SecurityContext:    r.ModelServerPods.ModelPodSecurityContext,
-			Containers: []corev1.Container{
-				{
-					Name:  "server",
-					Image: profile.Image,
-					Args:  args,
-					Env:   env,
-					Resources: corev1.ResourceRequirements{
-						Requests: profile.Requests,
-						Limits:   profile.Limits,
-					},
-
-					Ports: []corev1.ContainerPort{
-						{
-							ContainerPort: 8000,
-							Protocol:      corev1.ProtocolTCP,
-							Name:          "http",
-						},
-					},
-					StartupProbe: &corev1.Probe{
-						// TODO: Decrease the default and make it configurable.
-						// Give the model 20 minutes to start up.
-						FailureThreshold: 600,
-						PeriodSeconds:    2,
-						TimeoutSeconds:   2,
-						SuccessThreshold: 1,
-						ProbeHandler: corev1.ProbeHandler{
-							HTTPGet: &corev1.HTTPGetAction{
-								Path: "/health",
-								Port: intstr.FromString("http"),
-							},
-						},
-					},
-					ReadinessProbe: &corev1.Probe{
-						FailureThreshold: 3,
-						PeriodSeconds:    10,
-						TimeoutSeconds:   2,
-						SuccessThreshold: 1,
-						ProbeHandler: corev1.ProbeHandler{
-							HTTPGet: &corev1.HTTPGetAction{
-								Path: "/health",
-								Port: intstr.FromString("http"),
-							},
-						},
-					},
-					LivenessProbe: &corev1.Probe{
-						FailureThreshold: 3,
-						PeriodSeconds:    30,
-						TimeoutSeconds:   3,
-						SuccessThreshold: 1,
-						ProbeHandler: corev1.ProbeHandler{
-							HTTPGet: &corev1.HTTPGetAction{
-								Path: "/health",
-								Port: intstr.FromString("http"),
-							},
-						},
-					},
-					VolumeMounts: []corev1.VolumeMount{
-						{
-							Name:      "dshm",
-							MountPath: "/dev/shm",
-						},
-					},
-				},
-			},
-			Volumes: []corev1.Volume{
-				{
-					Name: "dshm",
-					VolumeSource: corev1.VolumeSource{
-						EmptyDir: &corev1.EmptyDirVolumeSource{
-							Medium: corev1.StorageMediumMemory,
-							// TODO: Set size limit
-						},
-					},
-				},
-			},
-		},
-	}
-
-	return pod
-}
+var errReturnEarly = fmt.Errorf("return early")
 
 func labelsForModel(m *kubeaiv1.Model) map[string]string {
 	engineLowerCase := strings.ToLower(m.Spec.Engine)
@@ -781,12 +223,72 @@ func (r *ModelReconciler) annotationsForModel(m *kubeaiv1.Model) map[string]stri
 }
 
 type ModelConfig struct {
+	config.CacheProfile
 	config.ResourceProfile
-	Image string
+	Image  string
+	Source modelSource
+}
+
+type modelSource struct {
+	typ         modelSourceType
+	huggingface huggingfaceModelSource
+	ollama      ollamaModelSource
+}
+
+type modelSourceType string
+
+const (
+	modelSourceTypeHuggingface modelSourceType = "huggingface"
+	modelSourceTypeOLlama      modelSourceType = "ollama"
+)
+
+type huggingfaceModelSource struct {
+	repo string
+}
+type ollamaModelSource struct {
+	ref string
+}
+
+func parseModelSource(url string) (modelSource, error) {
+	const (
+		huggingfacePrefix = "hf://"
+		ollamaPrefix      = "ollama://"
+	)
+	switch {
+	case strings.HasPrefix(url, huggingfacePrefix):
+		return modelSource{
+			typ: modelSourceTypeHuggingface,
+			huggingface: huggingfaceModelSource{
+				repo: strings.TrimPrefix(url, huggingfacePrefix),
+			},
+		}, nil
+	case strings.HasPrefix(url, ollamaPrefix):
+		return modelSource{
+			typ: modelSourceTypeOLlama,
+			ollama: ollamaModelSource{
+				ref: strings.TrimPrefix(url, ollamaPrefix),
+			},
+		}, nil
+	}
+	return modelSource{}, fmt.Errorf("unrecognized model source: %q", url)
 }
 
 func (r *ModelReconciler) getModelConfig(model *kubeaiv1.Model) (ModelConfig, error) {
 	var result ModelConfig
+
+	src, err := parseModelSource(model.Spec.URL)
+	if err != nil {
+		return result, fmt.Errorf("parsing model source: %w", err)
+	}
+	result.Source = src
+
+	if model.Spec.CacheProfile != "" {
+		cacheProfile, ok := r.CacheProfiles[model.Spec.CacheProfile]
+		if !ok {
+			return result, fmt.Errorf("cache profile not found: %q", model.Spec.CacheProfile)
+		}
+		result.CacheProfile = cacheProfile
+	}
 
 	split := strings.Split(model.Spec.ResourceProfile, ":")
 	if len(split) != 2 {
@@ -917,28 +419,4 @@ func (r *ModelReconciler) applySelfLabels(model *kubeaiv1.Model) bool {
 	}
 
 	return changed
-}
-
-func resourcesEqual(a, b corev1.ResourceList) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for key, quantity := range a {
-		if q, ok := b[key]; !ok || !q.Equal(quantity) {
-			return false
-		}
-	}
-	return true
-}
-
-func selectorsEqual(a, b map[string]string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for key, val := range a {
-		if v, ok := b[key]; !ok || v != val {
-			return false
-		}
-	}
-	return true
 }

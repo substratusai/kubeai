@@ -21,11 +21,16 @@ import (
 )
 
 // ModelSpec defines the desired state of Model.
+// +kubebuilder:validation:XValidation:rule="!has(self.cacheProfile) || self.url.startsWith(\"hf://\")", message="cacheProfile is only supported with a huggingface url (\"hf://...\") at the moment."
+// +kubebuilder:validation:XValidation:rule="!has(self.maxReplicas) || self.minReplicas <= self.maxReplicas", message="minReplicas should be less than or equal to maxReplicas."
 type ModelSpec struct {
 	// URL of the model to be served.
 	// Currently only the following formats are supported:
 	// For VLLM & FasterWhisper engines: "hf://<model-repo>/<model-name>"
 	// For OLlama engine: "ollama://<model>
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf", message="url is immutable."
+	// +kubebuilder:validation:XValidation:rule="self.startsWith(\"hf://\") || self.startsWith(\"ollama://\")", message="url must start with \"hf://\" or \"ollama://\" and not be empty."
 	URL string `json:"url"`
 
 	// Features that the model supports.
@@ -34,6 +39,7 @@ type ModelSpec struct {
 
 	// Engine to be used for the server process.
 	// +kubebuilder:validation:Enum=OLlama;VLLM;FasterWhisper;Infinity
+	// +kubebuilder:validation:Required
 	Engine string `json:"engine"`
 
 	// ResourceProfile required to serve the model.
@@ -41,6 +47,11 @@ type ModelSpec struct {
 	// Example: "nvidia-gpu-l4:2" - 2x NVIDIA L4 GPUs.
 	// Must be a valid ResourceProfile defined in the system config.
 	ResourceProfile string `json:"resourceProfile,omitempty"`
+
+	// CacheProfile to be used for caching model artifacts.
+	// Must be a valid CacheProfile defined in the system config.
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf", message="cacheProfile is immutable."
+	CacheProfile string `json:"cacheProfile,omitempty"`
 
 	// Image to be used for the server process.
 	// Will be set from ResourceProfile + Engine if not specified.
@@ -110,11 +121,16 @@ const (
 // ModelStatus defines the observed state of Model.
 type ModelStatus struct {
 	Replicas ModelStatusReplicas `json:"replicas,omitempty"`
+	Cache    *ModelStatusCache   `json:"cache,omitempty"`
 }
 
 type ModelStatusReplicas struct {
 	All   int32 `json:"all"`
 	Ready int32 `json:"ready"`
+}
+
+type ModelStatusCache struct {
+	Loaded bool `json:"loaded"`
 }
 
 // +kubebuilder:object:root=true

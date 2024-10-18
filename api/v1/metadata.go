@@ -14,4 +14,10 @@ const (
 	// Use in conjunction with --allow-pod-address-override for development purposes.
 	ModelPodIPAnnotation   = "model-pod-ip"
 	ModelPodPortAnnotation = "model-pod-port"
+
+	ModelCacheEvictionFinalizer = "kubeai.org/cache-eviction"
 )
+
+func PVCModelAnnotation(modelName string) string {
+	return "models.kubeai.org/" + modelName
+}

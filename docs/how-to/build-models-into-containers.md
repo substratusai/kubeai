@@ -14,7 +14,7 @@ Build and push image. Note: building (downloading base image & model) and pushin
 
 ```bash
 git clone https://github.com/substratusai/kubeai
-cd ./kubeai/images/ollama-builtin
+cd ./kubeai/examples/ollama-builtin
 
 docker build --build-arg MODEL_URL=$MODEL_URL -t $IMAGE .
 docker push $IMAGE
