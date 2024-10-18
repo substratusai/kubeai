@@ -54,6 +54,9 @@ spec:
                   CacheProfile to be used for caching model artifacts.
                   Must be a valid CacheProfile defined in the system config.
                 type: string
+                x-kubernetes-validations:
+                - message: cacheProfile is immutable.
+                  rule: self == oldSelf
               engine:
                 description: Engine to be used for the server process.
                 enum:
@@ -139,6 +142,11 @@ spec:
                   For VLLM & FasterWhisper engines: "hf://<model-repo>/<model-name>"
                   For OLlama engine: "ollama://<model>
                 type: string
+                x-kubernetes-validations:
+                - message: url is immutable.
+                  rule: self == oldSelf
+                - message: url must start with "hf://" or "ollama://" and not be empty.
+                  rule: self.startsWith("hf://") || self.startsWith("ollama://")
             required:
             - engine
             - features
@@ -146,6 +154,15 @@ spec:
             - targetRequests
             - url
             type: object
+            x-kubernetes-validations:
+            - message: cacheProfile is only supported with a huggingface url ("hf://...")
+                at the moment.
+              rule: '!has(self.cacheProfile) || self.url.startsWith("hf://")'
+            - message: replicas should be in the range minReplicas..maxReplicas.
+              rule: '!has(self.replicas) || (self.minReplicas <= self.replicas) &&
+                (!has(self.maxReplicas) || self.replicas <= self.maxReplicas)'
+            - message: minReplicas should be less than or equal to maxReplicas.
+              rule: '!has(self.maxReplicas) || self.minReplicas <= self.maxReplicas'
           status:
             description: ModelStatus defines the observed state of Model.
             properties:

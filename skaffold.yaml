@@ -55,21 +55,35 @@ profiles:
         valuesFiles:
         - ./charts/kubeai/values-gke.yaml
 
-- name: kubeai-only-rapid-scaling
-  deploy:
-    helm:
-      releases:
-      - name: kubeai
-        chartPath: ./charts/kubeai
-        setValueTemplates:
-          openwebui.enabled: false
-          modelAutoscaling.interval: 1s
-          modelAutoscaling.timeWindow: 30s
-- name: e2e-test-cache-shared-filesystem
+- name: e2e-test-default
   deploy:
     helm:
       releases:
       - name: kubeai
         chartPath: ./charts/kubeai
         valuesFiles:
-        - ./test/e2e/cache-shared-filesystem/values.yaml
+        - ./test/e2e/common-values.yaml
+        setValueTemplates:
+          openwebui.enabled: false
+- name: e2e-test-autoscaler-restart
+  deploy:
+    helm:
+      releases:
+      - name: kubeai
+        chartPath: ./charts/kubeai
+        valuesFiles:
+        - ./test/e2e/common-values.yaml
+        setValueTemplates:
+          openwebui.enabled: false
+          modelAutoscaling.interval: 1s
+          modelAutoscaling.timeWindow: 30s
+- name: e2e-test-engine
+  deploy:
+    helm:
+      releases:
+      - name: kubeai
+        chartPath: ./charts/kubeai
+        valuesFiles:
+        - ./test/e2e/common-values.yaml
+        setValueTemplates:
+          openwebui.enabled: false

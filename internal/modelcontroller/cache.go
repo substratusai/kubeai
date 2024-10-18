@@ -72,8 +72,8 @@ func (r *ModelReconciler) reconcileCache(ctx context.Context, model *kubeaiv1.Mo
 		}
 
 	}
-	// TODO: Ensure that Model.spec.cacheProfile is immutable after creation to avoid
-	// confusion on when to cleanup.
+	// NOTE: .Spec.CacheProfile and .Spec.URL are immutable, so we don't need to check if they
+	// have changed in order to evict a stale cache.
 
 	job := &batchv1.Job{}
 	var jobExists bool

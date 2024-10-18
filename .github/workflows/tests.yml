@@ -20,14 +20,14 @@ jobs:
       - name: Run integration tests
         run: make test-integration
 
-  e2e:
+  e2e-general:
     runs-on: ubuntu-latest
     # NOTE: Uncomment if we start getting limited on number of concurrent jobs
     # (due to rapid pushes, etc).
     #needs: unit-and-integration # No use in running e2e tests if integration tests fail.
     strategy:
       matrix:
-        testcase: ["quickstart", "openai-python-client", "faster-whisper", "autoscaler-restart", "cache-shared-filesystem"]
+        testcase: ["quickstart", "openai-python-client", "autoscaler-restart", "cache-shared-filesystem"]
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -49,3 +49,35 @@ jobs:
 
       - name: Run the e2e testcase
         run: make test-e2e-${{ matrix.testcase }}
+
+  e2e-engines:
+    runs-on: ubuntu-latest
+    # NOTE: Uncomment if we start getting limited on number of concurrent jobs
+    # (due to rapid pushes, etc).
+    #needs: unit-and-integration # No use in running e2e tests if integration tests fail.
+    strategy:
+      matrix:
+        engine: ["FasterWhisper"] # "VLLM", "Infinity", "OLlama"
+        # Run each test case with and without caching.
+        cacheProfile: ["", "kindpv"]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install kind
+        run: |
+          curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.24.0/kind-linux-amd64
+          chmod +x ./kind
+          sudo mv ./kind /usr/local/bin/kind
+
+      - name: Install helm
+        run: |
+          curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+          chmod 700 get_helm.sh
+          ./get_helm.sh
+
+      - name: Start kind cluster
+        run: kind create cluster
+
+      - name: Run the e2e testcase
+        run: make test-e2e-engine ENGINE=${{ matrix.engine }} CACHE_PROFILE=${{ matrix.cacheProfile }}

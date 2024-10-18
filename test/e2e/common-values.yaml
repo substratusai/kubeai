@@ -1,7 +1,4 @@
-openwebui:
-  enabled: false
-
 cacheProfiles:
-  kindpv:
+  e2e-test-kind-pv:
     sharedFilesystem:
       persistentVolumeName: "kind-hostpath"
