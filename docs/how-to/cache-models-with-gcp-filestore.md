@@ -21,7 +21,7 @@ Open the cloud console quotas page: https://console.cloud.google.com/iam-admin/q
 
 Ensure that you have at least 2.5Tb of `PremiumStorageGbPerRegion` quota in the region where your cluster is deployed.
 
-![Premium Storage Quota Screenshot](../screenshots/gcp-quota-premium-storage-gb-per-region)
+![Premium Storage Quota Screenshot](/screenshots/gcp-quota-premium-storage-gb-per-region.png)
 
 </details>
 <br>
