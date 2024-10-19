@@ -33,8 +33,7 @@ modelServers:
 
 modelLoaders:
   huggingface:
-    # TODO: Update image to the one built with GH Actions.
-    image: "us-central1-docker.pkg.dev/substratus-dev/default/huggingface-model-downloader:v0.0.1"
+    image: "substratusai/huggingface-model-loader:main"
 
 modelServerPods:
   # Security Context for the model pods
