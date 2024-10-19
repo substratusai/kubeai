@@ -33,7 +33,7 @@ modelServers:
 
 modelLoaders:
   huggingface:
-    image: "substratusai/huggingface-model-loader:main"
+    image: "substratusai/huggingface-model-loader:v0.9.0"
 
 modelServerPods:
   # Security Context for the model pods
