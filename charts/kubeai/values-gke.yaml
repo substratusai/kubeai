@@ -22,6 +22,7 @@ resourceProfiles:
     nodeSelector:
       cloud.google.com/gke-tpu-accelerator: tpu-v5-lite-podslice
       cloud.google.com/gke-tpu-topology: "1x1"
+      cloud.google.com/gke-spot: "true"
   google-tpu-v5e-2x2:
     imageName: google-tpu
     limits:
@@ -29,6 +30,7 @@ resourceProfiles:
     nodeSelector:
       cloud.google.com/gke-tpu-accelerator: tpu-v5-lite-podslice
       cloud.google.com/gke-tpu-topology: "2x2"
+      cloud.google.com/gke-spot: "true"
   google-tpu-v5e-2x4:
     imageName: google-tpu
     limits:
@@ -36,6 +38,7 @@ resourceProfiles:
     nodeSelector:
       cloud.google.com/gke-tpu-accelerator: tpu-v5-lite-podslice
       cloud.google.com/gke-tpu-topology: "2x4"
+      cloud.google.com/gke-spot: "true"
 
 cacheProfiles:
   standard-filestore:
