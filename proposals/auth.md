@@ -15,7 +15,7 @@ The groups associated with a request are passed in a trusted header.
 
 ```bash
 curl http://localhost:8000/openai/v1/completions \
-    -H "X-Auth-Groups: group-a, group-b"
+    -H "X-Auth-Groups: grp-a, grp-b"
 ```
 
 The groups that are allowed to access a given model are configured as labels on the Model.
@@ -25,6 +25,6 @@ kind: Model
 metadata:
   name: llama-3.2
   labels:
-    auth.kubeai.org/group-a: user
-    auth.kubeai.org/group-b: user
+    auth.kubeai.org/grp-a: user
+    auth.kubeai.org/grp-c: user
 ```
