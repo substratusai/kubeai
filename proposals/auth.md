@@ -1,5 +1,7 @@
 # Auth
 
+## Implementation Option 1: Auth Labels
+
 The KubeAI system is configured to trust a configured header.
 
 ```yaml
@@ -27,4 +29,26 @@ metadata:
   labels:
     auth.kubeai.org/grp-a: user
     auth.kubeai.org/grp-c: user
+```
+
+## Implementation Option 2: General Labels
+
+In this implementation, a label selector is passed in HTTP headers.
+
+```bash
+curl http://localhost:8000/openai/v1/completions \
+    -H "X-Selector: key1=value1"
+
+curl http://localhost:8000/openai/v1/models \
+    -H "X-Selector: key1=value1"
+```
+
+Models just need to have the labels set.
+
+```yaml
+kind: Model
+metadata:
+  name: llama-3.2
+  labels:
+    key1: value1
 ```
