@@ -17,6 +17,8 @@ env:
 jobs:
   kubeai:
     runs-on: ubuntu-latest
+    # Timeout to address Github actions stuck scenarios.
+    timeout-minutes: 60
     # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
     permissions:
       contents: read
