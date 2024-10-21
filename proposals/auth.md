@@ -32,8 +32,8 @@ kind: Model
 metadata:
   name: llama-3.2
   labels:
-    auth.kubeai.org/grp-a: user
-    auth.kubeai.org/grp-c: user
+    auth.kubeai.org/grp-a: <role>
+    auth.kubeai.org/grp-c: <role>
 ```
 
 ## Implementation Option 2: General Label Selector
