@@ -42,7 +42,7 @@ metadata:
 
 In this implementation, label selectors are used to filter models. The decision of which labels to use are up to the architects of the system that KubeAI is a part of. These label selectors could be enforced by a server that is an intermediary between KubeAI and the end users.
 
-![Auth with Label Selector](../diagrams/auth-with-label-selector.excalidraw.png)
+![Auth with Label Selector](./diagrams/auth-with-label-selector.excalidraw.png)
 
 ```bash
 curl http://localhost:8000/openai/v1/completions \
