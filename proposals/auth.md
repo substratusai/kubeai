@@ -5,6 +5,8 @@ some users only have access to some models.
 
 ## Implementation Option 1: Auth Labels
 
+In this implementation, KubeAI has well-known labels that correspond to groups that are allowed to access models.
+
 The KubeAI system is configured to trust a configured header.
 
 ```yaml
@@ -36,7 +38,9 @@ metadata:
 
 ## Implementation Option 2: General Labels
 
-In this implementation, a label selector is passed in HTTP headers.
+**CURRENT PREFERENCE** (Unless there is a reason to introduce auth-specific configuration.)
+
+In this implementation, label selectors are used to filter models. The decision of which labels to use are up to the architects of the system that KubeAI is a part of. These label selectors could be enforced by a server that is an intermediary between KubeAI and the end users.
 
 ![Auth with Label Selector](../diagrams/auth-with-label-selector.excalidraw.png)
 
