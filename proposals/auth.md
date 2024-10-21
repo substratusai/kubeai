@@ -1,5 +1,8 @@
 # Auth
 
+The goal of this proposal is to allow KubeAI to be used in a multitenancy environment where
+some users only have access to some models.
+
 ## Implementation Option 1: Auth Labels
 
 The KubeAI system is configured to trust a configured header.
@@ -34,6 +37,8 @@ metadata:
 ## Implementation Option 2: General Labels
 
 In this implementation, a label selector is passed in HTTP headers.
+
+![Auth with Label Selector](../diagrams/auth-with-label-selector.excalidraw.png)
 
 ```bash
 curl http://localhost:8000/openai/v1/completions \
