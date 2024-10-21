@@ -36,7 +36,7 @@ metadata:
     auth.kubeai.org/grp-c: user
 ```
 
-## Implementation Option 2: General Labels
+## Implementation Option 2: General Label Selector
 
 **CURRENT PREFERENCE** (Unless there is a reason to introduce auth-specific configuration.)
 
