@@ -75,6 +75,19 @@ resourceProfiles:
         operator: "Equal"
         value: "present"
         effect: "NoSchedule"
+  nvidia-gpu-l40s:
+    imageName: "nvidia-gpu"
+    limits:
+      nvidia.com/gpu: "1"
+    requests:
+      nvidia.com/gpu: "1"
+      cpu: "6"
+      memory: "24Gi"
+    tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Equal"
+        value: "present"
+        effect: "NoSchedule"
   nvidia-gpu-h100:
     imageName: "nvidia-gpu"
     limits:
