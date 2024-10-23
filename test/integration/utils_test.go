@@ -150,7 +150,7 @@ func sendOpenAIInferenceRequest(t *testing.T, modelName string, selectorHeaders 
 	require.NoError(t, err, msg)
 	for _, selector := range selectorHeaders {
 		t.Logf("Using selector: %s", selector)
-		req.Header.Add("X-Selector", selector)
+		req.Header.Add("X-Label-Selector", selector)
 	}
 
 	res, err := testHTTPClient.Do(req)
@@ -174,7 +174,7 @@ func sendOpenAIListModelsRequest(t *testing.T, selectorHeaders []string, expCode
 	req, err := http.NewRequest(http.MethodGet, "http://localhost:8000/openai/v1/models", nil)
 	require.NoError(t, err, msg)
 	for _, selector := range selectorHeaders {
-		req.Header.Add("X-Selector", selector)
+		req.Header.Add("X-Label-Selector", selector)
 	}
 
 	res, err := testHTTPClient.Do(req)
