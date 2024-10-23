@@ -257,7 +257,7 @@ type testModelInterface struct {
 	models map[string]string
 }
 
-func (t *testModelInterface) ModelFound(ctx context.Context, model string, selector []string) (bool, error) {
+func (t *testModelInterface) LookupModel(ctx context.Context, model string, selector []string) (bool, error) {
 	_, ok := t.models[model]
 	return ok, nil
 }

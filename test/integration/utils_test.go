@@ -150,7 +150,7 @@ func sendOpenAIInferenceRequest(t *testing.T, modelName string, selectorHeaders 
 	require.NoError(t, err, msg)
 	for _, selector := range selectorHeaders {
 		t.Logf("Using selector: %s", selector)
-		req.Header.Add("X-Label-Selector", selector)
+		req.Header.Add("X-Selector", selector)
 	}
 
 	res, err := testHTTPClient.Do(req)
@@ -174,7 +174,7 @@ func sendOpenAIListModelsRequest(t *testing.T, selectorHeaders []string, expCode
 	req, err := http.NewRequest(http.MethodGet, "http://localhost:8000/openai/v1/models", nil)
 	require.NoError(t, err, msg)
 	for _, selector := range selectorHeaders {
-		req.Header.Add("X-Label-Selector", selector)
+		req.Header.Add("X-Selector", selector)
 	}
 
 	res, err := testHTTPClient.Do(req)
@@ -221,6 +221,7 @@ func setJobCompletedStatus(job *batchv1.Job) {
 	})
 }
 
+// logPods is useful for debugging why a test case is failing.
 func logPods(t *testing.T) {
 	podList := &corev1.PodList{}
 	require.NoError(t, testK8sClient.List(testCtx, podList, client.InNamespace(testNS)))
