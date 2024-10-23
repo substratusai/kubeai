@@ -22,7 +22,7 @@ type proxyRequest struct {
 	// in order to determine the model.
 	body []byte
 
-	// metadata:
+	selectors []string
 
 	id      string
 	status  int
@@ -38,14 +38,15 @@ func newProxyRequest(r *http.Request) *proxyRequest {
 	}
 
 	return pr
-
 }
 
-// parseModel attempts to determine the model from the request.
+// parse attempts to determine the model from the request.
 // It first checks the "X-Model" header, and if that is not set, it
 // attempts to unmarshal the request body as JSON and extract the
 // .model field.
-func (pr *proxyRequest) parseModel() error {
+func (pr *proxyRequest) parse() error {
+	pr.selectors = pr.r.Header.Values("X-Selector")
+
 	// Try to get the model from the header first
 	if headerModel := pr.r.Header.Get("X-Model"); headerModel != "" {
 		pr.model = headerModel

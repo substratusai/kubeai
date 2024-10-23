@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -22,14 +23,27 @@ func (h *Handler) getModels(w http.ResponseWriter, r *http.Request) {
 		features = []string{kubeaiv1.ModelFeatureTextGeneration}
 	}
 
+	var listOpts []client.ListOption
+	headerSelectors := r.Header.Values("X-Selector")
+	for _, sel := range headerSelectors {
+		parsedSel, err := labels.Parse(sel)
+		if err != nil {
+			sendErrorResponse(w, http.StatusBadRequest, "failed to parse label selector: %v", err)
+			return
+		}
+		listOpts = append(listOpts, client.MatchingLabelsSelector{Selector: parsedSel})
+	}
+
 	var k8sModels []kubeaiv1.Model
 	k8sModelNames := map[string]struct{}{}
 	for _, feature := range features {
-		// NOTE(nstogner): Could not find a way to do an OR query with the client,
+		// NOTE: At time of writing an OR query is not supported with the
+		// Kubernetes API server
 		// so we just do multiple queries and merge the results.
 		labelSelector := client.MatchingLabels{kubeaiv1.ModelFeatureLabelDomain + "/" + feature: "true"}
 		list := &kubeaiv1.ModelList{}
-		if err := h.K8sClient.List(r.Context(), list, labelSelector); err != nil {
+		opts := append([]client.ListOption{labelSelector}, listOpts...)
+		if err := h.K8sClient.List(r.Context(), list, opts...); err != nil {
 			sendErrorResponse(w, http.StatusInternalServerError, "failed to list models: %v", err)
 			return
 		}

@@ -69,7 +69,7 @@ func NewMessenger(
 }
 
 type ModelScaler interface {
-	ModelExists(ctx context.Context, model string) (bool, error)
+	ModelFound(ctx context.Context, model string, selectors []string) (bool, error)
 	ScaleAtLeastOneReplica(ctx context.Context, model string) error
 }
 
@@ -204,7 +204,7 @@ func (m *Messenger) handleRequest(ctx context.Context, msg *pubsub.Message) {
 	metrics.InferenceRequestsActive.Add(ctx, 1, metricAttrs)
 	defer metrics.InferenceRequestsActive.Add(ctx, -1, metricAttrs)
 
-	modelExists, err := m.modelScaler.ModelExists(ctx, req.model)
+	modelExists, err := m.modelScaler.ModelFound(ctx, req.model, nil)
 	if err != nil {
 		m.sendResponse(req, m.jsonError("error checking if model exists: %v", err), http.StatusInternalServerError)
 		return
