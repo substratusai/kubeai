@@ -1,4 +1,4 @@
-# Auth
+# Multitenancy
 
 The goal of this proposal is to allow KubeAI to be used in a multitenancy environment where
 some users only have access to some models.
@@ -46,10 +46,10 @@ In this implementation, label selectors are used to filter models. The decision 
 
 ```bash
 curl http://localhost:8000/openai/v1/completions \
-    -H "X-Selector: key1=value1"
+    -H "X-Label-Selector: key1=value1"
 
 curl http://localhost:8000/openai/v1/models \
-    -H "X-Selector: key1=value1"
+    -H "X-Label-Selector: key1=value1"
 ```
 
 Models just need to have the labels set.

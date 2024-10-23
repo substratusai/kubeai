@@ -45,7 +45,7 @@ func newProxyRequest(r *http.Request) *proxyRequest {
 // attempts to unmarshal the request body as JSON and extract the
 // .model field.
 func (pr *proxyRequest) parse() error {
-	pr.selectors = pr.r.Header.Values("X-Selector")
+	pr.selectors = pr.r.Header.Values("X-Label-Selector")
 
 	// Try to get the model from the header first
 	if headerModel := pr.r.Header.Get("X-Model"); headerModel != "" {

@@ -24,7 +24,7 @@ func (h *Handler) getModels(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var listOpts []client.ListOption
-	headerSelectors := r.Header.Values("X-Selector")
+	headerSelectors := r.Header.Values("X-Label-Selector")
 	for _, sel := range headerSelectors {
 		parsedSel, err := labels.Parse(sel)
 		if err != nil {

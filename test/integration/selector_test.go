@@ -93,6 +93,8 @@ func TestSelector(t *testing.T) {
 			expCode:         http.StatusOK,
 		},
 		{
+			// `AND` logic should be used.
+			// This is important because if `OR` logic were used it would open up a possible vulerability: if the headers that an end-user specified were proxied with `OR` logic it would allow users to circumvent and proxy-enforced selectors.
 			name:      "model exists 2/2 labels match separate headers",
 			modelName: m0.Name,
 			selectorHeaders: []string{
