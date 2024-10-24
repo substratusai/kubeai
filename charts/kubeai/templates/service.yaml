@@ -11,5 +11,9 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      name: http-metrics
   selector:
     {{- include "kubeai.selectorLabels" . | nindent 4 }}
