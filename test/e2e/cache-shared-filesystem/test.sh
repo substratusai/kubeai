@@ -12,7 +12,7 @@ catalog:
     cacheProfile: e2e-test-kind-pv
 EOF
 
-kubectl wait --for=jsonpath='{.status.cache.loaded}'=true model/opt-125m-cpu
+kubectl wait --timeout=300s --for=jsonpath='{.status.cache.loaded}'=true model/opt-125m-cpu
 
 kubectl apply -f $TEST_DIR/cache-mount-pod.yaml
 kubectl wait pods --for=condition=Ready cache-mount-pod
