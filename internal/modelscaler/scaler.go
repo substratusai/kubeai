@@ -9,6 +9,7 @@ import (
 	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -26,13 +27,30 @@ func NewModelScaler(client client.Client, namespace string) *ModelScaler {
 	return &ModelScaler{client: client, namespace: namespace, consecutiveScaleDowns: map[string]int{}}
 }
 
-func (s *ModelScaler) ModelExists(ctx context.Context, model string) (bool, error) {
-	if err := s.client.Get(ctx, types.NamespacedName{Name: model, Namespace: s.namespace}, &kubeaiv1.Model{}); err != nil {
+// LookupModel checks if a model exists and matches the given label selectors.
+func (s *ModelScaler) LookupModel(ctx context.Context, model string, labelSelectors []string) (bool, error) {
+	m := &kubeaiv1.Model{}
+	if err := s.client.Get(ctx, types.NamespacedName{Name: model, Namespace: s.namespace}, m); err != nil {
 		if apierrors.IsNotFound(err) {
 			return false, nil
 		}
 		return false, err
 	}
+
+	modelLabels := m.GetLabels()
+	if modelLabels == nil {
+		modelLabels = map[string]string{}
+	}
+	for _, sel := range labelSelectors {
+		parsedSel, err := labels.Parse(sel)
+		if err != nil {
+			return false, fmt.Errorf("parse label selector: %w", err)
+		}
+		if !parsedSel.Matches(labels.Set(modelLabels)) {
+			return false, nil
+		}
+	}
+
 	return true, nil
 }
 

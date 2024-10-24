@@ -2,7 +2,9 @@ package integration
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -14,10 +16,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	v1 "github.com/substratusai/kubeai/api/v1"
+	"github.com/substratusai/kubeai/internal/openaiserver"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/yaml"
 )
 
 func modelForTest(t *testing.T) *v1.Model {
@@ -29,7 +33,8 @@ func modelForTest(t *testing.T) *v1.Model {
 				"test-annotation": "test",
 			},
 			Labels: map[string]string{
-				"test-label": "test",
+				"test-label":     "test",
+				"test-case-name": strings.ToLower(t.Name()),
 			},
 		},
 		Spec: v1.ModelSpec{
@@ -89,7 +94,9 @@ func markAllModelPodsReady(t *testing.T, m *v1.Model) {
 		for _, pod := range podList.Items {
 			pod.Status.Phase = corev1.PodRunning
 			pod.Status.Conditions = []corev1.PodCondition{{Type: corev1.PodReady, Status: corev1.ConditionTrue}}
-			require.NoError(t, testK8sClient.Status().Update(testCtx, &pod))
+			if !assert.NoError(t, testK8sClient.Status().Update(testCtx, &pod)) {
+				return
+			}
 		}
 	}, 2*time.Second, time.Second/10, "All model Pods should be marked ready")
 }
@@ -121,37 +128,71 @@ func updateModelWithBackend(t *testing.T, m *v1.Model, testModelBackend *httptes
 	}, "Set model IP/port annotations to direct requests to testBackend instead of the Pod's (non-existant) IP")
 }
 
-func sendRequests(t *testing.T, wg *sync.WaitGroup, modelName string, n int, expCode int, msg string) {
+func sendRequests(t *testing.T, wg *sync.WaitGroup, modelName string, selectorHeaders []string, n int, expCode int, expBodyContains string, msg string) {
+	t.Helper()
 	for i := 0; i < n; i++ {
-		sendRequest(t, wg, modelName, expCode, msg)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			sendOpenAIInferenceRequest(t, modelName, selectorHeaders, expCode, expBodyContains, msg)
+		}()
 	}
 }
 
-func sendRequest(t *testing.T, wg *sync.WaitGroup, modelName string, expCode int, msg string) {
+func sendOpenAIInferenceRequest(t *testing.T, modelName string, selectorHeaders []string, expCode int, expBodyContains string, msg string) {
 	t.Helper()
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	body := []byte(fmt.Sprintf(`{"model": %q}`, modelName))
+	req, err := http.NewRequest(http.MethodPost, "http://localhost:8000/openai/v1/completions", bytes.NewReader(body))
+	if t.Failed() {
+		// Don't report errors if the test already failed - confusing.
+		return
+	}
+	require.NoError(t, err, msg)
+	for _, selector := range selectorHeaders {
+		t.Logf("Using selector: %s", selector)
+		req.Header.Add("X-Label-Selector", selector)
+	}
 
-		body := []byte(fmt.Sprintf(`{"model": %q}`, modelName))
-		req, err := http.NewRequest(http.MethodPost, "http://localhost:8000/openai/v1/completions", bytes.NewReader(body))
-		if t.Failed() {
-			// Don't report errors if the test already failed - confusing.
-			return
-		}
-		require.NoError(t, err, msg)
+	res, err := testHTTPClient.Do(req)
+	if t.Failed() {
+		// Don't report errors if the test already failed - confusing.
+		return
+	}
+	require.NoError(t, err, msg)
+	defer res.Body.Close()
+	require.Equal(t, expCode, res.StatusCode, msg)
 
-		res, err := testHTTPClient.Do(req)
-		if t.Failed() {
-			// Don't report errors if the test already failed - confusing.
-			return
-		}
+	if expBodyContains != "" {
+		bdy, err := io.ReadAll(res.Body)
 		require.NoError(t, err, msg)
-		require.Equal(t, expCode, res.StatusCode, msg)
-	}()
+		require.Contains(t, string(bdy), expBodyContains, msg)
+	}
 }
 
-func completeRequests(c chan struct{}, n int) {
+func sendOpenAIListModelsRequest(t *testing.T, selectorHeaders []string, expCode int, msg string) []openaiserver.Model {
+	t.Helper()
+	req, err := http.NewRequest(http.MethodGet, "http://localhost:8000/openai/v1/models", nil)
+	require.NoError(t, err, msg)
+	for _, selector := range selectorHeaders {
+		req.Header.Add("X-Label-Selector", selector)
+	}
+
+	res, err := testHTTPClient.Do(req)
+	require.NoError(t, err, msg)
+	require.Equal(t, expCode, res.StatusCode, msg)
+	defer res.Body.Close()
+
+	var respBody struct {
+		Data []openaiserver.Model `json:"data"`
+	}
+	if err := json.NewDecoder(res.Body).Decode(&respBody); err != nil {
+		require.NoError(t, err, msg)
+	}
+
+	return respBody.Data
+}
+
+func closeChannels(c chan struct{}, n int) {
 	for i := 0; i < n; i++ {
 		c <- struct{}{}
 	}
@@ -178,4 +219,17 @@ func setJobCompletedStatus(job *batchv1.Job) {
 		Type:   batchv1.JobComplete,
 		Status: corev1.ConditionTrue,
 	})
+}
+
+// logPods is useful for debugging why a test case is failing.
+func logPods(t *testing.T) {
+	podList := &corev1.PodList{}
+	require.NoError(t, testK8sClient.List(testCtx, podList, client.InNamespace(testNS)))
+	fmt.Println("=== Pods ===")
+	for _, pod := range podList.Items {
+		yml, err := yaml.Marshal(pod)
+		require.NoError(t, err)
+		fmt.Println(string(yml))
+		fmt.Println("---")
+	}
 }
