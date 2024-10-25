@@ -56,7 +56,7 @@ SUBNETS=$(eksctl get cluster --region us-west-2 ${CLUSTER_NAME} -o json | jq -r 
 while IFS= read -r subnet; do
     echo "Creating EFS mount target in $subnet"
     aws efs create-mount-target --file-system-id $file_system_id \
-      --subnet-id $subnet --security-groups $security_group_id
+      --subnet-id $subnet --security-groups $security_group_id --output text
 done <<< "$SUBNETS"
 ```
 
@@ -158,6 +158,23 @@ kubectl wait --timeout 10m --for=jsonpath='{.status.cache.loaded}'=true model/ll
 This model will now be loaded from Filestore when it is served.
 
 ## Troubleshooting
+
+### MountVole.SetUp failed for volume pvc deadline exceeded
+`kubectl get events` may show an error like this:
+```
+8s          Warning   FailedMount             pod/load-cache-llama-3.1-8b-instruct-fp8-l4-w7thh      MountVolume.SetUp failed for volume "pvc-ceedb563-1e68-47fa-9d12-c697ae153d04" : rpc error: code = DeadlineExceeded desc = context deadline exceeded
+```
+
+Checking the logs of the EFS CSI DaemonSet may show an error like this:
+```bash
+kubectl logs -f efs-csi-node-4n75c -n kube-system
+Output: Could not start amazon-efs-mount-watchdog, unrecognized init system "aws-efs-csi-dri"
+Mount attempt 1/3 failed due to timeout after 15 sec, wait 0 sec before next attempt.
+Mount attempt 2/3 failed due to timeout after 15 sec, wait 0 sec before next attempt.
+b'mount.nfs4: Connection timed out'
+```
+
+This likely means your mount target isn't setup correctly. Possibly the security group is not allowing traffic from the EKS cluster.
 
 ### Model Loading Job
 
