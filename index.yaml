@@ -2,6 +2,31 @@ apiVersion: v1
 entries:
   kubeai:
   - apiVersion: v2
+    appVersion: v0.10.0
+    created: "2024-10-25T06:22:43.980483396Z"
+    dependencies:
+    - condition: openwebui.enabled
+      name: openwebui
+      repository: ""
+      version: 0.1.1
+    description: Private Open AI Platform for Kubernetes.
+    digest: 671593641383b23d0a424a9fa79bbce93d7e564df8b3b60b2ead8049c4f72f87
+    home: https://www.substratus.ai
+    keywords:
+    - LLM
+    - AI
+    maintainers:
+    - name: nstogner
+      url: https://www.linkedin.com/in/nstogner/
+    - email: sammiestoel@gmail.com
+      name: samos123
+      url: https://www.linkedin.com/in/samstoelinga/
+    name: kubeai
+    type: application
+    urls:
+    - https://github.com/substratusai/kubeai/releases/download/helm-chart-kubeai-0.8.0/kubeai-0.8.0.tgz
+    version: 0.8.0
+  - apiVersion: v2
     appVersion: v0.9.0
     created: "2024-10-19T06:00:24.68499818Z"
     dependencies:
@@ -608,6 +633,22 @@ entries:
   models:
   - apiVersion: v2
     appVersion: 1.16.0
+    created: "2024-10-25T06:22:44.166059812Z"
+    description: A Helm chart for Kubernetes
+    digest: ff78ddc1b2ca323ef11c6e6234259da01c1f2c0e62d4b5ad8dd67cb4a74b916e
+    maintainers:
+    - name: nstogner
+      url: https://www.linkedin.com/in/nstogner/
+    - email: sammiestoel@gmail.com
+      name: samos123
+      url: https://www.linkedin.com/in/samstoelinga/
+    name: models
+    type: application
+    urls:
+    - https://github.com/substratusai/kubeai/releases/download/helm-chart-models-0.8.0/models-0.8.0.tgz
+    version: 0.8.0
+  - apiVersion: v2
+    appVersion: 1.16.0
     created: "2024-10-19T06:05:53.954501619Z"
     description: A Helm chart for Kubernetes
     digest: cf60c5fa9e9076c78d45225df933433a37abd26b823b8dec802ad33d0a65b51d
@@ -670,4 +711,4 @@ entries:
     urls:
     - https://github.com/substratusai/kubeai/releases/download/kubeai-helm-chart-0.4.1/models-0.4.1.tgz
     version: 0.4.1
-generated: "2024-10-19T06:05:53.954561Z"
+generated: "2024-10-25T06:22:44.166257363Z"
