@@ -15,7 +15,7 @@ The following quotas may require an increase if you wish to use GPUs in your EKS
 
 ## 1. Create EKS cluster with Karpenter
 
-Configuration used throughout this guide:
+Set the environment variables used throughout this guide:
 
 ```bash
 export CLUSTER_NAME="cluster-with-karpenter"
@@ -23,8 +23,6 @@ export AWS_DEFAULT_REGION="us-west-2"
 export K8S_VERSION="1.30"
 export GPU_AMI_ID="$(aws ssm get-parameter --name /aws/service/eks/optimized-ami/${K8S_VERSION}/amazon-linux-2-gpu/recommended/image_id --query Parameter.Value --output text)"
 ```
-
-Tweak the above environment variables as needed and re-run if you lose your shell session.
 
 Create the EKS cluster using eksctl:
 ```bash
