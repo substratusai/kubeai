@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://www.kubeai.org/contributing/development-environment/">
+        <link rel="canonical" href="https://www.kubeai.org/how-to/cache-models-with-aws-efs/">
       
       
-        <link rel="prev" href="../../tutorials/weaviate/">
+        <link rel="prev" href="../build-models-into-containers/">
       
       
-        <link rel="next" href="../documentation/">
+        <link rel="next" href="../cache-models-with-gcp-filestore/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Development environment - KubeAI</title>
+        <title>Cache models with AWS EFS - KubeAI</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#development-environment" class="md-skip">
+        <a href="#cache-models-with-aws-efs" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Development environment
+              Cache models with AWS EFS
             
           </span>
         </div>
@@ -326,17 +326,19 @@
       
   
   
+    
   
   
+  
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -350,7 +352,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             How to
@@ -364,7 +366,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/architect-for-multitenancy/" class="md-nav__link">
+      <a href="../architect-for-multitenancy/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -385,7 +387,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/build-models-into-containers/" class="md-nav__link">
+      <a href="../build-models-into-containers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -403,10 +405,30 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../how-to/cache-models-with-aws-efs/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Cache models with AWS EFS
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -415,6 +437,95 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-create-an-efs-file-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Create an EFS File System
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-install-the-efs-csi-driver" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Install the EFS CSI driver
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-configure-kubeai-with-the-efs-cache-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Configure KubeAI with the EFS cache profile
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-configure-a-model-to-use-the-efs-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Configure a model to use the EFS cache
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Troubleshooting
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mountvolesetup-failed-for-volume-pvc-deadline-exceeded" class="md-nav__link">
+    <span class="md-ellipsis">
+      MountVole.SetUp failed for volume pvc deadline exceeded
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#model-loading-job" class="md-nav__link">
+    <span class="md-ellipsis">
+      Model Loading Job
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -427,7 +538,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/cache-models-with-gcp-filestore/" class="md-nav__link">
+      <a href="../cache-models-with-gcp-filestore/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -448,7 +559,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/configure-autoscaling/" class="md-nav__link">
+      <a href="../configure-autoscaling/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -469,7 +580,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/configure-embedding-models/" class="md-nav__link">
+      <a href="../configure-embedding-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -490,7 +601,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/configure-resource-profiles/" class="md-nav__link">
+      <a href="../configure-resource-profiles/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -511,7 +622,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/configure-speech-to-text/" class="md-nav__link">
+      <a href="../configure-speech-to-text/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -532,7 +643,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/install-models/" class="md-nav__link">
+      <a href="../install-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -788,19 +899,17 @@
       
   
   
-    
   
   
-  
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
         
           
           <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
@@ -814,7 +923,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             Contributing
@@ -825,30 +934,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Development environment
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../contributing/development-environment/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -857,92 +946,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#optional-cloud-setup" class="md-nav__link">
-    <span class="md-ellipsis">
-      Optional: Cloud Setup
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Optional: Cloud Setup">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#gcp-pubsub" class="md-nav__link">
-    <span class="md-ellipsis">
-      GCP PubSub
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#run-in-local-cluster" class="md-nav__link">
-    <span class="md-ellipsis">
-      Run in Local Cluster
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#running" class="md-nav__link">
-    <span class="md-ellipsis">
-      Running
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Running">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#completions-api" class="md-nav__link">
-    <span class="md-ellipsis">
-      Completions API
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#messaging-integration" class="md-nav__link">
-    <span class="md-ellipsis">
-      Messaging Integration
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -955,7 +958,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../documentation/" class="md-nav__link">
+      <a href="../../contributing/documentation/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -976,7 +979,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../release-process/" class="md-nav__link">
+      <a href="../../contributing/release-process/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1171,61 +1174,64 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#optional-cloud-setup" class="md-nav__link">
+  <a href="#1-create-an-efs-file-system" class="md-nav__link">
     <span class="md-ellipsis">
-      Optional: Cloud Setup
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Optional: Cloud Setup">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#gcp-pubsub" class="md-nav__link">
-    <span class="md-ellipsis">
-      GCP PubSub
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#run-in-local-cluster" class="md-nav__link">
-    <span class="md-ellipsis">
-      Run in Local Cluster
+      1. Create an EFS File System
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#running" class="md-nav__link">
+  <a href="#2-install-the-efs-csi-driver" class="md-nav__link">
     <span class="md-ellipsis">
-      Running
+      2. Install the EFS CSI driver
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Running">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-configure-kubeai-with-the-efs-cache-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Configure KubeAI with the EFS cache profile
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-configure-a-model-to-use-the-efs-cache" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Configure a model to use the EFS cache
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Troubleshooting
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#completions-api" class="md-nav__link">
+  <a href="#mountvolesetup-failed-for-volume-pvc-deadline-exceeded" class="md-nav__link">
     <span class="md-ellipsis">
-      Completions API
+      MountVole.SetUp failed for volume pvc deadline exceeded
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#messaging-integration" class="md-nav__link">
+  <a href="#model-loading-job" class="md-nav__link">
     <span class="md-ellipsis">
-      Messaging Integration
+      Model Loading Job
     </span>
   </a>
   
@@ -1254,64 +1260,144 @@
   
 
 
-<h1 id="development-environment">Development environment<a class="headerlink" href="#development-environment" title="Permanent link">&para;</a></h1>
-<p>This document provides instructions for setting up an environment for developing KubeAI.</p>
-<h2 id="optional-cloud-setup">Optional: Cloud Setup<a class="headerlink" href="#optional-cloud-setup" title="Permanent link">&para;</a></h2>
-<h3 id="gcp-pubsub">GCP PubSub<a class="headerlink" href="#gcp-pubsub" title="Permanent link">&para;</a></h3>
-<p>If you are develop PubSub messaging integration on GCP, setup test topics and subscriptions and uncomment the <code>.messaging.streams</code> in <code>./hack/dev-config.yaml</code>.</p>
-<div class="highlight"><pre><span></span><code>gcloud<span class="w"> </span>auth<span class="w"> </span>login<span class="w"> </span>--update-adc
-
-gcloud<span class="w"> </span>pubsub<span class="w"> </span>topics<span class="w"> </span>create<span class="w"> </span>test-kubeai-requests
-gcloud<span class="w"> </span>pubsub<span class="w"> </span>subscriptions<span class="w"> </span>create<span class="w"> </span>test-kubeai-requests-sub<span class="w"> </span>--topic<span class="w"> </span>test-kubeai-requests
-gcloud<span class="w"> </span>pubsub<span class="w"> </span>topics<span class="w"> </span>create<span class="w"> </span>test-kubeai-responses
-gcloud<span class="w"> </span>pubsub<span class="w"> </span>subscriptions<span class="w"> </span>create<span class="w"> </span>test-kubeai-responses-sub<span class="w"> </span>--topic<span class="w"> </span>test-kubeai-responses
+<h1 id="cache-models-with-aws-efs">Cache models with AWS EFS<a class="headerlink" href="#cache-models-with-aws-efs" title="Permanent link">&para;</a></h1>
+<p>KubeAI can manage model caches. AWS EFS is supported as a pluggable backend store.</p>
+<p><br>
+<img src="/diagrams/caching-shared-filesystem.excalidraw.png" width="90%"></img></p>
+<p>Follow the <a href="../../installation/eks/">EKS install guide</a>.</p>
+<h2 id="1-create-an-efs-file-system">1. Create an EFS File System<a class="headerlink" href="#1-create-an-efs-file-system" title="Permanent link">&para;</a></h2>
+<p>Set environment variables to match your environment.</p>
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">CLUSTER_NAME</span><span class="o">=</span><span class="s2">&quot;cluster-with-karpenter&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">CLUSTER_REGION</span><span class="o">=</span><span class="s2">&quot;us-west-2&quot;</span>
 </code></pre></div>
-<h2 id="run-in-local-cluster">Run in Local Cluster<a class="headerlink" href="#run-in-local-cluster" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>kind<span class="w"> </span>create<span class="w"> </span>cluster
-<span class="c1"># OR</span>
-<span class="c1">#./hack/create-dev-gke-cluster.yaml</span>
+<p>Create an EFS file system in the same VPC as your EKS cluster.</p>
+<div class="highlight"><pre><span></span><code><span class="nv">vpc_id</span><span class="o">=</span><span class="k">$(</span>aws<span class="w"> </span>eks<span class="w"> </span>describe-cluster<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="nv">$CLUSTER_NAME</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--query<span class="w"> </span><span class="s2">&quot;cluster.resourcesVpcConfig.vpcId&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output<span class="w"> </span>text<span class="k">)</span>
 
-<span class="c1"># Generate CRDs from Go code.</span>
-make<span class="w"> </span>generate<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>make<span class="w"> </span>manifests
+<span class="nv">cidr_range</span><span class="o">=</span><span class="k">$(</span>aws<span class="w"> </span>ec2<span class="w"> </span>describe-vpcs<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--vpc-ids<span class="w"> </span><span class="nv">$vpc_id</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--query<span class="w"> </span><span class="s2">&quot;Vpcs[].CidrBlock&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output<span class="w"> </span>text<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--region<span class="w"> </span><span class="si">${</span><span class="nv">CLUSTER_REGION</span><span class="si">}</span><span class="k">)</span>
 
-<span class="c1"># When CRDs are changed reapply using kubectl:</span>
-kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>./charts/kubeai/charts/crds/crds
+<span class="nv">security_group_id</span><span class="o">=</span><span class="k">$(</span>aws<span class="w"> </span>ec2<span class="w"> </span>create-security-group<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--group-name<span class="w"> </span>MyEfsSecurityGroup<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--description<span class="w"> </span><span class="s2">&quot;My EFS security group&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--vpc-id<span class="w"> </span><span class="nv">$vpc_id</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output<span class="w"> </span>text<span class="k">)</span>
 
-<span class="c1"># Model with special address annotations:</span>
-kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>./hack/dev-model.yaml
+aws<span class="w"> </span>ec2<span class="w"> </span>authorize-security-group-ingress<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--group-id<span class="w"> </span><span class="nv">$security_group_id</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--protocol<span class="w"> </span>tcp<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--port<span class="w"> </span><span class="m">2049</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--cidr<span class="w"> </span><span class="nv">$cidr_range</span>
 
-<span class="c1"># OPTION A #</span>
-<span class="c1"># Run KubeAI inside cluster</span>
-<span class="c1"># Change `-f` based on the cluster environment.</span>
-helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>kubeai<span class="w"> </span>./charts/kubeai<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--set<span class="w"> </span>openwebui.enabled<span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--set<span class="w"> </span>image.tag<span class="o">=</span>latest<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--set<span class="w"> </span>image.pullPolicy<span class="o">=</span>Always<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--set<span class="w"> </span>image.repository<span class="o">=</span>us-central1-docker.pkg.dev/substratus-dev/default/kubeai<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--set<span class="w"> </span>secrets.huggingface.token<span class="o">=</span><span class="nv">$HUGGING_FACE_HUB_TOKEN</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--set<span class="w"> </span><span class="nv">replicaCount</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>-f<span class="w"> </span>./hack/dev-gke-helm-values.yaml
-
-<span class="c1"># OPTION B #</span>
-<span class="c1"># For quick local interation (run KubeAI outside of cluster)</span>
-kubectl<span class="w"> </span>create<span class="w"> </span>cm<span class="w"> </span>kubeai-autoscaler-state<span class="w"> </span>-oyaml<span class="w"> </span>--dry-run<span class="o">=</span>client<span class="w"> </span><span class="p">|</span><span class="w"> </span>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>-
-<span class="nv">CONFIG_PATH</span><span class="o">=</span>./hack/dev-config.yaml<span class="w"> </span><span class="nv">POD_NAMESPACE</span><span class="o">=</span>default<span class="w"> </span>go<span class="w"> </span>run<span class="w"> </span>./cmd/main.go
-
-<span class="c1"># In another terminal:</span>
-<span class="k">while</span><span class="w"> </span>true<span class="p">;</span><span class="w"> </span><span class="k">do</span><span class="w"> </span>kubectl<span class="w"> </span>port-forward<span class="w"> </span>service/dev-model<span class="w"> </span><span class="m">7000</span>:7000<span class="p">;</span><span class="w"> </span><span class="k">done</span>
-<span class="c1">############</span>
+<span class="nv">file_system_id</span><span class="o">=</span><span class="k">$(</span>aws<span class="w"> </span>efs<span class="w"> </span>create-file-system<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--region<span class="w"> </span><span class="si">${</span><span class="nv">CLUSTER_REGION</span><span class="si">}</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--performance-mode<span class="w"> </span>generalPurpose<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--query<span class="w"> </span><span class="s1">&#39;FileSystemId&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output<span class="w"> </span>text<span class="k">)</span>
 </code></pre></div>
-<h2 id="running">Running<a class="headerlink" href="#running" title="Permanent link">&para;</a></h2>
-<h3 id="completions-api">Completions API<a class="headerlink" href="#completions-api" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="c1"># If you are running kubeai in-cluster:</span>
-<span class="c1"># kubectl port-forward svc/kubeai 8000:80</span>
+<p>Expose the EFS file system to the subnets used by your EKS cluster.
+<div class="highlight"><pre><span></span><code><span class="nv">SUBNETS</span><span class="o">=</span><span class="k">$(</span>eksctl<span class="w"> </span>get<span class="w"> </span>cluster<span class="w"> </span>--region<span class="w"> </span>us-west-2<span class="w"> </span><span class="si">${</span><span class="nv">CLUSTER_NAME</span><span class="si">}</span><span class="w"> </span>-o<span class="w"> </span>json<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;.[0].ResourcesVpcConfig.SubnetIds[]&#39;</span><span class="k">)</span>
 
-curl<span class="w"> </span>http://localhost:8000/openai/v1/completions<span class="w"> </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;prompt&quot;: &quot;Hi&quot;, &quot;model&quot;: &quot;dev&quot;}&#39;</span><span class="w"> </span>-v
+<span class="k">while</span><span class="w"> </span><span class="nv">IFS</span><span class="o">=</span><span class="w"> </span><span class="nb">read</span><span class="w"> </span>-r<span class="w"> </span>subnet<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Creating EFS mount target in </span><span class="nv">$subnet</span><span class="s2">&quot;</span>
+<span class="w">    </span>aws<span class="w"> </span>efs<span class="w"> </span>create-mount-target<span class="w"> </span>--file-system-id<span class="w"> </span><span class="nv">$file_system_id</span><span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>--subnet-id<span class="w"> </span><span class="nv">$subnet</span><span class="w"> </span>--security-groups<span class="w"> </span><span class="nv">$security_group_id</span><span class="w"> </span>--output<span class="w"> </span>text
+<span class="k">done</span><span class="w"> </span><span class="o">&lt;&lt;&lt;</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SUBNETS</span><span class="s2">&quot;</span>
+</code></pre></div></p>
+<h2 id="2-install-the-efs-csi-driver">2. Install the EFS CSI driver<a class="headerlink" href="#2-install-the-efs-csi-driver" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">ROLE_NAME</span><span class="o">=</span>AmazonEKS_EFS_CSI_DriverRole
+eksctl<span class="w"> </span>create<span class="w"> </span>iamserviceaccount<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span>efs-csi-controller-sa<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--namespace<span class="w"> </span>kube-system<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--cluster<span class="w"> </span><span class="si">${</span><span class="nv">CLUSTER_NAME</span><span class="si">}</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--role-name<span class="w"> </span><span class="si">${</span><span class="nv">ROLE_NAME</span><span class="si">}</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--role-only<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--attach-policy-arn<span class="w"> </span>arn:aws:iam::aws:policy/service-role/AmazonEFSCSIDriverPolicy<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--approve
+
+<span class="nv">TRUST_POLICY</span><span class="o">=</span><span class="k">$(</span>aws<span class="w"> </span>iam<span class="w"> </span>get-role<span class="w"> </span>--role-name<span class="w"> </span><span class="si">${</span><span class="nv">ROLE_NAME</span><span class="si">}</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--query<span class="w"> </span><span class="s1">&#39;Role.AssumeRolePolicyDocument&#39;</span><span class="w"> </span>--output<span class="w"> </span>json<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>sed<span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;s/efs-csi-controller-sa/efs-csi-*/&#39;</span><span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;s/StringEquals/StringLike/&#39;</span><span class="k">)</span>
+
+aws<span class="w"> </span>iam<span class="w"> </span>update-assume-role-policy<span class="w"> </span>--role-name<span class="w"> </span><span class="si">${</span><span class="nv">ROLE_NAME</span><span class="si">}</span><span class="w"> </span>--policy-document<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TRUST_POLICY</span><span class="s2">&quot;</span>
+
+<span class="c1"># Get the role ARN</span>
+<span class="nv">EFS_ROLE_ARN</span><span class="o">=</span><span class="k">$(</span>aws<span class="w"> </span>iam<span class="w"> </span>get-role<span class="w"> </span>--role-name<span class="w"> </span>AmazonEKS_EFS_CSI_DriverRole<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--query<span class="w"> </span><span class="s1">&#39;Role.Arn&#39;</span><span class="w"> </span>--output<span class="w"> </span>text<span class="k">)</span>
+
+aws<span class="w"> </span>eks<span class="w"> </span>create-addon<span class="w"> </span>--cluster-name<span class="w"> </span><span class="nv">$CLUSTER_NAME</span><span class="w"> </span>--addon-name<span class="w"> </span>aws-efs-csi-driver<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--service-account-role-arn<span class="w"> </span><span class="nv">$EFS_ROLE_ARN</span>
 </code></pre></div>
-<h3 id="messaging-integration">Messaging Integration<a class="headerlink" href="#messaging-integration" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code>gcloud<span class="w"> </span>pubsub<span class="w"> </span>topics<span class="w"> </span>publish<span class="w"> </span>test-kubeai-requests<span class="w"> </span><span class="se">\ </span><span class="w">                 </span>
-<span class="w">  </span>--message<span class="o">=</span><span class="s1">&#39;{&quot;path&quot;:&quot;/v1/completions&quot;, &quot;metadata&quot;:{&quot;a&quot;:&quot;b&quot;}, &quot;body&quot;: {&quot;model&quot;: &quot;dev&quot;, &quot;prompt&quot;: &quot;hi&quot;}}&#39;</span>
-
-gcloud<span class="w"> </span>pubsub<span class="w"> </span>subscriptions<span class="w"> </span>pull<span class="w"> </span>test-kubeai-responses-sub<span class="w"> </span>--auto-ack
+<p>Wait for EKS Addon to active.
+<div class="highlight"><pre><span></span><code>aws<span class="w"> </span>eks<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>addon-active<span class="w"> </span>--cluster-name<span class="w"> </span><span class="nv">$CLUSTER_NAME</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--addon-name<span class="w"> </span>aws-efs-csi-driver
+</code></pre></div>
+Verify that the EFS CSI driver is running.</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>get<span class="w"> </span>daemonset<span class="w"> </span>efs-csi-node<span class="w"> </span>-n<span class="w"> </span>kube-system
+</code></pre></div>
+<p>Create a storage class for using EFS dynamic mode.</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;EOF</span>
+<span class="s">kind: StorageClass</span>
+<span class="s">apiVersion: storage.k8s.io/v1</span>
+<span class="s">metadata:</span>
+<span class="s">  name: efs-sc</span>
+<span class="s">provisioner: efs.csi.aws.com</span>
+<span class="s">parameters:</span>
+<span class="s">  provisioningMode: efs-ap</span>
+<span class="s">  fileSystemId: &quot;${file_system_id}&quot;</span>
+<span class="s">  directoryPerms: &quot;700&quot;</span>
+<span class="s">EOF</span>
+</code></pre></div>
+<p>Make sure to set <code>file_system_id</code> match the EFS file system ID created in the first step.</p>
+<h2 id="3-configure-kubeai-with-the-efs-cache-profile">3. Configure KubeAI with the EFS cache profile<a class="headerlink" href="#3-configure-kubeai-with-the-efs-cache-profile" title="Permanent link">&para;</a></h2>
+<p>You can skip this step if you've already installed KubeAI using the <a href="https://github.com/substratusai/kubeai/blob/main/charts/kubeai/values-eks.yaml">EKS Helm values file: values-eks.yaml</a> file.</p>
+<p>Configure KubeAI with the <code>efs-dynamic</code> cache profile.
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>kubeai<span class="w"> </span>kubeai/kubeai<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--reuse-values<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;EOF</span>
+<span class="s">cacheProfiles:</span>
+<span class="s">  efs-dynamic:</span>
+<span class="s">    sharedFilesystem:</span>
+<span class="s">      storageClassName: &quot;efs-sc&quot;</span>
+<span class="s">  efs-static:</span>
+<span class="s">    sharedFilesystem:</span>
+<span class="s">      persistentVolumeName: &quot;efs-pv&quot;</span>
+<span class="s">EOF</span>
+</code></pre></div></p>
+<h2 id="4-configure-a-model-to-use-the-efs-cache">4. Configure a model to use the EFS cache<a class="headerlink" href="#4-configure-a-model-to-use-the-efs-cache" title="Permanent link">&para;</a></h2>
+<p>Apply a Model with <code>cacheProfile</code> set to <code>efs-dynamic</code>.</p>
+<p>NOTE: If you already installed the models chart, you will need to edit you values file and run <code>helm upgrade</code>.</p>
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>install<span class="w"> </span>kubeai-models<span class="w"> </span>kubeai/models<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;EOF</span>
+<span class="s">catalog:</span>
+<span class="s">  llama-3.1-8b-instruct-fp8-l4:</span>
+<span class="s">    enabled: true</span>
+<span class="s">    cacheProfile: efs-dynamic</span>
+<span class="s">EOF</span>
+</code></pre></div>
+<p>Wait for the Model to be fully cached.</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--timeout<span class="w"> </span>10m<span class="w"> </span>--for<span class="o">=</span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.status.cache.loaded}&#39;</span><span class="o">=</span><span class="nb">true</span><span class="w"> </span>model/llama-3.1-8b-instruct-fp8-l4
+</code></pre></div>
+<p>This model will now be loaded from Filestore when it is served.</p>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<h3 id="mountvolesetup-failed-for-volume-pvc-deadline-exceeded">MountVole.SetUp failed for volume pvc deadline exceeded<a class="headerlink" href="#mountvolesetup-failed-for-volume-pvc-deadline-exceeded" title="Permanent link">&para;</a></h3>
+<p><code>kubectl get events</code> may show an error like this:
+<div class="highlight"><pre><span></span><code>8s          Warning   FailedMount             pod/load-cache-llama-3.1-8b-instruct-fp8-l4-w7thh      MountVolume.SetUp failed for volume &quot;pvc-ceedb563-1e68-47fa-9d12-c697ae153d04&quot; : rpc error: code = DeadlineExceeded desc = context deadline exceeded
+</code></pre></div></p>
+<p>Checking the logs of the EFS CSI DaemonSet may show an error like this:
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span>efs-csi-node-4n75c<span class="w"> </span>-n<span class="w"> </span>kube-system
+Output:<span class="w"> </span>Could<span class="w"> </span>not<span class="w"> </span>start<span class="w"> </span>amazon-efs-mount-watchdog,<span class="w"> </span>unrecognized<span class="w"> </span>init<span class="w"> </span>system<span class="w"> </span><span class="s2">&quot;aws-efs-csi-dri&quot;</span>
+Mount<span class="w"> </span>attempt<span class="w"> </span><span class="m">1</span>/3<span class="w"> </span>failed<span class="w"> </span>due<span class="w"> </span>to<span class="w"> </span>timeout<span class="w"> </span>after<span class="w"> </span><span class="m">15</span><span class="w"> </span>sec,<span class="w"> </span><span class="nb">wait</span><span class="w"> </span><span class="m">0</span><span class="w"> </span>sec<span class="w"> </span>before<span class="w"> </span>next<span class="w"> </span>attempt.
+Mount<span class="w"> </span>attempt<span class="w"> </span><span class="m">2</span>/3<span class="w"> </span>failed<span class="w"> </span>due<span class="w"> </span>to<span class="w"> </span>timeout<span class="w"> </span>after<span class="w"> </span><span class="m">15</span><span class="w"> </span>sec,<span class="w"> </span><span class="nb">wait</span><span class="w"> </span><span class="m">0</span><span class="w"> </span>sec<span class="w"> </span>before<span class="w"> </span>next<span class="w"> </span>attempt.
+b<span class="s1">&#39;mount.nfs4: Connection timed out&#39;</span>
+</code></pre></div></p>
+<p>This likely means your mount target isn't setup correctly. Possibly the security group is not allowing traffic from the EKS cluster.</p>
+<h3 id="model-loading-job">Model Loading Job<a class="headerlink" href="#model-loading-job" title="Permanent link">&para;</a></h3>
+<p>Check to see if there is an ongoing model loader Job.</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>get<span class="w"> </span><span class="nb">jobs</span>
 </code></pre></div>
 
 

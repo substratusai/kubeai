@@ -45,6 +45,10 @@
          <lastmod>2024-10-25</lastmod>
     </url>
     <url>
+         <loc>https://www.kubeai.org/how-to/cache-models-with-aws-efs/</loc>
+         <lastmod>2024-10-25</lastmod>
+    </url>
+    <url>
          <loc>https://www.kubeai.org/how-to/cache-models-with-gcp-filestore/</loc>
          <lastmod>2024-10-25</lastmod>
     </url>
