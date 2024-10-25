@@ -1,0 +1,26 @@
+resourceProfiles:
+  nvidia-gpu-l4:
+    nodeSelector:
+      karpenter.k8s.aws/instance-gpu-name: "l4"
+  nvidia-gpu-l40s:
+    nodeSelector:
+      karpenter.k8s.aws/instance-gpu-name: "l40s"
+  nvidia-gpu-h100:
+    nodeSelector:
+      karpenter.k8s.aws/instance-gpu-name: "h100"
+  nvidia-gpu-a100-80gb:
+    nodeSelector:
+      karpenter.k8s.aws/instance-gpu-name: "a100"
+      karpenter.k8s.aws/instance-gpu-memory: "81920"
+  nvidia-gpu-a100-40gb:
+    nodeSelector:
+      karpenter.k8s.aws/instance-gpu-name: "a100"
+      karpenter.k8s.aws/instance-gpu-memory: "40960"
+
+cacheProfiles:
+  efs-dynamic:
+    sharedFilesystem:
+      storageClassName: "efs-sc"
+  efs-static:
+    sharedFilesystem:
+      persistentVolumeName: "efs-pv"
