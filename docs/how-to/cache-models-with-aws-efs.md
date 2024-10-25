@@ -13,6 +13,7 @@ Set environment variables to match your environment.
 
 ```bash
 export CLUSTER_NAME="cluster-with-karpenter"
+export CLUSTER_REGION="us-west-2"
 ```
 
 Create an EFS file system in the same VPC as your EKS cluster.
@@ -27,7 +28,7 @@ cidr_range=$(aws ec2 describe-vpcs \
     --vpc-ids $vpc_id \
     --query "Vpcs[].CidrBlock" \
     --output text \
-    --region ${AWS_DEFAULT_REGION})
+    --region ${CLUSTER_REGION})
 
 security_group_id=$(aws ec2 create-security-group \
     --group-name MyEfsSecurityGroup \
@@ -42,7 +43,7 @@ aws ec2 authorize-security-group-ingress \
     --cidr $cidr_range
 
 file_system_id=$(aws efs create-file-system \
-    --region ${AWS_DEFAULT_REGION} \
+    --region ${CLUSTER_REGION} \
     --performance-mode generalPurpose \
     --query 'FileSystemId' \
     --output text)
@@ -62,21 +63,21 @@ done <<< "$SUBNETS"
 ## 2. Install the EFS CSI driver
 
 ```bash
-export role_name=AmazonEKS_EFS_CSI_DriverRole
+export ROLE_NAME=AmazonEKS_EFS_CSI_DriverRole
 eksctl create iamserviceaccount \
     --name efs-csi-controller-sa \
     --namespace kube-system \
     --cluster ${CLUSTER_NAME} \
-    --role-name $role_name \
+    --role-name ${ROLE_NAME} \
     --role-only \
     --attach-policy-arn arn:aws:iam::aws:policy/service-role/AmazonEFSCSIDriverPolicy \
     --approve
 
-TRUST_POLICY=$(aws iam get-role --role-name $role_name \
+TRUST_POLICY=$(aws iam get-role --role-name ${ROLE_NAME} \
     --query 'Role.AssumeRolePolicyDocument' --output json | \
     sed -e 's/efs-csi-controller-sa/efs-csi-*/' -e 's/StringEquals/StringLike/')
 
-aws iam update-assume-role-policy --role-name $role_name --policy-document "$TRUST_POLICY"
+aws iam update-assume-role-policy --role-name ${ROLE_NAME} --policy-document "$TRUST_POLICY"
 
 # Get the role ARN
 EFS_ROLE_ARN=$(aws iam get-role --role-name AmazonEKS_EFS_CSI_DriverRole \
