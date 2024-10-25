@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://www.kubeai.org/how-to/configure-resource-profiles/">
+        <link rel="canonical" href="https://www.kubeai.org/installation/eks/">
       
       
-        <link rel="prev" href="../configure-embedding-models/">
+        <link rel="prev" href="../..">
       
       
-        <link rel="next" href="../configure-speech-to-text/">
+        <link rel="next" href="../gke/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Configure resource profiles - KubeAI</title>
+        <title>Install on EKS - KubeAI</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#configure-resource-profiles" class="md-skip">
+        <a href="#install-on-eks" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Configure resource profiles
+              Install on EKS
             
           </span>
         </div>
@@ -242,17 +242,19 @@
       
   
   
+    
   
   
+  
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
@@ -266,7 +268,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Installation
@@ -277,10 +279,30 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../installation/eks/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Install on EKS
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -289,6 +311,62 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-create-eks-cluster-with-karpenter" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Create EKS cluster with Karpenter
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-configure-a-karpenter-gpu-nodepool" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Configure a Karpenter GPU NodePool
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-install-kubeai" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Install KubeAI
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-optionally-configure-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Optionally configure models
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -301,7 +379,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../installation/gke/" class="md-nav__link">
+      <a href="../gke/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -326,19 +404,17 @@
       
   
   
-    
   
   
-  
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -352,7 +428,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             How to
@@ -366,7 +442,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architect-for-multitenancy/" class="md-nav__link">
+      <a href="../../how-to/architect-for-multitenancy/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -387,7 +463,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../build-models-into-containers/" class="md-nav__link">
+      <a href="../../how-to/build-models-into-containers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -408,7 +484,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cache-models-with-gcp-filestore/" class="md-nav__link">
+      <a href="../../how-to/cache-models-with-gcp-filestore/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -429,7 +505,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configure-autoscaling/" class="md-nav__link">
+      <a href="../../how-to/configure-autoscaling/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -450,7 +526,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configure-embedding-models/" class="md-nav__link">
+      <a href="../../how-to/configure-embedding-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -468,30 +544,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Configure resource profiles
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../how-to/configure-resource-profiles/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -500,44 +556,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#modifying-preconfigured-resource-profiles" class="md-nav__link">
-    <span class="md-ellipsis">
-      Modifying preconfigured resource profiles
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#adding-additional-resource-profiles" class="md-nav__link">
-    <span class="md-ellipsis">
-      Adding additional resource profiles
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -550,7 +568,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configure-speech-to-text/" class="md-nav__link">
+      <a href="../../how-to/configure-speech-to-text/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -571,7 +589,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../install-models/" class="md-nav__link">
+      <a href="../../how-to/install-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1102,18 +1120,36 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#modifying-preconfigured-resource-profiles" class="md-nav__link">
+  <a href="#1-create-eks-cluster-with-karpenter" class="md-nav__link">
     <span class="md-ellipsis">
-      Modifying preconfigured resource profiles
+      1. Create EKS cluster with Karpenter
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#adding-additional-resource-profiles" class="md-nav__link">
+  <a href="#2-configure-a-karpenter-gpu-nodepool" class="md-nav__link">
     <span class="md-ellipsis">
-      Adding additional resource profiles
+      2. Configure a Karpenter GPU NodePool
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-install-kubeai" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Install KubeAI
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-optionally-configure-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Optionally configure models
     </span>
   </a>
   
@@ -1137,47 +1173,136 @@
   
 
 
-<h1 id="configure-resource-profiles">Configure resource profiles<a class="headerlink" href="#configure-resource-profiles" title="Permanent link">&para;</a></h1>
-<p>This guide will cover modifying preconfigured <a href="../../concepts/resource-profiles/">resource profiles</a> and adding your own.</p>
-<h2 id="modifying-preconfigured-resource-profiles">Modifying preconfigured resource profiles<a class="headerlink" href="#modifying-preconfigured-resource-profiles" title="Permanent link">&para;</a></h2>
-<p>The KubeAI helm chart comes with preconfigured resource profiles for common resource types such as NVIDIA L4 GPUs. You can view these profiles in the <a href="https://github.com/substratusai/kubeai/blob/main/charts/kubeai/values.yaml">default helm values file</a>.</p>
-<p>These profiles usually require some additional settings based on the cluster/cloud that KubeAI is installed into. You can modify a resource profile by setting custom helm values and runing <code>helm install</code> or <code>helm upgrade</code>. For example, if you are installing KubeAI on GKE you will need to set GKE-specific node selectors:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># helm-values.yaml</span>
-<span class="nt">resourceProfiles</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">nvidia-gpu-l4</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">nodeSelector</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">cloud.google.com/gke-accelerator</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;nvidia-l4&quot;</span>
-<span class="w">      </span><span class="nt">cloud.google.com/gke-spot</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;true&quot;</span>
+<h1 id="install-on-eks">Install on EKS<a class="headerlink" href="#install-on-eks" title="Permanent link">&para;</a></h1>
+<details>
+<summary>TIP: Make sure you have enough GPU quota in your AWS account.</summary>
+<p>The default quotas for GPU instances are often 0. You will need to request a quota increase for the GPU instances you want to use.</p>
+<p>The following quotas may require an increase if you wish to use GPUs in your EKS cluster:
+- All G and VT Spot Instance Requests
+- All P5 Spot Instance Requests
+- All P4, P3 and P2 Spot Instance Requests
+- Running Dedicated p4d Hosts</p>
+</details>
+<h2 id="1-create-eks-cluster-with-karpenter">1. Create EKS cluster with Karpenter<a class="headerlink" href="#1-create-eks-cluster-with-karpenter" title="Permanent link">&para;</a></h2>
+<p>Set the environment variables used throughout this guide:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">CLUSTER_NAME</span><span class="o">=</span><span class="s2">&quot;cluster-with-karpenter&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">AWS_DEFAULT_REGION</span><span class="o">=</span><span class="s2">&quot;us-west-2&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">K8S_VERSION</span><span class="o">=</span><span class="s2">&quot;1.30&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">GPU_AMI_ID</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>aws<span class="w"> </span>ssm<span class="w"> </span>get-parameter<span class="w"> </span>--name<span class="w"> </span>/aws/service/eks/optimized-ami/<span class="si">${</span><span class="nv">K8S_VERSION</span><span class="si">}</span>/amazon-linux-2-gpu/recommended/image_id<span class="w"> </span>--query<span class="w"> </span>Parameter.Value<span class="w"> </span>--output<span class="w"> </span>text<span class="k">)</span><span class="s2">&quot;</span>
 </code></pre></div>
-<p>NOTE: See the cloud-specific installation guide for a comprehensive list of settings.</p>
-<h2 id="adding-additional-resource-profiles">Adding additional resource profiles<a class="headerlink" href="#adding-additional-resource-profiles" title="Permanent link">&para;</a></h2>
-<p>If the preconfigured resource profiles do not meet your needs you can add additional profiles by appending to the <code>.resourceProfiles</code> object in the helm values file you use to install KubeAI.</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># helm-values.yaml</span>
-<span class="nt">resourceProfiles</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">my-custom-gpu</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">imageName</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;optional-custom-image-name&quot;</span>
-<span class="w">    </span><span class="nt">nodeSelector</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">my-custom-node-pool</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;some-value&quot;</span>
-<span class="w">    </span><span class="nt">limits</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">custom.com/gpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1&quot;</span>
-<span class="w">    </span><span class="nt">requests</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">custom.com/gpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1&quot;</span>
-<span class="w">      </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;3&quot;</span>
-<span class="w">      </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;12Gi&quot;</span>
-<span class="w">    </span><span class="nt">runtimeClassName</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;my-custom-runtime-class&quot;</span>
+<p>Create the EKS cluster using eksctl:
+<div class="highlight"><pre><span></span><code>eksctl<span class="w"> </span>create<span class="w"> </span>cluster<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;EOF</span>
+<span class="s">---</span>
+<span class="s">apiVersion: eksctl.io/v1alpha5</span>
+<span class="s">kind: ClusterConfig</span>
+<span class="s">metadata:</span>
+<span class="s">  name: &quot;${CLUSTER_NAME}&quot;</span>
+<span class="s">  region: &quot;${AWS_DEFAULT_REGION}&quot;</span>
+<span class="s">  version: &quot;${K8S_VERSION}&quot;</span>
+<span class="s">  tags:</span>
+<span class="s">    karpenter.sh/discovery: &quot;${CLUSTER_NAME}&quot; # here, it is set to the cluster name</span>
+
+<span class="s">iam:</span>
+<span class="s">  withOIDC: true # required</span>
+
+<span class="s">karpenter:</span>
+<span class="s">  version: &#39;1.0.6&#39; # Exact version must be specified</span>
+
+<span class="s">managedNodeGroups:</span>
+<span class="s">- instanceType: m5.large</span>
+<span class="s">  amiFamily: AmazonLinux2</span>
+<span class="s">  name: &quot;${CLUSTER_NAME}-m5-ng&quot;</span>
+<span class="s">  desiredCapacity: 2</span>
+<span class="s">  minSize: 1</span>
+<span class="s">  maxSize: 10</span>
+<span class="s">EOF</span>
+</code></pre></div></p>
+<h2 id="2-configure-a-karpenter-gpu-nodepool">2. Configure a Karpenter GPU NodePool<a class="headerlink" href="#2-configure-a-karpenter-gpu-nodepool" title="Permanent link">&para;</a></h2>
+<p>Create the NodePool and EC2NodeClass objects:</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;EOF</span>
+<span class="s">apiVersion: karpenter.sh/v1</span>
+<span class="s">kind: NodePool</span>
+<span class="s">metadata:</span>
+<span class="s">  name: gpu</span>
+<span class="s">spec:</span>
+<span class="s">  template:</span>
+<span class="s">    spec:</span>
+<span class="s">      requirements:</span>
+<span class="s">        - key: karpenter.sh/capacity-type</span>
+<span class="s">          operator: In</span>
+<span class="s">          values: [&quot;spot&quot;, &quot;on-demand&quot;]</span>
+<span class="s">        - key: karpenter.k8s.aws/instance-category</span>
+<span class="s">          operator: In</span>
+<span class="s">          values: [&quot;g&quot;, &quot;p&quot;]</span>
+<span class="s">      nodeClassRef:</span>
+<span class="s">        group: karpenter.k8s.aws</span>
+<span class="s">        kind: EC2NodeClass</span>
+<span class="s">        name: gpu</span>
+<span class="s">      expireAfter: 720h # 30 * 24h = 720h</span>
+<span class="s">      taints:</span>
+<span class="s">      - key: nvidia.com/gpu</span>
+<span class="s">        value: &quot;true&quot;</span>
+<span class="s">        effect: NoSchedule</span>
+<span class="s">  limits:</span>
+<span class="s">    cpu: 1000</span>
+<span class="s">  disruption:</span>
+<span class="s">    consolidationPolicy: WhenEmptyOrUnderutilized</span>
+<span class="s">    consolidateAfter: 1m</span>
+<span class="s">---</span>
+<span class="s">apiVersion: karpenter.k8s.aws/v1</span>
+<span class="s">kind: EC2NodeClass</span>
+<span class="s">metadata:</span>
+<span class="s">  name: gpu</span>
+<span class="s">spec:</span>
+<span class="s">  amiFamily: AL2 # Amazon Linux 2</span>
+<span class="s">  role: &quot;eksctl-KarpenterNodeRole-${CLUSTER_NAME}&quot;</span>
+<span class="s">  subnetSelectorTerms:</span>
+<span class="s">    - tags:</span>
+<span class="s">        karpenter.sh/discovery: &quot;${CLUSTER_NAME}&quot; # replace with your cluster name</span>
+<span class="s">  securityGroupSelectorTerms:</span>
+<span class="s">    - tags:</span>
+<span class="s">        karpenter.sh/discovery: &quot;${CLUSTER_NAME}&quot; # replace with your cluster name</span>
+<span class="s">  amiSelectorTerms:</span>
+<span class="s">    - id: &quot;${GPU_AMI_ID}&quot; # &lt;- GPU Optimized AMD AMI </span>
+<span class="s">  blockDeviceMappings:</span>
+<span class="s">    - deviceName: /dev/xvda</span>
+<span class="s">      ebs:</span>
+<span class="s">        volumeSize: 300Gi</span>
+<span class="s">        volumeType: gp3</span>
+<span class="s">        encrypted: true</span>
+<span class="s">EOF</span>
 </code></pre></div>
-<p>If you need to run custom model server images on your resource profile, make sure to also add those in the <code>modelServers</code> section:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># helm-values.yaml</span>
-<span class="nt">modelServers</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">VLLM</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">images</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">optional-custom-image-name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;my-repo/my-vllm-image:v1.2.3&quot;</span>
-<span class="w">  </span><span class="nt">OLlama</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">images</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">optional-custom-image-name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;my-repo/my-ollama-image:v1.2.3&quot;</span>
+<p>Install the NVIDIA device plugin (needed for Karpenter nodes):</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.16.1/deployments/static/nvidia-device-plugin.yml
 </code></pre></div>
-<h1 id="next">Next<a class="headerlink" href="#next" title="Permanent link">&para;</a></h1>
-<p>See the guide on <a href="../install-models/">how to install models</a> which includes how to configure the resource profile to use for a given model.</p>
+<h2 id="3-install-kubeai">3. Install KubeAI<a class="headerlink" href="#3-install-kubeai" title="Permanent link">&para;</a></h2>
+<p>Add KubeAI Helm repository.</p>
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>kubeai<span class="w"> </span>https://www.kubeai.org
+helm<span class="w"> </span>repo<span class="w"> </span>update
+</code></pre></div>
+<p><strong>Make sure</strong> you have a HuggingFace Hub token set in your environment (<code>HUGGING_FACE_HUB_TOKEN</code>).</p>
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">HF_TOKEN</span><span class="o">=</span><span class="s2">&quot;replace-with-your-huggingface-token&quot;</span>
+</code></pre></div>
+<p>Install KubeAI with <a href="https://helm.sh/docs/intro/install/">Helm</a>.</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-L<span class="w"> </span>-O<span class="w"> </span>https://raw.githubusercontent.com/substratusai/kubeai/refs/heads/main/charts/kubeai/values-eks.yaml
+<span class="c1"># Please review the values-eks.yaml file and edit the nodeSelectors if needed.</span>
+cat<span class="w"> </span>values-eks.yaml
+helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>kubeai<span class="w"> </span>kubeai/kubeai<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-f<span class="w"> </span>values-eks.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--set<span class="w"> </span>secrets.huggingface.token<span class="o">=</span><span class="nv">$HF_TOKEN</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--wait
+</code></pre></div>
+<h2 id="3-optionally-configure-models">3. Optionally configure models<a class="headerlink" href="#3-optionally-configure-models" title="Permanent link">&para;</a></h2>
+<p>Optionally install preconfigured models.</p>
+<div class="highlight"><pre><span></span><code>cat<span class="w"> </span><span class="s">&lt;&lt;EOF &gt; kubeai-models.yaml</span>
+<span class="s">catalog:</span>
+<span class="s">  llama-3.1-8b-instruct-fp8-l4:</span>
+<span class="s">    enabled: true</span>
+<span class="s">EOF</span>
+
+helm<span class="w"> </span>install<span class="w"> </span>kubeai-models<span class="w"> </span>kubeai/models<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-f<span class="w"> </span>./kubeai-models.yaml
+</code></pre></div>
 
 
 
