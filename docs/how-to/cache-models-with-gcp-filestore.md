@@ -13,6 +13,25 @@ Ensure that the Filestore API is enabled.
 gcloud services enable file.googleapis.com
 ```
 
+## 1. Configure KubeAI with Caching Profile
+
+You can skip this step if you've already installed KubeAI using the [GKE Helm values file: values-gke.yaml](https://github.com/substratusai/kubeai/blob/main/charts/kubeai/values-gke.yaml).
+
+Configure KubeAI with the Filestore cache profiles.
+```bash
+helm upgrade --install kubeai kubeai/kubeai \
+  --reuse-values -f - <<EOF
+cacheProfiles:
+  standard-filestore:
+    sharedFilesystem:
+      storageClassName: "standard-rwx"
+  premium-filestore:
+    sharedFilesystem:
+      storageClassName: "premium-rwx"
+EOF
+```
+
+## 2. Deploy a model that uses the Filestore Caching Profile
 Apply a Model with the cache profile set to `standard-filestore` (defined in the reference [GKE Helm values file](https://github.com/substratusai/kubeai/blob/main/charts/kubeai/values-gke.yaml)).
 
 <details markdown="1">
