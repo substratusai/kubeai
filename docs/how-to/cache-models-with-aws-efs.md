@@ -118,7 +118,7 @@ Make sure to set `file_system_id` match the EFS file system ID created in the fi
 
 ## 3. Configure KubeAI with the EFS cache profile
 
-You can skip this step if you've already installed KubeAI using the [EKS Helm values file: values-eks.yaml](https://github.com/substratusai/kubeai/blob/main/charts/kubeai/values-eks.yaml) file.
+You can skip this step if you've already installed KubeAI using the [EKS Helm values file: values-eks.yaml](https://github.com/substratusai/kubeai/blob/main/charts/kubeai/values-eks.yaml).
 
 Configure KubeAI with the `efs-dynamic` cache profile.
 ```bash
@@ -133,6 +133,8 @@ cacheProfiles:
       persistentVolumeName: "efs-pv"
 EOF
 ```
+You can also manually provision a PersistentVolume using EFS static mode.
+The efs-static profile is used for this purpose.
 
 ## 4. Configure a model to use the EFS cache
 
