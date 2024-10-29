@@ -1355,7 +1355,7 @@ Verify that the EFS CSI driver is running.</p>
 </code></pre></div>
 <p>Make sure to set <code>file_system_id</code> match the EFS file system ID created in the first step.</p>
 <h2 id="3-configure-kubeai-with-the-efs-cache-profile">3. Configure KubeAI with the EFS cache profile<a class="headerlink" href="#3-configure-kubeai-with-the-efs-cache-profile" title="Permanent link">&para;</a></h2>
-<p>You can skip this step if you've already installed KubeAI using the <a href="https://github.com/substratusai/kubeai/blob/main/charts/kubeai/values-eks.yaml">EKS Helm values file: values-eks.yaml</a> file.</p>
+<p>You can skip this step if you've already installed KubeAI using the <a href="https://github.com/substratusai/kubeai/blob/main/charts/kubeai/values-eks.yaml">EKS Helm values file: values-eks.yaml</a>.</p>
 <p>Configure KubeAI with the <code>efs-dynamic</code> cache profile.
 <div class="highlight"><pre><span></span><code>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>kubeai<span class="w"> </span>kubeai/kubeai<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--reuse-values<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;EOF</span>
@@ -1367,7 +1367,9 @@ Verify that the EFS CSI driver is running.</p>
 <span class="s">    sharedFilesystem:</span>
 <span class="s">      persistentVolumeName: &quot;efs-pv&quot;</span>
 <span class="s">EOF</span>
-</code></pre></div></p>
+</code></pre></div>
+You can also manually provision a PersistentVolume using EFS static mode.
+The efs-static profile is used for this purpose.</p>
 <h2 id="4-configure-a-model-to-use-the-efs-cache">4. Configure a model to use the EFS cache<a class="headerlink" href="#4-configure-a-model-to-use-the-efs-cache" title="Permanent link">&para;</a></h2>
 <p>Apply a Model with <code>cacheProfile</code> set to <code>efs-dynamic</code>.</p>
 <p>NOTE: If you already installed the models chart, you will need to edit you values file and run <code>helm upgrade</code>.</p>

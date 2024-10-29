@@ -475,6 +475,24 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#1-configure-kubeai-with-caching-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Configure KubeAI with Caching Profile
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-deploy-a-model-that-uses-the-filestore-caching-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Deploy a model that uses the Filestore Caching Profile
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#troubleshooting" class="md-nav__link">
     <span class="md-ellipsis">
       Troubleshooting
@@ -1147,6 +1165,24 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#1-configure-kubeai-with-caching-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Configure KubeAI with Caching Profile
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-deploy-a-model-that-uses-the-filestore-caching-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Deploy a model that uses the Filestore Caching Profile
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#troubleshooting" class="md-nav__link">
     <span class="md-ellipsis">
       Troubleshooting
@@ -1214,6 +1250,21 @@
 <p>Ensure that the Filestore API is enabled.</p>
 <div class="highlight"><pre><span></span><code>gcloud<span class="w"> </span>services<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>file.googleapis.com
 </code></pre></div>
+<h2 id="1-configure-kubeai-with-caching-profile">1. Configure KubeAI with Caching Profile<a class="headerlink" href="#1-configure-kubeai-with-caching-profile" title="Permanent link">&para;</a></h2>
+<p>You can skip this step if you've already installed KubeAI using the <a href="https://github.com/substratusai/kubeai/blob/main/charts/kubeai/values-gke.yaml">GKE Helm values file: values-gke.yaml</a>.</p>
+<p>Configure KubeAI with the Filestore cache profiles.
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>kubeai<span class="w"> </span>kubeai/kubeai<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--reuse-values<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;EOF</span>
+<span class="s">cacheProfiles:</span>
+<span class="s">  standard-filestore:</span>
+<span class="s">    sharedFilesystem:</span>
+<span class="s">      storageClassName: &quot;standard-rwx&quot;</span>
+<span class="s">  premium-filestore:</span>
+<span class="s">    sharedFilesystem:</span>
+<span class="s">      storageClassName: &quot;premium-rwx&quot;</span>
+<span class="s">EOF</span>
+</code></pre></div></p>
+<h2 id="2-deploy-a-model-that-uses-the-filestore-caching-profile">2. Deploy a model that uses the Filestore Caching Profile<a class="headerlink" href="#2-deploy-a-model-that-uses-the-filestore-caching-profile" title="Permanent link">&para;</a></h2>
 <p>Apply a Model with the cache profile set to <code>standard-filestore</code> (defined in the reference <a href="https://github.com/substratusai/kubeai/blob/main/charts/kubeai/values-gke.yaml">GKE Helm values file</a>).</p>
 <details>
 <summary>TIP: If you want to use `premium-filestore` you will need to ensure you have quota.</summary>
