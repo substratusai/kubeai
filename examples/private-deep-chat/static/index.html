@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+</head>
+<script type="module" src="https://unpkg.com/deep-chat@2.0.1/dist/deepChat.bundle.js"></script>
+
+<body>
+    <deep-chat id="chat-element" style="border-radius: 10px; width: 96vw; height: calc(100vh - 70px); padding-top: 10px"
+        messageStyles='{"default": {"shared": {"innerContainer": {"fontSize": "1rem"}}}}'
+        inputAreaStyle='{"fontSize": "1rem"}'
+        connect='{"url":"/openai/v1/chat/completions", "credentials": "same-origin", "stream": true}'
+        directConnection='{"openAI":{"chat": {"model": "gemma2-2b-cpu"}, "key": "placeholder", "validateKeyProperty": false}}'
+        textInput='{"placeholder":{"text": "Welcome to the demo!"}}'>
+    </deep-chat>
+</body>
+
+</html>
