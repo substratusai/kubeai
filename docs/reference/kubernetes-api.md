@@ -59,10 +59,11 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `url` _string_ | URL of the model to be served.<br />Currently only the following formats are supported:<br />For VLLM & FasterWhisper engines: "hf://<model-repo>/<model-name>"<br />For OLlama engine: "ollama://<model> |  |  |
+| `url` _string_ | URL of the model to be served.<br />Currently only the following formats are supported:<br />For VLLM & FasterWhisper engines: "hf://<model-repo>/<model-name>"<br />For OLlama engine: "ollama://<model> |  | Required: \{\} <br /> |
 | `features` _[ModelFeature](#modelfeature) array_ | Features that the model supports.<br />Dictates the APIs that are available for the model. |  | Enum: [TextGeneration TextEmbedding SpeechToText] <br /> |
-| `engine` _string_ | Engine to be used for the server process. |  | Enum: [OLlama VLLM FasterWhisper Infinity] <br /> |
+| `engine` _string_ | Engine to be used for the server process. |  | Enum: [OLlama VLLM FasterWhisper Infinity] <br />Required: \{\} <br /> |
 | `resourceProfile` _string_ | ResourceProfile required to serve the model.<br />Use the format "<resource-profile-name>:<count>".<br />Example: "nvidia-gpu-l4:2" - 2x NVIDIA L4 GPUs.<br />Must be a valid ResourceProfile defined in the system config. |  |  |
+| `cacheProfile` _string_ | CacheProfile to be used for caching model artifacts.<br />Must be a valid CacheProfile defined in the system config. |  |  |
 | `image` _string_ | Image to be used for the server process.<br />Will be set from ResourceProfile + Engine if not specified. |  |  |
 | `args` _string array_ | Args to be added to the server process. |  |  |
 | `env` _object (keys:string, values:string)_ | Env variables to be added to the server process. |  |  |
@@ -89,6 +90,23 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `replicas` _[ModelStatusReplicas](#modelstatusreplicas)_ |  |  |  |
+| `cache` _[ModelStatusCache](#modelstatuscache)_ |  |  |  |
+
+
+#### ModelStatusCache
+
+
+
+
+
+
+
+_Appears in:_
+- [ModelStatus](#modelstatus)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `loaded` _boolean_ |  |  |  |
 
 
 #### ModelStatusReplicas
