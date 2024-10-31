@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://www.kubeai.org/how-to/configure-resource-profiles/">
+        <link rel="canonical" href="https://www.kubeai.org/tutorials/private-deep-chat/">
       
       
-        <link rel="prev" href="../configure-embedding-models/">
+        <link rel="prev" href="../langtrace/">
       
       
-        <link rel="next" href="../configure-speech-to-text/">
+        <link rel="next" href="../weaviate/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Configure resource profiles - KubeAI</title>
+        <title>Private Deep Chat - KubeAI</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#configure-resource-profiles" class="md-skip">
+        <a href="#private-deep-chat" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Configure resource profiles
+              Private Deep Chat
             
           </span>
         </div>
@@ -326,19 +326,17 @@
       
   
   
-    
   
   
-  
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -352,7 +350,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             How to
@@ -366,7 +364,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architect-for-multitenancy/" class="md-nav__link">
+      <a href="../../how-to/architect-for-multitenancy/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -387,7 +385,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../build-models-into-containers/" class="md-nav__link">
+      <a href="../../how-to/build-models-into-containers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -408,7 +406,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cache-models-with-aws-efs/" class="md-nav__link">
+      <a href="../../how-to/cache-models-with-aws-efs/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -429,7 +427,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cache-models-with-gcp-filestore/" class="md-nav__link">
+      <a href="../../how-to/cache-models-with-gcp-filestore/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -450,7 +448,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configure-autoscaling/" class="md-nav__link">
+      <a href="../../how-to/configure-autoscaling/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -471,7 +469,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configure-embedding-models/" class="md-nav__link">
+      <a href="../../how-to/configure-embedding-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -489,30 +487,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Configure resource profiles
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../how-to/configure-resource-profiles/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -521,44 +499,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#modifying-preconfigured-resource-profiles" class="md-nav__link">
-    <span class="md-ellipsis">
-      Modifying preconfigured resource profiles
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#adding-additional-resource-profiles" class="md-nav__link">
-    <span class="md-ellipsis">
-      Adding additional resource profiles
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -571,7 +511,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configure-speech-to-text/" class="md-nav__link">
+      <a href="../../how-to/configure-speech-to-text/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -592,7 +532,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../install-models/" class="md-nav__link">
+      <a href="../../how-to/install-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -743,17 +683,19 @@
       
   
   
+    
   
   
+  
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
           <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
@@ -767,7 +709,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             Tutorials
@@ -781,7 +723,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorials/langchain/" class="md-nav__link">
+      <a href="../langchain/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -802,7 +744,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorials/langtrace/" class="md-nav__link">
+      <a href="../langtrace/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -820,10 +762,30 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../tutorials/private-deep-chat/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Private Deep Chat
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -832,6 +794,35 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Guide
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -844,7 +835,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorials/weaviate/" class="md-nav__link">
+      <a href="../weaviate/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1144,18 +1135,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#modifying-preconfigured-resource-profiles" class="md-nav__link">
+  <a href="#guide" class="md-nav__link">
     <span class="md-ellipsis">
-      Modifying preconfigured resource profiles
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#adding-additional-resource-profiles" class="md-nav__link">
-    <span class="md-ellipsis">
-      Adding additional resource profiles
+      Guide
     </span>
   </a>
   
@@ -1179,47 +1161,73 @@
   
 
 
-<h1 id="configure-resource-profiles">Configure resource profiles<a class="headerlink" href="#configure-resource-profiles" title="Permanent link">&para;</a></h1>
-<p>This guide will cover modifying preconfigured <a href="../../concepts/resource-profiles/">resource profiles</a> and adding your own.</p>
-<h2 id="modifying-preconfigured-resource-profiles">Modifying preconfigured resource profiles<a class="headerlink" href="#modifying-preconfigured-resource-profiles" title="Permanent link">&para;</a></h2>
-<p>The KubeAI helm chart comes with preconfigured resource profiles for common resource types such as NVIDIA L4 GPUs. You can view these profiles in the <a href="https://github.com/substratusai/kubeai/blob/main/charts/kubeai/values.yaml">default helm values file</a>.</p>
-<p>These profiles usually require some additional settings based on the cluster/cloud that KubeAI is installed into. You can modify a resource profile by setting custom helm values and runing <code>helm install</code> or <code>helm upgrade</code>. For example, if you are installing KubeAI on GKE you will need to set GKE-specific node selectors:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># helm-values.yaml</span>
-<span class="nt">resourceProfiles</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">nvidia-gpu-l4</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">nodeSelector</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">cloud.google.com/gke-accelerator</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;nvidia-l4&quot;</span>
-<span class="w">      </span><span class="nt">cloud.google.com/gke-spot</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;true&quot;</span>
+<h1 id="private-deep-chat">Private Deep Chat<a class="headerlink" href="#private-deep-chat" title="Permanent link">&para;</a></h1>
+<p>In this tutorial you are going to deploy a custom, multitenant, private chat application. The Chat UI is powered by <a href="https://deepchat.dev/" target="_blank">Deep Chat</a> - an open source web component that is easy to embed into any frontend web app framework or simple HTML page. KubeAI will be used to ensure that all chat interactions are kept private within the cluster.</p>
+<p><img alt="Screenshot" src="../../screenshots/private-deep-chat.png" /></p>
+<p>In this example, we will deploy a custom Go server that will authenticate users using <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#basic_authentication_scheme" target="_blank">Basic Authentication</a>. When a webpage is requested, a simple HTML page with the <code>&lt;deep-chat&gt;</code> web component will be served. We will configure Deep Chat and KubeAI to communicate using the OpenAI API format:</p>
+<div class="highlight"><pre><span></span><code><span class="p">&lt;</span><span class="nt">deep-chat</span>
+    <span class="na">connect</span><span class="o">=</span><span class="s">&#39;{&quot;url&quot;:&quot;/openai/v1/chat/completions&quot;, ... }&#39;</span>
+    <span class="na">directConnection</span><span class="o">=</span><span class="s">&#39;{&quot;openAI&quot;: ... }&#39;</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">deep-chat</span><span class="p">&gt;</span>
 </code></pre></div>
-<p>NOTE: See the cloud-specific installation guide for a comprehensive list of settings.</p>
-<h2 id="adding-additional-resource-profiles">Adding additional resource profiles<a class="headerlink" href="#adding-additional-resource-profiles" title="Permanent link">&para;</a></h2>
-<p>If the preconfigured resource profiles do not meet your needs you can add additional profiles by appending to the <code>.resourceProfiles</code> object in the helm values file you use to install KubeAI.</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># helm-values.yaml</span>
-<span class="nt">resourceProfiles</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">my-custom-gpu</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">imageName</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;optional-custom-image-name&quot;</span>
-<span class="w">    </span><span class="nt">nodeSelector</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">my-custom-node-pool</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;some-value&quot;</span>
-<span class="w">    </span><span class="nt">limits</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">custom.com/gpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1&quot;</span>
-<span class="w">    </span><span class="nt">requests</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">custom.com/gpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1&quot;</span>
-<span class="w">      </span><span class="nt">cpu</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;3&quot;</span>
-<span class="w">      </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;12Gi&quot;</span>
-<span class="w">    </span><span class="nt">runtimeClassName</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;my-custom-runtime-class&quot;</span>
+<p>When the HTML page loads we will use Javascript to make an initial request to fetch available models. The Go server will proxy this request to KubeAI:</p>
+<div class="highlight"><pre><span></span><code><span class="nx">proxyHandler</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">httputil</span><span class="p">.</span><span class="nx">NewSingleHostReverseProxy</span><span class="p">(</span><span class="nx">kubeAIURL</span><span class="p">)</span>
+
+<span class="nx">http</span><span class="p">.</span><span class="nx">Handle</span><span class="p">(</span><span class="s">&quot;/openai/&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">authUserToKubeAI</span><span class="p">(</span><span class="nx">proxyHandler</span><span class="p">))</span>
 </code></pre></div>
-<p>If you need to run custom model server images on your resource profile, make sure to also add those in the <code>modelServers</code> section:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># helm-values.yaml</span>
-<span class="nt">modelServers</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">VLLM</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">images</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">optional-custom-image-name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;my-repo/my-vllm-image:v1.2.3&quot;</span>
-<span class="w">  </span><span class="nt">OLlama</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">images</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">optional-custom-image-name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;my-repo/my-ollama-image:v1.2.3&quot;</span>
+<p>The server will translate the username and password provided in the basic auth header into a label selector that will tell KubeAI to filter the models it returns. The same approach will also be used to enforce access at inference-time.</p>
+<div class="highlight"><pre><span></span><code><span class="nx">r</span><span class="p">.</span><span class="nx">Header</span><span class="p">.</span><span class="nx">Set</span><span class="p">(</span><span class="s">&quot;X-Label-Selector&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">fmt</span><span class="p">.</span><span class="nx">Sprintf</span><span class="p">(</span><span class="s">&quot;tenancy in (%s)&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">strings</span><span class="p">.</span><span class="nx">Join</span><span class="p">(</span><span class="nx">tenancy</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;,&quot;</span><span class="p">),</span>
+<span class="p">))</span>
 </code></pre></div>
-<h1 id="next">Next<a class="headerlink" href="#next" title="Permanent link">&para;</a></h1>
-<p>See the guide on <a href="../install-models/">how to install models</a> which includes how to configure the resource profile to use for a given model.</p>
+<p>While this is a simple example application, this overall architecture can be used when incorporating chat into a production application.</p>
+<p><img alt="Architecture" src="../../diagrams/private-deep-chat.excalidraw.png" /></p>
+<h2 id="guide">Guide<a class="headerlink" href="#guide" title="Permanent link">&para;</a></h2>
+<p>Create a local cluster with <a href="https://kind.sigs.k8s.io/" target="_blank">kind</a> and install KubeAI.</p>
+<div class="highlight"><pre><span></span><code>kind<span class="w"> </span>create<span class="w"> </span>cluster
+
+helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>kubeai<span class="w"> </span>https://www.kubeai.org<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>helm<span class="w"> </span>repo<span class="w"> </span>update
+helm<span class="w"> </span>install<span class="w"> </span>kubeai<span class="w"> </span>kubeai/kubeai<span class="w"> </span>--set<span class="w"> </span>openwebui.enabled<span class="o">=</span><span class="nb">false</span><span class="w"> </span>--wait<span class="w"> </span>--timeout<span class="w"> </span>5m
+</code></pre></div>
+<p>Clone the KubeAI repo and navigate to the example directory.</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/substratusai/kubeai
+<span class="nb">cd</span><span class="w"> </span>./kubeai/examples/private-deep-chat
+</code></pre></div>
+<p>Build the private chat application and load the image into the local kind cluster.</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>private-deep-chat:latest<span class="w"> </span>.
+kind<span class="w"> </span>load<span class="w"> </span>docker-image<span class="w"> </span>private-deep-chat:latest
+</code></pre></div>
+<p>Deploy the private chat application along with some KubeAI Models.</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>./manifests
+</code></pre></div>
+<p>Start a port-forward.</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>port-forward<span class="w"> </span>svc/private-deep-chat<span class="w"> </span><span class="m">8000</span>:80
+</code></pre></div>
+<p>In your browser, navigate to <a href="http://localhost:8000/" target="_blank">localhost:8000</a>.</p>
+<p>Login as any of the following users:</p>
+<table>
+<thead>
+<tr>
+<th>User</th>
+<th>Password</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>nick</td>
+<td>nickspass</td>
+</tr>
+<tr>
+<td>sam</td>
+<td>samspass</td>
+</tr>
+<tr>
+<td>joe</td>
+<td>joespass</td>
+</tr>
+</tbody>
+</table>
+<p>These users each have access to different KubeAI Models. You can see this assignment by looking at the user mapping in <code>./main.go</code> and the associated <code>tenancy</code> label on the Models in <code>./manifests/models.yaml</code>.</p>
 
 
 
