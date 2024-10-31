@@ -1,0 +1,17 @@
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: llama-3.1-70b-instruct-awq-int4-gh200
+spec:
+  features: [TextGeneration]
+  owner:
+  url: hf://hugging-quants/Meta-Llama-3.1-70B-Instruct-AWQ-INT4
+  engine: VLLM
+  args:
+    - --max-model-len=16384
+    - --max-num-batched-token=16384
+    - --enable-prefix-caching
+    - --disable-log-requests
+  targetRequests: 50
+  minReplicas: 1
+  resourceProfile: nvidia-gpu-gh200:1

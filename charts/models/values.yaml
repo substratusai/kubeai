@@ -161,6 +161,18 @@ catalog:
     # You can also use nvidia-gpu-a100-80gb:8
     resourceProfile: nvidia-gpu-h100:8
     targetRequests: 500
+  llama-3.1-70b-instruct-awq-int4-gh200:
+    enabled: false
+    features: [TextGeneration]
+    url: hf://hugging-quants/Meta-Llama-3.1-70B-Instruct-AWQ-INT4
+    engine: VLLM
+    args:
+      - --max-model-len=16384
+      - --max-num-batched-token=16384
+      - --enable-prefix-caching
+      - --disable-log-requests
+    resourceProfile: nvidia-gpu-gh200:1
+    targetRequests: 50
   llama-3.1-405b-instruct-fp8-a100-80b:
     features: [TextGeneration]
     url: hf://neuralmagic/Meta-Llama-3.1-405B-Instruct-FP8

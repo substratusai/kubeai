@@ -20,6 +20,7 @@ modelServers:
       default: "vllm/vllm-openai:v0.6.3.post1"
       cpu: "substratusai/vllm:v0.6.3.post1-cpu"
       google-tpu: "substratusai/vllm:v0.6.3.post1-tpu"
+      gh200: "drikster80/vllm-gh200-openai:v0.6.3.post1"
   OLlama:
     images:
       default: "ollama/ollama:latest"
@@ -97,6 +98,19 @@ resourceProfiles:
         operator: "Equal"
         value: "present"
         effect: "NoSchedule"
+  nvidia-gpu-gh200:
+    imageName: "gh200"
+    limits:
+      nvidia.com/gpu: "1"
+    requests:
+      nvidia.com/gpu: "1"
+    tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Equal"
+        value: "present"
+        effect: "NoSchedule"
+    nodeSelector:
+      nvidia.com/gpu.family: "hopper"
   nvidia-gpu-a100-80gb:
     imageName: "nvidia-gpu"
     limits:
