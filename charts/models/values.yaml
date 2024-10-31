@@ -156,7 +156,8 @@ catalog:
       - --max-num-batched-token=65536
       - --max-num-seqs=1024
       - --gpu-memory-utilization=0.9
-      - --pipeline-parallel-size=8
+      - --pipeline-parallel-size=2
+      - --tensor-parallel-size=4
       - --enable-prefix-caching
       - --enable-chunked-prefill=false
       - --disable-log-requests
