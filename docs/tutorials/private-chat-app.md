@@ -1,6 +1,6 @@
 # Private Chat App
 
-In this tutorial you are going to deploy a custom, multitenant private chat application. The Chat UI is powered by [Deep Chat](https://deepchat.dev/) - a flexible web component that is easy to embed into any frontend web app framework or simple HTML page. KubeAI will be used to ensure that all chat interactions are kept private within the cluster.
+In this tutorial you are going to deploy a custom, multitenant private chat application. The Chat UI is powered by [Deep Chat](https://deepchat.dev/) - an open source web component that is easy to embed into any frontend web app framework or simple HTML page. KubeAI will be used to ensure that all chat interactions are kept private within the cluster.
 
 ![Private Chat UI](../diagrams/private-chat-ui.excalidraw.png)
 
