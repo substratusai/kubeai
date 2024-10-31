@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: private-deep-chat
+  labels:
+    app: private-deep-chat
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8000
+  selector:
+    app: private-deep-chat

@@ -1,0 +1,25 @@
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: gemma2-2b-cpu
+  labels:
+    tenancy: group-a
+spec:
+  features: [TextGeneration]
+  owner: google
+  url: ollama://gemma2:2b
+  engine: OLlama
+  resourceProfile: cpu:2
+---
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: opt-125m-cpu
+  labels:
+    tenancy: group-b
+spec:
+  features: [TextGeneration]
+  owner: facebook
+  url: hf://facebook/opt-125m
+  engine: VLLM
+  resourceProfile: cpu:1

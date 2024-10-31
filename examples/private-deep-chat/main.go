@@ -23,7 +23,7 @@ func main() {
 	proxyHandler := httputil.NewSingleHostReverseProxy(kubeAIURL)
 
 	http.Handle("/", authUser(staticHandler))
-	http.Handle("/openai/", authUserToKubeAI(proxyHandler)) //authUserToKubeAI(proxyHandler))
+	http.Handle("/openai/", authUserToKubeAI(proxyHandler))
 
 	listenAddr := os.Getenv("LISTEN_ADDR")
 	log.Printf("listening on %s", listenAddr)
