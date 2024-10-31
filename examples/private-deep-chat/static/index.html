@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+</head>
+<script type="module" src="https://unpkg.com/deep-chat@2.0.1/dist/deepChat.bundle.js"></script>
+
+<body style="font-family: Inter, sans-serif, Avenir, Helvetica, Arial">
+    <div style="padding: 10px; text-align: center">
+        Model:
+        <select id="modelDropdown">
+            <option value="">Loading...</option>
+        </select>
+    </div>
+    <deep-chat id="chat" style="border-radius: 10px; width: 96vw; height: calc(100vh - 70px); padding-top: 10px"
+        messageStyles='{"default": {"shared": {"innerContainer": {"fontSize": "1rem"}}}}'
+        inputAreaStyle='{"fontSize": "1rem"}'
+        connect='{"url":"/openai/v1/chat/completions", "credentials": "same-origin", "stream": true}'
+        directConnection='{"openAI":{"chat": {"model": ""}, "key": "placeholder", "validateKeyProperty": false}}'
+        textInput='{"placeholder":{"text": "Chat with a model!"}}'>
+    </deep-chat>
+</body>
+<script type="module">
+    const chatElementRef = document.getElementById('chat');
+    const modelDropdownElementRef = document.getElementById('modelDropdown');
+
+    var selectedModelId = "";
+
+    chatElementRef.requestInterceptor = (requestDetails) => {
+        // Remove the placeholder API key from the request headers
+        // and allow the "same-origin" credentials to be sent
+        // (the logged-in basic-auth user/pass).
+        console.log("Request interceptor: ", requestDetails);
+        delete requestDetails.headers['Authorization'];
+
+        // Set the selected model ID.
+        // NOTE: modifying the model in the directConnection attribute on the <deep-chat>
+        // element does not appear to take effect.
+        requestDetails.body.model = selectedModelId;
+
+        return requestDetails;
+    };
+
+    function selectModel(modelId) {
+        console.log("Selected model: ", modelId);
+        selectedModelId = modelId;
+    }
+
+    fetch('/openai/v1/models')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const dropdown = document.getElementById('modelDropdown');
+
+            // Clear the dropdown
+            dropdown.innerHTML = '';
+
+            // Populate the dropdown with country names
+            // Select the first option by default.
+            var i = 0;
+            data.data.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model.id;  // Use the country code as value
+                option.textContent = model.id;  // Display country name
+                dropdown.appendChild(option);
+                if (i === 0) {
+                    selectModel(model.id);
+                }
+                i++;
+            });
+        })
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        });
+
+    // Add event listener to log dropdown selections.
+    modelDropdownElementRef.addEventListener('change', (event) => {
+        const selectedValue = event.target.value;
+        const selectedText = event.target.options[event.target.selectedIndex].text;
+        console.log(`Selected Value: ${selectedValue}, Selected Text: ${selectedText}`);
+        selectModel(selectedValue);
+    });
+</script>
+
+</html>

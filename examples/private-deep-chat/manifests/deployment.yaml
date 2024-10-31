@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: private-deep-chat
+  labels:
+    app: private-deep-chat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: private-deep-chat
+  template:
+    metadata:
+      labels:
+        app: private-deep-chat
+    spec:
+      containers:
+      - name: server
+        image: private-deep-chat:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        env:
+        - name: LISTEN_ADDR
+          value: ":8000"
+        - name: KUBEAI_ADDR
+          value: "http://kubeai"
+
