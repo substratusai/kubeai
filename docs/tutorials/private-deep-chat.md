@@ -1,6 +1,6 @@
 # Private Deep Chat
 
-In this tutorial you are going to deploy a custom, multitenant, private chat application. The Chat UI is powered by <a href="https://deepchat.dev/" target="_blank">Deep Chat</a> - an open source web component that is easy to embed into any frontend web app framework or simple HTML page. KubeAI will be used to ensure that all chat interactions are kept private within the cluster.
+In this tutorial you are going to deploy a custom, multitenant, private chat application. The Chat UI is powered by <a href="https://deepchat.dev/" target="_blank">Deep Chat</a> - an open source web component that is easy to embed into any frontend web app framework or simple HTML page. KubeAI, which serves LLMs on Kubernetes, will be used to ensure that chat interactions are not sent out of the cluster.
 
 ![Screenshot](../screenshots/private-deep-chat.png)
 
@@ -71,6 +71,8 @@ kubectl port-forward svc/private-deep-chat 8000:80
 ```
 
 In your browser, navigate to <a href="http://localhost:8000/" target="_blank">localhost:8000</a>.
+
+NOTE: Your first interaction with a given model may take a minute as the model needs to scale from zero. Use `kubectl get pods` to check the scale up progress.
 
 Login as any of the following users:
 
