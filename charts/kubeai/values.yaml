@@ -62,6 +62,12 @@ resourceProfiles:
       # Perhaps this is just needed for GKE Autopilot which defaults
       # to 1Gi for CPU-only.
       # ephemeral-storage: "2Gi"
+  nvidia-gpu-t4:
+    imageName: "nvidia-gpu"
+    limits:
+      nvidia.com/gpu: "1"
+    requests:
+      nvidia.com/gpu: "1"
   nvidia-gpu-l4:
     imageName: "nvidia-gpu"
     limits:
