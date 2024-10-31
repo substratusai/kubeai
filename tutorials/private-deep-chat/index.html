@@ -1162,7 +1162,7 @@
 
 
 <h1 id="private-deep-chat">Private Deep Chat<a class="headerlink" href="#private-deep-chat" title="Permanent link">&para;</a></h1>
-<p>In this tutorial you are going to deploy a custom, multitenant, private chat application. The Chat UI is powered by <a href="https://deepchat.dev/" target="_blank">Deep Chat</a> - an open source web component that is easy to embed into any frontend web app framework or simple HTML page. KubeAI will be used to ensure that all chat interactions are kept private within the cluster.</p>
+<p>In this tutorial you are going to deploy a custom, multitenant, private chat application. The Chat UI is powered by <a href="https://deepchat.dev/" target="_blank">Deep Chat</a> - an open source web component that is easy to embed into any frontend web app framework or simple HTML page. KubeAI, which serves LLMs on Kubernetes, will be used to ensure that chat interactions are not sent out of the cluster.</p>
 <p><img alt="Screenshot" src="../../screenshots/private-deep-chat.png" /></p>
 <p>In this example, we will deploy a custom Go server that will authenticate users using <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#basic_authentication_scheme" target="_blank">Basic Authentication</a>. When a webpage is requested, a simple HTML page with the <code>&lt;deep-chat&gt;</code> web component will be served. We will configure Deep Chat and KubeAI to communicate using the OpenAI API format:</p>
 <div class="highlight"><pre><span></span><code><span class="p">&lt;</span><span class="nt">deep-chat</span>
@@ -1204,6 +1204,7 @@ kind<span class="w"> </span>load<span class="w"> </span>docker-image<span class=
 <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>port-forward<span class="w"> </span>svc/private-deep-chat<span class="w"> </span><span class="m">8000</span>:80
 </code></pre></div>
 <p>In your browser, navigate to <a href="http://localhost:8000/" target="_blank">localhost:8000</a>.</p>
+<p>NOTE: Your first interaction with a given model may take a minute as the model needs to scale from zero. Use <code>kubectl get pods</code> to check the scale up progress.</p>
 <p>Login as any of the following users:</p>
 <table>
 <thead>
