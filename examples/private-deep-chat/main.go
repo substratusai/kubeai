@@ -48,13 +48,6 @@ func authUserToKubeAI(h http.Handler) http.Handler {
 
 		tenancy, authenticated := authenticate(user, pass)
 
-		log.Printf("%s: %s - authenticating: basicAuthProvided=%t, user=%q, pass=%q, tenancy=%q, authenticated=%t",
-			r.Method, r.URL.Path,
-			basicAuthProvided,
-			user, pass, strings.Join(tenancy, ","),
-			authenticated,
-		)
-
 		if !basicAuthProvided || !authenticated || len(tenancy) == 0 {
 			w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
