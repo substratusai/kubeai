@@ -109,8 +109,6 @@ resourceProfiles:
         operator: "Equal"
         value: "present"
         effect: "NoSchedule"
-    nodeSelector:
-      nvidia.com/gpu.family: "hopper"
   nvidia-gpu-a100-80gb:
     imageName: "nvidia-gpu"
     limits:
