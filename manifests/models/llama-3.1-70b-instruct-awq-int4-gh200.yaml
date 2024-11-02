@@ -1,3 +1,4 @@
+# Source: models/templates/models.yaml
 apiVersion: kubeai.org/v1
 kind: Model
 metadata:
@@ -13,5 +14,4 @@ spec:
     - --enable-prefix-caching
     - --disable-log-requests
   targetRequests: 50
-  minReplicas: 1
   resourceProfile: nvidia-gpu-gh200:1
