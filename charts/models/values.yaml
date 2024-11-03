@@ -171,6 +171,25 @@ catalog:
     args:
       - --max-model-len=32768
       - --max-num-batched-token=32768
+      - --max-num-seqs=1024
+      - --gpu-memory-utilization=0.9
+      - --enable-prefix-caching
+      - --enable-chunked-prefill=false
+      - --disable-log-requests
+      - --kv-cache-dtype=fp8
+      - --enforce-eager
+    resourceProfile: nvidia-gpu-gh200:1
+    targetRequests: 1024
+  llama-3.1-70b-instruct-fp8-gh200:
+    enabled: true
+    features: [TextGeneration]
+    url: hf://neuralmagic/Meta-Llama-3.1-70B-Instruct-FP8
+    engine: VLLM
+    env:
+      VLLM_ATTENTION_BACKEND: FLASHINFER
+    args:
+      - --max-model-len=32768
+      - --max-num-batched-token=32768
       - --max-num-seqs=512
       - --gpu-memory-utilization=0.9
       - --enable-prefix-caching
