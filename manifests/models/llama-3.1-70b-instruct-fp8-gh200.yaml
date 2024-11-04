@@ -11,14 +11,14 @@ spec:
   args:
     - --max-model-len=32768
     - --max-num-batched-token=32768
-    - --max-num-seqs=512
+    - --max-num-seqs=1024
     - --gpu-memory-utilization=0.9
     - --enable-prefix-caching
-    - --enable-chunked-prefill
+    - --enable-chunked-prefill=false
     - --disable-log-requests
     - --kv-cache-dtype=fp8
     - --enforce-eager
   env:
     VLLM_ATTENTION_BACKEND: FLASHINFER
-  targetRequests: 512
+  targetRequests: 1024
   resourceProfile: nvidia-gpu-gh200:1
