@@ -1,12 +1,14 @@
-# KubeAI: Private Open AI on Kubernetes
+# KubeAI: AI Inferencing Operator
 
 Get inferencing running on Kubernetes: LLMs, Embeddings, Speech-to-Text.
 
 ✅️  Drop-in replacement for OpenAI with API compatibility  
-🧠  Serve top OSS models (LLMs, Whisper, etc.)  
+⚖️  Scale from zero, autoscale based on load  
+🧠  Serve text generation models (LLMs, VLMs, etc.)  
+💬  Speech to Text API  
+🧮  Embedding/Vector API  
 🚀  Multi-platform: CPU-only, GPU, TPU  
 💾  Model caching with shared filesystems (EFS, Filestore, etc.)  
-⚖️  Scale from zero, autoscale based on load  
 🛠️  Zero dependencies (does not depend on Istio, Knative, etc.)  
 💬  Chat UI included ([OpenWebUI](https://github.com/open-webui/open-webui))  
 🤖  Operates OSS model servers (vLLM, Ollama, FasterWhisper, Infinity)  
