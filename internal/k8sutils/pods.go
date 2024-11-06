@@ -40,6 +40,13 @@ func PodHash(podSpec corev1.PodSpec) string {
 	return rand.SafeEncodeString(fmt.Sprint(podTemplateSpecHasher.Sum32()))
 }
 
+// StringHash returns a hash value calculated from the input string.
+func StringHash(s string) string {
+	h := fnv.New32a()
+	h.Write([]byte(s))
+	return rand.SafeEncodeString(fmt.Sprint(h.Sum32()))
+}
+
 // DeepHashObject writes specified object to hash using the spew library
 // which follows pointers and prints actual values of the nested objects
 // ensuring the hash does not change when a pointer changes.
@@ -47,4 +54,33 @@ func PodHash(podSpec corev1.PodSpec) string {
 func DeepHashObject(hasher hash.Hash, objectToWrite interface{}) {
 	hasher.Reset()
 	fmt.Fprintf(hasher, "%v", dump.ForHash(objectToWrite))
+}
+
+// RemoveEphemeralContainer removes the container with the given name from the pod
+// and returns true if it did.
+func RemoveEphemeralContainer(pod *corev1.Pod, name string) bool {
+	if i := FindEphemeralContainer(pod, name); i != -1 {
+		pod.Spec.EphemeralContainers = append(pod.Spec.EphemeralContainers[:i], pod.Spec.EphemeralContainers[i+1:]...)
+		return true
+	}
+	return false
+}
+
+// AddEphemeralContainer adds the container to the pod and returns true if it did.
+func AddEphemeralContainer(pod *corev1.Pod, container corev1.EphemeralContainer) bool {
+	if FindEphemeralContainer(pod, container.Name) != -1 {
+		return false
+	}
+	pod.Spec.EphemeralContainers = append(pod.Spec.EphemeralContainers, container)
+	return true
+}
+
+// FindEphemeralContainer returns the index of the container with the given name in the pod.
+func FindEphemeralContainer(pod *corev1.Pod, name string) int {
+	for i, container := range pod.Spec.EphemeralContainers {
+		if container.Name == name {
+			return i
+		}
+	}
+	return -1
 }

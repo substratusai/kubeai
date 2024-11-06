@@ -4,14 +4,14 @@ FROM python:3.10-slim
 ENV PYTHONUNBUFFERED=1
 
 # Set the working directory in the container
-WORKDIR /app
+WORKDIR /loaders
 
 # Install Hugging Face CLI tool and other necessary dependencies
 RUN pip install --no-cache-dir huggingface_hub
 
 RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
 
-COPY download.sh /app/download.sh
-RUN chmod +x /app/download.sh
+COPY huggingface.sh /loaders/huggingface.sh
+RUN chmod +x /loaders/huggingface.sh
 
-CMD ["/app/download.sh"]
+ENV PATH="/loaders:${PATH}"

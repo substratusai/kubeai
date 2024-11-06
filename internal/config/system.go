@@ -227,12 +227,14 @@ type ModelServer struct {
 }
 
 type ModelLoaders struct {
-	Huggingface ModelLoader `json:"huggingface" validate:"required"`
+	Image string `json:"image" validate:"required"`
+
+	Huggingface ModelLoaderSource `json:"huggingface" validate:"required"`
 }
 
-type ModelLoader struct {
-	// Image is the image to use for the downloader.
-	Image string `json:"image" validate:"required"`
+type ModelLoaderSource struct {
+	// Command to run within the model loader.
+	Command string `json:"command" validate:"required"`
 }
 
 type ModelServerPods struct {

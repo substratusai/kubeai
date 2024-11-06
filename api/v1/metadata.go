@@ -21,3 +21,7 @@ const (
 func PVCModelAnnotation(modelName string) string {
 	return "models.kubeai.org/" + modelName
 }
+
+func PodAdapterLabel(adapterID string) string {
+	return "adapter.kubeai.org/" + adapterID
+}

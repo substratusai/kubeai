@@ -33,6 +33,8 @@ type ModelSpec struct {
 	// +kubebuilder:validation:XValidation:rule="self.startsWith(\"hf://\") || self.startsWith(\"ollama://\")", message="url must start with \"hf://\" or \"ollama://\" and not be empty."
 	URL string `json:"url"`
 
+	Adapters []Adapter `json:"adapters,omitempty"`
+
 	// Features that the model supports.
 	// Dictates the APIs that are available for the model.
 	Features []ModelFeature `json:"features"`
@@ -117,6 +119,11 @@ const (
 	FasterWhisperEngine = "FasterWhisper"
 	InfinityEngine      = "Infinity"
 )
+
+type Adapter struct {
+	ID  string `json:"id"`
+	URL string `json:"url"`
+}
 
 // ModelStatus defines the observed state of Model.
 type ModelStatus struct {

@@ -346,9 +346,9 @@ func (r *ModelReconciler) loadCacheJobForModel(m *kubeaiv1.Model, c ModelConfig)
 		},
 	}
 
+	job.Spec.Template.Spec.Containers[0].Image = r.ModelLoaders.Image
 	switch c.Source.typ {
 	case modelSourceTypeHuggingface:
-		job.Spec.Template.Spec.Containers[0].Image = r.ModelLoaders.Huggingface.Image
 		job.Spec.Template.Spec.Containers[0].Env = append(job.Spec.Template.Spec.Containers[0].Env,
 			corev1.EnvVar{
 				Name:  "MODEL_DIR",
@@ -418,10 +418,10 @@ func (r *ModelReconciler) evictCacheJobForModel(m *kubeaiv1.Model, c ModelConfig
 		},
 	}
 
+	job.Spec.Template.Spec.Containers[0].Image = r.ModelLoaders.Image
 	if c.CacheProfile.SharedFilesystem != nil {
 		switch c.Source.typ {
 		case modelSourceTypeHuggingface:
-			job.Spec.Template.Spec.Containers[0].Image = r.ModelLoaders.Huggingface.Image
 			job.Spec.Template.Spec.Containers[0].Command = []string{"bash", "-c", "rm -rf " + modelCacheDir(m)}
 		default:
 			panic("unsupported model source, this point should not be reached")

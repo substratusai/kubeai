@@ -37,8 +37,9 @@ modelServers:
       default: "michaelf34/infinity:latest"
 
 modelLoaders:
+  image: "substratusai/kubeai-model-loader:v0.9.0"
   huggingface:
-    image: "substratusai/huggingface-model-loader:v0.9.0"
+    command: ["huggingface.sh"]
 
 modelServerPods:
   # Security Context for the model pods
