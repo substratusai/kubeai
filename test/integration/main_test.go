@@ -173,7 +173,7 @@ func baseSysCfg(t *testing.T) config.System {
 				},
 			},
 		},
-		ModelLoaders: config.ModelLoaders{
+		ModelLoading: config.ModelLoading{
 			Huggingface: config.ModelLoader{
 				Image: "huggingface-loader",
 			},

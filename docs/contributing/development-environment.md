@@ -28,10 +28,10 @@ kind create cluster
 make generate && make manifests
 
 # When CRDs are changed reapply using kubectl:
-kubectl apply -f ./charts/kubeai/charts/crds/crds
+kubectl apply -f ./charts/kubeai/templates/crds
 
 # Model with special address annotations:
-kubectl apply -f ./hack/dev-model.yaml
+kubectl apply -f ./hack/dev-models/kind-cpu.yaml
 
 # OPTION A #
 # Run KubeAI inside cluster

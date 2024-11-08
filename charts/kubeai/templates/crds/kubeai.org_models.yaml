@@ -39,6 +39,18 @@ spec:
           spec:
             description: ModelSpec defines the desired state of Model.
             properties:
+              adapters:
+                items:
+                  properties:
+                    id:
+                      type: string
+                    url:
+                      type: string
+                  required:
+                  - id
+                  - url
+                  type: object
+                type: array
               args:
                 description: Args to be added to the server process.
                 items:

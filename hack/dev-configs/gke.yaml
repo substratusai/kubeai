@@ -22,9 +22,8 @@ modelServers:
     images:
       default: "michaelf34/infinity:latest"
 
-modelDownloaders:
-  huggingface:
-    image: "us-central1-docker.pkg.dev/substratus-dev/default/huggingface-model-downloader:v0.0.1"
+modelLoading:
+  image: kubeai-model-loader:latest
 
 modelRollouts:
   surge: 0

@@ -26,6 +26,7 @@ import (
 	"time"
 
 	batchv1 "k8s.io/api/batch/v1"
+	"k8s.io/client-go/rest"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -48,6 +49,8 @@ const (
 // ModelReconciler reconciles a Model object
 type ModelReconciler struct {
 	client.Client
+	RESTConfig              *rest.Config
+	PodRESTClient           rest.Interface
 	Scheme                  *runtime.Scheme
 	Namespace               string
 	AllowPodAddressOverride bool
@@ -56,7 +59,7 @@ type ModelReconciler struct {
 	CacheProfiles           map[string]config.CacheProfile
 	ModelServers            config.ModelServers
 	ModelServerPods         config.ModelServerPods
-	ModelLoaders            config.ModelLoaders
+	ModelLoaders            config.ModelLoading
 	ModelRollouts           config.ModelRollouts
 }
 
@@ -158,19 +161,31 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (res 
 	model.Status.Replicas.All = int32(len(allPods.Items))
 	model.Status.Replicas.Ready = readyPods
 
-	plan := r.calculatePodPlan(allPods, model, modelConfig)
-	if plan.containsActions() {
-		changed, err := plan.execute(ctx, r.Client, r.Scheme)
-		if changed {
+	scaled := false
+	defer func() {
+		if scaled {
 			// Slow things down to wait for caches to sync.
 			// This is important because the pod plan has some calculations that
 			// assume the cache is up to date.
 			// TODO: Use "epectations" instead of a wait - see the ReplicaSet controller.
 			time.Sleep(3 * time.Second)
 		}
+	}()
+
+	plan := r.calculatePodPlan(allPods, model, modelConfig)
+	if plan.containsActions() {
+		var err error
+		scaled, err = plan.execute(ctx, r.Client, r.Scheme)
 		if err != nil {
 			return ctrl.Result{}, fmt.Errorf("executing pod plan: %w", err)
 		}
+	}
+
+	if err := r.reconcileAdapters(ctx, plan.toRemain, model.Spec.Adapters); err != nil {
+		if errors.Is(err, errReturnEarly) {
+			return ctrl.Result{}, nil
+		}
+		return ctrl.Result{}, fmt.Errorf("reconciling adapters: %w", err)
 	}
 
 	return ctrl.Result{}, nil

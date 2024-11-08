@@ -15,7 +15,7 @@ type System struct {
 
 	ModelServers ModelServers `json:"modelServers" validate:"required"`
 
-	ModelLoaders ModelLoaders `json:"modelLoaders" validate:"required"`
+	ModelLoading ModelLoading `json:"modelLoading" validate:"required"`
 
 	ResourceProfiles map[string]ResourceProfile `json:"resourceProfiles" validate:"required"`
 
@@ -226,15 +226,8 @@ type ModelServer struct {
 	Images map[string]string `json:"images"`
 }
 
-type ModelLoaders struct {
+type ModelLoading struct {
 	Image string `json:"image" validate:"required"`
-
-	Huggingface ModelLoaderSource `json:"huggingface" validate:"required"`
-}
-
-type ModelLoaderSource struct {
-	// Command to run within the model loader.
-	Command string `json:"command" validate:"required"`
 }
 
 type ModelServerPods struct {
