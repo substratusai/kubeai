@@ -1,0 +1,24 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: llama-3.1-70b-instruct-fp8-gh200
+spec:
+  features: [TextGeneration]
+  owner:
+  url: hf://neuralmagic/Meta-Llama-3.1-70B-Instruct-FP8
+  engine: VLLM
+  args:
+    - --max-model-len=32768
+    - --max-num-batched-token=32768
+    - --max-num-seqs=1024
+    - --gpu-memory-utilization=0.9
+    - --enable-prefix-caching
+    - --enable-chunked-prefill=false
+    - --disable-log-requests
+    - --kv-cache-dtype=fp8
+    - --enforce-eager
+  env:
+    VLLM_ATTENTION_BACKEND: FLASHINFER
+  targetRequests: 1024
+  resourceProfile: nvidia-gpu-gh200:1
