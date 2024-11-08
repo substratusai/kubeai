@@ -1,0 +1,20 @@
+resourceProfiles:
+  nvidia-gpu-a16:
+    nodeSelector:
+      nvidia.com/gpu.family: "ampere"
+      nvidia.com/gpu.memory: "16384"
+  nvidia-gpu-l4:
+    nodeSelector:
+
+  nvidia-gpu-h100:
+    nodeSelector:
+      nvidia.com/gpu.family: "hopper"
+      nvidia.com/gpu.memory: "81920"
+  nvidia-gpu-a100-80gb:
+    nodeSelector:
+      nvidia.com/gpu.family: "ampere"
+      nvidia.com/gpu.memory: "81920"
+  nvidia-gpu-a100-40gb:
+    nodeSelector:
+      nvidia.com/gpu.family: "ampere"
+      nvidia.com/gpu.memory: "40960"

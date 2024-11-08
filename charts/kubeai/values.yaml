@@ -127,6 +127,16 @@ resourceProfiles:
         operator: "Equal"
         value: "present"
         effect: "NoSchedule"
+  nvidia-gpu-a16:
+    imageName: "nvidia-gpu"
+    limits:
+      nvidia.com/gpu: "1"
+    tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Equal"
+        value: "present"
+        effect: "NoSchedule"
+
 
 cacheProfiles: {}
 
