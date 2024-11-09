@@ -156,14 +156,17 @@ catalog:
       - --max-num-batched-token=32768
       - --max-num-seqs=512
       - --gpu-memory-utilization=0.9
+      # Pipeline parallelism performs better than tensor over PCI.
       - --pipeline-parallel-size=4
+      # A minimum of tensor parallel 2 was needed to not have OOM errors.
+      # We use 8 GPUs so parallelism strategy of 4 x 2 works well.
       - --tensor-parallel-size=2
       - --enable-prefix-caching
       - --enable-chunked-prefill=false
       - --disable-log-requests
       - --kv-cache-dtype=fp8
+      # Enforce eager wasn't supported with FLASHINFER.
       - --enforce-eager
-      # - --num-scheduler-steps=8
     resourceProfile: nvidia-gpu-l4:8
     targetRequests: 500
   llama-3.1-405b-instruct-fp8-h100:
