@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"sync"
+	"time"
 
 	"sigs.k8s.io/yaml"
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
@@ -40,6 +41,7 @@ import (
 	"github.com/substratusai/kubeai/internal/modelproxy"
 	"github.com/substratusai/kubeai/internal/modelscaler"
 	"github.com/substratusai/kubeai/internal/openaiserver"
+	"github.com/substratusai/kubeai/internal/vllmclient"
 
 	// Pulling in these packages will register the gocloud implementations.
 	_ "gocloud.dev/pubsub/awssnssqs"
@@ -221,6 +223,9 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 		ModelServerPods:         cfg.ModelServerPods,
 		ModelLoaders:            cfg.ModelLoading,
 		ModelRollouts:           cfg.ModelRollouts,
+		VLLMClient: &vllmclient.Client{
+			HTTPClient: &http.Client{Timeout: 10 * time.Second},
+		},
 	}
 	if err = modelReconciler.SetupWithManager(mgr); err != nil {
 		return fmt.Errorf("unable to create Model controller: %w", err)

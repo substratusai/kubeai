@@ -1,9 +1,11 @@
 package modelcontroller
 
 import (
+	"context"
 	"sort"
 
 	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
+	v1 "github.com/substratusai/kubeai/api/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -30,6 +32,11 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 	args = append(args, m.Spec.Args...)
 
 	env := []corev1.EnvVar{
+		{
+			// https://docs.vllm.ai/en/latest/models/lora.html#dynamically-serving-lora-adapters
+			Name:  "VLLM_ALLOW_RUNTIME_LORA_UPDATING",
+			Value: "True",
+		},
 		{
 			// TODO: Conditionally set this token based on whether
 			// huggingface is the model source.
@@ -153,4 +160,8 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 	patchServerCacheVolumes(&pod.Spec, m, c)
 
 	return pod
+}
+
+func (r *ModelReconciler) vLLMLoadAdapter(ctx context.Context, pod *corev1.Pod, adapter v1.Adapter) error {
+	return nil
 }

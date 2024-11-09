@@ -38,6 +38,7 @@ import (
 	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
 	"github.com/substratusai/kubeai/internal/config"
 	"github.com/substratusai/kubeai/internal/k8sutils"
+	"github.com/substratusai/kubeai/internal/vllmclient"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -52,6 +53,7 @@ type ModelReconciler struct {
 	RESTConfig              *rest.Config
 	PodRESTClient           rest.Interface
 	Scheme                  *runtime.Scheme
+	VLLMClient              *vllmclient.Client
 	Namespace               string
 	AllowPodAddressOverride bool
 	HuggingfaceSecretName   string
@@ -204,12 +206,16 @@ func (r *ModelReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 var errReturnEarly = fmt.Errorf("return early")
 
+const (
+	appKubernetesIOName = "app.kubernetes.io/name"
+)
+
 func labelsForModel(m *kubeaiv1.Model) map[string]string {
 	engineLowerCase := strings.ToLower(m.Spec.Engine)
 	return map[string]string{
 		"app":                          "model",
 		"model":                        m.Name,
-		"app.kubernetes.io/name":       engineLowerCase,
+		appKubernetesIOName:            engineLowerCase,
 		"app.kubernetes.io/instance":   engineLowerCase + "-" + m.Name,
 		"app.kubernetes.io/managed-by": "kubeai",
 	}

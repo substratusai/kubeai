@@ -1,0 +1,39 @@
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: dev
+  annotations:
+    # Have the controller send requests to localhost to allow for
+    # running the controller locally (assuming a port-forward is in place).
+    model-pod-ip: "127.0.0.1"
+    model-pod-port: "7000" 
+spec:
+  features: [TextGeneration]
+  owner: meta-llama
+  url: hf://TinyLlama/TinyLlama-1.1B-Chat-v0.3
+  #url: hf://meta-llama/Llama-2-7b
+  adapters:
+  - id: test
+    url: hf://jashing/tinyllama-colorist-lora
+  #- id: sql
+  #  url: hf://yard1/llama-2-7b-sql-lora-test
+  engine: VLLM
+  #args:
+  #  - --max-model-len=16384
+  #  - --max-num-batched-token=16384
+  #  - --gpu-memory-utilization=0.8
+  #  - --cpu-offload-gb=10
+  resourceProfile: nvidia-gpu-l4:1
+  minReplicas: 1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dev-model
+spec:
+  selector:
+    model: dev
+  ports:
+    - protocol: TCP
+      port: 7000
+      targetPort: 8000

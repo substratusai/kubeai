@@ -4,13 +4,9 @@ secretNames:
 modelServers:
   VLLM:
     images:
-      # The key is the image name (referenced from resourceProfiles) and the value is the image.
-      # The "default" image should always be specified.
-      # "default" is used when no imageName is specified or if a specific image is not found.
-      default: "vllm/vllm-openai:v0.6.2"
-      cpu: "substratusai/vllm:v0.6.1-cpu"
-      nvidia-gpu: "vllm/vllm-openai:v0.6.2"
-      google-tpu: "substratusai/vllm:v0.6.1-tpu"
+      default: "vllm/vllm-openai:v0.6.3.post1"
+      cpu: "substratusai/vllm:v0.6.3.post1-cpu"
+      google-tpu: "substratusai/vllm:v0.6.3.post1-tpu"
   OLlama:
     images:
       default: "ollama/ollama:latest"
@@ -23,7 +19,7 @@ modelServers:
       default: "michaelf34/infinity:latest"
 
 modelLoading:
-  image: kubeai-model-loader:latest
+  image: us-central1-docker.pkg.dev/substratus-dev/default/kubeai-model-loader
 
 modelRollouts:
   surge: 0
@@ -53,6 +49,9 @@ resourceProfiles:
       nvidia.com/gpu: "1"
       cpu: "6"
       memory: "24Gi"
+    nodeSelector:
+      cloud.google.com/gke-accelerator: "nvidia-l4"
+      cloud.google.com/gke-spot: "true"
 
 cacheProfiles:
   fstore:

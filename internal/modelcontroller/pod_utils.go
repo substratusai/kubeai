@@ -41,3 +41,25 @@ func (r *ModelReconciler) execPod(ctx context.Context, pod *corev1.Pod, containe
 
 	return nil
 }
+
+func (r *ModelReconciler) updatePodRemoveLabel(ctx context.Context, pod *corev1.Pod, key string) error {
+	if pod.Labels == nil {
+		return nil
+	}
+	delete(pod.Labels, key)
+	if err := r.Client.Update(ctx, pod); err != nil {
+		return fmt.Errorf("update pod labels: %w", err)
+	}
+	return nil
+}
+
+func (r *ModelReconciler) updatePodAddLabel(ctx context.Context, pod *corev1.Pod, key, value string) error {
+	if pod.Labels == nil {
+		pod.Labels = make(map[string]string)
+	}
+	pod.Labels[key] = value
+	if err := r.Client.Update(ctx, pod); err != nil {
+		return fmt.Errorf("update pod labels: %w", err)
+	}
+	return nil
+}
