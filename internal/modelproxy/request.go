@@ -25,11 +25,12 @@ type proxyRequest struct {
 
 	selectors []string
 
-	id      string
-	status  int
-	model   string
-	adapter string
-	attempt int
+	id             string
+	status         int
+	requestedModel string
+	model          string
+	adapter        string
+	attempt        int
 }
 
 func newProxyRequest(r *http.Request) *proxyRequest {
@@ -52,6 +53,7 @@ func (pr *proxyRequest) parse() error {
 	// Try to get the model from the header first
 	if headerModel := pr.r.Header.Get("X-Model"); headerModel != "" {
 		pr.model, pr.adapter = apiutils.SplitModelAdapter(headerModel)
+		pr.requestedModel = headerModel
 		// Save the body content (required to support retries of the proxy request)
 		body, err := io.ReadAll(pr.r.Body)
 		if err != nil {
@@ -110,6 +112,7 @@ func (pr *proxyRequest) parse() error {
 					return fmt.Errorf("reading multipart form value: %w", err)
 				}
 				pr.model, pr.adapter = apiutils.SplitModelAdapter(string(value))
+				pr.requestedModel = string(value)
 				// WORKAROUND ALERT:
 				// Omit the "model" field from the proxy request to avoid FasterWhisper validation issues:
 				// See https://github.com/fedirz/faster-whisper-server/issues/71
@@ -149,6 +152,7 @@ func (pr *proxyRequest) parse() error {
 			return fmt.Errorf("unmarshal json: %w", err)
 		}
 		pr.model, pr.adapter = apiutils.SplitModelAdapter(payload.Model)
+		pr.requestedModel = payload.Model
 
 		if pr.model == "" {
 			return fmt.Errorf("no model specified")

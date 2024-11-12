@@ -21,11 +21,19 @@ func TestHandler(t *testing.T) {
 		model1 = "model1"
 		model2 = "model2"
 
+		model3   = "model3"
+		adapter3 = "adapter3"
+
 		maxRetries = 3
 	)
 	models := map[string]testMockModel{
 		model1: {},
 		model2: {},
+		model3: {
+			adapters: map[string]bool{
+				adapter3: true,
+			},
+		},
 	}
 
 	type metricsTestSpec struct {
@@ -69,6 +77,27 @@ func TestHandler(t *testing.T) {
 			},
 			expBackendRequestCount: 1,
 		},
+		"happy 200 model+adapter in body": {
+			reqBody:     fmt.Sprintf(`{"model":%q}`, model3+"/"+adapter3),
+			backendCode: http.StatusOK,
+			backendBody: `{"result":"ok"}`,
+			expCode:     http.StatusOK,
+			expBody:     `{"result":"ok"}`,
+			expMetrics: &metricsTestSpec{
+				expModel: model3 + "/" + adapter3,
+			},
+			expBackendRequestCount: 1,
+		},
+		"404 model+adapter in body but missing adapter": {
+			reqBody: fmt.Sprintf(`{"model":%q}`, model1+"/no-such-adapter"),
+			expCode: http.StatusNotFound,
+			expBody: `{"error":"model not found: model1/no-such-adapter"}` + "\n",
+		},
+		"404 model+adapter in header but missing adapter": {
+			reqHeaders: map[string]string{"X-Model": model1 + "/no-such-adapter"},
+			expCode:    http.StatusNotFound,
+			expBody:    `{"error":"model not found: model1/no-such-adapter"}` + "\n",
+		},
 		"happy 200 model in header": {
 			reqBody:     "{}",
 			reqHeaders:  map[string]string{"X-Model": model1},
@@ -78,6 +107,18 @@ func TestHandler(t *testing.T) {
 			expBody:     `{"result":"ok"}`,
 			expMetrics: &metricsTestSpec{
 				expModel: model1,
+			},
+			expBackendRequestCount: 1,
+		},
+		"happy 200 model+adapter in header": {
+			reqBody:     "{}",
+			reqHeaders:  map[string]string{"X-Model": model3 + "/" + adapter3},
+			backendCode: http.StatusOK,
+			backendBody: `{"result":"ok"}`,
+			expCode:     http.StatusOK,
+			expBody:     `{"result":"ok"}`,
+			expMetrics: &metricsTestSpec{
+				expModel: model3 + "/" + adapter3,
 			},
 			expBackendRequestCount: 1,
 		},

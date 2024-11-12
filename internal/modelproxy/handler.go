@@ -65,10 +65,10 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("model:", pr.model)
+	log.Println("model:", pr.model, "adapter:", pr.adapter)
 
 	metricAttrs := metric.WithAttributeSet(attribute.NewSet(
-		metrics.AttrRequestModel.String(pr.model),
+		metrics.AttrRequestModel.String(pr.requestedModel),
 		metrics.AttrRequestType.String(metrics.AttrRequestTypeHTTP),
 	))
 	metrics.InferenceRequestsActive.Add(pr.r.Context(), 1, metricAttrs)
@@ -80,7 +80,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !modelExists {
-		pr.sendErrorResponse(w, http.StatusNotFound, "model not found: %v", pr.model)
+		pr.sendErrorResponse(w, http.StatusNotFound, "model not found: %v", pr.requestedModel)
 		return
 	}
 

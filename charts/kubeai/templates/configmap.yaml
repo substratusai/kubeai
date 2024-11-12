@@ -15,7 +15,7 @@ data:
     modelServers:
       {{- .Values.modelServers | toYaml | nindent 6 }}
     modelLoading:
-      {{- .Values.modelLoaders | toYaml | nindent 6 }}
+      {{- .Values.modelLoading | toYaml | nindent 6 }}
     modelRollouts:
       {{- .Values.modelRollouts | toYaml | nindent 6 }}
     modelServerPods:
