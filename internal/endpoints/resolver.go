@@ -166,8 +166,8 @@ func (r *Resolver) GetSelfIPs() []string {
 // AwaitBestAddress returns the "IP:Port" with the lowest number of in-flight requests. It will block until an endpoint
 // becomes available or the context times out. It returns a function that should be called when the
 // request is complete to decrement the in-flight count.
-func (r *Resolver) AwaitBestAddress(ctx context.Context, model string) (string, func(), error) {
-	return r.getEndpoints(model).getBestAddr(ctx)
+func (r *Resolver) AwaitBestAddress(ctx context.Context, model, adapter string) (string, func(), error) {
+	return r.getEndpoints(model).getBestAddr(ctx, adapter, false)
 }
 
 // GetAllHosts retrieves the list of all hosts for a given model.

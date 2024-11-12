@@ -11,7 +11,7 @@ func BenchmarkEndpointGroup(b *testing.B) {
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			_, f, err := e.getBestAddr(context.Background())
+			_, f, err := e.getBestAddr(context.Background(), "", false)
 			if err != nil {
 				b.Fatal(err)
 			}

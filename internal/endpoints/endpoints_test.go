@@ -25,7 +25,7 @@ func TestConcurrentAccess(t *testing.T) {
 	}
 	for name, spec := range testCases {
 		randomReadFn := []func(g *endpointGroup){
-			func(g *endpointGroup) { g.getBestAddr(context.Background()) },
+			func(g *endpointGroup) { g.getBestAddr(context.Background(), "", false) },
 			func(g *endpointGroup) { g.getAllAddrs() },
 			func(g *endpointGroup) { g.lenIPs() },
 		}
@@ -80,7 +80,7 @@ func TestBlockAndWaitForEndpoints(t *testing.T) {
 	endpoint := newEndpointGroup()
 	ctx := context.TODO()
 	startTogether(100, func() {
-		endpoint.getBestAddr(ctx)
+		endpoint.getBestAddr(ctx, "", false)
 	})
 	startWg.Wait()
 
@@ -102,7 +102,7 @@ func TestAbortOnCtxCancel(t *testing.T) {
 	go func(t *testing.T) {
 		startWg.Wait()
 		endpoint := newEndpointGroup()
-		_, f, err := endpoint.getBestAddr(ctx)
+		_, f, err := endpoint.getBestAddr(ctx, "", false)
 		defer f()
 		require.Error(t, err)
 		doneWg.Done()

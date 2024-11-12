@@ -10,42 +10,57 @@ import (
 )
 
 func TestAwaitBestHost(t *testing.T) {
-	const myModel = "my-model"
+	const (
+		myModel              = "my-model"
+		myAdapter            = "my-adapter"
+		myAddrWithoutAdapter = "10.0.0.1:8000"
+		myAddrWithAdapter    = "10.0.0.2:8000"
+	)
 
 	manager := &Resolver{endpoints: make(map[string]*endpointGroup, 1)}
 	manager.getEndpoints(myModel).
-		setAddrs(map[string]endpointAttrs{myModel: {}})
+		setAddrs(map[string]endpointAttrs{
+			myAddrWithoutAdapter: {},
+			myAddrWithAdapter: {adapters: map[string]struct{}{
+				myAdapter: {},
+			}},
+		})
 
 	testCases := map[string]struct {
 		model   string
-		timeout time.Duration
+		adapter string
+		expAddr string
 		expErr  error
 	}{
-		"all good": {
+		"model without adapter": {
 			model:   myModel,
-			timeout: time.Millisecond,
+			expAddr: myAddrWithoutAdapter,
 		},
-		"unknown endpoint - blocks until timeout": {
-			model:   "unknown-model",
-			timeout: time.Millisecond,
-			expErr:  context.DeadlineExceeded,
+		"model with adapter": {
+			model:   myModel,
+			adapter: myAdapter,
+			expAddr: myAddrWithAdapter,
+		},
+		"unknown model blocks until timeout": {
+			model:  "unknown-model",
+			expErr: context.DeadlineExceeded,
 		},
 		// not covered: unknown port with multiple ports on entrypoint
 	}
 
 	for name, spec := range testCases {
 		t.Run(name, func(t *testing.T) {
-			ctx, cancel := context.WithTimeout(context.Background(), spec.timeout)
+			ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond)
 			defer cancel()
 
-			gotHost, gotFunc, gotErr := manager.AwaitBestAddress(ctx, spec.model)
+			gotAddr, gotFunc, gotErr := manager.AwaitBestAddress(ctx, spec.model, spec.adapter)
 			if spec.expErr != nil {
 				require.ErrorIs(t, spec.expErr, gotErr)
 				return
 			}
 			require.NoError(t, gotErr)
 			gotFunc()
-			assert.Equal(t, myModel, gotHost)
+			assert.Equal(t, spec.expAddr, gotAddr)
 		})
 	}
 }

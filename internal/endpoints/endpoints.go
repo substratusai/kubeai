@@ -22,12 +22,10 @@ type endpointGroup struct {
 	bcast chan struct{} // closed when there's a broadcast
 }
 
-func newEndpoint() endpoint {
+func newEndpoint(attrs endpointAttrs) endpoint {
 	return endpoint{
-		inFlight: &atomic.Int64{},
-		endpointAttrs: endpointAttrs{
-			adapters: make(map[string]struct{}),
-		},
+		inFlight:      &atomic.Int64{},
+		endpointAttrs: attrs,
 	}
 }
 
@@ -39,10 +37,10 @@ type endpoint struct {
 // getBestAddr returns the best "IP:Port". It blocks until there are available endpoints
 // in the endpoint group. It selects the host with the minimum in-flight requests
 // among all the available endpoints.
-func (e *endpointGroup) getBestAddr(ctx context.Context) (string, func(), error) {
+func (e *endpointGroup) getBestAddr(ctx context.Context, adapter string, awaitChangeEndpoints bool) (string, func(), error) {
 	e.mtx.RLock()
 	// await endpoints exists
-	for len(e.endpoints) == 0 {
+	for awaitChangeEndpoints || len(e.endpoints) == 0 {
 		e.mtx.RUnlock()
 		select {
 		case <-e.awaitEndpoints():
@@ -53,13 +51,25 @@ func (e *endpointGroup) getBestAddr(ctx context.Context) (string, func(), error)
 	}
 	var bestAddr string
 	var minInFlight int
-	for addr := range e.endpoints {
+	for addr, ep := range e.endpoints {
+		if adapter != "" {
+			// Skip endpoints that don't have the requested adapter.
+			if _, ok := ep.adapters[adapter]; !ok {
+				continue
+			}
+		}
 		inFlight := int(e.endpoints[addr].inFlight.Load())
 		if bestAddr == "" || inFlight < minInFlight {
 			bestAddr = addr
 			minInFlight = inFlight
 		}
 	}
+
+	if bestAddr == "" {
+		e.mtx.RUnlock()
+		return e.getBestAddr(ctx, adapter, true)
+	}
+
 	ep := e.endpoints[bestAddr]
 	ep.inFlight.Add(1)
 	decFunc := func() {
@@ -97,22 +107,22 @@ type endpointAttrs struct {
 	adapters map[string]struct{}
 }
 
-func (g *endpointGroup) setAddrs(ips map[string]endpointAttrs) {
+func (g *endpointGroup) setAddrs(addrs map[string]endpointAttrs) {
 	g.mtx.Lock()
-	for ip := range ips {
-		if _, ok := g.endpoints[ip]; !ok {
-			g.endpoints[ip] = newEndpoint()
+	for addr, attrs := range addrs {
+		if _, ok := g.endpoints[addr]; !ok {
+			g.endpoints[addr] = newEndpoint(attrs)
 		}
 	}
-	for ip := range g.endpoints {
-		if _, ok := ips[ip]; !ok {
-			delete(g.endpoints, ip)
+	for addr := range g.endpoints {
+		if _, ok := addrs[addr]; !ok {
+			delete(g.endpoints, addr)
 		}
 	}
 	g.mtx.Unlock()
 
 	// notify waiting requests
-	if len(ips) > 0 {
+	if len(addrs) > 0 {
 		g.broadcastEndpoints()
 	}
 }
