@@ -23,9 +23,9 @@ func TestHandler(t *testing.T) {
 
 		maxRetries = 3
 	)
-	models := map[string]string{
-		model1: "deploy1",
-		model2: "deploy2",
+	models := map[string]testMockModel{
+		model1: {},
+		model2: {},
 	}
 
 	type metricsTestSpec struct {
@@ -247,27 +247,42 @@ func TestHandler(t *testing.T) {
 	}
 }
 
+type testMockModel struct {
+	adapters map[string]bool
+}
+
 type testModelInterface struct {
 	address string
 
-	requestedModel string
+	requestedModel   string
+	requestedAdapter string
 
 	hostRequestCount int
 
-	models map[string]string
+	models map[string]testMockModel
 }
 
-func (t *testModelInterface) LookupModel(ctx context.Context, model string, selector []string) (bool, error) {
-	_, ok := t.models[model]
-	return ok, nil
+func (t *testModelInterface) LookupModel(ctx context.Context, model, adapter string, selector []string) (bool, error) {
+	m, ok := t.models[model]
+	if ok {
+		if adapter == "" {
+			return true, nil
+		}
+		if m.adapters == nil {
+			return false, nil
+		}
+		return m.adapters[adapter], nil
+	}
+	return false, nil
 }
 
 func (t *testModelInterface) ScaleAtLeastOneReplica(ctx context.Context, model string) error {
 	return nil
 }
 
-func (t *testModelInterface) AwaitBestAddress(ctx context.Context, model string) (string, func(), error) {
+func (t *testModelInterface) AwaitBestAddress(ctx context.Context, model, adapter string) (string, func(), error) {
 	t.hostRequestCount++
 	t.requestedModel = model
+	t.requestedAdapter = adapter
 	return t.address, func() {}, nil
 }

@@ -28,7 +28,7 @@ func NewModelScaler(client client.Client, namespace string) *ModelScaler {
 }
 
 // LookupModel checks if a model exists and matches the given label selectors.
-func (s *ModelScaler) LookupModel(ctx context.Context, model string, labelSelectors []string) (bool, error) {
+func (s *ModelScaler) LookupModel(ctx context.Context, model, adapter string, labelSelectors []string) (bool, error) {
 	m := &kubeaiv1.Model{}
 	if err := s.client.Get(ctx, types.NamespacedName{Name: model, Namespace: s.namespace}, m); err != nil {
 		if apierrors.IsNotFound(err) {
@@ -40,6 +40,11 @@ func (s *ModelScaler) LookupModel(ctx context.Context, model string, labelSelect
 	modelLabels := m.GetLabels()
 	if modelLabels == nil {
 		modelLabels = map[string]string{}
+	}
+	if adapter != "" {
+		if _, ok := modelLabels[kubeaiv1.PodAdapterLabel(adapter)]; !ok {
+			return false, nil
+		}
 	}
 	for _, sel := range labelSelectors {
 		parsedSel, err := labels.Parse(sel)

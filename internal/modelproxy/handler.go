@@ -14,12 +14,12 @@ import (
 )
 
 type ModelScaler interface {
-	LookupModel(ctx context.Context, model string, selectors []string) (bool, error)
+	LookupModel(ctx context.Context, model, adapter string, selectors []string) (bool, error)
 	ScaleAtLeastOneReplica(ctx context.Context, model string) error
 }
 
 type EndpointResolver interface {
-	AwaitBestAddress(ctx context.Context, model string) (string, func(), error)
+	AwaitBestAddress(ctx context.Context, model, adapter string) (string, func(), error)
 }
 
 // Handler serves http requests for end-clients.
@@ -74,7 +74,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	metrics.InferenceRequestsActive.Add(pr.r.Context(), 1, metricAttrs)
 	defer metrics.InferenceRequestsActive.Add(pr.r.Context(), -1, metricAttrs)
 
-	modelExists, err := h.modelScaler.LookupModel(r.Context(), pr.model, pr.selectors)
+	modelExists, err := h.modelScaler.LookupModel(r.Context(), pr.model, pr.adapter, pr.selectors)
 	if err != nil {
 		pr.sendErrorResponse(w, http.StatusInternalServerError, "unable to resolve model: %v", err)
 		return
@@ -100,7 +100,7 @@ var AdditionalProxyRewrite = func(*httputil.ProxyRequest) {}
 func (h *Handler) proxyHTTP(w http.ResponseWriter, pr *proxyRequest) {
 	log.Printf("Waiting for host: %v", pr.id)
 
-	addr, decrementInflight, err := h.resolver.AwaitBestAddress(pr.r.Context(), pr.model)
+	addr, decrementInflight, err := h.resolver.AwaitBestAddress(pr.r.Context(), pr.model, pr.adapter)
 	if err != nil {
 		switch {
 		case errors.Is(err, context.Canceled):

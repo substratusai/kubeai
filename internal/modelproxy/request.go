@@ -11,6 +11,7 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/substratusai/kubeai/internal/apiutils"
 )
 
 // proxyRequest keeps track of the state of a request that is to be proxied.
@@ -27,6 +28,7 @@ type proxyRequest struct {
 	id      string
 	status  int
 	model   string
+	adapter string
 	attempt int
 }
 
@@ -49,7 +51,7 @@ func (pr *proxyRequest) parse() error {
 
 	// Try to get the model from the header first
 	if headerModel := pr.r.Header.Get("X-Model"); headerModel != "" {
-		pr.model = headerModel
+		pr.model, pr.adapter = apiutils.SplitModelAdapter(headerModel)
 		// Save the body content (required to support retries of the proxy request)
 		body, err := io.ReadAll(pr.r.Body)
 		if err != nil {
@@ -107,7 +109,7 @@ func (pr *proxyRequest) parse() error {
 				if err != nil {
 					return fmt.Errorf("reading multipart form value: %w", err)
 				}
-				pr.model = string(value)
+				pr.model, pr.adapter = apiutils.SplitModelAdapter(string(value))
 				// WORKAROUND ALERT:
 				// Omit the "model" field from the proxy request to avoid FasterWhisper validation issues:
 				// See https://github.com/fedirz/faster-whisper-server/issues/71
@@ -146,7 +148,7 @@ func (pr *proxyRequest) parse() error {
 		if err := json.Unmarshal(pr.body, &payload); err != nil {
 			return fmt.Errorf("unmarshal json: %w", err)
 		}
-		pr.model = payload.Model
+		pr.model, pr.adapter = apiutils.SplitModelAdapter(payload.Model)
 
 		if pr.model == "" {
 			return fmt.Errorf("no model specified")
