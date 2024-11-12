@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	adapterLoaderContainerName = "adapter-loader"
+	loaderContainerName = "loader"
 )
 
 func (r *ModelReconciler) reconcileAdapters(ctx context.Context, pods []*corev1.Pod, adapters []v1.Adapter) error {
@@ -60,10 +60,7 @@ func (r *ModelReconciler) reconcileAdapters(ctx context.Context, pods []*corev1.
 	for _, param := range reconcileList {
 		// TODO: Parallelize
 		addr := getPodModelServerAddr(param.pod)
-		if err := r.ensureAdapterLoader(ctx, param.pod /*, len(param.toEnsure) > 0 || len(param.toRemoveIDs) > 0*/); err != nil {
-			return fmt.Errorf("reconcile adapter loader for pod %q: %w", param.pod.Namespace+"/"+param.pod.Name, err)
-		}
-		if !k8sutils.EphemeralContainerIsRunning(param.pod, adapterLoaderContainerName) {
+		if !k8sutils.ContainerIsReady(param.pod, loaderContainerName) {
 			return errReturnEarly
 		}
 		for _, adapter := range param.toEnsure {
@@ -127,51 +124,9 @@ func getPodModelServerAddr(pod *corev1.Pod) string {
 	return fmt.Sprintf("http://%s:%s", ip, port)
 }
 
-// ensureAdapterLoader ensures that the adapter loader ephemeral container is present or not.
-func (r *ModelReconciler) ensureAdapterLoader(ctx context.Context, pod *corev1.Pod /*, enabled bool*/) error {
-	// NOTE: Ephemeral containers cannot be removed once added.
-	/*
-		if !enabled {
-			changed := k8sutils.RemoveEphemeralContainer(pod, adapterLoaderContainerName)
-			if !changed {
-				return nil
-			}
-			if err := r.Client.SubResource("ephemeralcontainers").Update(ctx, pod); err != nil {
-				return fmt.Errorf("update pod ephemeral containers: %w", err)
-			}
-			return nil
-		}
-	*/
-
-	container := corev1.EphemeralContainer{
-		EphemeralContainerCommon: corev1.EphemeralContainerCommon{
-			Name:            adapterLoaderContainerName,
-			Image:           r.ModelLoaders.Image,
-			ImagePullPolicy: corev1.PullIfNotPresent,
-			Command:         []string{"sleep", "infinity"},
-			VolumeMounts: []corev1.VolumeMount{
-				{
-					Name:      adaptersVolName,
-					MountPath: adaptersRootDir,
-				},
-			},
-		},
-		TargetContainerName: serverContainerName,
-	}
-
-	changed := k8sutils.AddEphemeralContainer(pod, container)
-	if changed {
-		if err := r.Client.SubResource("ephemeralcontainers").Update(ctx, pod); err != nil {
-			return fmt.Errorf("update pod ephemeral containers: %w", err)
-		}
-	}
-
-	return nil
-}
-
 // execAdapterLoad executes the adapter load command in the adapter loader container.
 func (r *ModelReconciler) execAdapterLoad(ctx context.Context, pod *corev1.Pod, adapter v1.Adapter) error {
-	if err := r.execPod(ctx, pod, adapterLoaderContainerName, []string{
+	if err := r.execPod(ctx, pod, loaderContainerName, []string{
 		"load", adapter.URL, adapterDir(adapter),
 	}); err != nil {
 		return fmt.Errorf("exec adapter load: %w", err)
@@ -180,7 +135,7 @@ func (r *ModelReconciler) execAdapterLoad(ctx context.Context, pod *corev1.Pod, 
 }
 
 func (r *ModelReconciler) execAdapterUnload(ctx context.Context, pod *corev1.Pod, adapterID string) error {
-	if err := r.execPod(ctx, pod, adapterLoaderContainerName, []string{
+	if err := r.execPod(ctx, pod, loaderContainerName, []string{
 		"rm", "-rf", adapterDir(v1.Adapter{ID: adapterID}),
 	}); err != nil {
 		return fmt.Errorf("exec adapter load: %w", err)
@@ -197,7 +152,7 @@ func adapterDir(a v1.Adapter) string {
 	return fmt.Sprintf("%s/%s", adaptersRootDir, a.ID)
 }
 
-func patchServerAdapterVolume(podSpec *corev1.PodSpec) {
+func patchServerAdapterLoader(podSpec *corev1.PodSpec, image string) {
 	podSpec.Volumes = append(podSpec.Volumes, corev1.Volume{
 		Name: adaptersVolName,
 		VolumeSource: corev1.VolumeSource{
@@ -213,6 +168,20 @@ func patchServerAdapterVolume(podSpec *corev1.PodSpec) {
 			})
 		}
 	}
+
+	loaderContainer := corev1.Container{
+		Name:            loaderContainerName,
+		Image:           image,
+		ImagePullPolicy: corev1.PullIfNotPresent,
+		Command:         []string{"sleep", "infinity"},
+		VolumeMounts: []corev1.VolumeMount{
+			{
+				Name:      adaptersVolName,
+				MountPath: adaptersRootDir,
+			},
+		},
+	}
+	podSpec.Containers = append(podSpec.Containers, loaderContainer)
 }
 
 func getLabelledAdapters(pod *corev1.Pod) map[string]struct{} {

@@ -11,18 +11,10 @@ spec:
   features: [TextGeneration]
   owner: meta-llama
   url: hf://TinyLlama/TinyLlama-1.1B-Chat-v0.3
-  #url: hf://meta-llama/Llama-2-7b
   adapters:
   - id: test
     url: hf://jashing/tinyllama-colorist-lora
-  #- id: sql
-  #  url: hf://yard1/llama-2-7b-sql-lora-test
   engine: VLLM
-  #args:
-  #  - --max-model-len=16384
-  #  - --max-num-batched-token=16384
-  #  - --gpu-memory-utilization=0.8
-  #  - --cpu-offload-gb=10
   resourceProfile: nvidia-gpu-l4:1
   minReplicas: 1
 ---

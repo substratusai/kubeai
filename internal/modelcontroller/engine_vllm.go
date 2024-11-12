@@ -156,7 +156,7 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 		},
 	}
 
-	patchServerAdapterVolume(&pod.Spec)
+	patchServerAdapterLoader(&pod.Spec, r.ModelLoaders.Image)
 	patchServerCacheVolumes(&pod.Spec, m, c)
 
 	return pod

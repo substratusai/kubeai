@@ -150,7 +150,6 @@ func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, c ModelCon
 		},
 	}
 
-	patchServerAdapterVolume(&pod.Spec)
 	patchServerCacheVolumes(&pod.Spec, m, c)
 
 	return pod

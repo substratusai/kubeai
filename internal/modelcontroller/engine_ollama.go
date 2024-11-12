@@ -168,7 +168,6 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, c ModelConfig) *c
 		},
 	}
 
-	patchServerAdapterVolume(&pod.Spec)
 	patchServerCacheVolumes(&pod.Spec, m, c)
 
 	return pod

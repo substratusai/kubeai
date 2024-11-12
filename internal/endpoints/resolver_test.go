@@ -10,11 +10,11 @@ import (
 )
 
 func TestAwaitBestHost(t *testing.T) {
-	const myModel = "myModel"
+	const myModel = "my-model"
 
 	manager := &Resolver{endpoints: make(map[string]*endpointGroup, 1)}
 	manager.getEndpoints(myModel).
-		setAddrs(map[string]struct{}{myModel: {}})
+		setAddrs(map[string]endpointAttrs{myModel: {}})
 
 	testCases := map[string]struct {
 		model   string
@@ -25,8 +25,8 @@ func TestAwaitBestHost(t *testing.T) {
 			model:   myModel,
 			timeout: time.Millisecond,
 		},
-		"unknown service - blocks until timeout": {
-			model:   "unknownService",
+		"unknown endpoint - blocks until timeout": {
+			model:   "unknown-model",
 			timeout: time.Millisecond,
 			expErr:  context.DeadlineExceeded,
 		},

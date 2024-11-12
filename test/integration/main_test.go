@@ -174,9 +174,7 @@ func baseSysCfg(t *testing.T) config.System {
 			},
 		},
 		ModelLoading: config.ModelLoading{
-			Huggingface: config.ModelLoader{
-				Image: "huggingface-loader",
-			},
+			Image: "model-loader",
 		},
 		ResourceProfiles: map[string]config.ResourceProfile{
 			resourceProfileCPU: {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"sync"
 
 	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
@@ -88,7 +89,7 @@ func (r *Resolver) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result
 		return ctrl.Result{}, fmt.Errorf("listing matching pods: %w", err)
 	}
 
-	addrs := map[string]struct{}{}
+	addrs := map[string]endpointAttrs{}
 	for _, pod := range podList.Items {
 		if _, exclude := r.ExcludePods[pod.Name]; exclude {
 			continue
@@ -116,12 +117,26 @@ func (r *Resolver) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result
 			continue
 		}
 
-		addrs[ip+":"+port] = struct{}{}
+		addrs[ip+":"+port] = getEndpointAttrs(pod)
 	}
 
 	r.getEndpoints(modelName).setAddrs(addrs)
 
 	return ctrl.Result{}, nil
+}
+
+func getEndpointAttrs(pod corev1.Pod) endpointAttrs {
+	attrs := endpointAttrs{
+		adapters: map[string]struct{}{},
+	}
+
+	for k := range pod.GetLabels() {
+		if strings.HasPrefix(k, kubeaiv1.PodAdapterLabelPrefix) {
+			attrs.adapters[strings.TrimPrefix(k, kubeaiv1.PodAdapterLabelPrefix)] = struct{}{}
+		}
+	}
+
+	return attrs
 }
 
 func getPodAnnotation(pod corev1.Pod, key string) string {

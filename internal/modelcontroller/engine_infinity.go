@@ -170,7 +170,6 @@ func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, c ModelConfig) 
 		},
 	}
 
-	patchServerAdapterVolume(&pod.Spec)
 	patchServerCacheVolumes(&pod.Spec, m, c)
 
 	return pod

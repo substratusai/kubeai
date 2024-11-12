@@ -56,56 +56,10 @@ func DeepHashObject(hasher hash.Hash, objectToWrite interface{}) {
 	fmt.Fprintf(hasher, "%v", dump.ForHash(objectToWrite))
 }
 
-// RemoveEphemeralContainer removes the container with the given name from the pod
-// and returns true if it did.
-func RemoveEphemeralContainer(pod *corev1.Pod, name string) bool {
-	if i := FindEphemeralContainer(pod, name); i != -1 {
-		pod.Spec.EphemeralContainers = append(pod.Spec.EphemeralContainers[:i], pod.Spec.EphemeralContainers[i+1:]...)
-		return true
-	}
-	return false
-}
-
-// AddEphemeralContainer adds the container to the pod and returns true if it did.
-func AddEphemeralContainer(pod *corev1.Pod, container corev1.EphemeralContainer) bool {
-	if FindEphemeralContainer(pod, container.Name) != -1 {
-		return false
-	}
-	pod.Spec.EphemeralContainers = append(pod.Spec.EphemeralContainers, container)
-	return true
-}
-
-// FindEphemeralContainer returns the index of the container with the given name in the pod.
-func FindEphemeralContainer(pod *corev1.Pod, name string) int {
-	for i, container := range pod.Spec.EphemeralContainers {
-		if container.Name == name {
-			return i
-		}
-	}
-	return -1
-}
-
-// EphemeralContainerIsRunning returns true if the ephemeral container with the given name is started.
-// NOTE: .status.ephemeralContainerStatuses[].ready and .started appear to never be true, so we use
-// .state.running.startedAt instead.
-func EphemeralContainerIsRunning(pod *corev1.Pod, containerName string) bool {
-	// Example:
-	//
-	//  ephemeralContainerStatuses:
-	//  - containerID: containerd://7455a9e04440fa74a2f483495e9343feeb4e762bbc5498dff5b7ccd0d4209ca8
-	//    image: docker.io/library/kubeai-model-loader:latest
-	//    imageID: docker.io/library/import-2024-11-07@sha256:b0708534a7587995bd8949d5e539499d41fc1cdce678a05c407cd618e135c980
-	//    lastState: {}
-	//    name: adapter-loader
-	//    ready: false
-	//    restartCount: 0
-	//    state:
-	//      running:
-	//        startedAt: "2024-11-07T21:47:38Z"
-	//
-	for _, containerStatus := range pod.Status.EphemeralContainerStatuses {
-		if containerStatus.Name == containerName {
-			return containerStatus.State.Running != nil && !containerStatus.State.Running.StartedAt.IsZero()
+func ContainerIsReady(pod *corev1.Pod, containerName string) bool {
+	for _, status := range pod.Status.ContainerStatuses {
+		if status.Name == containerName {
+			return status.Ready
 		}
 	}
 	return false

@@ -14,16 +14,26 @@ func newEndpointGroup() *endpointGroup {
 	return e
 }
 
-type endpoint struct {
-	inFlight *atomic.Int64
-}
-
 type endpointGroup struct {
 	mtx       sync.RWMutex
 	endpoints map[string]endpoint
 
 	bmtx  sync.RWMutex
 	bcast chan struct{} // closed when there's a broadcast
+}
+
+func newEndpoint() endpoint {
+	return endpoint{
+		inFlight: &atomic.Int64{},
+		endpointAttrs: endpointAttrs{
+			adapters: make(map[string]struct{}),
+		},
+	}
+}
+
+type endpoint struct {
+	inFlight *atomic.Int64
+	endpointAttrs
 }
 
 // getBestAddr returns the best "IP:Port". It blocks until there are available endpoints
@@ -83,11 +93,15 @@ func (g *endpointGroup) lenIPs() int {
 	return len(g.endpoints)
 }
 
-func (g *endpointGroup) setAddrs(ips map[string]struct{}) {
+type endpointAttrs struct {
+	adapters map[string]struct{}
+}
+
+func (g *endpointGroup) setAddrs(ips map[string]endpointAttrs) {
 	g.mtx.Lock()
 	for ip := range ips {
 		if _, ok := g.endpoints[ip]; !ok {
-			g.endpoints[ip] = endpoint{inFlight: &atomic.Int64{}}
+			g.endpoints[ip] = newEndpoint()
 		}
 	}
 	for ip := range g.endpoints {
