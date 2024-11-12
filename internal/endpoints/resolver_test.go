@@ -18,31 +18,35 @@ func TestAwaitBestHost(t *testing.T) {
 	)
 
 	manager := &Resolver{endpoints: make(map[string]*endpointGroup, 1)}
-	manager.getEndpoints(myModel).
-		setAddrs(map[string]endpointAttrs{
-			myAddrWithoutAdapter: {},
-			myAddrWithAdapter: {adapters: map[string]struct{}{
-				myAdapter: {},
-			}},
-		})
 
 	testCases := map[string]struct {
 		model   string
 		adapter string
+		addrs   map[string]endpointAttrs
 		expAddr string
 		expErr  error
 	}{
 		"model without adapter": {
 			model:   myModel,
 			expAddr: myAddrWithoutAdapter,
+			addrs:   map[string]endpointAttrs{myAddrWithoutAdapter: {}},
 		},
 		"model with adapter": {
 			model:   myModel,
 			adapter: myAdapter,
+			addrs: map[string]endpointAttrs{
+				myAddrWithoutAdapter: {},
+				myAddrWithAdapter: {adapters: map[string]struct{}{
+					myAdapter: {},
+				}},
+			},
 			expAddr: myAddrWithAdapter,
 		},
 		"unknown model blocks until timeout": {
-			model:  "unknown-model",
+			model: "unknown-model",
+			addrs: map[string]endpointAttrs{
+				myAddrWithoutAdapter: {},
+			},
 			expErr: context.DeadlineExceeded,
 		},
 		// not covered: unknown port with multiple ports on entrypoint
@@ -50,6 +54,8 @@ func TestAwaitBestHost(t *testing.T) {
 
 	for name, spec := range testCases {
 		t.Run(name, func(t *testing.T) {
+			manager.getEndpoints(myModel).setAddrs(spec.addrs)
+
 			ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond)
 			defer cancel()
 
