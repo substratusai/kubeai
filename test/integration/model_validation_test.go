@@ -75,6 +75,34 @@ func TestModelValidation(t *testing.T) {
 		},
 		{
 			model: v1.Model{
+				ObjectMeta: metadata("adapters-valid"),
+				Spec: v1.ModelSpec{
+					URL:      "hf://test-repo/test-model",
+					Engine:   "VLLM",
+					Features: []v1.ModelFeature{},
+					Adapters: []v1.Adapter{
+						{ID: "adapter1", URL: "hf://test-repo/test-adapter"},
+					},
+				},
+			},
+			expValid: true,
+		},
+		{
+			model: v1.Model{
+				ObjectMeta: metadata("adapters-supported-engine"),
+				Spec: v1.ModelSpec{
+					URL:      "hf://test-repo/test-model",
+					Engine:   "FasterWhisper",
+					Features: []v1.ModelFeature{},
+					Adapters: []v1.Adapter{
+						{ID: "adapter1", URL: "hf://test-repo/test-adapter"},
+					},
+				},
+			},
+			expValid: false,
+		},
+		{
+			model: v1.Model{
 				ObjectMeta: metadata("invalid-engine"),
 				Spec: v1.ModelSpec{
 					URL:      "hf://test-repo/test-model",

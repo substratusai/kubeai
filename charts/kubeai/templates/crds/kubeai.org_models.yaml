@@ -43,9 +43,15 @@ spec:
                 items:
                   properties:
                     id:
+                      description: ID must be a lowercase string with no spaces.
+                      maxLength: 63
+                      pattern: ^[a-z0-9-]+$
                       type: string
                     url:
                       type: string
+                      x-kubernetes-validations:
+                      - message: adapter url must start with "hf://".
+                        rule: self.startsWith("hf://")
                   required:
                   - id
                   - url
@@ -172,6 +178,8 @@ spec:
               rule: '!has(self.cacheProfile) || self.url.startsWith("hf://")'
             - message: minReplicas should be less than or equal to maxReplicas.
               rule: '!has(self.maxReplicas) || self.minReplicas <= self.maxReplicas'
+            - message: adapters only supported with VLLM engine.
+              rule: '!has(self.adapters) || self.engine == "VLLM"'
           status:
             description: ModelStatus defines the observed state of Model.
             properties:

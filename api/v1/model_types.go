@@ -23,6 +23,7 @@ import (
 // ModelSpec defines the desired state of Model.
 // +kubebuilder:validation:XValidation:rule="!has(self.cacheProfile) || self.url.startsWith(\"hf://\")", message="cacheProfile is only supported with a huggingface url (\"hf://...\") at the moment."
 // +kubebuilder:validation:XValidation:rule="!has(self.maxReplicas) || self.minReplicas <= self.maxReplicas", message="minReplicas should be less than or equal to maxReplicas."
+// +kubebuilder:validation:XValidation:rule="!has(self.adapters) || self.engine == \"VLLM\"", message="adapters only supported with VLLM engine."
 type ModelSpec struct {
 	// URL of the model to be served.
 	// Currently only the following formats are supported:
@@ -121,7 +122,12 @@ const (
 )
 
 type Adapter struct {
-	ID  string `json:"id"`
+	// ID must be a lowercase string with no spaces.
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Pattern=^[a-z0-9-]+$
+	// +kubebuilder:validation:MaxLength=63
+	ID string `json:"id"`
+	// +kubebuilder:validation:XValidation:rule="self.startsWith(\"hf://\")", message="adapter url must start with \"hf://\"."
 	URL string `json:"url"`
 }
 
