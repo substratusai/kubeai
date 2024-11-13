@@ -55,11 +55,9 @@ func (h *Handler) getModels(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	models := make([]Model, len(k8sModels))
-	for i, k8sModel := range k8sModels {
-		model := Model{}
-		model.FromK8sModel(&k8sModel)
-		models[i] = model
+	models := make([]Model, 0)
+	for _, k8sModel := range k8sModels {
+		models = append(models, k8sModelToOpenAIModels(k8sModel)...)
 	}
 
 	// Wrapper struct to match the desired output format
@@ -90,10 +88,24 @@ type Model struct {
 	Features []kubeaiv1.ModelFeature `json:"features,omitempty"`
 }
 
-func (m *Model) FromK8sModel(model *kubeaiv1.Model) {
-	m.ID = model.Name
-	m.Created = model.CreationTimestamp.Unix()
+func k8sModelToOpenAIModels(k8sM kubeaiv1.Model) []Model {
+	models := make([]Model, 1+len(k8sM.Spec.Adapters))
+	models[0] = constructOpenAIModel(k8sM, "")
+	for i, adapter := range k8sM.Spec.Adapters {
+		models[i+1] = constructOpenAIModel(k8sM, adapter.ID)
+	}
+	return models
+}
+
+func constructOpenAIModel(k8sM kubeaiv1.Model, adapter string) Model {
+	m := Model{}
+	m.ID = k8sM.Name
+	if adapter != "" {
+		m.ID += "/" + adapter
+	}
+	m.Created = k8sM.CreationTimestamp.Unix()
 	m.Object = "model"
-	m.OwnedBy = model.Spec.Owner
-	m.Features = model.Spec.Features
+	m.OwnedBy = k8sM.Spec.Owner
+	m.Features = k8sM.Spec.Features
+	return m
 }

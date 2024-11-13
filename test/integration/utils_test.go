@@ -24,6 +24,10 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
+func modelLabelSelectorForTest(t *testing.T) string {
+	return fmt.Sprintf("test-case-name=%s", strings.ToLower(t.Name()))
+}
+
 func modelForTest(t *testing.T) *v1.Model {
 	return &v1.Model{
 		ObjectMeta: metav1.ObjectMeta{
@@ -169,27 +173,40 @@ func sendOpenAIInferenceRequest(t *testing.T, modelName string, selectorHeaders 
 	}
 }
 
-func sendOpenAIListModelsRequest(t *testing.T, selectorHeaders []string, expCode int, msg string) []openaiserver.Model {
-	t.Helper()
-	req, err := http.NewRequest(http.MethodGet, "http://localhost:8000/openai/v1/models", nil)
-	require.NoError(t, err, msg)
-	for _, selector := range selectorHeaders {
-		req.Header.Add("X-Label-Selector", selector)
-	}
+func requireOpenAIModelList(t *testing.T, selectorHeaders []string, expLen int, expIDs []string, msg string) {
+	require.EventuallyWithT(t, func(t *assert.CollectT) {
+		//t.Helper()
+		req, err := http.NewRequest(http.MethodGet, "http://localhost:8000/openai/v1/models", nil)
+		if !assert.NoError(t, err, msg) {
+			return
+		}
+		for _, selector := range selectorHeaders {
+			req.Header.Add("X-Label-Selector", selector)
+		}
 
-	res, err := testHTTPClient.Do(req)
-	require.NoError(t, err, msg)
-	require.Equal(t, expCode, res.StatusCode, msg)
-	defer res.Body.Close()
+		res, err := testHTTPClient.Do(req)
+		if !assert.NoError(t, err, msg) {
+			return
+		}
+		if !assert.Equal(t, http.StatusOK, res.StatusCode, msg) {
+			return
+		}
+		defer res.Body.Close()
 
-	var respBody struct {
-		Data []openaiserver.Model `json:"data"`
-	}
-	if err := json.NewDecoder(res.Body).Decode(&respBody); err != nil {
-		require.NoError(t, err, msg)
-	}
+		var respBody struct {
+			Data []openaiserver.Model `json:"data"`
+		}
+		if !assert.NoError(t, json.NewDecoder(res.Body).Decode(&respBody), msg) {
+			return
+		}
 
-	return respBody.Data
+		ids := make([]string, len(respBody.Data))
+		for i, m := range respBody.Data {
+			ids[i] = m.ID
+		}
+
+		assert.ElementsMatch(t, expIDs, ids)
+	}, 5*time.Second, time.Second/10, msg)
 }
 
 func closeChannels(c chan struct{}, n int) {

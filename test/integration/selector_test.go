@@ -177,13 +177,7 @@ func TestSelector(t *testing.T) {
 	for name, c := range listTestCases {
 		t.Run("list "+name, func(t *testing.T) {
 			t.Parallel()
-			list := sendOpenAIListModelsRequest(t, c.selectorHeaders, http.StatusOK, name)
-			require.Len(t, list, c.expLen)
-			ids := make([]string, len(list))
-			for i, m := range list {
-				ids[i] = m.ID
-			}
-			require.ElementsMatch(t, c.expModels, ids)
+			requireOpenAIModelList(t, c.selectorHeaders, c.expLen, c.expModels, name)
 		})
 	}
 }
