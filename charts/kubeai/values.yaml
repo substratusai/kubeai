@@ -37,7 +37,9 @@ modelServers:
       default: "michaelf34/infinity:latest"
 
 modelLoading:
-  image: "substratusai/kubeai-model-loader:v0.9.0"
+  # TODO(release): Switch to official image before release.
+  # image: "substratusai/kubeai-model-loader:v0.9.0"
+  image: "us-central1-docker.pkg.dev/substratus-dev/default/kubeai-model-loader:latest"
 
 modelServerPods:
   # Security Context for the model pods

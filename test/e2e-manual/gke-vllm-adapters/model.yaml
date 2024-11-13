@@ -1,0 +1,14 @@
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: tiny-llama
+spec:
+  features: [TextGeneration]
+  owner: meta-llama
+  url: hf://TinyLlama/TinyLlama-1.1B-Chat-v0.3
+  adapters:
+  - id: colorist
+    url: hf://jashing/tinyllama-colorist-lora
+  engine: VLLM
+  resourceProfile: nvidia-gpu-l4:1
+  minReplicas: 1

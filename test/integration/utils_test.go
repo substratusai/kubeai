@@ -63,6 +63,25 @@ func updateModel(t *testing.T, m *v1.Model, modify func(), msg string) {
 	}, 2*time.Second, time.Second/10, "Updating Model should succeed: "+msg)
 }
 
+func updateAllModelPods(t *testing.T, m *v1.Model, modify func(*corev1.Pod) bool, mustModifyN int, msg string) {
+	var modified int
+	require.EventuallyWithT(t, func(t *assert.CollectT) {
+		podList := &corev1.PodList{}
+		if !assert.NoError(t, testK8sClient.List(testCtx, podList, client.MatchingLabels{"model": m.Name})) {
+			return
+		}
+		for i := range podList.Items {
+			if modify(&podList.Items[i]) {
+				if !assert.NoError(t, testK8sClient.Update(testCtx, &podList.Items[i])) {
+					return
+				}
+				modified++
+			}
+		}
+	}, 2*time.Second, time.Second/10, "Updating all model Pods should succeed: "+msg)
+	require.Equal(t, mustModifyN, modified, "Number of Pods modified should match")
+}
+
 func requireModelReplicas(t *testing.T, m *v1.Model, expectedReplicas int32, msg string, after time.Duration) {
 	require.EventuallyWithT(t, func(t *assert.CollectT) {
 		if !assert.NoError(t, testK8sClient.Get(testCtx, client.ObjectKeyFromObject(m), m)) {
