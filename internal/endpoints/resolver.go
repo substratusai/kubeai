@@ -2,10 +2,8 @@ package endpoints
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 	"strings"
 	"sync"
 
@@ -120,8 +118,6 @@ func (r *Resolver) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result
 		}
 
 		addrs[ip+":"+port] = getEndpointAttrs(pod)
-		fmt.Println("--------")
-		json.NewEncoder(os.Stdout).Encode(addrs)
 	}
 
 	r.getEndpoints(modelName).setAddrs(addrs)

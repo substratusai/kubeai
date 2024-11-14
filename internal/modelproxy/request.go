@@ -50,19 +50,6 @@ func newProxyRequest(r *http.Request) *proxyRequest {
 func (pr *proxyRequest) parse() error {
 	pr.selectors = pr.r.Header.Values("X-Label-Selector")
 
-	// Try to get the model from the header first
-	if headerModel := pr.r.Header.Get("X-Model"); headerModel != "" {
-		pr.model, pr.adapter = apiutils.SplitModelAdapter(headerModel)
-		pr.requestedModel = headerModel
-		// Save the body content (required to support retries of the proxy request)
-		body, err := io.ReadAll(pr.r.Body)
-		if err != nil {
-			return fmt.Errorf("reading body: %w", err)
-		}
-		pr.body = body
-		return nil
-	}
-
 	// Parse media type (with params - which are used for multipart form data)
 	var (
 		contentType = pr.r.Header.Get("Content-Type")
@@ -164,11 +151,9 @@ func (pr *proxyRequest) readModelFromBody(r io.ReadCloser) error {
 	pr.requestedModel = modelStr
 	pr.model, pr.adapter = apiutils.SplitModelAdapter(modelStr)
 
-	var bodyChanged bool
 	if pr.adapter != "" {
 		// vLLM expects the adapter to be in the model field.
 		payload["model"] = pr.adapter
-		bodyChanged = true
 	}
 
 	body, err := json.Marshal(payload)
@@ -176,10 +161,7 @@ func (pr *proxyRequest) readModelFromBody(r io.ReadCloser) error {
 		return fmt.Errorf("remarshalling: %w", err)
 	}
 	pr.body = body
-	if bodyChanged {
-		// Set a new content length based on the new body - which had the "model" field changed.
-		pr.r.ContentLength = int64(len(pr.body))
-	}
+	pr.r.ContentLength = int64(len(pr.body))
 
 	return nil
 }

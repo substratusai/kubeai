@@ -39,17 +39,25 @@ func (s *ModelScaler) LookupModel(ctx context.Context, model, adapter string, la
 	if modelLabels == nil {
 		modelLabels = map[string]string{}
 	}
-	if adapter != "" {
-		if _, ok := modelLabels[kubeaiv1.PodAdapterLabel(adapter)]; !ok {
-			return false, nil
-		}
-	}
 	for _, sel := range labelSelectors {
 		parsedSel, err := labels.Parse(sel)
 		if err != nil {
 			return false, fmt.Errorf("parse label selector: %w", err)
 		}
 		if !parsedSel.Matches(labels.Set(modelLabels)) {
+			return false, nil
+		}
+	}
+
+	if adapter != "" {
+		adapterFound := false
+		for _, a := range m.Spec.Adapters {
+			if a.ID == adapter {
+				adapterFound = true
+				break
+			}
+		}
+		if !adapterFound {
 			return false, nil
 		}
 	}

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
+	"github.com/substratusai/kubeai/internal/apiutils"
 	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -99,10 +100,7 @@ func k8sModelToOpenAIModels(k8sM kubeaiv1.Model) []Model {
 
 func constructOpenAIModel(k8sM kubeaiv1.Model, adapter string) Model {
 	m := Model{}
-	m.ID = k8sM.Name
-	if adapter != "" {
-		m.ID += "/" + adapter
-	}
+	m.ID = apiutils.MergeModelAdapter(k8sM.Name, adapter)
 	m.Created = k8sM.CreationTimestamp.Unix()
 	m.Object = "model"
 	m.OwnedBy = k8sM.Spec.Owner
