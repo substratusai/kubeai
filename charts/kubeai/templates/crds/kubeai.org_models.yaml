@@ -205,8 +205,8 @@ spec:
             type: object
         type: object
         x-kubernetes-validations:
-        - message: name must be lowercase alphanumeric with dashes.
-          rule: self.metadata.name.matches('^[a-z0-9-]+$')
+        - message: name must not exceed 40 characters.
+          rule: size(self.metadata.name) <= 40
     served: true
     storage: true
     subresources:

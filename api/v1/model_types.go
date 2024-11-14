@@ -146,12 +146,14 @@ type ModelStatusCache struct {
 	Loaded bool `json:"loaded"`
 }
 
+// NOTE: Model name length should be limited to allow for the model name to be used in
+// the names of the resources created by the controller.
+
+// Model resources define the ML models that will be served by KubeAI.
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:subresource:scale:specpath=.spec.replicas,statuspath=.status.replicas.all
-
-// Model resources define the ML models that will be served by KubeAI.
-// +kubebuilder:validation:XValidation:rule="self.metadata.name.matches('^[a-z0-9-]+$')", message="name must be lowercase alphanumeric with dashes."
+// +kubebuilder:validation:XValidation:rule="size(self.metadata.name) <= 40", message="name must not exceed 40 characters."
 type Model struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

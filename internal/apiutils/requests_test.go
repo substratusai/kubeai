@@ -24,17 +24,17 @@ func TestSplitModelAdapter(t *testing.T) {
 			expModel: "my-model",
 		},
 		"model and adapter": {
-			input:      "my-model.my-adapter",
+			input:      "my-model_my-adapter",
 			expModel:   "my-model",
 			expAdapter: "my-adapter",
 		},
-		"too many dots": {
-			input:      "my-model.my-adapter.extra",
+		"too many separators": {
+			input:      "my-model_my-adapter_extra",
 			expModel:   "my-model",
-			expAdapter: "my-adapter.extra",
+			expAdapter: "my-adapter_extra",
 		},
-		"trailing dor": {
-			input:      "my-model.",
+		"trailing": {
+			input:      "my-model_",
 			expModel:   "my-model",
 			expAdapter: "",
 		},
@@ -63,7 +63,7 @@ func TestMergeModelAdapter(t *testing.T) {
 		"model and adapter": {
 			model:   "my-model",
 			adapter: "my-adapter",
-			exp:     "my-model.my-adapter",
+			exp:     "my-model_my-adapter",
 		},
 	}
 
