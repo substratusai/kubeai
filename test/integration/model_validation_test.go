@@ -75,6 +75,29 @@ func TestModelValidation(t *testing.T) {
 		},
 		{
 			model: v1.Model{
+				ObjectMeta: metadata("a-name-that-has-12345-numbers-valid"),
+				Spec: v1.ModelSpec{
+					URL:      "hf://test-repo/test-model",
+					Engine:   "VLLM",
+					Features: []v1.ModelFeature{},
+				},
+			},
+			expValid: true,
+		},
+		{
+			model: v1.Model{
+				// Needed to ensure that <model>.<adapter> is not ambiguous.
+				ObjectMeta: metadata("dots.in-name-invalid"),
+				Spec: v1.ModelSpec{
+					URL:      "hf://test-repo/test-model",
+					Engine:   "VLLM",
+					Features: []v1.ModelFeature{},
+				},
+			},
+			expValid: false,
+		},
+		{
+			model: v1.Model{
 				ObjectMeta: metadata("adapters-valid"),
 				Spec: v1.ModelSpec{
 					URL:      "hf://test-repo/test-model",

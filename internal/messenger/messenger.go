@@ -245,13 +245,14 @@ func (m *Messenger) Stop(ctx context.Context) error {
 }
 
 type request struct {
-	ctx      context.Context
-	msg      *pubsub.Message
-	metadata map[string]interface{}
-	path     string
-	body     json.RawMessage
-	model    string
-	adapter  string
+	ctx            context.Context
+	msg            *pubsub.Message
+	metadata       map[string]interface{}
+	path           string
+	body           json.RawMessage
+	requestedModel string
+	model          string
+	adapter        string
 }
 
 func parseRequest(ctx context.Context, msg *pubsub.Message) (*request, error) {
@@ -281,18 +282,32 @@ func parseRequest(ctx context.Context, msg *pubsub.Message) (*request, error) {
 	req.path = path
 	req.body = payload.Body
 
-	var payloadBody struct {
-		Model string `json:"model"`
-	}
+	var payloadBody map[string]interface{}
 	if err := json.Unmarshal(payload.Body, &payloadBody); err != nil {
-		return req, fmt.Errorf("unmarshalling message .body as json: %w", err)
+		return nil, fmt.Errorf("decoding: %w", err)
+	}
+	modelInf, ok := payloadBody["model"]
+	if !ok {
+		return nil, fmt.Errorf("missing '.body.model' field")
+	}
+	modelStr, ok := modelInf.(string)
+	if !ok {
+		return nil, fmt.Errorf("field '.body.model' should be a string")
 	}
 
-	if payloadBody.Model == "" {
-		return req, fmt.Errorf("empty .body.model in message")
-	}
+	req.requestedModel = modelStr
+	req.model, req.adapter = apiutils.SplitModelAdapter(modelStr)
 
-	req.model, req.adapter = apiutils.SplitModelAdapter(payloadBody.Model)
+	// Assuming this is a vLLM request.
+	// vLLM expects the adapter to be in the model field.
+	if req.adapter != "" {
+		payloadBody["model"] = req.adapter
+		rewrittenBody, err := json.Marshal(payloadBody)
+		if err != nil {
+			return nil, fmt.Errorf("remarshalling: %w", err)
+		}
+		req.body = rewrittenBody
+	}
 
 	return req, nil
 }

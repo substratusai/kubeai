@@ -13,6 +13,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/substratusai/kubeai/internal/apiutils"
 	"github.com/substratusai/kubeai/internal/metrics/metricstest"
 )
 
@@ -57,7 +58,7 @@ func TestHandler(t *testing.T) {
 		"no model": {
 			reqBody:                "{}",
 			expCode:                http.StatusBadRequest,
-			expBody:                `{"error":"unable to parse model: no model specified"}` + "\n",
+			expBody:                `{"error":"unable to parse model: reading model from body: missing 'model' field"}` + "\n",
 			expBackendRequestCount: 0,
 		},
 		"model not found": {
@@ -78,49 +79,21 @@ func TestHandler(t *testing.T) {
 			expBackendRequestCount: 1,
 		},
 		"happy 200 model+adapter in body": {
-			reqBody:     fmt.Sprintf(`{"model":%q}`, model3+"/"+adapter3),
-			backendCode: http.StatusOK,
-			backendBody: `{"result":"ok"}`,
-			expCode:     http.StatusOK,
-			expBody:     `{"result":"ok"}`,
+			reqBody:             fmt.Sprintf(`{"model":%q}`, apiutils.MergeModelAdapter(model3, adapter3)),
+			expRewrittenReqBody: fmt.Sprintf(`{"model":%q}`, adapter3),
+			backendCode:         http.StatusOK,
+			backendBody:         `{"result":"ok"}`,
+			expCode:             http.StatusOK,
+			expBody:             `{"result":"ok"}`,
 			expMetrics: &metricsTestSpec{
-				expModel: model3 + "/" + adapter3,
+				expModel: apiutils.MergeModelAdapter(model3, adapter3),
 			},
 			expBackendRequestCount: 1,
 		},
 		"404 model+adapter in body but missing adapter": {
-			reqBody: fmt.Sprintf(`{"model":%q}`, model1+"/no-such-adapter"),
+			reqBody: fmt.Sprintf(`{"model":%q}`, apiutils.MergeModelAdapter(model1, "no-such-adapter")),
 			expCode: http.StatusNotFound,
-			expBody: `{"error":"model not found: model1/no-such-adapter"}` + "\n",
-		},
-		"404 model+adapter in header but missing adapter": {
-			reqHeaders: map[string]string{"X-Model": model1 + "/no-such-adapter"},
-			expCode:    http.StatusNotFound,
-			expBody:    `{"error":"model not found: model1/no-such-adapter"}` + "\n",
-		},
-		"happy 200 model in header": {
-			reqBody:     "{}",
-			reqHeaders:  map[string]string{"X-Model": model1},
-			backendCode: http.StatusOK,
-			backendBody: `{"result":"ok"}`,
-			expCode:     http.StatusOK,
-			expBody:     `{"result":"ok"}`,
-			expMetrics: &metricsTestSpec{
-				expModel: model1,
-			},
-			expBackendRequestCount: 1,
-		},
-		"happy 200 model+adapter in header": {
-			reqBody:     "{}",
-			reqHeaders:  map[string]string{"X-Model": model3 + "/" + adapter3},
-			backendCode: http.StatusOK,
-			backendBody: `{"result":"ok"}`,
-			expCode:     http.StatusOK,
-			expBody:     `{"result":"ok"}`,
-			expMetrics: &metricsTestSpec{
-				expModel: model3 + "/" + adapter3,
-			},
-			expBackendRequestCount: 1,
+			expBody: fmt.Sprintf(`{"error":"model not found: %s"}`, apiutils.MergeModelAdapter(model1, "no-such-adapter")) + "\n",
 		},
 		"happy 200 only model in form data": {
 			reqHeaders: map[string]string{"Content-Type": "multipart/form-data; boundary=12345"},

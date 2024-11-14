@@ -151,6 +151,7 @@ type ModelStatusCache struct {
 // +kubebuilder:subresource:scale:specpath=.spec.replicas,statuspath=.status.replicas.all
 
 // Model resources define the ML models that will be served by KubeAI.
+// +kubebuilder:validation:XValidation:rule="self.metadata.name.matches('^[a-z0-9-]+$')", message="name must be lowercase alphanumeric with dashes."
 type Model struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

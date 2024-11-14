@@ -14,8 +14,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// TODO: Change to ModelClient
-
 type ModelScaler struct {
 	client                   client.Client
 	namespace                string

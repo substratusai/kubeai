@@ -139,24 +139,46 @@ func (pr *proxyRequest) parse() error {
 
 	// Assume "application/json":
 	default:
-		body, err := io.ReadAll(pr.r.Body)
-		if err != nil {
-			return fmt.Errorf("read: %w", err)
+		if err := pr.readModelFromBody(pr.r.Body); err != nil {
+			return fmt.Errorf("reading model from body: %w", err)
 		}
-		pr.body = body
+	}
 
-		var payload struct {
-			Model string `json:"model"`
-		}
-		if err := json.Unmarshal(pr.body, &payload); err != nil {
-			return fmt.Errorf("unmarshal json: %w", err)
-		}
-		pr.model, pr.adapter = apiutils.SplitModelAdapter(payload.Model)
-		pr.requestedModel = payload.Model
+	return nil
+}
 
-		if pr.model == "" {
-			return fmt.Errorf("no model specified")
-		}
+func (pr *proxyRequest) readModelFromBody(r io.ReadCloser) error {
+	var payload map[string]interface{}
+	if err := json.NewDecoder(r).Decode(&payload); err != nil {
+		return fmt.Errorf("decoding: %w", err)
+	}
+	modelInf, ok := payload["model"]
+	if !ok {
+		return fmt.Errorf("missing 'model' field")
+	}
+	modelStr, ok := modelInf.(string)
+	if !ok {
+		return fmt.Errorf("field 'model' should be a string")
+	}
+
+	pr.requestedModel = modelStr
+	pr.model, pr.adapter = apiutils.SplitModelAdapter(modelStr)
+
+	var bodyChanged bool
+	if pr.adapter != "" {
+		// vLLM expects the adapter to be in the model field.
+		payload["model"] = pr.adapter
+		bodyChanged = true
+	}
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return fmt.Errorf("remarshalling: %w", err)
+	}
+	pr.body = body
+	if bodyChanged {
+		// Set a new content length based on the new body - which had the "model" field changed.
+		pr.r.ContentLength = int64(len(pr.body))
 	}
 
 	return nil

@@ -1,7 +1,7 @@
 apiVersion: kubeai.org/v1
 kind: Model
 metadata:
-  name: dev
+  name: dev.abc
   annotations:
     # Have the controller send requests to localhost to allow for
     # running the controller locally (assuming a port-forward is in place).
