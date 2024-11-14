@@ -1,4 +1,4 @@
-# Architect for Multitenancy
+# Architect for multitenancy
 
 KubeAI can support multitenancy by filtering the models that it serves via Kubernetes label selectors. These label selectors can be applied when accessing any of the OpenAI-compatible endpoints through the `X-Label-Selector` HTTP header and will match on labels specified on the `kind: Model` objects. The pattern is similar to using a `WHERE` clause in a SQL query.
 

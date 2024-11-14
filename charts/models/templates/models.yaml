@@ -9,6 +9,10 @@ spec:
   features: {{ $model.features }}
   owner: {{ $model.owner }}
   url: {{ $model.url }}
+  {{- with $model.adapters }}
+  adapters:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
   {{- with $model.engine }}
   engine: {{ . }}
   {{- end }}

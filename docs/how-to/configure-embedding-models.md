@@ -1,4 +1,4 @@
-# Configure Embedding Models
+# Configure embedding models
 
 KubeAI supports the following engines for text embedding models:
 
