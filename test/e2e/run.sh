@@ -44,6 +44,8 @@ error_handler() {
     kubectl get events
     echo "--- Models ---"
     kubectl get crds models.kubeai.org && kubectl get models -oyaml
+    echo "--- Model Logs ---"
+    kubectl logs -l app=model
     echo "!!! FAIL !!!"
     exit 1
 }
