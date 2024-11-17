@@ -7,6 +7,7 @@ spec:
   features: [TextGeneration]
   env:
     VLLM_RPC_TIMEOUT: "10000"
+    VLLM_CPU_KVCACHE_SPACE: "1"
   owner: facebook
   url: hf://facebook/opt-125m
   engine: VLLM
