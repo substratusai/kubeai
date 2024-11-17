@@ -5,9 +5,10 @@ metadata:
   name: opt-125m-cpu
 spec:
   features: [TextGeneration]
-  # env:
-  #   VLLM_RPC_TIMEOUT: "10000"
-  #   VLLM_CPU_KVCACHE_SPACE: "1"
+  env:
+    VLLM_WORKER_MULTIPROC_METHOD: spawn
+    # VLLM_RPC_TIMEOUT: "10000"
+    # VLLM_CPU_KVCACHE_SPACE: "1"
   args:
   - --disable-frontend-multiprocessing
   - --max-num-seqs=1
