@@ -5,6 +5,8 @@ metadata:
   name: opt-125m-cpu
 spec:
   features: [TextGeneration]
+  env:
+    VLLM_RPC_TIMEOUT: "10000"
   owner: facebook
   url: hf://facebook/opt-125m
   engine: VLLM
