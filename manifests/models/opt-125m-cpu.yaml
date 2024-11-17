@@ -8,6 +8,8 @@ spec:
   env:
     VLLM_RPC_TIMEOUT: "10000"
     VLLM_CPU_KVCACHE_SPACE: "1"
+  args:
+  - --disable-frontend-multiprocessing
   owner: facebook
   url: hf://facebook/opt-125m
   engine: VLLM
