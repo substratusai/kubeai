@@ -50,8 +50,8 @@ spec:
                     url:
                       type: string
                       x-kubernetes-validations:
-                      - message: adapter url must start with "hf://".
-                        rule: self.startsWith("hf://")
+                      - message: adapter url must start with "hf://" or "s3://".
+                        rule: self.startsWith("hf://") || self.startsWith("s3://")
                   required:
                   - id
                   - url

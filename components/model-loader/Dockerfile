@@ -1,18 +1,15 @@
-FROM python:3.10-slim
+FROM alpine:3.20
 
-# Set environment variables
+# Python
 ENV PYTHONUNBUFFERED=1
+RUN apk add --no-cache python3 py3-pip pipx bash && rm -rf ~/.cache/* /usr/local/share/man /tmp/*     
+# Location where pipx installs executables:
+ENV PATH="/root/.local/bin:$PATH"
 
-# Set the working directory in the container
-WORKDIR /work
+# Hugging Face ("hf://")
+RUN pipx install huggingface_hub
+RUN huggingface-cli version
 
-# Install Hugging Face CLI tool and other necessary dependencies
-RUN pip install --no-cache-dir huggingface_hub
-
-RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
-
-COPY load.sh /work/load
-RUN chmod +x load
-ENV PATH="/work:${PATH}"
-
-ENTRYPOINT [ "load" ]
+# S3 ("s3://")
+RUN pipx install awscli
+RUN aws --version

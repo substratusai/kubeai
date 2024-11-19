@@ -24,7 +24,7 @@ spec:
   minReplicas: 1
 ```
 
-**Limitation:** Currently LoRA adapters are only supported with `engine: VLLM`.
+**Limitation:** Currently LoRA adapters are only supported with `engine: VLLM` and `hf://` or `s3://` urls.
 
 You can install this Model using kubectl:
 

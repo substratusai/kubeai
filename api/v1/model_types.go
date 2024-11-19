@@ -127,7 +127,7 @@ type Adapter struct {
 	// +kubebuilder:validation:Pattern=^[a-z0-9-]+$
 	// +kubebuilder:validation:MaxLength=63
 	ID string `json:"id"`
-	// +kubebuilder:validation:XValidation:rule="self.startsWith(\"hf://\")", message="adapter url must start with \"hf://\"."
+	// +kubebuilder:validation:XValidation:rule="self.startsWith(\"hf://\") || self.startsWith(\"s3://\")", message="adapter url must start with \"hf://\" or \"s3://\"."
 	URL string `json:"url"`
 }
 
