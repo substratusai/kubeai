@@ -54,9 +54,51 @@ kubectl explain models.spec
 kubectl explain models.spec.engine
 ```
 
+You can view all example manifets on the [GitHub repository](https://github.com/substratusai/kubeai/tree/main/manifests/models).
+
+Below are few examples using various engines and resource profiles.
+
+### Example Gemma 2 2B using Ollama on CPU
+
+```yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: gemma2-2b-cpu
+spec:
+  features: [TextGeneration]
+  url: ollama://gemma2:2b
+  engine: OLlama
+  resourceProfile: cpu:2
+```
+
+### Example Llama 3.1 8B using vLLM on NVIDIA L4 GPU
+
+```yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: llama-3.1-8b-instruct-fp8-l4
+spec:
+  features: [TextGeneration]
+  owner: neuralmagic
+  url: hf://neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8
+  engine: VLLM
+  args:
+    - --max-model-len=16384
+    - --max-num-batched-token=16384
+    - --gpu-memory-utilization=0.9
+    - --disable-log-requests
+  resourceProfile: nvidia-gpu-l4:1
+```
+
 ## Programmatically installing models
 
 See the [examples](https://github.com/substratusai/kubeai/tree/main/examples/k8s-api-clients).
+
+## Calling a model
+
+You can inference a model by calling the KubeAI OpenAI compatible API. The model name should match the KubeAI
 
 ## Feedback welcome: A model management UI
 
