@@ -159,12 +159,15 @@ spec:
                   Currently only the following formats are supported:
                   For VLLM & FasterWhisper engines: "hf://<model-repo>/<model-name>"
                   For OLlama engine: "ollama://<model>
+                  With caching enabled: "s3://<bucket>/<path>"
                 type: string
                 x-kubernetes-validations:
                 - message: url is immutable.
                   rule: self == oldSelf
-                - message: url must start with "hf://" or "ollama://" and not be empty.
-                  rule: self.startsWith("hf://") || self.startsWith("ollama://")
+                - message: url must start with "hf://", "ollama://", or "s3://" and
+                    not be empty.
+                  rule: self.startsWith("hf://") || self.startsWith("ollama://") ||
+                    self.startsWith("s3://")
             required:
             - engine
             - features
@@ -173,9 +176,11 @@ spec:
             - url
             type: object
             x-kubernetes-validations:
-            - message: cacheProfile is only supported with a huggingface url ("hf://...")
-                at the moment.
-              rule: '!has(self.cacheProfile) || self.url.startsWith("hf://")'
+            - message: cacheProfile is only supported with urls of format "hf://..."
+                or "s3://..." at the moment.
+              rule: '!has(self.cacheProfile) || self.url.startsWith("hf://") || self.url.startsWith("s3://")'
+            - message: urls of format "s3://..." only supported when using a cacheProfile
+              rule: '!self.url.startsWith("s3://") || has(self.cacheProfile)'
             - message: minReplicas should be less than or equal to maxReplicas.
               rule: '!has(self.maxReplicas) || self.minReplicas <= self.maxReplicas'
             - message: adapters only supported with VLLM engine.

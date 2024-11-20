@@ -225,6 +225,29 @@ func TestModelValidation(t *testing.T) {
 		},
 		{
 			model: v1.Model{
+				ObjectMeta: metadata("cache-profile-with-s3-url-valid"),
+				Spec: v1.ModelSpec{
+					URL:          "s3://test-bucket/test-path",
+					Engine:       "VLLM",
+					Features:     []v1.ModelFeature{},
+					CacheProfile: "some-cache-profile",
+				},
+			},
+			expValid: true,
+		},
+		{
+			model: v1.Model{
+				ObjectMeta: metadata("s3-url-without-cache-profile-invalid"),
+				Spec: v1.ModelSpec{
+					URL:      "s3://test-bucket/test-path",
+					Engine:   "VLLM",
+					Features: []v1.ModelFeature{},
+				},
+			},
+			expValid: false,
+		},
+		{
+			model: v1.Model{
 				ObjectMeta: metadata("cache-profile-with-non-hf-url-invalid"),
 				Spec: v1.ModelSpec{
 					URL:          "ollama://test-repo/test-model",
@@ -234,8 +257,9 @@ func TestModelValidation(t *testing.T) {
 				},
 			},
 			expErrContains: []string{
-				"cacheProfile is only supported with a huggingface url",
+				"cacheProfile is only supported with urls of format",
 				"hf://",
+				"s3://",
 			},
 		},
 		{

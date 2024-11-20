@@ -23,7 +23,7 @@ func TestAdapters(t *testing.T) {
 	)
 	m.Spec.Adapters = []v1.Adapter{
 		{ID: adapter1, URL: "hf://test-repo/test-adapter"},
-		{ID: adapter2, URL: "hf://test-repo/test-adapter"},
+		{ID: adapter2, URL: "s3://test-bucket/test-path"},
 	}
 	require.NoError(t, testK8sClient.Create(testCtx, m))
 

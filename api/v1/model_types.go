@@ -21,7 +21,8 @@ import (
 )
 
 // ModelSpec defines the desired state of Model.
-// +kubebuilder:validation:XValidation:rule="!has(self.cacheProfile) || self.url.startsWith(\"hf://\")", message="cacheProfile is only supported with a huggingface url (\"hf://...\") at the moment."
+// +kubebuilder:validation:XValidation:rule="!has(self.cacheProfile) || self.url.startsWith(\"hf://\") || self.url.startsWith(\"s3://\")", message="cacheProfile is only supported with urls of format \"hf://...\" or \"s3://...\" at the moment."
+// +kubebuilder:validation:XValidation:rule="!self.url.startsWith(\"s3://\") || has(self.cacheProfile)", message="urls of format \"s3://...\" only supported when using a cacheProfile"
 // +kubebuilder:validation:XValidation:rule="!has(self.maxReplicas) || self.minReplicas <= self.maxReplicas", message="minReplicas should be less than or equal to maxReplicas."
 // +kubebuilder:validation:XValidation:rule="!has(self.adapters) || self.engine == \"VLLM\"", message="adapters only supported with VLLM engine."
 type ModelSpec struct {
@@ -29,9 +30,10 @@ type ModelSpec struct {
 	// Currently only the following formats are supported:
 	// For VLLM & FasterWhisper engines: "hf://<model-repo>/<model-name>"
 	// For OLlama engine: "ollama://<model>
+	// With caching enabled: "s3://<bucket>/<path>"
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf", message="url is immutable."
-	// +kubebuilder:validation:XValidation:rule="self.startsWith(\"hf://\") || self.startsWith(\"ollama://\")", message="url must start with \"hf://\" or \"ollama://\" and not be empty."
+	// +kubebuilder:validation:XValidation:rule="self.startsWith(\"hf://\") || self.startsWith(\"ollama://\") || self.startsWith(\"s3://\")", message="url must start with \"hf://\", \"ollama://\", or \"s3://\" and not be empty."
 	URL string `json:"url"`
 
 	Adapters []Adapter `json:"adapters,omitempty"`
