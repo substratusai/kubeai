@@ -9,7 +9,7 @@ secrets:
     secretAccessKey: ""
     # The name of the secret to use.
     # If not set, and create is true, the name is generated using the fullname template.
-    # The token value is pulled from the key, "token".
+    # The secret values are pulled from the keys, "accessKeyId" and "secretAccessKey".
     name: ""
   huggingface:
     create: true
