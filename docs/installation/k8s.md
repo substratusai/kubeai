@@ -60,7 +60,7 @@ the node labels on your nodes.
 
 
 Install KubeAI using the custom resourceProfiles:
-```yaml
+```bash
 helm upgrade --install kubeai kubeai/kubeai \
     -f values-nvidia-k8s-device-plugin.yaml \
     --set secrets.huggingface.token=$HF_TOKEN \
