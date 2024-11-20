@@ -38,7 +38,7 @@ Optionally, inspect the values file to see the resourceProfiles:
 helm show values kubeai/kubeai > values.yaml
 ```
 
-See the [How to install models guide](../how-to/installing-models.md) for instructions on deploying models and examples.
+See the [How to install models guide](/how-to/installing-models.md) for instructions on deploying models and examples.
 
 ## Installation using GPUs
 
@@ -69,4 +69,4 @@ helm upgrade --install kubeai kubeai/kubeai \
 
 ## Deploying models
 
-See the [How to install models guide](../how-to/installing-models.md) for instructions on deploying models and examples.
+See the [How to install models guide](/how-to/installing-models.md) for instructions on deploying models and examples.
