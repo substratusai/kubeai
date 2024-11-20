@@ -76,7 +76,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `url` _string_ | URL of the model to be served.<br />Currently only the following formats are supported:<br />For VLLM & FasterWhisper engines: "hf://<model-repo>/<model-name>"<br />For OLlama engine: "ollama://<model> |  | Required: \{\} <br /> |
+| `url` _string_ | URL of the model to be served.<br />Currently only the following formats are supported:<br />For VLLM & FasterWhisper engines: "hf://<model-repo>/<model-name>"<br />For OLlama engine: "ollama://<model><br />With caching enabled: "s3://<bucket>/<path>" |  | Required: \{\} <br /> |
 | `adapters` _[Adapter](#adapter) array_ |  |  |  |
 | `features` _[ModelFeature](#modelfeature) array_ | Features that the model supports.<br />Dictates the APIs that are available for the model. |  | Enum: [TextGeneration TextEmbedding SpeechToText] <br /> |
 | `engine` _string_ | Engine to be used for the server process. |  | Enum: [OLlama VLLM FasterWhisper Infinity] <br />Required: \{\} <br /> |

@@ -3,6 +3,14 @@
 # Declare variables to be passed into your templates.
 
 secrets:
+  aws:
+    create: true
+    accessKeyId: ""
+    secretAccessKey: ""
+    # The name of the secret to use.
+    # If not set, and create is true, the name is generated using the fullname template.
+    # The token value is pulled from the key, "token".
+    name: ""
   huggingface:
     create: true
     token: ""

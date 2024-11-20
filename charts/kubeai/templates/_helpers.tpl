@@ -73,6 +73,24 @@ Create the name of the service account to use for model pods
 {{- end }}
 
 {{/*
+Create the name of the aws secret to use
+*/}}
+{{- define "kubeai.awsSecretName" -}}
+{{- if .Values.secrets.aws.create -}}
+{{- if .Values.secrets.aws.name -}}
+{{- .Values.secrets.aws.name -}}
+{{- else }}
+{{- (include "kubeai.fullname" .)}}-aws
+{{- end}}
+{{- else }}
+{{- if not .Values.secrets.aws.name -}}
+{{ fail "if secrets.aws.create is false, secrets.aws.name is required" }}
+{{- end }}
+{{- .Values.secrets.aws.name }}
+{{- end }}
+{{- end }}
+
+{{/*
 Create the name of the huggingface secret to use
 */}}
 {{- define "kubeai.huggingfaceSecretName" -}}

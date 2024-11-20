@@ -13,3 +13,8 @@ RUN huggingface-cli version
 # S3 ("s3://")
 RUN pipx install awscli
 RUN aws --version
+
+# Loader script
+COPY ./load.sh /bin/load.sh
+RUN chmod +x /bin/load.sh
+CMD ["/bin/load.sh"]

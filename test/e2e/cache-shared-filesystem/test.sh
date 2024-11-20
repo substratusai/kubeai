@@ -4,7 +4,6 @@ source $REPO_DIR/test/e2e/common.sh
 
 models_release="kubeai-models"
 
-
 helm install $models_release $REPO_DIR/charts/models -f - <<EOF
 catalog:
   opt-125m-cpu:
