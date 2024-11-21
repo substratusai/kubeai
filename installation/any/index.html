@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://www.kubeai.org/how-to/configure-autoscaling/">
+        <link rel="canonical" href="https://www.kubeai.org/installation/any/">
       
       
-        <link rel="prev" href="../cache-models-with-gcp-filestore/">
+        <link rel="prev" href="../..">
       
       
-        <link rel="next" href="../configure-embedding-models/">
+        <link rel="next" href="../eks/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Configure autoscaling - KubeAI</title>
+        <title>Install on any Kubernetes Cluster - KubeAI</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#configure-autoscaling" class="md-skip">
+        <a href="#install-on-any-kubernetes-cluster" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Configure autoscaling
+              Install on any Kubernetes Cluster
             
           </span>
         </div>
@@ -242,17 +242,19 @@
       
   
   
+    
   
   
+  
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
@@ -266,7 +268,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Installation
@@ -277,10 +279,30 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../installation/any/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Install on any Kubernetes Cluster
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -289,6 +311,62 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prerequisites
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation-using-only-cpus" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installation using only CPUs
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#installation-using-gpus" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installation using GPUs
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deploying-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      Deploying models
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -301,7 +379,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../installation/eks/" class="md-nav__link">
+      <a href="../eks/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -322,7 +400,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../installation/gke/" class="md-nav__link">
+      <a href="../gke/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -347,19 +425,17 @@
       
   
   
-    
   
   
-  
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -373,7 +449,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             How to
@@ -387,7 +463,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architect-for-multitenancy/" class="md-nav__link">
+      <a href="../../how-to/architect-for-multitenancy/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -408,7 +484,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../build-models-into-containers/" class="md-nav__link">
+      <a href="../../how-to/build-models-into-containers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -429,7 +505,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cache-models-with-aws-efs/" class="md-nav__link">
+      <a href="../../how-to/cache-models-with-aws-efs/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -450,7 +526,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cache-models-with-gcp-filestore/" class="md-nav__link">
+      <a href="../../how-to/cache-models-with-gcp-filestore/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -468,30 +544,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Configure autoscaling
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../how-to/configure-autoscaling/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -500,68 +556,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#system-settings" class="md-nav__link">
-    <span class="md-ellipsis">
-      System Settings
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#model-settings" class="md-nav__link">
-    <span class="md-ellipsis">
-      Model Settings
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Model Settings">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#model-settings-helm" class="md-nav__link">
-    <span class="md-ellipsis">
-      Model settings: helm
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#model-settings-kubectl" class="md-nav__link">
-    <span class="md-ellipsis">
-      Model settings: kubectl
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -574,7 +568,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configure-embedding-models/" class="md-nav__link">
+      <a href="../../how-to/configure-embedding-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -595,7 +589,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configure-resource-profiles/" class="md-nav__link">
+      <a href="../../how-to/configure-resource-profiles/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -616,7 +610,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configure-speech-to-text/" class="md-nav__link">
+      <a href="../../how-to/configure-speech-to-text/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -637,7 +631,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../install-models/" class="md-nav__link">
+      <a href="../../how-to/install-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1189,44 +1183,38 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#system-settings" class="md-nav__link">
+  <a href="#prerequisites" class="md-nav__link">
     <span class="md-ellipsis">
-      System Settings
+      Prerequisites
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#model-settings" class="md-nav__link">
+  <a href="#installation-using-only-cpus" class="md-nav__link">
     <span class="md-ellipsis">
-      Model Settings
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Model Settings">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#model-settings-helm" class="md-nav__link">
-    <span class="md-ellipsis">
-      Model settings: helm
+      Installation using only CPUs
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#model-settings-kubectl" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#installation-using-gpus" class="md-nav__link">
     <span class="md-ellipsis">
-      Model settings: kubectl
+      Installation using GPUs
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#deploying-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      Deploying models
+    </span>
+  </a>
   
 </li>
       
@@ -1248,49 +1236,50 @@
   
 
 
-<h1 id="configure-autoscaling">Configure autoscaling<a class="headerlink" href="#configure-autoscaling" title="Permanent link">&para;</a></h1>
-<p>This guide will cover how to configure KubeAI <a href="../../concepts/autoscaling/">autoscaling</a> parameters.</p>
-<h2 id="system-settings">System Settings<a class="headerlink" href="#system-settings" title="Permanent link">&para;</a></h2>
-<p>KubeAI administrators can define system-wide autoscaling settings by setting the following Helm values (for the <code>kubeai/kubeai</code> chart):</p>
-<p>Example:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># helm-values.yaml</span>
-<span class="nt">modelAutoscaling</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15s</span>
-<span class="w">  </span><span class="nt">timeWindow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10m</span>
-<span class="c1"># ...</span>
+<h1 id="install-on-any-kubernetes-cluster">Install on any Kubernetes Cluster<a class="headerlink" href="#install-on-any-kubernetes-cluster" title="Permanent link">&para;</a></h1>
+<p>KubeAI can be installed on any Kubernetes cluster and doesn't require GPUs.
+If you do have GPUs, then KubeAI can take advantage of them.</p>
+<p>Please follow the Installation using GPUs section if you have GPUs available.</p>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Add the KubeAI helm repository.</li>
+</ol>
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>kubeai<span class="w"> </span>https://www.kubeai.org
+helm<span class="w"> </span>repo<span class="w"> </span>update
 </code></pre></div>
-<h2 id="model-settings">Model Settings<a class="headerlink" href="#model-settings" title="Permanent link">&para;</a></h2>
-<p>The following settings can be configured on a model-by-model basis.</p>
-<h3 id="model-settings-helm">Model settings: helm<a class="headerlink" href="#model-settings-helm" title="Permanent link">&para;</a></h3>
-<p>If you are managing models via the <code>kubeai/models</code> Helm chart, you can use:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># helm-values.yaml</span>
-<span class="nt">catalog</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">model-a</span><span class="p">:</span>
-<span class="w">    </span><span class="c1"># ...</span>
-<span class="w">    </span><span class="nt">minReplicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
-<span class="w">    </span><span class="nt">maxReplicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9</span>
-<span class="w">    </span><span class="nt">targetRequests</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">250</span>
-<span class="w">    </span><span class="nt">scaleDownDelaySeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">45</span>
-<span class="w">  </span><span class="nt">model-b</span><span class="p">:</span>
-<span class="w">    </span><span class="c1"># ...</span>
-<span class="w">    </span><span class="nt">disableAutoscaling</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="c1"># ...</span>
+<ol>
+<li>(Optional) Set the Hugging Face token as an environment variable. This is only required if you plan to use HuggingFace models that require authentication.</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">HF_TOKEN</span><span class="o">=</span>&lt;your-hugging-face-token&gt;
 </code></pre></div>
-<p>Re-running <code>helm upgrade</code> with these additional parameters will update model settings in the cluster.</p>
-<h3 id="model-settings-kubectl">Model settings: kubectl<a class="headerlink" href="#model-settings-kubectl" title="Permanent link">&para;</a></h3>
-<p>You can also specify the autoscaling profile directly via the Models custom resource in the Kubernetes API:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubeai.org/v1</span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Model</span>
-<span class="nt">metadata</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-model</span>
-<span class="nt">spec</span><span class="p">:</span>
-<span class="w">  </span><span class="c1"># ...</span>
-<span class="w">  </span><span class="nt">minReplicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
-<span class="w">  </span><span class="nt">maxReplicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9</span>
-<span class="w">  </span><span class="nt">targetRequests</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">250</span>
-<span class="w">  </span><span class="nt">scaleDownDelaySeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">45</span>
+<h2 id="installation-using-only-cpus">Installation using only CPUs<a class="headerlink" href="#installation-using-only-cpus" title="Permanent link">&para;</a></h2>
+<p>All engines supported in KubeAI also support running only on CPU resources.</p>
+<p>Install KubeAI using the pre-defined values file which defines CPU resourceProfiles:</p>
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>install<span class="w"> </span>kubeai<span class="w"> </span>kubeai/kubeai<span class="w"> </span>--wait<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--set<span class="w"> </span>secrets.huggingface.token<span class="o">=</span><span class="nv">$HF_TOKEN</span>
 </code></pre></div>
-<p>If you are already managing models using Model manifest files, you can make the update to your file and reapply it using <code>kubectl apply -f &lt;filename&gt;.yaml</code>.</p>
+<p>Optionally, inspect the values file to see the default resourceProfiles:</p>
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>show<span class="w"> </span>values<span class="w"> </span>kubeai/kubeai<span class="w"> </span>&gt;<span class="w"> </span>values.yaml
+</code></pre></div>
+<h2 id="installation-using-gpus">Installation using GPUs<a class="headerlink" href="#installation-using-gpus" title="Permanent link">&para;</a></h2>
+<p>This section assumes you have a Kubernetes cluster with GPU resources available and
+installed the NVIDIA device plugin that adds GPU information labels to the nodes.</p>
+<p>This time we need to use a custom resource profiles that define the nodeSelectors
+for different GPU types.</p>
+<p>Download the values file for the NVIDIA GPU operator:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-L<span class="w"> </span>-O<span class="w"> </span>https://raw.githubusercontent.com/substratusai/kubeai/refs/heads/main/charts/kubeai/values-nvidia-k8s-device-plugin.yaml
+</code></pre></div>
+<p>You likely will not need to modify the <code>values-nvidia-k8s-device-plugin.yaml</code> file.
+However, do inspect the file to ensure the GPU resourceProfile nodeSelectors match
+the node labels on your nodes.</p>
+<p>Install KubeAI using the custom resourceProfiles:
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>kubeai<span class="w"> </span>kubeai/kubeai<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-f<span class="w"> </span>values-nvidia-k8s-device-plugin.yaml<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--set<span class="w"> </span>secrets.huggingface.token<span class="o">=</span><span class="nv">$HF_TOKEN</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--wait
+</code></pre></div></p>
+<h2 id="deploying-models">Deploying models<a class="headerlink" href="#deploying-models" title="Permanent link">&para;</a></h2>
+<p>See the <a href="/how-to/installing-models.md">How to install models guide</a> for instructions on deploying models and examples.</p>
 
 
 

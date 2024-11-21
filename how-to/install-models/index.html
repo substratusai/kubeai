@@ -280,6 +280,27 @@
   
   
     <li class="md-nav__item">
+      <a href="../../installation/any/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Install on any Kubernetes Cluster
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../installation/eks/" class="md-nav__link">
         
   
@@ -619,12 +640,45 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Installing models with kubectl">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-gemma-2-2b-using-ollama-on-cpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Gemma 2 2B using Ollama on CPU
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-llama-31-8b-using-vllm-on-nvidia-l4-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Llama 3.1 8B using vLLM on NVIDIA L4 GPU
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
   <a href="#programmatically-installing-models" class="md-nav__link">
     <span class="md-ellipsis">
       Programmatically installing models
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#calling-a-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Calling a model
     </span>
   </a>
   
@@ -1225,12 +1279,45 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Installing models with kubectl">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-gemma-2-2b-using-ollama-on-cpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Gemma 2 2B using Ollama on CPU
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-llama-31-8b-using-vllm-on-nvidia-l4-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example Llama 3.1 8B using vLLM on NVIDIA L4 GPU
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
   <a href="#programmatically-installing-models" class="md-nav__link">
     <span class="md-ellipsis">
       Programmatically installing models
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#calling-a-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Calling a model
     </span>
   </a>
   
@@ -1299,8 +1386,40 @@
 kubectl<span class="w"> </span>explain<span class="w"> </span>models.spec
 kubectl<span class="w"> </span>explain<span class="w"> </span>models.spec.engine
 </code></pre></div>
+<p>You can view all example manifests on the <a href="https://github.com/substratusai/kubeai/tree/main/manifests/models">GitHub repository</a>.</p>
+<p>Below are few examples using various engines and resource profiles.</p>
+<h3 id="example-gemma-2-2b-using-ollama-on-cpu">Example Gemma 2 2B using Ollama on CPU<a class="headerlink" href="#example-gemma-2-2b-using-ollama-on-cpu" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubeai.org/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Model</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gemma2-2b-cpu</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">features</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">TextGeneration</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ollama://gemma2:2b</span>
+<span class="w">  </span><span class="nt">engine</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OLlama</span>
+<span class="w">  </span><span class="nt">resourceProfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cpu:2</span>
+</code></pre></div>
+<h3 id="example-llama-31-8b-using-vllm-on-nvidia-l4-gpu">Example Llama 3.1 8B using vLLM on NVIDIA L4 GPU<a class="headerlink" href="#example-llama-31-8b-using-vllm-on-nvidia-l4-gpu" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubeai.org/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Model</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">llama-3.1-8b-instruct-fp8-l4</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">features</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">TextGeneration</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">owner</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">neuralmagic</span>
+<span class="w">  </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hf://neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8</span>
+<span class="w">  </span><span class="nt">engine</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">VLLM</span>
+<span class="w">  </span><span class="nt">args</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--max-model-len=16384</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--max-num-batched-token=16384</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--gpu-memory-utilization=0.9</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--disable-log-requests</span>
+<span class="w">  </span><span class="nt">resourceProfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nvidia-gpu-l4:1</span>
+</code></pre></div>
 <h2 id="programmatically-installing-models">Programmatically installing models<a class="headerlink" href="#programmatically-installing-models" title="Permanent link">&para;</a></h2>
 <p>See the <a href="https://github.com/substratusai/kubeai/tree/main/examples/k8s-api-clients">examples</a>.</p>
+<h2 id="calling-a-model">Calling a model<a class="headerlink" href="#calling-a-model" title="Permanent link">&para;</a></h2>
+<p>You can inference a model by calling the KubeAI OpenAI compatible API. The model name should match the KubeAI model name.</p>
 <h2 id="feedback-welcome-a-model-management-ui">Feedback welcome: A model management UI<a class="headerlink" href="#feedback-welcome-a-model-management-ui" title="Permanent link">&para;</a></h2>
 <p>We are considering adding a UI for managing models in a running KubeAI instance. Give the <a href="https://github.com/substratusai/kubeai/issues/148">GitHub Issue</a> a thumbs up if you would be interested in this feature.</p>
 
