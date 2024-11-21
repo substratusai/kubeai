@@ -54,7 +54,7 @@ kubectl explain models.spec
 kubectl explain models.spec.engine
 ```
 
-You can view all example manifets on the [GitHub repository](https://github.com/substratusai/kubeai/tree/main/manifests/models).
+You can view all example manifests on the [GitHub repository](https://github.com/substratusai/kubeai/tree/main/manifests/models).
 
 Below are few examples using various engines and resource profiles.
 
@@ -98,7 +98,7 @@ See the [examples](https://github.com/substratusai/kubeai/tree/main/examples/k8s
 
 ## Calling a model
 
-You can inference a model by calling the KubeAI OpenAI compatible API. The model name should match the KubeAI
+You can inference a model by calling the KubeAI OpenAI compatible API. The model name should match the KubeAI model name.
 
 ## Feedback welcome: A model management UI
 
