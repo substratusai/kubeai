@@ -21,7 +21,7 @@ helm repo update
 export HF_TOKEN=<your-hugging-face-token>
 ```
 
-## Installation using only CPU resources
+## Installation using only CPUs
 
 All engines supported in KubeAI also support running only on CPU resources.
 
@@ -32,13 +32,11 @@ helm install kubeai kubeai/kubeai --wait \
   --set secrets.huggingface.token=$HF_TOKEN
 ```
 
-Optionally, inspect the values file to see the resourceProfiles:
+Optionally, inspect the values file to see the default resourceProfiles:
 
 ```bash
 helm show values kubeai/kubeai > values.yaml
 ```
-
-See the [How to install models guide](/how-to/installing-models.md) for instructions on deploying models and examples.
 
 ## Installation using GPUs
 
