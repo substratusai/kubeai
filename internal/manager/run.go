@@ -216,7 +216,7 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 		Scheme:                  mgr.GetScheme(),
 		Namespace:               namespace,
 		AllowPodAddressOverride: cfg.AllowPodAddressOverride,
-		HuggingfaceSecretName:   cfg.SecretNames.Huggingface,
+		SecretNames:             cfg.SecretNames,
 		ResourceProfiles:        cfg.ResourceProfiles,
 		CacheProfiles:           cfg.CacheProfiles,
 		ModelServers:            cfg.ModelServers,

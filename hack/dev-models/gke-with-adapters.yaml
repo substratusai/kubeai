@@ -1,7 +1,7 @@
 apiVersion: kubeai.org/v1
 kind: Model
 metadata:
-  name: tinyllama-chat
+  name: tinyllama-chat-adapters
 spec:
   features: [TextGeneration]
   owner: meta-llama

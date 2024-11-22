@@ -56,7 +56,7 @@ type ModelReconciler struct {
 	VLLMClient              *vllmclient.Client
 	Namespace               string
 	AllowPodAddressOverride bool
-	HuggingfaceSecretName   string
+	SecretNames             config.SecretNames
 	ResourceProfiles        map[string]config.ResourceProfile
 	CacheProfiles           map[string]config.CacheProfile
 	ModelServers            config.ModelServers
@@ -252,6 +252,7 @@ type ModelConfig struct {
 
 type modelSource struct {
 	typ         modelSourceType
+	s3          s3ModelSource
 	huggingface huggingfaceModelSource
 	ollama      ollamaModelSource
 }
@@ -259,10 +260,14 @@ type modelSource struct {
 type modelSourceType string
 
 const (
+	modelSourceTypeS3          modelSourceType = "s3"
 	modelSourceTypeHuggingface modelSourceType = "huggingface"
 	modelSourceTypeOLlama      modelSourceType = "ollama"
 )
 
+type s3ModelSource struct {
+	url string
+}
 type huggingfaceModelSource struct {
 	repo string
 }
@@ -276,6 +281,13 @@ func parseModelSource(url string) (modelSource, error) {
 		ollamaPrefix      = "ollama://"
 	)
 	switch {
+	case strings.HasPrefix(url, "s3://"):
+		return modelSource{
+			typ: modelSourceTypeS3,
+			s3: s3ModelSource{
+				url: url,
+			},
+		}, nil
 	case strings.HasPrefix(url, huggingfacePrefix):
 		return modelSource{
 			typ: modelSourceTypeHuggingface,

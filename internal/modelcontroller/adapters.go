@@ -152,7 +152,7 @@ func adapterDir(a v1.Adapter) string {
 	return fmt.Sprintf("%s/%s", adaptersRootDir, a.ID)
 }
 
-func patchServerAdapterLoader(podSpec *corev1.PodSpec, image string) {
+func (r *ModelReconciler) patchServerAdapterLoader(podSpec *corev1.PodSpec, image string) {
 	podSpec.Volumes = append(podSpec.Volumes, corev1.Volume{
 		Name: adaptersVolName,
 		VolumeSource: corev1.VolumeSource{
@@ -180,6 +180,7 @@ func patchServerAdapterLoader(podSpec *corev1.PodSpec, image string) {
 				MountPath: adaptersRootDir,
 			},
 		},
+		Env: r.envAuthAll(),
 	}
 	podSpec.Containers = append(podSpec.Containers, loaderContainer)
 }

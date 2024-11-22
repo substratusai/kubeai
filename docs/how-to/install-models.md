@@ -46,6 +46,8 @@ catalog:
 
 You can add your own model by defining a Model yaml file and applying it using `kubectl apply -f model.yaml`.
 
+Take a look at the KubeAI [API docs](../reference/kubernetes-api.md) to view Model schema documentation.
+
 If you have a running cluster with KubeAI installed you can inspect the schema for a Model using `kubectl explain`:
 
 ```bash

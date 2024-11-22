@@ -7,7 +7,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/utils/ptr"
 )
 
 func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, c ModelConfig) *corev1.Pod {
@@ -52,21 +51,9 @@ func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, c ModelConfig) 
 			Name:  "INFINITY_PORT",
 			Value: "8000",
 		},
-		{
-			// TODO: Conditionally set this token based on whether
-			// huggingface is the model source.
-			Name: "HF_TOKEN",
-			ValueFrom: &corev1.EnvVarSource{
-				SecretKeyRef: &corev1.SecretKeySelector{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: r.HuggingfaceSecretName,
-					},
-					Key:      "token",
-					Optional: ptr.To(true),
-				},
-			},
-		},
 	}
+	env = append(env, r.envAuthForSource(c.Source)...)
+
 	var envKeys []string
 	for key := range m.Spec.Env {
 		envKeys = append(envKeys, key)

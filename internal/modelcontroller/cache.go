@@ -351,25 +351,9 @@ func (r *ModelReconciler) loadCacheJobForModel(m *kubeaiv1.Model, c ModelConfig)
 		m.Spec.URL,
 		modelCacheDir(m),
 	}
-	switch c.Source.typ {
-	case modelSourceTypeHuggingface:
-		job.Spec.Template.Spec.Containers[0].Env = append(job.Spec.Template.Spec.Containers[0].Env,
-			corev1.EnvVar{
-				Name: "HF_TOKEN",
-				ValueFrom: &corev1.EnvVarSource{
-					SecretKeyRef: &corev1.SecretKeySelector{
-						LocalObjectReference: corev1.LocalObjectReference{
-							Name: r.HuggingfaceSecretName,
-						},
-						Key:      "token",
-						Optional: ptr.To(true),
-					},
-				},
-			},
-		)
-	default:
-		panic("unsupported model source, this point should not be reached")
-	}
+	job.Spec.Template.Spec.Containers[0].Env = append(job.Spec.Template.Spec.Containers[0].Env,
+		r.envAuthForSource(c.Source)...,
+	)
 
 	return job
 }

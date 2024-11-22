@@ -146,6 +146,7 @@ func (a *ModelAutoscaling) AverageWindowCount() int {
 }
 
 type SecretNames struct {
+	AWS         string `json:"aws" validate:"required"`
 	Huggingface string `json:"huggingface" validate:"required"`
 }
 
