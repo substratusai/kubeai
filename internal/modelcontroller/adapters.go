@@ -152,7 +152,11 @@ func adapterDir(a v1.Adapter) string {
 	return fmt.Sprintf("%s/%s", adaptersRootDir, a.ID)
 }
 
-func (r *ModelReconciler) patchServerAdapterLoader(podSpec *corev1.PodSpec, image string) {
+func (r *ModelReconciler) patchServerAdapterLoader(podSpec *corev1.PodSpec, m *v1.Model, image string) {
+	if m.Spec.Adapters == nil {
+		return
+	}
+
 	podSpec.Volumes = append(podSpec.Volumes, corev1.Volume{
 		Name: adaptersVolName,
 		VolumeSource: corev1.VolumeSource{
@@ -180,9 +184,9 @@ func (r *ModelReconciler) patchServerAdapterLoader(podSpec *corev1.PodSpec, imag
 				MountPath: adaptersRootDir,
 			},
 		},
-		Env: r.envAuthAll(),
 	}
 	podSpec.Containers = append(podSpec.Containers, loaderContainer)
+	r.modelAuthCredentialsForAllSources().applyToPodSpec(podSpec, len(podSpec.Containers)-1)
 }
 
 func getLabelledAdapters(pod *corev1.Pod) map[string]struct{} {

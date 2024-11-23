@@ -19,7 +19,7 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 		ann[kubeaiv1.ModelPodPortAnnotation] = "8000"
 	}
 
-	vllmModelFlag := c.Source.huggingface.repo
+	vllmModelFlag := c.Source.ref()
 	if m.Spec.CacheProfile != "" {
 		vllmModelFlag = modelCacheDir(m)
 	}
@@ -37,7 +37,6 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 			Value: "True",
 		},
 	}
-	env = append(env, r.envAuthForSource(c.Source)...)
 
 	var envKeys []string
 	for key := range m.Spec.Env {
@@ -143,8 +142,9 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 		},
 	}
 
-	r.patchServerAdapterLoader(&pod.Spec, r.ModelLoaders.Image)
+	r.patchServerAdapterLoader(&pod.Spec, m, r.ModelLoaders.Image)
 	patchServerCacheVolumes(&pod.Spec, m, c)
+	c.Source.modelAuthCredentials.applyToPodSpec(&pod.Spec, 0)
 
 	return pod
 }

@@ -73,6 +73,24 @@ Create the name of the service account to use for model pods
 {{- end }}
 
 {{/*
+Create the name of the alibaba secret to use
+*/}}
+{{- define "kubeai.alibabaSecretName" -}}
+{{- if .Values.secrets.alibaba.create -}}
+{{- if .Values.secrets.alibaba.name -}}
+{{- .Values.secrets.alibaba.name -}}
+{{- else }}
+{{- (include "kubeai.fullname" .)}}-alibaba
+{{- end}}
+{{- else }}
+{{- if not .Values.secrets.alibaba.name -}}
+{{ fail "if secrets.alibaba.create is false, secrets.alibaba.name is required" }}
+{{- end }}
+{{- .Values.secrets.alibaba.name }}
+{{- end }}
+{{- end }}
+
+{{/*
 Create the name of the aws secret to use
 */}}
 {{- define "kubeai.awsSecretName" -}}
@@ -87,6 +105,24 @@ Create the name of the aws secret to use
 {{ fail "if secrets.aws.create is false, secrets.aws.name is required" }}
 {{- end }}
 {{- .Values.secrets.aws.name }}
+{{- end }}
+{{- end }}
+
+{{/*
+Create the name of the gcp secret to use
+*/}}
+{{- define "kubeai.gcpSecretName" -}}
+{{- if .Values.secrets.gcp.create -}}
+{{- if .Values.secrets.gcp.name -}}
+{{- .Values.secrets.gcp.name -}}
+{{- else }}
+{{- (include "kubeai.fullname" .)}}-gcp
+{{- end}}
+{{- else }}
+{{- if not .Values.secrets.gcp.name -}}
+{{ fail "if secrets.gcp.create is false, secrets.gcp.name is required" }}
+{{- end }}
+{{- .Values.secrets.gcp.name }}
 {{- end }}
 {{- end }}
 

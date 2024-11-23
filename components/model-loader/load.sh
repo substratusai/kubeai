@@ -27,6 +27,7 @@ case $src in
         aws s3 sync $src $dir
         ;;
     "gs://"*)
+        gcloud auth activate-service-account --key-file $GOOGLE_APPLICATION_CREDENTIALS
         gcloud storage rsync $src $dir
         ;;
     "oss://"*)
@@ -49,6 +50,7 @@ if [[ $dest_type == "url" ]]; then
             aws s3 sync $dir $dest
             ;;
         "gs://"*)
+            gcloud auth activate-service-account --key-file $GOOGLE_APPLICATION_CREDENTIALS
             gcloud storage rsync $dir $dest
             ;;
         "oss://"*)

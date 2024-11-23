@@ -250,66 +250,10 @@ type ModelConfig struct {
 	Source modelSource
 }
 
-type modelSource struct {
-	typ         modelSourceType
-	s3          s3ModelSource
-	huggingface huggingfaceModelSource
-	ollama      ollamaModelSource
-}
-
-type modelSourceType string
-
-const (
-	modelSourceTypeS3          modelSourceType = "s3"
-	modelSourceTypeHuggingface modelSourceType = "huggingface"
-	modelSourceTypeOLlama      modelSourceType = "ollama"
-)
-
-type s3ModelSource struct {
-	url string
-}
-type huggingfaceModelSource struct {
-	repo string
-}
-type ollamaModelSource struct {
-	ref string
-}
-
-func parseModelSource(url string) (modelSource, error) {
-	const (
-		huggingfacePrefix = "hf://"
-		ollamaPrefix      = "ollama://"
-	)
-	switch {
-	case strings.HasPrefix(url, "s3://"):
-		return modelSource{
-			typ: modelSourceTypeS3,
-			s3: s3ModelSource{
-				url: url,
-			},
-		}, nil
-	case strings.HasPrefix(url, huggingfacePrefix):
-		return modelSource{
-			typ: modelSourceTypeHuggingface,
-			huggingface: huggingfaceModelSource{
-				repo: strings.TrimPrefix(url, huggingfacePrefix),
-			},
-		}, nil
-	case strings.HasPrefix(url, ollamaPrefix):
-		return modelSource{
-			typ: modelSourceTypeOLlama,
-			ollama: ollamaModelSource{
-				ref: strings.TrimPrefix(url, ollamaPrefix),
-			},
-		}, nil
-	}
-	return modelSource{}, fmt.Errorf("unrecognized model source: %q", url)
-}
-
 func (r *ModelReconciler) getModelConfig(model *kubeaiv1.Model) (ModelConfig, error) {
 	var result ModelConfig
 
-	src, err := parseModelSource(model.Spec.URL)
+	src, err := r.parseModelSource(model.Spec.URL)
 	if err != nil {
 		return result, fmt.Errorf("parsing model source: %w", err)
 	}

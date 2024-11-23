@@ -351,9 +351,7 @@ func (r *ModelReconciler) loadCacheJobForModel(m *kubeaiv1.Model, c ModelConfig)
 		m.Spec.URL,
 		modelCacheDir(m),
 	}
-	job.Spec.Template.Spec.Containers[0].Env = append(job.Spec.Template.Spec.Containers[0].Env,
-		r.envAuthForSource(c.Source)...,
-	)
+	c.Source.modelAuthCredentials.applyToPodSpec(&job.Spec.Template.Spec, 0)
 
 	return job
 }

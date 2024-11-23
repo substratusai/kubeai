@@ -164,10 +164,10 @@ spec:
                 x-kubernetes-validations:
                 - message: url is immutable.
                   rule: self == oldSelf
-                - message: url must start with "hf://", "ollama://", or "s3://" and
-                    not be empty.
+                - message: url must start with "hf://", "ollama://", "s3://", "gs://",
+                    or "oss://" and not be empty.
                   rule: self.startsWith("hf://") || self.startsWith("ollama://") ||
-                    self.startsWith("s3://")
+                    self.startsWith("s3://") || self.startsWith("gs://") || self.startsWith("oss://")
             required:
             - engine
             - features
@@ -176,11 +176,16 @@ spec:
             - url
             type: object
             x-kubernetes-validations:
-            - message: cacheProfile is only supported with urls of format "hf://..."
-                or "s3://..." at the moment.
-              rule: '!has(self.cacheProfile) || self.url.startsWith("hf://") || self.url.startsWith("s3://")'
+            - message: cacheProfile is only supported with urls of format "hf://...",
+                "s3://...", "gs://...", or "oss://..." at the moment.
+              rule: '!has(self.cacheProfile) || self.url.startsWith("hf://") || self.url.startsWith("s3://")
+                || self.url.startsWith("gs://") || self.url.startsWith("oss://")'
             - message: urls of format "s3://..." only supported when using a cacheProfile
               rule: '!self.url.startsWith("s3://") || has(self.cacheProfile)'
+            - message: urls of format "gs://..." only supported when using a cacheProfile
+              rule: '!self.url.startsWith("gs://") || has(self.cacheProfile)'
+            - message: urls of format "oss://..." only supported when using a cacheProfile
+              rule: '!self.url.startsWith("oss://") || has(self.cacheProfile)'
             - message: minReplicas should be less than or equal to maxReplicas.
               rule: '!has(self.maxReplicas) || self.minReplicas <= self.maxReplicas'
             - message: adapters only supported with VLLM engine.

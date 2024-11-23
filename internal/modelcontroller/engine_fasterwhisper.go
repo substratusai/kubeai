@@ -19,7 +19,7 @@ func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, c ModelCon
 	args := []string{}
 	args = append(args, m.Spec.Args...)
 
-	whisperModel := c.Source.huggingface.repo
+	whisperModel := c.Source.ref()
 	if m.Spec.CacheProfile != "" {
 		whisperModel = modelCacheDir(m)
 	}
@@ -34,7 +34,6 @@ func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, c ModelCon
 			Value: "false",
 		},
 	}
-	env = append(env, r.envAuthForSource(c.Source)...)
 
 	var envKeys []string
 	for key := range m.Spec.Env {
@@ -138,6 +137,7 @@ func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, c ModelCon
 	}
 
 	patchServerCacheVolumes(&pod.Spec, m, c)
+	c.Source.modelAuthCredentials.applyToPodSpec(&pod.Spec, 0)
 
 	return pod
 }

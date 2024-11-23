@@ -27,6 +27,7 @@ RUN ls
 RUN ARCH=`cat /tmp/arch` && tar -xf google-cloud-cli-linux-$ARCH.tar.gz
 RUN ./google-cloud-sdk/install.sh --usage-reporting=false
 ENV PATH="/google-cloud-sdk/bin:$PATH"
+RUN gcloud config set component_manager/disable_update_check true
 RUN gcloud --version
 
 # Alibaba Object Storage Service ("oss://")

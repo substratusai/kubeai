@@ -21,8 +21,10 @@ import (
 )
 
 // ModelSpec defines the desired state of Model.
-// +kubebuilder:validation:XValidation:rule="!has(self.cacheProfile) || self.url.startsWith(\"hf://\") || self.url.startsWith(\"s3://\")", message="cacheProfile is only supported with urls of format \"hf://...\" or \"s3://...\" at the moment."
+// +kubebuilder:validation:XValidation:rule="!has(self.cacheProfile) || self.url.startsWith(\"hf://\") || self.url.startsWith(\"s3://\") || self.url.startsWith(\"gs://\") || self.url.startsWith(\"oss://\")", message="cacheProfile is only supported with urls of format \"hf://...\", \"s3://...\", \"gs://...\", or \"oss://...\" at the moment."
 // +kubebuilder:validation:XValidation:rule="!self.url.startsWith(\"s3://\") || has(self.cacheProfile)", message="urls of format \"s3://...\" only supported when using a cacheProfile"
+// +kubebuilder:validation:XValidation:rule="!self.url.startsWith(\"gs://\") || has(self.cacheProfile)", message="urls of format \"gs://...\" only supported when using a cacheProfile"
+// +kubebuilder:validation:XValidation:rule="!self.url.startsWith(\"oss://\") || has(self.cacheProfile)", message="urls of format \"oss://...\" only supported when using a cacheProfile"
 // +kubebuilder:validation:XValidation:rule="!has(self.maxReplicas) || self.minReplicas <= self.maxReplicas", message="minReplicas should be less than or equal to maxReplicas."
 // +kubebuilder:validation:XValidation:rule="!has(self.adapters) || self.engine == \"VLLM\"", message="adapters only supported with VLLM engine."
 type ModelSpec struct {
@@ -33,7 +35,7 @@ type ModelSpec struct {
 	// With caching enabled: "s3://<bucket>/<path>"
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf", message="url is immutable."
-	// +kubebuilder:validation:XValidation:rule="self.startsWith(\"hf://\") || self.startsWith(\"ollama://\") || self.startsWith(\"s3://\")", message="url must start with \"hf://\", \"ollama://\", or \"s3://\" and not be empty."
+	// +kubebuilder:validation:XValidation:rule="self.startsWith(\"hf://\") || self.startsWith(\"ollama://\") || self.startsWith(\"s3://\") || self.startsWith(\"gs://\") || self.startsWith(\"oss://\")", message="url must start with \"hf://\", \"ollama://\", \"s3://\", \"gs://\", or \"oss://\" and not be empty."
 	URL string `json:"url"`
 
 	Adapters []Adapter `json:"adapters,omitempty"`

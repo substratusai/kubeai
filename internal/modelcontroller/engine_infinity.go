@@ -22,7 +22,7 @@ func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, c ModelConfig) 
 		ann[kubeaiv1.ModelPodPortAnnotation] = "8000"
 	}
 
-	infinityModelID := c.Source.huggingface.repo
+	infinityModelID := c.Source.ref()
 	if m.Spec.CacheProfile != "" {
 		// TODO: Verify loading from dir works.
 		infinityModelID = modelCacheDir(m)
@@ -52,7 +52,6 @@ func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, c ModelConfig) 
 			Value: "8000",
 		},
 	}
-	env = append(env, r.envAuthForSource(c.Source)...)
 
 	var envKeys []string
 	for key := range m.Spec.Env {
@@ -158,6 +157,7 @@ func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, c ModelConfig) 
 	}
 
 	patchServerCacheVolumes(&pod.Spec, m, c)
+	c.Source.modelAuthCredentials.applyToPodSpec(&pod.Spec, 0)
 
 	return pod
 }

@@ -45,7 +45,7 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, c ModelConfig) *c
 		})
 	}
 
-	ollamaModelRef := c.Source.ollama.ref
+	ollamaModelRef := c.Source.ref()
 
 	featuresMap := map[kubeaiv1.ModelFeature]struct{}{}
 	for _, f := range m.Spec.Features {
@@ -169,6 +169,7 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, c ModelConfig) *c
 	}
 
 	patchServerCacheVolumes(&pod.Spec, m, c)
+	c.Source.modelAuthCredentials.applyToPodSpec(&pod.Spec, 0)
 
 	return pod
 
