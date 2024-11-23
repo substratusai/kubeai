@@ -6,9 +6,14 @@ KubeAI supports the following engines for text generation models (LLMs, VLMs, ..
 - Ollama (Recommended for CPU)
 - Need something else? Please file an issue on [GitHub](https://github.com/substratusai/kubeai).
 
-KubeAI comes with pre-validated and optimized Model configurations for popular text generation models. These models are available in the `kubeai/models` Helm chart.
+There are 2 ways to install a text generation model in KubeAI:
+- Use Helm with the `kubeai/models` chart.
+- Use `kubectl apply -f model.yaml` to install a Model CRD.
 
-You can also add your own custom models using the same Helm chart. You don't have to use Helm to install models. You can also use `kubectl apply -f model.yaml` to install Model CRDs.
+KubeAI comes with pre-validated and optimized Model configurations for popular text generation models. These models are available in the `kubeai/models` Helm chart and
+are also published as raw manifests in the `manifests/model` directory.
+
+You can also easily define your own models using the Model CRD directly or by using the `kubeai/models` Helm chart.
 
 ## Install a Text Generation Model using Helm
 
@@ -29,6 +34,7 @@ helm install kubeai-models kubeai/models -f - <<EOF
 catalog:
   gemma2-2b-cpu:
     enabled: true
+    engine: Ollama
     resourceProfile: cpu:2
     minReplicas: 1 # by default this is 0
 EOF
@@ -43,6 +49,7 @@ helm install kubeai-models kubeai/models -f - <<EOF
 catalog:
   llama-3.1-8b-instruct-fp8-l4:
     enabled: true
+    engine: VLLM
     resourceProfile: nvidia-gpu-l4:1
     minReplicas: 1 # by default this is 0
 EOF
