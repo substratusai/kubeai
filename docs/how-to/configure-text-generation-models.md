@@ -30,11 +30,11 @@ helm show values kubeai/models
 Enable the `gemma2-2b-cpu` model using the Helm chart:
 
 ```bash
-helm install kubeai-models kubeai/models -f - <<EOF
+helm upgrade --install --reuse-values kubeai-models kubeai/models -f - <<EOF
 catalog:
   gemma2-2b-cpu:
     enabled: true
-    engine: Ollama
+    engine: OLlama
     resourceProfile: cpu:2
     minReplicas: 1 # by default this is 0
 EOF
@@ -45,7 +45,7 @@ EOF
 Enable the Llama 3.1 8B model using the Helm chart:
 
 ```bash
-helm install kubeai-models kubeai/models -f - <<EOF
+helm upgrade --install --reuse-values kubeai-models kubeai/models -f - <<EOF
 catalog:
   llama-3.1-8b-instruct-fp8-l4:
     enabled: true
@@ -114,17 +114,21 @@ curl http://localhost:8000/openai/v1/models
 
 Run the following curl command to interact with the model named `llama-3.1-8b-instruct-fp8-l4`:
 ```bash
-curl -X POST http://localhost:8000/openai/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "messages": [
-        {
-            "role": "user",
-            "content": "Say this is a test",
-        }
-    ],
-    "model": "llama-3.1-8b-instruct-fp8-l4"
-}'
+curl "http://localhost:8000/openai/v1/chat/completions" \
+    -H "Content-Type: application/json" \
+    -d '{
+        "model": "llama-3.1-8b-instruct-fp8-l4",
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are a helpful assistant."
+            },
+            {
+                "role": "user",
+                "content": "Write a haiku about recursion in programming."
+            }
+        ]
+    }'
 ```
 
 ### Using the OpenAI Python SDK to interact with the model
