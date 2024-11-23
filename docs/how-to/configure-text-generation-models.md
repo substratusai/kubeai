@@ -133,7 +133,9 @@ curl "http://localhost:8000/openai/v1/chat/completions" \
 
 ### Using the OpenAI Python SDK to interact with the model
 Once the pod is ready, you can use the OpenAI Python SDK to interact with the model:
+All OpenAI SDKs work with KubeAI since the KubeAI service is OpenAI API compatible.
 
+See the below example code to interact with the model using the OpenAI Python SDK:
 ```python
 from openai import OpenAI
 # Assumes port-forward of kubeai service to localhost:8000.
