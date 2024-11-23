@@ -1,6 +1,6 @@
 # Configure Text Generation Models
 
-KubeAI supports the following engines for text generation (LLMs, VLMs, ..) models:
+KubeAI supports the following engines for text generation models (LLMs, VLMs, ..):
 
 - vLLM (Recommended for GPU)
 - Ollama (Recommended for CPU)
