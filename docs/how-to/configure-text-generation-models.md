@@ -137,6 +137,7 @@ All OpenAI SDKs work with KubeAI since the KubeAI service is OpenAI API compatib
 
 See the below example code to interact with the model using the OpenAI Python SDK:
 ```python
+import os
 from openai import OpenAI
 # Assumes port-forward of kubeai service to localhost:8000.
 kubeai_endpoint = "http://localhost:8000/openai/v1"
