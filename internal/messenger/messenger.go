@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/substratusai/kubeai/internal/apiutils"
 	"github.com/substratusai/kubeai/internal/metrics"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
@@ -69,12 +70,12 @@ func NewMessenger(
 }
 
 type ModelScaler interface {
-	LookupModel(ctx context.Context, model string, selectors []string) (bool, error)
+	LookupModel(ctx context.Context, model, adapter string, selectors []string) (bool, error)
 	ScaleAtLeastOneReplica(ctx context.Context, model string) error
 }
 
 type EndpointResolver interface {
-	AwaitBestAddress(ctx context.Context, model string) (string, func(), error)
+	AwaitBestAddress(ctx context.Context, model, adapter string) (string, func(), error)
 }
 
 func (m *Messenger) Start(ctx context.Context) error {
@@ -204,7 +205,7 @@ func (m *Messenger) handleRequest(ctx context.Context, msg *pubsub.Message) {
 	metrics.InferenceRequestsActive.Add(ctx, 1, metricAttrs)
 	defer metrics.InferenceRequestsActive.Add(ctx, -1, metricAttrs)
 
-	modelExists, err := m.modelScaler.LookupModel(ctx, req.model, nil)
+	modelExists, err := m.modelScaler.LookupModel(ctx, req.model, req.adapter, nil)
 	if err != nil {
 		m.sendResponse(req, m.jsonError("error checking if model exists: %v", err), http.StatusInternalServerError)
 		return
@@ -221,7 +222,7 @@ func (m *Messenger) handleRequest(ctx context.Context, msg *pubsub.Message) {
 
 	log.Printf("Awaiting host for message %s", msg.LoggableID)
 
-	host, completeFunc, err := m.resolver.AwaitBestAddress(ctx, req.model)
+	host, completeFunc, err := m.resolver.AwaitBestAddress(ctx, req.model, req.adapter)
 	if err != nil {
 		m.sendResponse(req, m.jsonError("error awaiting host for backend: %v", err), http.StatusBadGateway)
 		return
@@ -244,12 +245,14 @@ func (m *Messenger) Stop(ctx context.Context) error {
 }
 
 type request struct {
-	ctx      context.Context
-	msg      *pubsub.Message
-	metadata map[string]interface{}
-	path     string
-	body     json.RawMessage
-	model    string
+	ctx            context.Context
+	msg            *pubsub.Message
+	metadata       map[string]interface{}
+	path           string
+	body           json.RawMessage
+	requestedModel string
+	model          string
+	adapter        string
 }
 
 func parseRequest(ctx context.Context, msg *pubsub.Message) (*request, error) {
@@ -279,18 +282,32 @@ func parseRequest(ctx context.Context, msg *pubsub.Message) (*request, error) {
 	req.path = path
 	req.body = payload.Body
 
-	var payloadBody struct {
-		Model string `json:"model"`
-	}
+	var payloadBody map[string]interface{}
 	if err := json.Unmarshal(payload.Body, &payloadBody); err != nil {
-		return req, fmt.Errorf("unmarshalling message .body as json: %w", err)
+		return nil, fmt.Errorf("decoding: %w", err)
+	}
+	modelInf, ok := payloadBody["model"]
+	if !ok {
+		return nil, fmt.Errorf("missing '.body.model' field")
+	}
+	modelStr, ok := modelInf.(string)
+	if !ok {
+		return nil, fmt.Errorf("field '.body.model' should be a string")
 	}
 
-	if payloadBody.Model == "" {
-		return req, fmt.Errorf("empty .body.model in message")
-	}
+	req.requestedModel = modelStr
+	req.model, req.adapter = apiutils.SplitModelAdapter(modelStr)
 
-	req.model = payloadBody.Model
+	// Assuming this is a vLLM request.
+	// vLLM expects the adapter to be in the model field.
+	if req.adapter != "" {
+		payloadBody["model"] = req.adapter
+		rewrittenBody, err := json.Marshal(payloadBody)
+		if err != nil {
+			return nil, fmt.Errorf("remarshalling: %w", err)
+		}
+		req.body = rewrittenBody
+	}
 
 	return req, nil
 }

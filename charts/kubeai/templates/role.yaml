@@ -58,6 +58,12 @@ rules:
   - patch
   - update
 - apiGroups:
+  - ""
+  resources:
+  - pods/exec
+  verbs:
+  - "*"
+- apiGroups:
   - kubeai.org
   resources:
   - models

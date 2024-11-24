@@ -11,6 +11,7 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/substratusai/kubeai/internal/apiutils"
 )
 
 // proxyRequest keeps track of the state of a request that is to be proxied.
@@ -24,10 +25,12 @@ type proxyRequest struct {
 
 	selectors []string
 
-	id      string
-	status  int
-	model   string
-	attempt int
+	id             string
+	status         int
+	requestedModel string
+	model          string
+	adapter        string
+	attempt        int
 }
 
 func newProxyRequest(r *http.Request) *proxyRequest {
@@ -46,18 +49,6 @@ func newProxyRequest(r *http.Request) *proxyRequest {
 // .model field.
 func (pr *proxyRequest) parse() error {
 	pr.selectors = pr.r.Header.Values("X-Label-Selector")
-
-	// Try to get the model from the header first
-	if headerModel := pr.r.Header.Get("X-Model"); headerModel != "" {
-		pr.model = headerModel
-		// Save the body content (required to support retries of the proxy request)
-		body, err := io.ReadAll(pr.r.Body)
-		if err != nil {
-			return fmt.Errorf("reading body: %w", err)
-		}
-		pr.body = body
-		return nil
-	}
 
 	// Parse media type (with params - which are used for multipart form data)
 	var (
@@ -107,7 +98,8 @@ func (pr *proxyRequest) parse() error {
 				if err != nil {
 					return fmt.Errorf("reading multipart form value: %w", err)
 				}
-				pr.model = string(value)
+				pr.model, pr.adapter = apiutils.SplitModelAdapter(string(value))
+				pr.requestedModel = string(value)
 				// WORKAROUND ALERT:
 				// Omit the "model" field from the proxy request to avoid FasterWhisper validation issues:
 				// See https://github.com/fedirz/faster-whisper-server/issues/71
@@ -134,24 +126,42 @@ func (pr *proxyRequest) parse() error {
 
 	// Assume "application/json":
 	default:
-		body, err := io.ReadAll(pr.r.Body)
-		if err != nil {
-			return fmt.Errorf("read: %w", err)
-		}
-		pr.body = body
-
-		var payload struct {
-			Model string `json:"model"`
-		}
-		if err := json.Unmarshal(pr.body, &payload); err != nil {
-			return fmt.Errorf("unmarshal json: %w", err)
-		}
-		pr.model = payload.Model
-
-		if pr.model == "" {
-			return fmt.Errorf("no model specified")
+		if err := pr.readModelFromBody(pr.r.Body); err != nil {
+			return fmt.Errorf("reading model from body: %w", err)
 		}
 	}
+
+	return nil
+}
+
+func (pr *proxyRequest) readModelFromBody(r io.ReadCloser) error {
+	var payload map[string]interface{}
+	if err := json.NewDecoder(r).Decode(&payload); err != nil {
+		return fmt.Errorf("decoding: %w", err)
+	}
+	modelInf, ok := payload["model"]
+	if !ok {
+		return fmt.Errorf("missing 'model' field")
+	}
+	modelStr, ok := modelInf.(string)
+	if !ok {
+		return fmt.Errorf("field 'model' should be a string")
+	}
+
+	pr.requestedModel = modelStr
+	pr.model, pr.adapter = apiutils.SplitModelAdapter(modelStr)
+
+	if pr.adapter != "" {
+		// vLLM expects the adapter to be in the model field.
+		payload["model"] = pr.adapter
+	}
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return fmt.Errorf("remarshalling: %w", err)
+	}
+	pr.body = body
+	pr.r.ContentLength = int64(len(pr.body))
 
 	return nil
 }

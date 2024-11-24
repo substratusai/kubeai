@@ -15,7 +15,7 @@ type System struct {
 
 	ModelServers ModelServers `json:"modelServers" validate:"required"`
 
-	ModelLoaders ModelLoaders `json:"modelLoaders" validate:"required"`
+	ModelLoading ModelLoading `json:"modelLoading" validate:"required"`
 
 	ResourceProfiles map[string]ResourceProfile `json:"resourceProfiles" validate:"required"`
 
@@ -146,7 +146,10 @@ func (a *ModelAutoscaling) AverageWindowCount() int {
 }
 
 type SecretNames struct {
-	Huggingface string `json:"huggingface" validate:"required"`
+	Alibaba     string `json:"alibaba" required:"true"`
+	AWS         string `json:"aws" required:"true"`
+	GCP         string `json:"gcp" required:"true"`
+	Huggingface string `json:"huggingface" required:"true"`
 }
 
 type Messaging struct {
@@ -226,12 +229,7 @@ type ModelServer struct {
 	Images map[string]string `json:"images"`
 }
 
-type ModelLoaders struct {
-	Huggingface ModelLoader `json:"huggingface" validate:"required"`
-}
-
-type ModelLoader struct {
-	// Image is the image to use for the downloader.
+type ModelLoading struct {
 	Image string `json:"image" validate:"required"`
 }
 

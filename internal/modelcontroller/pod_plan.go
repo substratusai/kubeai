@@ -44,11 +44,18 @@ func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubea
 	var (
 		readyAll  int
 		outOfDate []corev1.Pod
+		remainder = make(map[string]*corev1.Pod)
 	)
+
+	podKey := func(p corev1.Pod) string {
+		return p.Namespace + "/" + p.Name
+	}
 
 	sortPodsByDeletionOrder(allPods.Items, expectedHash)
 
 	for _, p := range allPods.Items {
+		remainder[podKey(p)] = &p
+
 		upToDate := k8sutils.GetLabel(&p, kubeaiv1.PodHashLabel) == expectedHash
 
 		if k8sutils.PodIsReady(&p) {
@@ -65,6 +72,10 @@ func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubea
 		toCreate []*corev1.Pod
 		toDelete []*corev1.Pod
 	)
+	appendToDelete := func(p corev1.Pod) {
+		delete(remainder, podKey(p))
+		toDelete = append(toDelete, &p)
+	}
 
 	var desiredReplicas int32
 	// NOTE: Replicas could be nil if autoscaling is disabled.
@@ -95,7 +106,7 @@ func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubea
 			if toDeleteCount == 0 {
 				break
 			}
-			toDelete = append(toDelete, &pod)
+			appendToDelete(pod)
 			toDeleteCount--
 		}
 	}
@@ -104,7 +115,7 @@ func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubea
 	for _, pod := range outOfDate {
 		if !k8sutils.PodIsReady(&pod) {
 			details = append(details, fmt.Sprintf("Out-of-date Pod %q is not ready, immediately recreating", pod.Name))
-			toDelete = append(toDelete, &pod)
+			appendToDelete(pod)
 			// Avoid recreating the surge Pod when rollout is complete.
 			if recreated < len(outOfDate)-int(r.ModelRollouts.Surge) {
 				toCreate = append(toCreate, podForModel.DeepCopy())
@@ -114,7 +125,7 @@ func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubea
 		}
 		if readyAll == int(desiredReplicas) {
 			details = append(details, fmt.Sprintf("All Pods ready, recreating out-of-date Pod %q", pod.Name))
-			toDelete = append(toDelete, &pod)
+			appendToDelete(pod)
 			// Avoid recreating the surge Pod when rollout is complete.
 			if recreated < len(outOfDate)-int(r.ModelRollouts.Surge) {
 				toCreate = append(toCreate, podForModel.DeepCopy())
@@ -124,10 +135,16 @@ func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubea
 		}
 	}
 
+	toRemain := make([]*corev1.Pod, 0, len(remainder))
+	for _, pod := range remainder {
+		toRemain = append(toRemain, pod)
+	}
+
 	return &podPlan{
 		model:    model,
 		toCreate: toCreate,
 		toDelete: toDelete,
+		toRemain: toRemain,
 		details:  details,
 	}
 }
@@ -136,6 +153,7 @@ type podPlan struct {
 	model    *kubeaiv1.Model
 	toCreate []*corev1.Pod
 	toDelete []*corev1.Pod
+	toRemain []*corev1.Pod
 	details  []string
 }
 

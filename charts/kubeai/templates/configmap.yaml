@@ -7,6 +7,9 @@ metadata:
 data:
   system.yaml: |
     secretNames:
+      alibaba: {{ include "kubeai.alibabaSecretName" . }}
+      aws: {{ include "kubeai.awsSecretName" . }}
+      gcp: {{ include "kubeai.gcpSecretName" . }}
       huggingface: {{ include "kubeai.huggingfaceSecretName" . }}
     resourceProfiles:
       {{- .Values.resourceProfiles | toYaml | nindent 6 }}
@@ -14,8 +17,8 @@ data:
       {{- .Values.cacheProfiles | toYaml | nindent 6 }}
     modelServers:
       {{- .Values.modelServers | toYaml | nindent 6 }}
-    modelLoaders:
-      {{- .Values.modelLoaders | toYaml | nindent 6 }}
+    modelLoading:
+      {{- .Values.modelLoading | toYaml | nindent 6 }}
     modelRollouts:
       {{- .Values.modelRollouts | toYaml | nindent 6 }}
     modelServerPods:

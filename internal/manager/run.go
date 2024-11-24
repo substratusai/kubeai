@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"sync"
+	"time"
 
 	"sigs.k8s.io/yaml"
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
@@ -20,11 +21,14 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/apimachinery/pkg/types"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
@@ -37,6 +41,7 @@ import (
 	"github.com/substratusai/kubeai/internal/modelproxy"
 	"github.com/substratusai/kubeai/internal/modelscaler"
 	"github.com/substratusai/kubeai/internal/openaiserver"
+	"github.com/substratusai/kubeai/internal/vllmclient"
 
 	// Pulling in these packages will register the gocloud implementations.
 	_ "gocloud.dev/pubsub/awssnssqs"
@@ -173,6 +178,15 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 		return fmt.Errorf("unable to create clientset: %w", err)
 	}
 
+	podRESTClient, err := apiutil.RESTClientForGVK(schema.GroupVersionKind{
+		Group:   "",
+		Version: "v1",
+		Kind:    "Pod",
+	}, false, mgr.GetConfig(), serializer.NewCodecFactory(mgr.GetScheme()), mgr.GetHTTPClient())
+	if err != nil {
+		return fmt.Errorf("unable to create pod REST client: %w", err)
+	}
+
 	// Create a new client for the autoscaler to use. This client will not use
 	// a cache and will be ready to use immediately.
 	k8sClient, err := client.New(mgr.GetConfig(), client.Options{Scheme: mgr.GetScheme()})
@@ -197,16 +211,21 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 
 	modelReconciler := &modelcontroller.ModelReconciler{
 		Client:                  mgr.GetClient(),
+		RESTConfig:              mgr.GetConfig(),
+		PodRESTClient:           podRESTClient,
 		Scheme:                  mgr.GetScheme(),
 		Namespace:               namespace,
 		AllowPodAddressOverride: cfg.AllowPodAddressOverride,
-		HuggingfaceSecretName:   cfg.SecretNames.Huggingface,
+		SecretNames:             cfg.SecretNames,
 		ResourceProfiles:        cfg.ResourceProfiles,
 		CacheProfiles:           cfg.CacheProfiles,
 		ModelServers:            cfg.ModelServers,
 		ModelServerPods:         cfg.ModelServerPods,
-		ModelLoaders:            cfg.ModelLoaders,
+		ModelLoaders:            cfg.ModelLoading,
 		ModelRollouts:           cfg.ModelRollouts,
+		VLLMClient: &vllmclient.Client{
+			HTTPClient: &http.Client{Timeout: 10 * time.Second},
+		},
 	}
 	if err = modelReconciler.SetupWithManager(mgr); err != nil {
 		return fmt.Errorf("unable to create Model controller: %w", err)

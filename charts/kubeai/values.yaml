@@ -3,6 +3,29 @@
 # Declare variables to be passed into your templates.
 
 secrets:
+  alibaba:
+    create: true
+    accessKeyID: ""
+    accessKeySecret: ""
+    # The name of the secret to use.
+    # If not set, and create is true, the name is generated using the fullname template.
+    # The secret values are pulled from the keys, "accessKeyID" and "accessKeySecret".
+    name: ""
+  aws:
+    create: true
+    accessKeyID: ""
+    secretAccessKey: ""
+    # The name of the secret to use.
+    # If not set, and create is true, the name is generated using the fullname template.
+    # The secret values are pulled from the keys, "accessKeyId" and "secretAccessKey".
+    name: ""
+  gcp:
+    create: true
+    jsonKeyfile: ""
+    # The name of the secret to use.
+    # If not set, and create is true, the name is generated using the fullname template.
+    # The secret value is pulled from the key, "jsonKeyfile".
+    name: ""
   huggingface:
     create: true
     token: ""
@@ -36,9 +59,10 @@ modelServers:
     images:
       default: "michaelf34/infinity:latest"
 
-modelLoaders:
-  huggingface:
-    image: "substratusai/huggingface-model-loader:v0.9.0"
+modelLoading:
+  # TODO(release): Switch to official image before release.
+  # image: "substratusai/kubeai-model-loader:v0.9.0"
+  image: "us-central1-docker.pkg.dev/substratus-dev/default/kubeai-model-loader:latest"
 
 modelServerPods:
   # Security Context for the model pods

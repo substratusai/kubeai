@@ -7,7 +7,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/utils/ptr"
 )
 
 func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, c ModelConfig) *corev1.Pod {
@@ -23,7 +22,7 @@ func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, c ModelConfig) 
 		ann[kubeaiv1.ModelPodPortAnnotation] = "8000"
 	}
 
-	infinityModelID := c.Source.huggingface.repo
+	infinityModelID := c.Source.url.ref
 	if m.Spec.CacheProfile != "" {
 		// TODO: Verify loading from dir works.
 		infinityModelID = modelCacheDir(m)
@@ -52,21 +51,8 @@ func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, c ModelConfig) 
 			Name:  "INFINITY_PORT",
 			Value: "8000",
 		},
-		{
-			// TODO: Conditionally set this token based on whether
-			// huggingface is the model source.
-			Name: "HF_TOKEN",
-			ValueFrom: &corev1.EnvVarSource{
-				SecretKeyRef: &corev1.SecretKeySelector{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: r.HuggingfaceSecretName,
-					},
-					Key:      "token",
-					Optional: ptr.To(true),
-				},
-			},
-		},
 	}
+
 	var envKeys []string
 	for key := range m.Spec.Env {
 		envKeys = append(envKeys, key)
@@ -171,6 +157,7 @@ func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, c ModelConfig) 
 	}
 
 	patchServerCacheVolumes(&pod.Spec, m, c)
+	c.Source.modelAuthCredentials.applyToPodSpec(&pod.Spec, 0)
 
 	return pod
 }

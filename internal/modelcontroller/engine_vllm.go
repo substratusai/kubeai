@@ -7,7 +7,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/utils/ptr"
 )
 
 func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *corev1.Pod {
@@ -18,7 +17,7 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 		ann[kubeaiv1.ModelPodPortAnnotation] = "8000"
 	}
 
-	vllmModelFlag := c.Source.huggingface.repo
+	vllmModelFlag := c.Source.url.ref
 	if m.Spec.CacheProfile != "" {
 		vllmModelFlag = modelCacheDir(m)
 	}
@@ -29,22 +28,17 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 	}
 	args = append(args, m.Spec.Args...)
 
-	env := []corev1.EnvVar{
-		{
-			// TODO: Conditionally set this token based on whether
-			// huggingface is the model source.
-			Name: "HF_TOKEN",
-			ValueFrom: &corev1.EnvVarSource{
-				SecretKeyRef: &corev1.SecretKeySelector{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: r.HuggingfaceSecretName,
-					},
-					Key:      "token",
-					Optional: ptr.To(true),
-				},
-			},
-		},
+	env := []corev1.EnvVar{}
+
+	if m.Spec.Adapters != nil {
+		args = append(args, "--enable-lora")
+		env = append(env, corev1.EnvVar{
+			// https://docs.vllm.ai/en/latest/models/lora.html#dynamically-serving-lora-adapters
+			Name:  "VLLM_ALLOW_RUNTIME_LORA_UPDATING",
+			Value: "True",
+		})
 	}
+
 	var envKeys []string
 	for key := range m.Spec.Env {
 		envKeys = append(envKeys, key)
@@ -149,7 +143,9 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 		},
 	}
 
+	r.patchServerAdapterLoader(&pod.Spec, m, r.ModelLoaders.Image)
 	patchServerCacheVolumes(&pod.Spec, m, c)
+	c.Source.modelAuthCredentials.applyToPodSpec(&pod.Spec, 0)
 
 	return pod
 }

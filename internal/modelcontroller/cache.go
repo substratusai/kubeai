@@ -346,34 +346,12 @@ func (r *ModelReconciler) loadCacheJobForModel(m *kubeaiv1.Model, c ModelConfig)
 		},
 	}
 
-	switch c.Source.typ {
-	case modelSourceTypeHuggingface:
-		job.Spec.Template.Spec.Containers[0].Image = r.ModelLoaders.Huggingface.Image
-		job.Spec.Template.Spec.Containers[0].Env = append(job.Spec.Template.Spec.Containers[0].Env,
-			corev1.EnvVar{
-				Name:  "MODEL_DIR",
-				Value: modelCacheDir(m),
-			},
-			corev1.EnvVar{
-				Name:  "MODEL_REPO",
-				Value: c.Source.huggingface.repo,
-			},
-			corev1.EnvVar{
-				Name: "HF_TOKEN",
-				ValueFrom: &corev1.EnvVarSource{
-					SecretKeyRef: &corev1.SecretKeySelector{
-						LocalObjectReference: corev1.LocalObjectReference{
-							Name: r.HuggingfaceSecretName,
-						},
-						Key:      "token",
-						Optional: ptr.To(true),
-					},
-				},
-			},
-		)
-	default:
-		panic("unsupported model source, this point should not be reached")
+	job.Spec.Template.Spec.Containers[0].Image = r.ModelLoaders.Image
+	job.Spec.Template.Spec.Containers[0].Args = []string{
+		m.Spec.URL,
+		modelCacheDir(m),
 	}
+	c.Source.modelAuthCredentials.applyToPodSpec(&job.Spec.Template.Spec, 0)
 
 	return job
 }
@@ -418,15 +396,8 @@ func (r *ModelReconciler) evictCacheJobForModel(m *kubeaiv1.Model, c ModelConfig
 		},
 	}
 
-	if c.CacheProfile.SharedFilesystem != nil {
-		switch c.Source.typ {
-		case modelSourceTypeHuggingface:
-			job.Spec.Template.Spec.Containers[0].Image = r.ModelLoaders.Huggingface.Image
-			job.Spec.Template.Spec.Containers[0].Command = []string{"bash", "-c", "rm -rf " + modelCacheDir(m)}
-		default:
-			panic("unsupported model source, this point should not be reached")
-		}
-	}
+	job.Spec.Template.Spec.Containers[0].Image = r.ModelLoaders.Image
+	job.Spec.Template.Spec.Containers[0].Command = []string{"bash", "-c", "rm -rf " + modelCacheDir(m)}
 
 	return job
 }

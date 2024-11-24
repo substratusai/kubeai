@@ -75,6 +75,67 @@ func TestModelValidation(t *testing.T) {
 		},
 		{
 			model: v1.Model{
+				ObjectMeta: metadata("a-name-that-has-12345-numbers-valid"),
+				Spec: v1.ModelSpec{
+					URL:      "hf://test-repo/test-model",
+					Engine:   "VLLM",
+					Features: []v1.ModelFeature{},
+				},
+			},
+			expValid: true,
+		},
+		{
+			model: v1.Model{
+				ObjectMeta: metadata("a-model-name-with-40-characters-is-valid"),
+				Spec: v1.ModelSpec{
+					URL:      "hf://test-repo/test-model",
+					Engine:   "VLLM",
+					Features: []v1.ModelFeature{},
+				},
+			},
+			expValid: true,
+		},
+		{
+			model: v1.Model{
+				ObjectMeta: metadata("a-model-name-with-str-len-41-char-invalid"),
+				Spec: v1.ModelSpec{
+					URL:      "hf://test-repo/test-model",
+					Engine:   "VLLM",
+					Features: []v1.ModelFeature{},
+				},
+			},
+			expValid: false,
+		},
+		{
+			model: v1.Model{
+				ObjectMeta: metadata("adapters-valid"),
+				Spec: v1.ModelSpec{
+					URL:      "hf://test-repo/test-model",
+					Engine:   "VLLM",
+					Features: []v1.ModelFeature{},
+					Adapters: []v1.Adapter{
+						{Name: "adapter1", URL: "hf://test-repo/test-adapter"},
+					},
+				},
+			},
+			expValid: true,
+		},
+		{
+			model: v1.Model{
+				ObjectMeta: metadata("adapters-supported-engine"),
+				Spec: v1.ModelSpec{
+					URL:      "hf://test-repo/test-model",
+					Engine:   "FasterWhisper",
+					Features: []v1.ModelFeature{},
+					Adapters: []v1.Adapter{
+						{Name: "adapter1", URL: "hf://test-repo/test-adapter"},
+					},
+				},
+			},
+			expValid: false,
+		},
+		{
+			model: v1.Model{
 				ObjectMeta: metadata("invalid-engine"),
 				Spec: v1.ModelSpec{
 					URL:      "hf://test-repo/test-model",
@@ -164,6 +225,29 @@ func TestModelValidation(t *testing.T) {
 		},
 		{
 			model: v1.Model{
+				ObjectMeta: metadata("cache-profile-with-s3-url-valid"),
+				Spec: v1.ModelSpec{
+					URL:          "s3://test-bucket/test-path",
+					Engine:       "VLLM",
+					Features:     []v1.ModelFeature{},
+					CacheProfile: "some-cache-profile",
+				},
+			},
+			expValid: true,
+		},
+		{
+			model: v1.Model{
+				ObjectMeta: metadata("s3-url-without-cache-profile-invalid"),
+				Spec: v1.ModelSpec{
+					URL:      "s3://test-bucket/test-path",
+					Engine:   "VLLM",
+					Features: []v1.ModelFeature{},
+				},
+			},
+			expValid: false,
+		},
+		{
+			model: v1.Model{
 				ObjectMeta: metadata("cache-profile-with-non-hf-url-invalid"),
 				Spec: v1.ModelSpec{
 					URL:          "ollama://test-repo/test-model",
@@ -173,8 +257,9 @@ func TestModelValidation(t *testing.T) {
 				},
 			},
 			expErrContains: []string{
-				"cacheProfile is only supported with a huggingface url",
+				"cacheProfile is only supported with urls of format",
 				"hf://",
+				"s3://",
 			},
 		},
 		{

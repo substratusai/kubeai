@@ -14,8 +14,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// TODO: Change to ModelClient
-
 type ModelScaler struct {
 	client                   client.Client
 	namespace                string
@@ -28,7 +26,7 @@ func NewModelScaler(client client.Client, namespace string) *ModelScaler {
 }
 
 // LookupModel checks if a model exists and matches the given label selectors.
-func (s *ModelScaler) LookupModel(ctx context.Context, model string, labelSelectors []string) (bool, error) {
+func (s *ModelScaler) LookupModel(ctx context.Context, model, adapter string, labelSelectors []string) (bool, error) {
 	m := &kubeaiv1.Model{}
 	if err := s.client.Get(ctx, types.NamespacedName{Name: model, Namespace: s.namespace}, m); err != nil {
 		if apierrors.IsNotFound(err) {
@@ -47,6 +45,19 @@ func (s *ModelScaler) LookupModel(ctx context.Context, model string, labelSelect
 			return false, fmt.Errorf("parse label selector: %w", err)
 		}
 		if !parsedSel.Matches(labels.Set(modelLabels)) {
+			return false, nil
+		}
+	}
+
+	if adapter != "" {
+		adapterFound := false
+		for _, a := range m.Spec.Adapters {
+			if a.Name == adapter {
+				adapterFound = true
+				break
+			}
+		}
+		if !adapterFound {
 			return false, nil
 		}
 	}

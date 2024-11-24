@@ -25,7 +25,7 @@ func TestConcurrentAccess(t *testing.T) {
 	}
 	for name, spec := range testCases {
 		randomReadFn := []func(g *endpointGroup){
-			func(g *endpointGroup) { g.getBestAddr(nil) },
+			func(g *endpointGroup) { g.getBestAddr(context.Background(), "", false) },
 			func(g *endpointGroup) { g.getAllAddrs() },
 			func(g *endpointGroup) { g.lenIPs() },
 		}
@@ -33,7 +33,7 @@ func TestConcurrentAccess(t *testing.T) {
 			// setup endpoint with one service so that requests are not waiting
 			endpoint := newEndpointGroup()
 			endpoint.setAddrs(
-				map[string]struct{}{myModel: {}},
+				map[string]endpointAttrs{myModel: {}},
 			)
 
 			var startWg, doneWg sync.WaitGroup
@@ -53,7 +53,7 @@ func TestConcurrentAccess(t *testing.T) {
 			startTogether(spec.readerCount, func() { randomReadFn[rand.Intn(len(randomReadFn)-1)](endpoint) })
 			startTogether(spec.writerCount, func() {
 				endpoint.setAddrs(
-					map[string]struct{}{rand.String(1): {}},
+					map[string]endpointAttrs{rand.String(1): {}},
 				)
 			})
 			doneWg.Wait()
@@ -80,13 +80,13 @@ func TestBlockAndWaitForEndpoints(t *testing.T) {
 	endpoint := newEndpointGroup()
 	ctx := context.TODO()
 	startTogether(100, func() {
-		endpoint.getBestAddr(ctx)
+		endpoint.getBestAddr(ctx, "", false)
 	})
 	startWg.Wait()
 
 	// when broadcast triggered
 	endpoint.setAddrs(
-		map[string]struct{}{rand.String(4): {}},
+		map[string]endpointAttrs{rand.String(4): {}},
 	)
 	// then
 	doneWg.Wait()
@@ -102,7 +102,7 @@ func TestAbortOnCtxCancel(t *testing.T) {
 	go func(t *testing.T) {
 		startWg.Wait()
 		endpoint := newEndpointGroup()
-		_, f, err := endpoint.getBestAddr(ctx)
+		_, f, err := endpoint.getBestAddr(ctx, "", false)
 		defer f()
 		require.Error(t, err)
 		doneWg.Done()

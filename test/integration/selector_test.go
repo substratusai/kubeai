@@ -137,12 +137,10 @@ func TestSelector(t *testing.T) {
 
 	listTestCases := map[string]struct {
 		selectorHeaders []string
-		expLen          int
 		expModels       []string
 	}{
 		"one selector two models": {
 			selectorHeaders: []string{commonLabelKey + "=" + m0m1CommonLabelVal},
-			expLen:          2,
 			expModels:       []string{m0.Name, m1.Name},
 		},
 		"two selectors one header one model": {
@@ -150,7 +148,6 @@ func TestSelector(t *testing.T) {
 				commonLabelKey + "=" + m0m1CommonLabelVal + "," +
 					m0OnlyLabelKey + "=" + m0OnlyLabelVal,
 			},
-			expLen:    1,
 			expModels: []string{m0.Name},
 		},
 		"two selectors two headers one model": {
@@ -158,32 +155,23 @@ func TestSelector(t *testing.T) {
 				commonLabelKey + "=" + m0m1CommonLabelVal,
 				m0OnlyLabelKey + "=" + m0OnlyLabelVal,
 			},
-			expLen:    1,
 			expModels: []string{m0.Name},
 		},
 		"other model": {
 			selectorHeaders: []string{commonLabelKey + "=" + m2CommonLabelVal},
-			expLen:          1,
 			expModels:       []string{m2.Name},
 		},
 		"single in selector all three models": {
 			selectorHeaders: []string{
 				fmt.Sprintf("%s in (%s, %s)", commonLabelKey, m0m1CommonLabelVal, m2CommonLabelVal),
 			},
-			expLen:    3,
 			expModels: []string{m0.Name, m1.Name, m2.Name},
 		},
 	}
 	for name, c := range listTestCases {
 		t.Run("list "+name, func(t *testing.T) {
 			t.Parallel()
-			list := sendOpenAIListModelsRequest(t, c.selectorHeaders, http.StatusOK, name)
-			require.Len(t, list, c.expLen)
-			ids := make([]string, len(list))
-			for i, m := range list {
-				ids[i] = m.ID
-			}
-			require.ElementsMatch(t, c.expModels, ids)
+			requireOpenAIModelList(t, c.selectorHeaders, c.expModels, name)
 		})
 	}
 }

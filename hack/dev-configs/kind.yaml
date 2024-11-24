@@ -22,9 +22,8 @@ modelServers:
     images:
       default: "michaelf34/infinity:latest"
 
-modelDownloaders:
-  huggingface:
-    image: "us-central1-docker.pkg.dev/substratus-dev/default/huggingface-model-downloader:v0.0.1"
+modelLoading:
+  image: kubeai-model-loader:latest
 
 modelRollouts:
   surge: 0
@@ -38,12 +37,8 @@ resourceProfiles:
   cpu:
     imageName: "cpu"
     requests:
-      # Kind
-      #cpu: 0.5
-      #memory: 1Gi
-      # GKE
-      cpu: 3
-      memory: 12Gi
+      cpu: 0.5
+      memory: 1Gi
     limits:
       cpu: 3
       memory: 12Gi

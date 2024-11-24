@@ -40,6 +40,13 @@ func PodHash(podSpec corev1.PodSpec) string {
 	return rand.SafeEncodeString(fmt.Sprint(podTemplateSpecHasher.Sum32()))
 }
 
+// StringHash returns a hash value calculated from the input string.
+func StringHash(s string) string {
+	h := fnv.New32a()
+	h.Write([]byte(s))
+	return rand.SafeEncodeString(fmt.Sprint(h.Sum32()))
+}
+
 // DeepHashObject writes specified object to hash using the spew library
 // which follows pointers and prints actual values of the nested objects
 // ensuring the hash does not change when a pointer changes.
@@ -47,4 +54,13 @@ func PodHash(podSpec corev1.PodSpec) string {
 func DeepHashObject(hasher hash.Hash, objectToWrite interface{}) {
 	hasher.Reset()
 	fmt.Fprintf(hasher, "%v", dump.ForHash(objectToWrite))
+}
+
+func ContainerIsReady(pod *corev1.Pod, containerName string) bool {
+	for _, status := range pod.Status.ContainerStatuses {
+		if status.Name == containerName {
+			return status.Ready
+		}
+	}
+	return false
 }

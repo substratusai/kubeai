@@ -13,6 +13,23 @@ Package v1 contains API Schema definitions for the kubeai v1 API group
 
 
 
+#### Adapter
+
+
+
+
+
+
+
+_Appears in:_
+- [ModelSpec](#modelspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `name` _string_ | Name must be a lowercase string with no spaces. |  | MaxLength: 63 <br />Pattern: `^[a-z0-9-]+$` <br />Required: \{\} <br /> |
+| `url` _string_ |  |  |  |
+
+
 #### Model
 
 
@@ -59,7 +76,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `url` _string_ | URL of the model to be served.<br />Currently only the following formats are supported:<br />For VLLM & FasterWhisper engines: "hf://<model-repo>/<model-name>"<br />For OLlama engine: "ollama://<model> |  | Required: \{\} <br /> |
+| `url` _string_ | URL of the model to be served.<br />Currently the following formats are supported:<br /><br />For VLLM, FasterWhisper, Infinity engines:<br /><br />"hf://<repo>/<model>"<br />"gs://<bucket>/<path>" (only with cacheProfile)<br />"oss://<bucket>/<path>" (only with cacheProfile)<br />"s3://<bucket>/<path>" (only with cacheProfile)<br /><br />For OLlama engine:<br /><br />"ollama://<model>" |  | Required: \{\} <br /> |
+| `adapters` _[Adapter](#adapter) array_ |  |  |  |
 | `features` _[ModelFeature](#modelfeature) array_ | Features that the model supports.<br />Dictates the APIs that are available for the model. |  | Enum: [TextGeneration TextEmbedding SpeechToText] <br /> |
 | `engine` _string_ | Engine to be used for the server process. |  | Enum: [OLlama VLLM FasterWhisper Infinity] <br />Required: \{\} <br /> |
 | `resourceProfile` _string_ | ResourceProfile required to serve the model.<br />Use the format "<resource-profile-name>:<count>".<br />Example: "nvidia-gpu-l4:2" - 2x NVIDIA L4 GPUs.<br />Must be a valid ResourceProfile defined in the system config. |  |  |

@@ -40,9 +40,12 @@ func Test_calculatePodPlan(t *testing.T) {
 		Spec: v1.ModelSpec{
 			Engine:   v1.VLLMEngine,
 			Replicas: ptr.To[int32](3),
+			URL:      "hf://test-repo/test-model",
 		},
 	}
 
+	src, err := r.parseModelSource(model.Spec.URL)
+	require.NoError(t, err)
 	modelConfig := ModelConfig{
 		ResourceProfile: config.ResourceProfile{
 			Requests: corev1.ResourceList{
@@ -53,6 +56,7 @@ func Test_calculatePodPlan(t *testing.T) {
 				"node": "selector",
 			},
 		},
+		Source: src,
 	}
 
 	expectedHash := k8sutils.PodHash(r.vLLMPodForModel(model, modelConfig).Spec)

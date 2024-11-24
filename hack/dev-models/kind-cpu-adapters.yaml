@@ -1,0 +1,36 @@
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: dev
+  annotations:
+    # Have the controller send requests to localhost to allow for
+    # running the controller locally (assuming a port-forward is in place).
+    model-pod-ip: "127.0.0.1"
+    model-pod-port: "7000" 
+spec:
+  features: ["TextGeneration"]
+  owner: alibaba
+  url: "ollama://qwen2:0.5b"
+  engine: OLlama
+  resourceProfile: cpu:1
+  minReplicas: 1
+  maxReplicas: 3
+  adapters:
+  - name: abc
+    url: hf://facebook/opt-125m
+---
+# Service for port-fowarding to the model:
+#
+# while true; do kubectl port-forward service/dev-model 7000:7000; done
+#
+apiVersion: v1
+kind: Service
+metadata:
+  name: dev-model
+spec:
+  selector:
+    model: dev
+  ports:
+    - protocol: TCP
+      port: 7000
+      targetPort: 8000

@@ -10,9 +10,6 @@ helm install kubeai ./charts/kubeai \
 secrets:
   huggingface:
     token: "${HF_TOKEN}"
-modelLoaders:
-  huggingface:
-    image: "substratusai/huggingface-model-loader:main"
 image:
   tag: "main"
   pullPolicy: "Always"

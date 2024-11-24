@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"sync"
 
 	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
@@ -31,7 +32,8 @@ type Resolver struct {
 	client.Client
 
 	endpointsMtx sync.Mutex
-	endpoints    map[string]*endpointGroup
+	// map[<model-name>]endpointGroup
+	endpoints map[string]*endpointGroup
 
 	selfIPsMtx sync.RWMutex
 	selfIPs    []string
@@ -88,7 +90,7 @@ func (r *Resolver) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result
 		return ctrl.Result{}, fmt.Errorf("listing matching pods: %w", err)
 	}
 
-	addrs := map[string]struct{}{}
+	addrs := map[string]endpointAttrs{}
 	for _, pod := range podList.Items {
 		if _, exclude := r.ExcludePods[pod.Name]; exclude {
 			continue
@@ -116,12 +118,26 @@ func (r *Resolver) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result
 			continue
 		}
 
-		addrs[ip+":"+port] = struct{}{}
+		addrs[ip+":"+port] = getEndpointAttrs(pod)
 	}
 
 	r.getEndpoints(modelName).setAddrs(addrs)
 
 	return ctrl.Result{}, nil
+}
+
+func getEndpointAttrs(pod corev1.Pod) endpointAttrs {
+	attrs := endpointAttrs{
+		adapters: map[string]struct{}{},
+	}
+
+	for k := range pod.GetLabels() {
+		if strings.HasPrefix(k, kubeaiv1.PodAdapterLabelPrefix) {
+			attrs.adapters[strings.TrimPrefix(k, kubeaiv1.PodAdapterLabelPrefix)] = struct{}{}
+		}
+	}
+
+	return attrs
 }
 
 func getPodAnnotation(pod corev1.Pod, key string) string {
@@ -131,12 +147,12 @@ func getPodAnnotation(pod corev1.Pod, key string) string {
 	return ""
 }
 
-func (r *Resolver) getEndpoints(service string) *endpointGroup {
+func (r *Resolver) getEndpoints(model string) *endpointGroup {
 	r.endpointsMtx.Lock()
-	e, ok := r.endpoints[service]
+	e, ok := r.endpoints[model]
 	if !ok {
 		e = newEndpointGroup()
-		r.endpoints[service] = e
+		r.endpoints[model] = e
 	}
 	r.endpointsMtx.Unlock()
 	return e
@@ -151,8 +167,8 @@ func (r *Resolver) GetSelfIPs() []string {
 // AwaitBestAddress returns the "IP:Port" with the lowest number of in-flight requests. It will block until an endpoint
 // becomes available or the context times out. It returns a function that should be called when the
 // request is complete to decrement the in-flight count.
-func (r *Resolver) AwaitBestAddress(ctx context.Context, model string) (string, func(), error) {
-	return r.getEndpoints(model).getBestAddr(ctx)
+func (r *Resolver) AwaitBestAddress(ctx context.Context, model, adapter string) (string, func(), error) {
+	return r.getEndpoints(model).getBestAddr(ctx, adapter, false)
 }
 
 // GetAllHosts retrieves the list of all hosts for a given model.

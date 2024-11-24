@@ -13,6 +13,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/substratusai/kubeai/internal/apiutils"
 	"github.com/substratusai/kubeai/internal/metrics/metricstest"
 )
 
@@ -21,11 +22,19 @@ func TestHandler(t *testing.T) {
 		model1 = "model1"
 		model2 = "model2"
 
+		model3   = "model3"
+		adapter3 = "adapter3"
+
 		maxRetries = 3
 	)
-	models := map[string]string{
-		model1: "deploy1",
-		model2: "deploy2",
+	models := map[string]testMockModel{
+		model1: {},
+		model2: {},
+		model3: {
+			adapters: map[string]bool{
+				adapter3: true,
+			},
+		},
 	}
 
 	type metricsTestSpec struct {
@@ -49,7 +58,7 @@ func TestHandler(t *testing.T) {
 		"no model": {
 			reqBody:                "{}",
 			expCode:                http.StatusBadRequest,
-			expBody:                `{"error":"unable to parse model: no model specified"}` + "\n",
+			expBody:                `{"error":"unable to parse model: reading model from body: missing 'model' field"}` + "\n",
 			expBackendRequestCount: 0,
 		},
 		"model not found": {
@@ -69,17 +78,22 @@ func TestHandler(t *testing.T) {
 			},
 			expBackendRequestCount: 1,
 		},
-		"happy 200 model in header": {
-			reqBody:     "{}",
-			reqHeaders:  map[string]string{"X-Model": model1},
-			backendCode: http.StatusOK,
-			backendBody: `{"result":"ok"}`,
-			expCode:     http.StatusOK,
-			expBody:     `{"result":"ok"}`,
+		"happy 200 model+adapter in body": {
+			reqBody:             fmt.Sprintf(`{"model":%q}`, apiutils.MergeModelAdapter(model3, adapter3)),
+			expRewrittenReqBody: fmt.Sprintf(`{"model":%q}`, adapter3),
+			backendCode:         http.StatusOK,
+			backendBody:         `{"result":"ok"}`,
+			expCode:             http.StatusOK,
+			expBody:             `{"result":"ok"}`,
 			expMetrics: &metricsTestSpec{
-				expModel: model1,
+				expModel: apiutils.MergeModelAdapter(model3, adapter3),
 			},
 			expBackendRequestCount: 1,
+		},
+		"404 model+adapter in body but missing adapter": {
+			reqBody: fmt.Sprintf(`{"model":%q}`, apiutils.MergeModelAdapter(model1, "no-such-adapter")),
+			expCode: http.StatusNotFound,
+			expBody: fmt.Sprintf(`{"error":"model not found: %s"}`, apiutils.MergeModelAdapter(model1, "no-such-adapter")) + "\n",
 		},
 		"happy 200 only model in form data": {
 			reqHeaders: map[string]string{"Content-Type": "multipart/form-data; boundary=12345"},
@@ -247,27 +261,42 @@ func TestHandler(t *testing.T) {
 	}
 }
 
+type testMockModel struct {
+	adapters map[string]bool
+}
+
 type testModelInterface struct {
 	address string
 
-	requestedModel string
+	requestedModel   string
+	requestedAdapter string
 
 	hostRequestCount int
 
-	models map[string]string
+	models map[string]testMockModel
 }
 
-func (t *testModelInterface) LookupModel(ctx context.Context, model string, selector []string) (bool, error) {
-	_, ok := t.models[model]
-	return ok, nil
+func (t *testModelInterface) LookupModel(ctx context.Context, model, adapter string, selector []string) (bool, error) {
+	m, ok := t.models[model]
+	if ok {
+		if adapter == "" {
+			return true, nil
+		}
+		if m.adapters == nil {
+			return false, nil
+		}
+		return m.adapters[adapter], nil
+	}
+	return false, nil
 }
 
 func (t *testModelInterface) ScaleAtLeastOneReplica(ctx context.Context, model string) error {
 	return nil
 }
 
-func (t *testModelInterface) AwaitBestAddress(ctx context.Context, model string) (string, func(), error) {
+func (t *testModelInterface) AwaitBestAddress(ctx context.Context, model, adapter string) (string, func(), error) {
 	t.hostRequestCount++
 	t.requestedModel = model
+	t.requestedAdapter = adapter
 	return t.address, func() {}, nil
 }

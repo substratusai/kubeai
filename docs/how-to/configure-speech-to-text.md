@@ -16,8 +16,8 @@ catalog:
     minReplicas: 1
 ```
 
-### Enable by creating Model CRD
-You can also create a Model CRD object to enable the Speech to Text model. Here is an example of a Model CRD object for the Speech to Text model:
+### Enable by creating Model
+You can also create a Model object to enable the Speech to Text model. For example:
 
 ```yaml
 apiVersion: kubeai.org/v1

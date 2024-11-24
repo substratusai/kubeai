@@ -1,0 +1,13 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: gs-opt-125m-cpu
+spec:
+  features: [TextGeneration]
+  owner: facebook
+  url: gs://substratus-ai-test-0/models/facebook/opt-125m
+  cacheProfile: standard-filestore
+  engine: VLLM
+  resourceProfile: cpu:4
+  minReplicas: 1

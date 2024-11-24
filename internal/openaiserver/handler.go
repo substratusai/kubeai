@@ -30,6 +30,11 @@ func NewHandler(k8sClient client.Client, modelProxy *modelproxy.Handler) *Handle
 		mux.Handle(pattern, otelhttp.WithRouteTag(pattern, routeHandler))
 	}
 
+	// NOTE: Proxying all paths to backend engines is a security risk.
+	// Make sure to only proxy paths that are safe to expose to the public.
+	// Example: vLLM supports loading arbitrary model adapaters via the API
+	// at `/v1/load_lora_adapter`.
+
 	handle("/openai/v1/chat/completions", http.StripPrefix("/openai", modelProxy))
 	handle("/openai/v1/completions", http.StripPrefix("/openai", modelProxy))
 	handle("/openai/v1/embeddings", http.StripPrefix("/openai", modelProxy))

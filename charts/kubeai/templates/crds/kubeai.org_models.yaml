@@ -39,6 +39,26 @@ spec:
           spec:
             description: ModelSpec defines the desired state of Model.
             properties:
+              adapters:
+                items:
+                  properties:
+                    name:
+                      description: Name must be a lowercase string with no spaces.
+                      maxLength: 63
+                      pattern: ^[a-z0-9-]+$
+                      type: string
+                    url:
+                      type: string
+                      x-kubernetes-validations:
+                      - message: adapter url must start with "hf://", "s3://", "gs://",
+                          or "oss://".
+                        rule: self.startsWith("hf://") || self.startsWith("s3://")
+                          || self.startsWith("gs://") || self.startsWith("oss://")
+                  required:
+                  - name
+                  - url
+                  type: object
+                type: array
               args:
                 description: Args to be added to the server process.
                 items:
@@ -138,15 +158,30 @@ spec:
               url:
                 description: |-
                   URL of the model to be served.
-                  Currently only the following formats are supported:
-                  For VLLM & FasterWhisper engines: "hf://<model-repo>/<model-name>"
-                  For OLlama engine: "ollama://<model>
+                  Currently the following formats are supported:
+
+
+                  For VLLM, FasterWhisper, Infinity engines:
+
+
+                  "hf://<repo>/<model>"
+                  "gs://<bucket>/<path>" (only with cacheProfile)
+                  "oss://<bucket>/<path>" (only with cacheProfile)
+                  "s3://<bucket>/<path>" (only with cacheProfile)
+
+
+                  For OLlama engine:
+
+
+                  "ollama://<model>"
                 type: string
                 x-kubernetes-validations:
                 - message: url is immutable.
                   rule: self == oldSelf
-                - message: url must start with "hf://" or "ollama://" and not be empty.
-                  rule: self.startsWith("hf://") || self.startsWith("ollama://")
+                - message: url must start with "hf://", "ollama://", "s3://", "gs://",
+                    or "oss://" and not be empty.
+                  rule: self.startsWith("hf://") || self.startsWith("ollama://") ||
+                    self.startsWith("s3://") || self.startsWith("gs://") || self.startsWith("oss://")
             required:
             - engine
             - features
@@ -155,11 +190,20 @@ spec:
             - url
             type: object
             x-kubernetes-validations:
-            - message: cacheProfile is only supported with a huggingface url ("hf://...")
-                at the moment.
-              rule: '!has(self.cacheProfile) || self.url.startsWith("hf://")'
+            - message: cacheProfile is only supported with urls of format "hf://...",
+                "s3://...", "gs://...", or "oss://..." at the moment.
+              rule: '!has(self.cacheProfile) || self.url.startsWith("hf://") || self.url.startsWith("s3://")
+                || self.url.startsWith("gs://") || self.url.startsWith("oss://")'
+            - message: urls of format "s3://..." only supported when using a cacheProfile
+              rule: '!self.url.startsWith("s3://") || has(self.cacheProfile)'
+            - message: urls of format "gs://..." only supported when using a cacheProfile
+              rule: '!self.url.startsWith("gs://") || has(self.cacheProfile)'
+            - message: urls of format "oss://..." only supported when using a cacheProfile
+              rule: '!self.url.startsWith("oss://") || has(self.cacheProfile)'
             - message: minReplicas should be less than or equal to maxReplicas.
               rule: '!has(self.maxReplicas) || self.minReplicas <= self.maxReplicas'
+            - message: adapters only supported with VLLM engine.
+              rule: '!has(self.adapters) || self.engine == "VLLM"'
           status:
             description: ModelStatus defines the observed state of Model.
             properties:
@@ -184,6 +228,9 @@ spec:
                 type: object
             type: object
         type: object
+        x-kubernetes-validations:
+        - message: name must not exceed 40 characters.
+          rule: size(self.metadata.name) <= 40
     served: true
     storage: true
     subresources:

@@ -1,0 +1,69 @@
+secretNames:
+  huggingface: huggingface
+
+modelServers:
+  VLLM:
+    images:
+      default: "vllm/vllm-openai:v0.6.3.post1"
+      cpu: "substratusai/vllm:v0.6.3.post1-cpu"
+      google-tpu: "substratusai/vllm:v0.6.3.post1-tpu"
+  OLlama:
+    images:
+      default: "ollama/ollama:latest"
+  FasterWhisper:
+    images:
+      default: "fedirz/faster-whisper-server:latest-cpu"
+      nvidia-gpu: "fedirz/faster-whisper-server:latest-cuda"
+  Infinity:
+    images:
+      default: "michaelf34/infinity:latest"
+
+modelLoading:
+  image: us-central1-docker.pkg.dev/substratus-dev/default/kubeai-model-loader
+
+modelRollouts:
+  surge: 0
+messaging:
+  errorMaxBackoff: 30s
+  streams: []
+  #- requestsURL: gcppubsub://projects/substratus-dev/subscriptions/test-kubeai-requests-sub
+  #  responsesURL: gcppubsub://projects/substratus-dev/topics/test-kubeai-responses
+  #  maxHandlers: 1
+resourceProfiles:
+  cpu:
+    imageName: "cpu"
+    requests:
+      # Kind
+      #cpu: 0.5
+      #memory: 1Gi
+      # GKE
+      cpu: 3
+      memory: 12Gi
+    limits:
+      cpu: 3
+      memory: 12Gi
+  nvidia-gpu-l4:
+    limits:
+      nvidia.com/gpu: "1"
+    requests:
+      nvidia.com/gpu: "1"
+      cpu: "6"
+      memory: "24Gi"
+    nodeSelector:
+      cloud.google.com/gke-accelerator: "nvidia-l4"
+      cloud.google.com/gke-spot: "true"
+
+cacheProfiles:
+  fstore:
+    sharedFilesystem:
+      #storageClassName: "kubeai-filestore"
+      persistentVolumeName: "preprov1"
+
+# Dev-only configuration.
+allowPodAddressOverride: true
+fixedSelfMetricAddrs: ["127.0.0.1:"]
+
+modelAutoscaling:
+  interval: 10s
+  timeWindow: 60s
+  stateConfigMapName: kubeai-autoscaler-state

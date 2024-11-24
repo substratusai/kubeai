@@ -26,6 +26,7 @@ import (
 	"time"
 
 	batchv1 "k8s.io/api/batch/v1"
+	"k8s.io/client-go/rest"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -37,6 +38,7 @@ import (
 	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
 	"github.com/substratusai/kubeai/internal/config"
 	"github.com/substratusai/kubeai/internal/k8sutils"
+	"github.com/substratusai/kubeai/internal/vllmclient"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -48,15 +50,18 @@ const (
 // ModelReconciler reconciles a Model object
 type ModelReconciler struct {
 	client.Client
+	RESTConfig              *rest.Config
+	PodRESTClient           rest.Interface
 	Scheme                  *runtime.Scheme
+	VLLMClient              *vllmclient.Client
 	Namespace               string
 	AllowPodAddressOverride bool
-	HuggingfaceSecretName   string
+	SecretNames             config.SecretNames
 	ResourceProfiles        map[string]config.ResourceProfile
 	CacheProfiles           map[string]config.CacheProfile
 	ModelServers            config.ModelServers
 	ModelServerPods         config.ModelServerPods
-	ModelLoaders            config.ModelLoaders
+	ModelLoaders            config.ModelLoading
 	ModelRollouts           config.ModelRollouts
 }
 
@@ -158,19 +163,31 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (res 
 	model.Status.Replicas.All = int32(len(allPods.Items))
 	model.Status.Replicas.Ready = readyPods
 
-	plan := r.calculatePodPlan(allPods, model, modelConfig)
-	if plan.containsActions() {
-		changed, err := plan.execute(ctx, r.Client, r.Scheme)
-		if changed {
+	scaled := false
+	defer func() {
+		if scaled {
 			// Slow things down to wait for caches to sync.
 			// This is important because the pod plan has some calculations that
 			// assume the cache is up to date.
 			// TODO: Use "epectations" instead of a wait - see the ReplicaSet controller.
 			time.Sleep(3 * time.Second)
 		}
+	}()
+
+	plan := r.calculatePodPlan(allPods, model, modelConfig)
+	if plan.containsActions() {
+		var err error
+		scaled, err = plan.execute(ctx, r.Client, r.Scheme)
 		if err != nil {
 			return ctrl.Result{}, fmt.Errorf("executing pod plan: %w", err)
 		}
+	}
+
+	if err := r.reconcileAdapters(ctx, plan.toRemain, model.Spec.Adapters); err != nil {
+		if errors.Is(err, errReturnEarly) {
+			return ctrl.Result{}, nil
+		}
+		return ctrl.Result{}, fmt.Errorf("reconciling adapters: %w", err)
 	}
 
 	return ctrl.Result{}, nil
@@ -189,12 +206,16 @@ func (r *ModelReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 var errReturnEarly = fmt.Errorf("return early")
 
+const (
+	appKubernetesIOName = "app.kubernetes.io/name"
+)
+
 func labelsForModel(m *kubeaiv1.Model) map[string]string {
 	engineLowerCase := strings.ToLower(m.Spec.Engine)
 	return map[string]string{
 		"app":                          "model",
 		"model":                        m.Name,
-		"app.kubernetes.io/name":       engineLowerCase,
+		appKubernetesIOName:            engineLowerCase,
 		"app.kubernetes.io/instance":   engineLowerCase + "-" + m.Name,
 		"app.kubernetes.io/managed-by": "kubeai",
 	}
@@ -229,54 +250,10 @@ type ModelConfig struct {
 	Source modelSource
 }
 
-type modelSource struct {
-	typ         modelSourceType
-	huggingface huggingfaceModelSource
-	ollama      ollamaModelSource
-}
-
-type modelSourceType string
-
-const (
-	modelSourceTypeHuggingface modelSourceType = "huggingface"
-	modelSourceTypeOLlama      modelSourceType = "ollama"
-)
-
-type huggingfaceModelSource struct {
-	repo string
-}
-type ollamaModelSource struct {
-	ref string
-}
-
-func parseModelSource(url string) (modelSource, error) {
-	const (
-		huggingfacePrefix = "hf://"
-		ollamaPrefix      = "ollama://"
-	)
-	switch {
-	case strings.HasPrefix(url, huggingfacePrefix):
-		return modelSource{
-			typ: modelSourceTypeHuggingface,
-			huggingface: huggingfaceModelSource{
-				repo: strings.TrimPrefix(url, huggingfacePrefix),
-			},
-		}, nil
-	case strings.HasPrefix(url, ollamaPrefix):
-		return modelSource{
-			typ: modelSourceTypeOLlama,
-			ollama: ollamaModelSource{
-				ref: strings.TrimPrefix(url, ollamaPrefix),
-			},
-		}, nil
-	}
-	return modelSource{}, fmt.Errorf("unrecognized model source: %q", url)
-}
-
 func (r *ModelReconciler) getModelConfig(model *kubeaiv1.Model) (ModelConfig, error) {
 	var result ModelConfig
 
-	src, err := parseModelSource(model.Spec.URL)
+	src, err := r.parseModelSource(model.Spec.URL)
 	if err != nil {
 		return result, fmt.Errorf("parsing model source: %w", err)
 	}

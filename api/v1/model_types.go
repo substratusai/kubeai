@@ -21,17 +21,33 @@ import (
 )
 
 // ModelSpec defines the desired state of Model.
-// +kubebuilder:validation:XValidation:rule="!has(self.cacheProfile) || self.url.startsWith(\"hf://\")", message="cacheProfile is only supported with a huggingface url (\"hf://...\") at the moment."
+// +kubebuilder:validation:XValidation:rule="!has(self.cacheProfile) || self.url.startsWith(\"hf://\") || self.url.startsWith(\"s3://\") || self.url.startsWith(\"gs://\") || self.url.startsWith(\"oss://\")", message="cacheProfile is only supported with urls of format \"hf://...\", \"s3://...\", \"gs://...\", or \"oss://...\" at the moment."
+// +kubebuilder:validation:XValidation:rule="!self.url.startsWith(\"s3://\") || has(self.cacheProfile)", message="urls of format \"s3://...\" only supported when using a cacheProfile"
+// +kubebuilder:validation:XValidation:rule="!self.url.startsWith(\"gs://\") || has(self.cacheProfile)", message="urls of format \"gs://...\" only supported when using a cacheProfile"
+// +kubebuilder:validation:XValidation:rule="!self.url.startsWith(\"oss://\") || has(self.cacheProfile)", message="urls of format \"oss://...\" only supported when using a cacheProfile"
 // +kubebuilder:validation:XValidation:rule="!has(self.maxReplicas) || self.minReplicas <= self.maxReplicas", message="minReplicas should be less than or equal to maxReplicas."
+// +kubebuilder:validation:XValidation:rule="!has(self.adapters) || self.engine == \"VLLM\"", message="adapters only supported with VLLM engine."
 type ModelSpec struct {
 	// URL of the model to be served.
-	// Currently only the following formats are supported:
-	// For VLLM & FasterWhisper engines: "hf://<model-repo>/<model-name>"
-	// For OLlama engine: "ollama://<model>
+	// Currently the following formats are supported:
+	//
+	// For VLLM, FasterWhisper, Infinity engines:
+	//
+	// "hf://<repo>/<model>"
+	// "gs://<bucket>/<path>" (only with cacheProfile)
+	// "oss://<bucket>/<path>" (only with cacheProfile)
+	// "s3://<bucket>/<path>" (only with cacheProfile)
+	//
+	// For OLlama engine:
+	//
+	// "ollama://<model>"
+	//
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf", message="url is immutable."
-	// +kubebuilder:validation:XValidation:rule="self.startsWith(\"hf://\") || self.startsWith(\"ollama://\")", message="url must start with \"hf://\" or \"ollama://\" and not be empty."
+	// +kubebuilder:validation:XValidation:rule="self.startsWith(\"hf://\") || self.startsWith(\"ollama://\") || self.startsWith(\"s3://\") || self.startsWith(\"gs://\") || self.startsWith(\"oss://\")", message="url must start with \"hf://\", \"ollama://\", \"s3://\", \"gs://\", or \"oss://\" and not be empty."
 	URL string `json:"url"`
+
+	Adapters []Adapter `json:"adapters,omitempty"`
 
 	// Features that the model supports.
 	// Dictates the APIs that are available for the model.
@@ -118,6 +134,16 @@ const (
 	InfinityEngine      = "Infinity"
 )
 
+type Adapter struct {
+	// Name must be a lowercase string with no spaces.
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Pattern=^[a-z0-9-]+$
+	// +kubebuilder:validation:MaxLength=63
+	Name string `json:"name"`
+	// +kubebuilder:validation:XValidation:rule="self.startsWith(\"hf://\") || self.startsWith(\"s3://\") || self.startsWith(\"gs://\") || self.startsWith(\"oss://\")", message="adapter url must start with \"hf://\", \"s3://\", \"gs://\", or \"oss://\"."
+	URL string `json:"url"`
+}
+
 // ModelStatus defines the observed state of Model.
 type ModelStatus struct {
 	Replicas ModelStatusReplicas `json:"replicas,omitempty"`
@@ -133,11 +159,14 @@ type ModelStatusCache struct {
 	Loaded bool `json:"loaded"`
 }
 
+// NOTE: Model name length should be limited to allow for the model name to be used in
+// the names of the resources created by the controller.
+
+// Model resources define the ML models that will be served by KubeAI.
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:subresource:scale:specpath=.spec.replicas,statuspath=.status.replicas.all
-
-// Model resources define the ML models that will be served by KubeAI.
+// +kubebuilder:validation:XValidation:rule="size(self.metadata.name) <= 40", message="name must not exceed 40 characters."
 type Model struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

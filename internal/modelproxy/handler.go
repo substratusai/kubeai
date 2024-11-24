@@ -14,12 +14,12 @@ import (
 )
 
 type ModelScaler interface {
-	LookupModel(ctx context.Context, model string, selectors []string) (bool, error)
+	LookupModel(ctx context.Context, model, adapter string, selectors []string) (bool, error)
 	ScaleAtLeastOneReplica(ctx context.Context, model string) error
 }
 
 type EndpointResolver interface {
-	AwaitBestAddress(ctx context.Context, model string) (string, func(), error)
+	AwaitBestAddress(ctx context.Context, model, adapter string) (string, func(), error)
 }
 
 // Handler serves http requests for end-clients.
@@ -65,22 +65,22 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("model:", pr.model)
+	log.Println("model:", pr.model, "adapter:", pr.adapter)
 
 	metricAttrs := metric.WithAttributeSet(attribute.NewSet(
-		metrics.AttrRequestModel.String(pr.model),
+		metrics.AttrRequestModel.String(pr.requestedModel),
 		metrics.AttrRequestType.String(metrics.AttrRequestTypeHTTP),
 	))
 	metrics.InferenceRequestsActive.Add(pr.r.Context(), 1, metricAttrs)
 	defer metrics.InferenceRequestsActive.Add(pr.r.Context(), -1, metricAttrs)
 
-	modelExists, err := h.modelScaler.LookupModel(r.Context(), pr.model, pr.selectors)
+	modelExists, err := h.modelScaler.LookupModel(r.Context(), pr.model, pr.adapter, pr.selectors)
 	if err != nil {
 		pr.sendErrorResponse(w, http.StatusInternalServerError, "unable to resolve model: %v", err)
 		return
 	}
 	if !modelExists {
-		pr.sendErrorResponse(w, http.StatusNotFound, "model not found: %v", pr.model)
+		pr.sendErrorResponse(w, http.StatusNotFound, "model not found: %v", pr.requestedModel)
 		return
 	}
 
@@ -100,7 +100,7 @@ var AdditionalProxyRewrite = func(*httputil.ProxyRequest) {}
 func (h *Handler) proxyHTTP(w http.ResponseWriter, pr *proxyRequest) {
 	log.Printf("Waiting for host: %v", pr.id)
 
-	addr, decrementInflight, err := h.resolver.AwaitBestAddress(pr.r.Context(), pr.model)
+	addr, decrementInflight, err := h.resolver.AwaitBestAddress(pr.r.Context(), pr.model, pr.adapter)
 	if err != nil {
 		switch {
 		case errors.Is(err, context.Canceled):
