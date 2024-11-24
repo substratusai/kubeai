@@ -10,14 +10,14 @@ There are 2 ways to install a text generation model in KubeAI:
 - Use Helm with the `kubeai/models` chart.
 - Use `kubectl apply -f model.yaml` to install a Model Custom Resource.
 
-KubeAI comes with pre-validated and optimized Model configurations for popular text generation models. These models are available in the `kubeai/models` Helm chart and
-are also published as raw manifests in the `manifests/model` directory.
+KubeAI comes with pre-validated and optimized Model configurations for popular text generation models. These models are available in the
+[kubeai/models Helm chart](https://github.com/substratusai/kubeai/tree/main/charts/models)
+and are also published as raw manifests in the
+[manifests/model directory](https://github.com/substratusai/kubeai/tree/main/manifests/models).
 
 You can also easily define your own models using the Model Custom Resource directly or by using the `kubeai/models` Helm chart.
 
 ## Install a Text Generation Model using Helm
-
-KubeAI provides a `kubeai/models` chart that contains the pre-configured models.
 
 You can take a look at all the pre-configured models in the chart's default values file.
 
