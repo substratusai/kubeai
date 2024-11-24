@@ -8,12 +8,12 @@ KubeAI supports the following engines for text generation models (LLMs, VLMs, ..
 
 There are 2 ways to install a text generation model in KubeAI:
 - Use Helm with the `kubeai/models` chart.
-- Use `kubectl apply -f model.yaml` to install a Model CRD.
+- Use `kubectl apply -f model.yaml` to install a Model Custom Resource.
 
 KubeAI comes with pre-validated and optimized Model configurations for popular text generation models. These models are available in the `kubeai/models` Helm chart and
 are also published as raw manifests in the `manifests/model` directory.
 
-You can also easily define your own models using the Model CRD directly or by using the `kubeai/models` Helm chart.
+You can also easily define your own models using the Model Custom Resource directly or by using the `kubeai/models` Helm chart.
 
 ## Install a Text Generation Model using Helm
 
@@ -56,11 +56,11 @@ EOF
 ```
 
 ## Install a Text Generation Model using kubectl
-You can use the Model CRD directly to install a model using `kubectl apply -f model.yaml`.
+You can use the Model Custom Resource directly to install a model using `kubectl apply -f model.yaml`.
 
 ### Install Text Generation Model using CPU
 
-Apply the following Model CRD to install the Gemma 2 2B model using Ollama on CPU:
+Apply the following Model Custom Resource to install the Gemma 2 2B model using Ollama on CPU:
 ```yaml
 apiVersion: kubeai.org/v1
 kind: Model
@@ -75,7 +75,7 @@ spec:
 
 ### Install Text Generation Model using L4 GPU
 
-Apply the following Model CRD to install the Llama 3.1 8B model using vLLM on L4 GPU:
+Apply the following Model Custom Resource to install the Llama 3.1 8B model using vLLM on L4 GPU:
 ```yaml
 apiVersion: kubeai.org/v1
 kind: Model
