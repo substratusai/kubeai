@@ -22,7 +22,7 @@ func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, c ModelConfig) 
 		ann[kubeaiv1.ModelPodPortAnnotation] = "8000"
 	}
 
-	infinityModelID := c.Source.ref()
+	infinityModelID := c.Source.url.ref
 	if m.Spec.CacheProfile != "" {
 		// TODO: Verify loading from dir works.
 		infinityModelID = modelCacheDir(m)

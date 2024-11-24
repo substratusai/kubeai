@@ -19,7 +19,7 @@ func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, c ModelCon
 	args := []string{}
 	args = append(args, m.Spec.Args...)
 
-	whisperModel := c.Source.ref()
+	whisperModel := c.Source.url.ref
 	if m.Spec.CacheProfile != "" {
 		whisperModel = modelCacheDir(m)
 	}

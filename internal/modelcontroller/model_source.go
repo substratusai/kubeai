@@ -1,7 +1,8 @@
 package modelcontroller
 
 import (
-	"net/url"
+	"fmt"
+	"regexp"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/utils/ptr"
@@ -9,17 +10,11 @@ import (
 
 type modelSource struct {
 	*modelAuthCredentials
-	url *url.URL
-}
-
-// ref returns a short reference to the model source.
-// If url is "hf://username/model", then ref is "username/model".
-func (s modelSource) ref() string {
-	return s.url.Host + s.url.Path
+	url modelURL
 }
 
 func (r *ModelReconciler) parseModelSource(urlStr string) (modelSource, error) {
-	u, err := url.Parse(urlStr)
+	u, err := parseModelURL(urlStr)
 	if err != nil {
 		return modelSource{}, err
 	}
@@ -28,15 +23,15 @@ func (r *ModelReconciler) parseModelSource(urlStr string) (modelSource, error) {
 	}
 
 	switch {
-	case u.Scheme == "gs":
+	case u.scheme == "gs":
 		src.modelAuthCredentials = r.authForGCS()
-	case u.Scheme == "oss":
+	case u.scheme == "oss":
 		src.modelAuthCredentials = r.authForOSS()
-	case u.Scheme == "s3":
+	case u.scheme == "s3":
 		src.modelAuthCredentials = r.authForS3()
-	case u.Scheme == "hf":
+	case u.scheme == "hf":
 		src.modelAuthCredentials = r.authForHuggingfaceHub()
-	case u.Scheme == "ollama":
+	case u.scheme == "ollama":
 		src.modelAuthCredentials = &modelAuthCredentials{}
 	}
 	return src, nil
@@ -188,4 +183,24 @@ func (r *ModelReconciler) authForOSS() *modelAuthCredentials {
 			},
 		},
 	}
+}
+
+var modelURLRegex = regexp.MustCompile(`^([a-z]+):\/\/(\S+)$`)
+
+func parseModelURL(urlStr string) (modelURL, error) {
+	matches := modelURLRegex.FindStringSubmatch(urlStr)
+	if len(matches) != 3 {
+		return modelURL{}, fmt.Errorf("invalid model URL: %s", urlStr)
+	}
+	return modelURL{
+		original: urlStr,
+		scheme:   matches[1],
+		ref:      matches[2],
+	}, nil
+}
+
+type modelURL struct {
+	original string // e.g. "hf://username/model"
+	scheme   string // e.g. "hf", "s3", "gs", "oss"
+	ref      string // e.g. "username/model"
 }

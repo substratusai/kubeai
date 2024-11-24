@@ -19,7 +19,7 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 		ann[kubeaiv1.ModelPodPortAnnotation] = "8000"
 	}
 
-	vllmModelFlag := c.Source.ref()
+	vllmModelFlag := c.Source.url.ref
 	if m.Spec.CacheProfile != "" {
 		vllmModelFlag = modelCacheDir(m)
 	}
