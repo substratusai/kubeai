@@ -26,21 +26,6 @@ You can get the default values for the models chart using the following command:
 helm show values kubeai/models
 ```
 
-### Install Text Generation Model using CPU
-
-Enable the `gemma2-2b-cpu` model using the Helm chart:
-
-```bash
-helm upgrade --install --reuse-values kubeai-models kubeai/models -f - <<EOF
-catalog:
-  gemma2-2b-cpu:
-    enabled: true
-    engine: OLlama
-    resourceProfile: cpu:2
-    minReplicas: 1 # by default this is 0
-EOF
-```
-
 ### Install Text Generation Model using L4 GPU
 
 Enable the Llama 3.1 8B model using the Helm chart:
@@ -58,21 +43,6 @@ EOF
 
 ## Install a Text Generation Model using kubectl
 You can use the Model Custom Resource directly to install a model using `kubectl apply -f model.yaml`.
-
-### Install Text Generation Model using CPU
-
-Apply the following Model Custom Resource to install the Gemma 2 2B model using Ollama on CPU:
-```yaml
-apiVersion: kubeai.org/v1
-kind: Model
-metadata:
-  name: gemma2-2b-cpu
-spec:
-  features: [TextGeneration]
-  url: ollama://gemma2:2b
-  engine: OLlama
-  resourceProfile: cpu:2
-```
 
 ### Install Text Generation Model using L4 GPU
 
