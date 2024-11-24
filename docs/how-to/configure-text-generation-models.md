@@ -19,8 +19,9 @@ You can also easily define your own models using the Model Custom Resource direc
 
 ## Install a Text Generation Model using Helm
 
-You can take a look at all the pre-configured models in the chart's default values file.
+You can take a look at all the pre-configured models in the chart's [default values file](https://github.com/substratusai/kubeai/blob/main/charts/models/values.yaml).
 
+You can get the default values for the models chart using the following command:
 ```bash
 helm show values kubeai/models
 ```
