@@ -15,6 +15,9 @@ catalog:
     enabled: true
 EOF
 
+# Use a timeout with curl to ensure that the test fails and all
+# debugging information is printed if the request takes too long.
 curl http://localhost:8000/openai/v1/completions \
+  --max-time 900 \
   -H "Content-Type: application/json" \
   -d '{"model": "gemma2-2b-cpu", "prompt": "Who was the first president of the United States?", "max_tokens": 40}'
