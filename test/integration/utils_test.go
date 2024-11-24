@@ -192,7 +192,7 @@ func sendOpenAIInferenceRequest(t *testing.T, modelName string, selectorHeaders 
 	}
 }
 
-func requireOpenAIModelList(t *testing.T, selectorHeaders []string, expLen int, expIDs []string, msg string) {
+func requireOpenAIModelList(t *testing.T, selectorHeaders []string, expIDs []string, msg string) {
 	require.EventuallyWithT(t, func(t *assert.CollectT) {
 		//t.Helper()
 		req, err := http.NewRequest(http.MethodGet, "http://localhost:8000/openai/v1/models", nil)

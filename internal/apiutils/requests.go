@@ -19,7 +19,7 @@ const (
 )
 
 // SplitModelAdapter splits a requested model name into KubeAI
-// Model.metadata.name and Model.spec.adapters[].id.
+// Model.metadata.name and Model.spec.adapters[].name.
 func SplitModelAdapter(s string) (model, adapter string) {
 	parts := strings.SplitN(s, adapterSeparator, 2)
 	if len(parts) == 1 {

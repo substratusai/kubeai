@@ -42,11 +42,11 @@ func (r *ModelReconciler) reconcileAdapters(ctx context.Context, pods []*corev1.
 		deletionCandidates := getLabelledAdapters(pod)
 
 		for _, adapter := range adapters {
-			if k8sutils.GetLabel(pod, v1.PodAdapterLabel(adapter.ID)) != k8sutils.StringHash(adapter.URL) {
+			if k8sutils.GetLabel(pod, v1.PodAdapterLabel(adapter.Name)) != k8sutils.StringHash(adapter.URL) {
 				param.toEnsure = append(param.toEnsure, adapter)
 			} else {
 				// Matches, so don't delete.
-				delete(deletionCandidates, adapter.ID)
+				delete(deletionCandidates, adapter.Name)
 			}
 		}
 
@@ -70,13 +70,18 @@ func (r *ModelReconciler) reconcileAdapters(ctx context.Context, pods []*corev1.
 			switch param.engine {
 			case v1.VLLMEngine:
 				if err := r.VLLMClient.LoadLoraAdapter(ctx, addr, vllmclient.LoadAdapterRequest{
-					LoraName: adapter.ID,
+					LoraName: adapter.Name,
 					LoraPath: adapterDir(adapter),
+					Options: vllmclient.LoadAdapterRequestOptions{
+						// It is possible that the adapter is already loaded, but updating the Pod labels
+						// failed. In this case, we ignore the error and continue.
+						IgnoreAlreadyLoaded: true,
+					},
 				}); err != nil {
-					return fmt.Errorf("load vllm adapter %q: %w", adapter.ID, err)
+					return fmt.Errorf("load vllm adapter %q: %w", adapter.Name, err)
 				}
 			}
-			if err := r.updatePodAddLabel(ctx, param.pod, v1.PodAdapterLabel(adapter.ID), k8sutils.StringHash(adapter.URL)); err != nil {
+			if err := r.updatePodAddLabel(ctx, param.pod, v1.PodAdapterLabel(adapter.Name), k8sutils.StringHash(adapter.URL)); err != nil {
 				return fmt.Errorf("update pod labels for pod %q: %w", param.pod.Namespace+"/"+param.pod.Name, err)
 			}
 		}
@@ -88,6 +93,11 @@ func (r *ModelReconciler) reconcileAdapters(ctx context.Context, pods []*corev1.
 			case v1.VLLMEngine:
 				if err := r.VLLMClient.UnloadLoraAdapter(ctx, addr, vllmclient.UnloadAdapterRequest{
 					LoraName: adapterID,
+					Options: vllmclient.UnloadAdapterRequestOptions{
+						// It is possible that the adapter is already unloaded, but updating the Pod labels
+						// failed. In this case, we ignore the error and continue.
+						IgnoreNotFound: true,
+					},
 				}); err != nil {
 					return fmt.Errorf("unload vllm adapter %q: %w", adapterID, err)
 				}
@@ -136,7 +146,7 @@ func (r *ModelReconciler) execAdapterLoad(ctx context.Context, pod *corev1.Pod, 
 
 func (r *ModelReconciler) execAdapterUnload(ctx context.Context, pod *corev1.Pod, adapterID string) error {
 	if err := r.execPod(ctx, pod, loaderContainerName, []string{
-		"rm", "-rf", adapterDir(v1.Adapter{ID: adapterID}),
+		"rm", "-rf", adapterDir(v1.Adapter{Name: adapterID}),
 	}); err != nil {
 		return fmt.Errorf("exec adapter load: %w", err)
 	}
@@ -149,7 +159,7 @@ const (
 )
 
 func adapterDir(a v1.Adapter) string {
-	return fmt.Sprintf("%s/%s", adaptersRootDir, a.ID)
+	return fmt.Sprintf("%s/%s", adaptersRootDir, a.Name)
 }
 
 func (r *ModelReconciler) patchServerAdapterLoader(podSpec *corev1.PodSpec, m *v1.Model, image string) {

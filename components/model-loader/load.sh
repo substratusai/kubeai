@@ -8,12 +8,13 @@ dest=$2
 # If dest is a local directory, download the model to that directory.
 # Otherwise, download to a temporary directory and upload from there.
 dest_type=""
-if [[ -d $dest ]]; then
-    dir=$dest
-    dest_type="dir"
-else
+if [[ $dest == *"://"* ]]; then
     dir=$(mktemp -d)
     dest_type="url"
+else
+    dir=$dest
+    dest_type="dir"
+    mkdir -p $dir
 fi
 
 # Download

@@ -16,7 +16,7 @@ spec:
   minReplicas: 1
   maxReplicas: 3
   adapters:
-  - id: abc
+  - name: abc
     url: hf://facebook/opt-125m
 ---
 # Service for port-fowarding to the model:

@@ -28,6 +28,9 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 		"--model=" + vllmModelFlag,
 		"--served-model-name=" + m.Name,
 	}
+	if m.Spec.Adapters != nil {
+		args = append(args, "--enable-lora")
+	}
 	args = append(args, m.Spec.Args...)
 
 	env := []corev1.EnvVar{

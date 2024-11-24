@@ -146,10 +146,10 @@ func (a *ModelAutoscaling) AverageWindowCount() int {
 }
 
 type SecretNames struct {
-	Alibaba     string `json:"alibaba"`
-	AWS         string `json:"aws"`
-	GCP         string `json:"gcp"`
-	Huggingface string `json:"huggingface"`
+	Alibaba     string `json:"alibaba" required:"true"`
+	AWS         string `json:"aws" required:"true"`
+	GCP         string `json:"gcp" required:"true"`
+	Huggingface string `json:"huggingface" required:"true"`
 }
 
 type Messaging struct {

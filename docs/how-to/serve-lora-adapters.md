@@ -17,7 +17,7 @@ spec:
   owner: meta-llama
   url: hf://TinyLlama/TinyLlama-1.1B-Chat-v0.3
   adapters: # <--
-  - id: colorist
+  - name: colorist
     url: hf://jashing/tinyllama-colorist-lora
   engine: VLLM
   resourceProfile: nvidia-gpu-l4:1
@@ -40,16 +40,16 @@ catalog:
   llama-3.1-8b-instruct-fp8-l4:
     enabled: true
     adapters:
-    - id: example
+    - name: example
       url: hf://some-huggingface-user/some-huggingface-repo
     # ...
 ```
 
 ## Requesting an adapter
 
-When using the OpenAI compatible REST API, model adapters are referenced using the `<base-model>_<adapter>` convention. Once a Model is installed with an adapter, you can request that adapter by id via appending `_<adapter-id>` to the model field. This will work with any OpenAI client library.
+When using the OpenAI compatible REST API, model adapters are referenced using the `<base-model>_<adapter>` convention. Once a Model is installed with an adapter, you can request that adapter by name via appending `_<adapter-name>` to the model field. This will work with any OpenAI client library.
 
-If you installed a Model with `name: llama-3.2` and configured `.spec.adapters[]` to contain an adapter with `id: sql`, you could issue a completion request to that adapter using:
+If you installed a Model with `name: llama-3.2` and configured `.spec.adapters[]` to contain an adapter with `name: sql`, you could issue a completion request to that adapter using:
 
 ```bash
 curl http://$KUBEAI_ENDPOINT/openai/v1/completions \
@@ -66,4 +66,4 @@ Adapters will be returned by the `/models` endpoint:
 curl http://$KUBEAI_ENDPOINT/openai/v1/models
 ```
 
-Each adapter will be listed as a separate model object with the adapter id appended to the base model id.
+Each adapter will be listed as a separate model object with the adapter name appended to the base Model name.

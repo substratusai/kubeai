@@ -114,7 +114,7 @@ func TestModelValidation(t *testing.T) {
 					Engine:   "VLLM",
 					Features: []v1.ModelFeature{},
 					Adapters: []v1.Adapter{
-						{ID: "adapter1", URL: "hf://test-repo/test-adapter"},
+						{Name: "adapter1", URL: "hf://test-repo/test-adapter"},
 					},
 				},
 			},
@@ -128,7 +128,7 @@ func TestModelValidation(t *testing.T) {
 					Engine:   "FasterWhisper",
 					Features: []v1.ModelFeature{},
 					Adapters: []v1.Adapter{
-						{ID: "adapter1", URL: "hf://test-repo/test-adapter"},
+						{Name: "adapter1", URL: "hf://test-repo/test-adapter"},
 					},
 				},
 			},

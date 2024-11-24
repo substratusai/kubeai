@@ -42,18 +42,20 @@ spec:
               adapters:
                 items:
                   properties:
-                    id:
-                      description: ID must be a lowercase string with no spaces.
+                    name:
+                      description: Name must be a lowercase string with no spaces.
                       maxLength: 63
                       pattern: ^[a-z0-9-]+$
                       type: string
                     url:
                       type: string
                       x-kubernetes-validations:
-                      - message: adapter url must start with "hf://" or "s3://".
+                      - message: adapter url must start with "hf://", "s3://", "gs://",
+                          or "oss://".
                         rule: self.startsWith("hf://") || self.startsWith("s3://")
+                          || self.startsWith("gs://") || self.startsWith("oss://")
                   required:
-                  - id
+                  - name
                   - url
                   type: object
                 type: array

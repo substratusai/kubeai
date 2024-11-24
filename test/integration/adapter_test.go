@@ -22,8 +22,8 @@ func TestAdapters(t *testing.T) {
 		adapter2 = "adapter2"
 	)
 	m.Spec.Adapters = []v1.Adapter{
-		{ID: adapter1, URL: "hf://test-repo/test-adapter"},
-		{ID: adapter2, URL: "s3://test-bucket/test-path"},
+		{Name: adapter1, URL: "hf://test-repo/test-adapter"},
+		{Name: adapter2, URL: "s3://test-bucket/test-path"},
 	}
 	require.NoError(t, testK8sClient.Create(testCtx, m))
 
@@ -56,13 +56,13 @@ func TestAdapters(t *testing.T) {
 
 	selectors := []string{modelLabelSelectorForTest(t)}
 
-	requireOpenAIModelList(t, selectors, 3, []string{
+	// logPods(t)
+
+	requireOpenAIModelList(t, selectors, []string{
 		m.Name,
 		apiutils.MergeModelAdapter(m.Name, adapter1),
 		apiutils.MergeModelAdapter(m.Name, adapter2),
 	}, "Model list should contain the model and its adapters")
-
-	//logPods(t)
 
 	sendOpenAIInferenceRequest(t, m.Name, selectors, http.StatusOK, "", "inference request 1")
 	sendOpenAIInferenceRequest(t, apiutils.MergeModelAdapter(m.Name, adapter1), selectors, http.StatusOK, "", "inference request 2 to adapter1")

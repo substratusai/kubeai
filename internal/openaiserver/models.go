@@ -93,7 +93,7 @@ func k8sModelToOpenAIModels(k8sM kubeaiv1.Model) []Model {
 	models := make([]Model, 1+len(k8sM.Spec.Adapters))
 	models[0] = constructOpenAIModel(k8sM, "")
 	for i, adapter := range k8sM.Spec.Adapters {
-		models[i+1] = constructOpenAIModel(k8sM, adapter.ID)
+		models[i+1] = constructOpenAIModel(k8sM, adapter.Name)
 	}
 	return models
 }

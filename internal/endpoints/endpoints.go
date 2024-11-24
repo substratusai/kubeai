@@ -110,7 +110,9 @@ type endpointAttrs struct {
 func (g *endpointGroup) setAddrs(addrs map[string]endpointAttrs) {
 	g.mtx.Lock()
 	for addr, attrs := range addrs {
-		if _, ok := g.endpoints[addr]; !ok {
+		if ep, ok := g.endpoints[addr]; ok {
+			ep.adapters = attrs.adapters
+		} else {
 			g.endpoints[addr] = newEndpoint(attrs)
 		}
 	}

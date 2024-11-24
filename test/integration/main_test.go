@@ -164,6 +164,9 @@ func baseSysCfg(t *testing.T) config.System {
 		HealthAddress: "127.0.0.1:8081",
 		SecretNames: config.SecretNames{
 			Huggingface: "huggingface",
+			AWS:         "aws",
+			GCP:         "gcp",
+			Alibaba:     "alibaba",
 		},
 		ModelServers: config.ModelServers{
 			VLLM: config.ModelServer{

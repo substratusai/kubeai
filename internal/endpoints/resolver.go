@@ -32,7 +32,8 @@ type Resolver struct {
 	client.Client
 
 	endpointsMtx sync.Mutex
-	endpoints    map[string]*endpointGroup
+	// map[<model-name>]endpointGroup
+	endpoints map[string]*endpointGroup
 
 	selfIPsMtx sync.RWMutex
 	selfIPs    []string
@@ -146,12 +147,12 @@ func getPodAnnotation(pod corev1.Pod, key string) string {
 	return ""
 }
 
-func (r *Resolver) getEndpoints(service string) *endpointGroup {
+func (r *Resolver) getEndpoints(model string) *endpointGroup {
 	r.endpointsMtx.Lock()
-	e, ok := r.endpoints[service]
+	e, ok := r.endpoints[model]
 	if !ok {
 		e = newEndpointGroup()
-		r.endpoints[service] = e
+		r.endpoints[model] = e
 	}
 	r.endpointsMtx.Unlock()
 	return e

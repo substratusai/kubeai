@@ -52,7 +52,7 @@ func (s *ModelScaler) LookupModel(ctx context.Context, model, adapter string, la
 	if adapter != "" {
 		adapterFound := false
 		for _, a := range m.Spec.Adapters {
-			if a.ID == adapter {
+			if a.Name == adapter {
 				adapterFound = true
 				break
 			}

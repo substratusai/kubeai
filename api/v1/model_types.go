@@ -126,12 +126,12 @@ const (
 )
 
 type Adapter struct {
-	// ID must be a lowercase string with no spaces.
+	// Name must be a lowercase string with no spaces.
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:Pattern=^[a-z0-9-]+$
 	// +kubebuilder:validation:MaxLength=63
-	ID string `json:"id"`
-	// +kubebuilder:validation:XValidation:rule="self.startsWith(\"hf://\") || self.startsWith(\"s3://\")", message="adapter url must start with \"hf://\" or \"s3://\"."
+	Name string `json:"name"`
+	// +kubebuilder:validation:XValidation:rule="self.startsWith(\"hf://\") || self.startsWith(\"s3://\") || self.startsWith(\"gs://\") || self.startsWith(\"oss://\")", message="adapter url must start with \"hf://\", \"s3://\", \"gs://\", or \"oss://\"."
 	URL string `json:"url"`
 }
 

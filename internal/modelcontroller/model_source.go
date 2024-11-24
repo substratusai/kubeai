@@ -8,7 +8,7 @@ import (
 )
 
 type modelSource struct {
-	modelAuthCredentials
+	*modelAuthCredentials
 	url *url.URL
 }
 
@@ -37,7 +37,7 @@ func (r *ModelReconciler) parseModelSource(urlStr string) (modelSource, error) {
 	case u.Scheme == "hf":
 		src.modelAuthCredentials = r.authForHuggingfaceHub()
 	case u.Scheme == "ollama":
-		src.modelAuthCredentials = modelAuthCredentials{}
+		src.modelAuthCredentials = &modelAuthCredentials{}
 	}
 	return src, nil
 }
@@ -48,20 +48,20 @@ type modelAuthCredentials struct {
 	volumeMounts []corev1.VolumeMount
 }
 
-func (c modelAuthCredentials) append(other modelAuthCredentials) {
+func (c *modelAuthCredentials) append(other *modelAuthCredentials) {
 	c.env = append(c.env, other.env...)
 	c.volumes = append(c.volumes, other.volumes...)
 	c.volumeMounts = append(c.volumeMounts, other.volumeMounts...)
 }
 
-func (c modelAuthCredentials) applyToPodSpec(spec *corev1.PodSpec, containerIndex int) {
+func (c *modelAuthCredentials) applyToPodSpec(spec *corev1.PodSpec, containerIndex int) {
 	spec.Containers[containerIndex].Env = append(spec.Containers[containerIndex].Env, c.env...)
 	spec.Volumes = append(spec.Volumes, c.volumes...)
 	spec.Containers[containerIndex].VolumeMounts = append(spec.Containers[containerIndex].VolumeMounts, c.volumeMounts...)
 }
 
-func (r *ModelReconciler) modelAuthCredentialsForAllSources() modelAuthCredentials {
-	c := modelAuthCredentials{}
+func (r *ModelReconciler) modelAuthCredentialsForAllSources() *modelAuthCredentials {
+	c := &modelAuthCredentials{}
 	c.append(r.authForHuggingfaceHub())
 	c.append(r.authForGCS())
 	c.append(r.authForOSS())
@@ -69,8 +69,8 @@ func (r *ModelReconciler) modelAuthCredentialsForAllSources() modelAuthCredentia
 	return c
 }
 
-func (r *ModelReconciler) authForS3() modelAuthCredentials {
-	return modelAuthCredentials{
+func (r *ModelReconciler) authForS3() *modelAuthCredentials {
+	return &modelAuthCredentials{
 		env: []corev1.EnvVar{
 			{
 				Name: "AWS_ACCESS_KEY_ID",
@@ -100,8 +100,8 @@ func (r *ModelReconciler) authForS3() modelAuthCredentials {
 	}
 }
 
-func (r *ModelReconciler) authForHuggingfaceHub() modelAuthCredentials {
-	return modelAuthCredentials{
+func (r *ModelReconciler) authForHuggingfaceHub() *modelAuthCredentials {
+	return &modelAuthCredentials{
 		env: []corev1.EnvVar{
 			{
 				Name: "HF_TOKEN",
@@ -119,14 +119,14 @@ func (r *ModelReconciler) authForHuggingfaceHub() modelAuthCredentials {
 	}
 }
 
-func (r *ModelReconciler) authForGCS() modelAuthCredentials {
+func (r *ModelReconciler) authForGCS() *modelAuthCredentials {
 	const (
 		credentialsDir      = "/secrets/gcp-credentials"
 		credentialsFilename = "credentials.json"
 		credentialsPath     = credentialsDir + "/" + credentialsFilename
 		volumeName          = "gcp-credentials"
 	)
-	return modelAuthCredentials{
+	return &modelAuthCredentials{
 		env: []corev1.EnvVar{
 			{
 				Name:  "GOOGLE_APPLICATION_CREDENTIALS",
@@ -159,8 +159,8 @@ func (r *ModelReconciler) authForGCS() modelAuthCredentials {
 	}
 }
 
-func (r *ModelReconciler) authForOSS() modelAuthCredentials {
-	return modelAuthCredentials{
+func (r *ModelReconciler) authForOSS() *modelAuthCredentials {
+	return &modelAuthCredentials{
 		env: []corev1.EnvVar{
 			{
 				Name: "OSS_ACCESS_KEY_ID",

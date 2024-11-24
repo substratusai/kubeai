@@ -26,7 +26,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `id` _string_ | ID must be a lowercase string with no spaces. |  | MaxLength: 63 <br />Pattern: `^[a-z0-9-]+$` <br />Required: \{\} <br /> |
+| `name` _string_ | Name must be a lowercase string with no spaces. |  | MaxLength: 63 <br />Pattern: `^[a-z0-9-]+$` <br />Required: \{\} <br /> |
 | `url` _string_ |  |  |  |
 
 
