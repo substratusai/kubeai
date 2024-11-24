@@ -30,7 +30,7 @@ func (r *ModelReconciler) execPod(ctx context.Context, pod *corev1.Pod, containe
 		return fmt.Errorf("creating remote command executor: %w", err)
 	}
 
-	if err := exec.Stream(remotecommand.StreamOptions{
+	if err := exec.StreamWithContext(ctx, remotecommand.StreamOptions{
 		Stdin:  os.Stdin,
 		Stdout: os.Stdout,
 		Stderr: os.Stderr,
