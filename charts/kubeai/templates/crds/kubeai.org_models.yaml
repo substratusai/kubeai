@@ -158,10 +158,22 @@ spec:
               url:
                 description: |-
                   URL of the model to be served.
-                  Currently only the following formats are supported:
-                  For VLLM & FasterWhisper engines: "hf://<model-repo>/<model-name>"
-                  For OLlama engine: "ollama://<model>
-                  With caching enabled: "s3://<bucket>/<path>"
+                  Currently the following formats are supported:
+
+
+                  For VLLM, FasterWhisper, Infinity engines:
+
+
+                  "hf://<repo>/<model>"
+                  "gs://<bucket>/<path>" (only with cacheProfile)
+                  "oss://<bucket>/<path>" (only with cacheProfile)
+                  "s3://<bucket>/<path>" (only with cacheProfile)
+
+
+                  For OLlama engine:
+
+
+                  "ollama://<model>"
                 type: string
                 x-kubernetes-validations:
                 - message: url is immutable.

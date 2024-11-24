@@ -29,10 +29,19 @@ import (
 // +kubebuilder:validation:XValidation:rule="!has(self.adapters) || self.engine == \"VLLM\"", message="adapters only supported with VLLM engine."
 type ModelSpec struct {
 	// URL of the model to be served.
-	// Currently only the following formats are supported:
-	// For VLLM & FasterWhisper engines: "hf://<model-repo>/<model-name>"
-	// For OLlama engine: "ollama://<model>
-	// With caching enabled: "s3://<bucket>/<path>"
+	// Currently the following formats are supported:
+	//
+	// For VLLM, FasterWhisper, Infinity engines:
+	//
+	// "hf://<repo>/<model>"
+	// "gs://<bucket>/<path>" (only with cacheProfile)
+	// "oss://<bucket>/<path>" (only with cacheProfile)
+	// "s3://<bucket>/<path>" (only with cacheProfile)
+	//
+	// For OLlama engine:
+	//
+	// "ollama://<model>"
+	//
 	// +kubebuilder:validation:Required
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf", message="url is immutable."
 	// +kubebuilder:validation:XValidation:rule="self.startsWith(\"hf://\") || self.startsWith(\"ollama://\") || self.startsWith(\"s3://\") || self.startsWith(\"gs://\") || self.startsWith(\"oss://\")", message="url must start with \"hf://\", \"ollama://\", \"s3://\", \"gs://\", or \"oss://\" and not be empty."
