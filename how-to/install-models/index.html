@@ -14,7 +14,7 @@
         <link rel="prev" href="../configure-speech-to-text/">
       
       
-        <link rel="next" href="../../concepts/autoscaling/">
+        <link rel="next" href="../serve-lora-adapters/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -391,7 +391,28 @@
         
   
   <span class="md-ellipsis">
-    Architect for Multitenancy
+    Architect for multitenancy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../authenticate-to-model-repos/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Authenticate to model repos
   </span>
   
 
@@ -496,7 +517,7 @@
         
   
   <span class="md-ellipsis">
-    Configure Embedding Models
+    Configure embedding models
   </span>
   
 
@@ -702,6 +723,27 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../serve-lora-adapters/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Serve LoRA adapters
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -777,6 +819,27 @@
   
   <span class="md-ellipsis">
     Backend Servers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/lora-adapters/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    LoRA Adapters
   </span>
   
 
@@ -1381,6 +1444,7 @@
 </code></pre></div>
 <h2 id="installing-models-with-kubectl">Installing models with kubectl<a class="headerlink" href="#installing-models-with-kubectl" title="Permanent link">&para;</a></h2>
 <p>You can add your own model by defining a Model yaml file and applying it using <code>kubectl apply -f model.yaml</code>.</p>
+<p>Take a look at the KubeAI <a href="../../reference/kubernetes-api/">API docs</a> to view Model schema documentation.</p>
 <p>If you have a running cluster with KubeAI installed you can inspect the schema for a Model using <code>kubectl explain</code>:</p>
 <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>explain<span class="w"> </span>models
 kubectl<span class="w"> </span>explain<span class="w"> </span>models.spec

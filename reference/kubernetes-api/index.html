@@ -389,7 +389,28 @@
         
   
   <span class="md-ellipsis">
-    Architect for Multitenancy
+    Architect for multitenancy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/authenticate-to-model-repos/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Authenticate to model repos
   </span>
   
 
@@ -494,7 +515,7 @@
         
   
   <span class="md-ellipsis">
-    Configure Embedding Models
+    Configure embedding models
   </span>
   
 
@@ -558,6 +579,27 @@
   
   <span class="md-ellipsis">
     Install models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/serve-lora-adapters/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Serve LoRA adapters
   </span>
   
 
@@ -642,6 +684,27 @@
   
   <span class="md-ellipsis">
     Backend Servers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/lora-adapters/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    LoRA Adapters
   </span>
   
 
@@ -1050,6 +1113,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#adapter" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adapter
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#model" class="md-nav__link">
     <span class="md-ellipsis">
       Model
@@ -1269,6 +1341,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#adapter" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adapter
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#model" class="md-nav__link">
     <span class="md-ellipsis">
       Model
@@ -1361,6 +1442,33 @@
 <ul>
 <li><a href="#model">Model</a></li>
 </ul>
+<h4 id="adapter">Adapter<a class="headerlink" href="#adapter" title="Permanent link">&para;</a></h4>
+<p><em>Appears in:</em>
+- <a href="#modelspec">ModelSpec</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code> <em>string</em></td>
+<td>Name must be a lowercase string with no spaces.</td>
+<td></td>
+<td>MaxLength: 63 <br />Pattern: <code>^[a-z0-9-]+$</code> <br />Required: {} <br /></td>
+</tr>
+<tr>
+<td><code>url</code> <em>string</em></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <h4 id="model">Model<a class="headerlink" href="#model" title="Permanent link">&para;</a></h4>
 <p>Model resources define the ML models that will be served by KubeAI.</p>
 <table>
@@ -1427,9 +1535,15 @@
 <tbody>
 <tr>
 <td><code>url</code> <em>string</em></td>
-<td>URL of the model to be served.<br />Currently only the following formats are supported:<br />For VLLM &amp; FasterWhisper engines: "hf://<model-repo>/<model-name>"<br />For OLlama engine: "ollama://<model></td>
+<td>URL of the model to be served.<br />Currently the following formats are supported:<br /><br />For VLLM, FasterWhisper, Infinity engines:<br /><br />"hf://<repo>/<model>"<br />"gs://<bucket>/<path>" (only with cacheProfile)<br />"oss://<bucket>/<path>" (only with cacheProfile)<br />"s3://<bucket>/<path>" (only with cacheProfile)<br /><br />For OLlama engine:<br /><br />"ollama://<model>"</td>
 <td></td>
 <td>Required: {} <br /></td>
+</tr>
+<tr>
+<td><code>adapters</code> <em><a href="#adapter">Adapter</a> array</em></td>
+<td></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
 <td><code>features</code> <em><a href="#modelfeature">ModelFeature</a> array</em></td>

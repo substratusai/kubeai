@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://www.kubeai.org/concepts/autoscaling/">
+        <link rel="canonical" href="https://www.kubeai.org/how-to/authenticate-to-model-repos/">
       
       
-        <link rel="prev" href="../../how-to/serve-lora-adapters/">
+        <link rel="prev" href="../architect-for-multitenancy/">
       
       
-        <link rel="next" href="../backend-servers/">
+        <link rel="next" href="../build-models-into-containers/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Autoscaling - KubeAI</title>
+        <title>Authenticate to model repos - KubeAI</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#autoscaling" class="md-skip">
+        <a href="#authenticate-to-model-repos" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Autoscaling
+              Authenticate to model repos
             
           </span>
         </div>
@@ -347,17 +347,19 @@
       
   
   
+    
   
   
+  
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -371,7 +373,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             How to
@@ -385,7 +387,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/architect-for-multitenancy/" class="md-nav__link">
+      <a href="../architect-for-multitenancy/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -403,10 +405,30 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../how-to/authenticate-to-model-repos/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Authenticate to model repos
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -415,6 +437,62 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#alibaba-object-storage-service" class="md-nav__link">
+    <span class="md-ellipsis">
+      Alibaba Object Storage Service
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#google-cloud-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Google Cloud Storage
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#huggingface-hub" class="md-nav__link">
+    <span class="md-ellipsis">
+      HuggingFace Hub
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#s3" class="md-nav__link">
+    <span class="md-ellipsis">
+      S3
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -427,7 +505,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/build-models-into-containers/" class="md-nav__link">
+      <a href="../build-models-into-containers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -448,7 +526,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/cache-models-with-aws-efs/" class="md-nav__link">
+      <a href="../cache-models-with-aws-efs/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -469,7 +547,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/cache-models-with-gcp-filestore/" class="md-nav__link">
+      <a href="../cache-models-with-gcp-filestore/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -490,7 +568,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/configure-autoscaling/" class="md-nav__link">
+      <a href="../configure-autoscaling/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -511,7 +589,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/configure-embedding-models/" class="md-nav__link">
+      <a href="../configure-embedding-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -532,7 +610,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/configure-resource-profiles/" class="md-nav__link">
+      <a href="../configure-resource-profiles/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -553,7 +631,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/configure-speech-to-text/" class="md-nav__link">
+      <a href="../configure-speech-to-text/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -574,7 +652,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/install-models/" class="md-nav__link">
+      <a href="../install-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -595,7 +673,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/serve-lora-adapters/" class="md-nav__link">
+      <a href="../serve-lora-adapters/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -620,19 +698,17 @@
       
   
   
-    
   
   
-  
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
         
           
           <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
@@ -646,7 +722,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             Concepts
@@ -657,30 +733,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Autoscaling
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../concepts/autoscaling/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -689,35 +745,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#next" class="md-nav__link">
-    <span class="md-ellipsis">
-      Next
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -730,7 +757,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../backend-servers/" class="md-nav__link">
+      <a href="../../concepts/backend-servers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -751,7 +778,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../lora-adapters/" class="md-nav__link">
+      <a href="../../concepts/lora-adapters/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -772,7 +799,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../resource-profiles/" class="md-nav__link">
+      <a href="../../concepts/resource-profiles/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -793,7 +820,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../storage-caching/" class="md-nav__link">
+      <a href="../../concepts/storage-caching/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1219,9 +1246,36 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#next" class="md-nav__link">
+  <a href="#alibaba-object-storage-service" class="md-nav__link">
     <span class="md-ellipsis">
-      Next
+      Alibaba Object Storage Service
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#google-cloud-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Google Cloud Storage
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#huggingface-hub" class="md-nav__link">
+    <span class="md-ellipsis">
+      HuggingFace Hub
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#s3" class="md-nav__link">
+    <span class="md-ellipsis">
+      S3
     </span>
   </a>
   
@@ -1245,12 +1299,46 @@
   
 
 
-<h1 id="autoscaling">Autoscaling<a class="headerlink" href="#autoscaling" title="Permanent link">&para;</a></h1>
-<p>KubeAI proxies HTTP and messaging (i.e. Kafka, etc) requests and messages to models. It will adjust the number Pods serving a given model based on the average active number of requests. If no Pods are running when a request comes in, KubeAI will hold the request, scale up a Pod and forward the request when the Pod is ready. This process happens in a manner that is transparent to the end client (other than the added delay from a cold-start).</p>
-<p><br>
-<img src="/diagrams/autoscaling.excalidraw.png" width="90%"></img></p>
-<h2 id="next">Next<a class="headerlink" href="#next" title="Permanent link">&para;</a></h2>
-<p>Read about <a href="../../how-to/configure-autoscaling/">how to configure autoscaling</a>.</p>
+<h1 id="authenticate-to-model-repos">Authenticate to model repos<a class="headerlink" href="#authenticate-to-model-repos" title="Permanent link">&para;</a></h1>
+<p>KubeAI supports the following private model repositories.</p>
+<h2 id="alibaba-object-storage-service">Alibaba Object Storage Service<a class="headerlink" href="#alibaba-object-storage-service" title="Permanent link">&para;</a></h2>
+<p>Example url: <code>oss://my-oss-bucket/my-models/llama-3.1-8b-instruct</code></p>
+<p>Authenication is required when accessing models or adapters from private OSS buckets.</p>
+<p>When using Helm to manage your KubeAI installation, you can pass your credentials as follows:</p>
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>kubeai<span class="w"> </span>kubeai/kubeai<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--set<span class="w"> </span>secrets.alibaba.accessKeyID<span class="o">=</span><span class="nv">$OSS_ACCESS_KEY_ID</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--set<span class="w"> </span>secrets.alibaba.accessKeySecret<span class="o">=</span><span class="nv">$OSS_ACCESS_KEY_SECRET</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>...
+</code></pre></div>
+<p><strong>NOTE:</strong> KubeAI does not automatically react to updates to credentials. You will need to manually delete and allow KubeAI to recreate any failed Jobs/Pods that required credentials.</p>
+<h2 id="google-cloud-storage">Google Cloud Storage<a class="headerlink" href="#google-cloud-storage" title="Permanent link">&para;</a></h2>
+<p>Example url: <code>gs://my-gcs-bucket/my-models/llama-3.1-8b-instruct</code></p>
+<p>Authenication is required when accessing models or adapters from private GCS buckets.</p>
+<p>When using Helm to manage your KubeAI installation, you can pass your credentials as follows:</p>
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>kubeai<span class="w"> </span>kubeai/kubeai<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--set<span class="w"> </span>secrets.gcp.jsonKeyfile<span class="o">=</span><span class="nv">$MY_JSON_KEYFILE</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>...
+</code></pre></div>
+<p><strong>NOTE:</strong> KubeAI does not automatically react to updates to credentials. You will need to manually delete and allow KubeAI to recreate any failed Jobs/Pods that required credentials.</p>
+<h2 id="huggingface-hub">HuggingFace Hub<a class="headerlink" href="#huggingface-hub" title="Permanent link">&para;</a></h2>
+<p>Example model url: <code>hf://meta-llama/Llama-3.1-8B-Instruct</code></p>
+<p>Authentication is required when loading models or adapters from HuggingFace Hub when using a private Hub or accessing a public model that requires agreeing to terms of service.</p>
+<p>When using Helm to manage your KubeAI installation, you can pass your credentials as follows:</p>
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>kubeai<span class="w"> </span>kubeai/kubeai<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--set<span class="w"> </span>secrets.huggingface.token<span class="o">=</span><span class="nv">$HUGGING_FACE_HUB_TOKEN</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>...
+</code></pre></div>
+<p><strong>NOTE:</strong> KubeAI does not automatically react to updates to credentials. You will need to manually delete and allow KubeAI to recreate any failed Jobs/Pods that required credentials.</p>
+<h2 id="s3">S3<a class="headerlink" href="#s3" title="Permanent link">&para;</a></h2>
+<p>Example model url: <code>s3://my-private-model-bucket/my-models/llama-3.1-8b-instruct</code></p>
+<p>Authenication is required when accessing models or adapters from private S3 buckets.</p>
+<p>When using Helm to manage your KubeAI installation, you can pass your credentials as follows:</p>
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>kubeai<span class="w"> </span>kubeai/kubeai<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--set<span class="w"> </span>secrets.aws.accessKeyId<span class="o">=</span><span class="nv">$AWS_ACCESS_KEY_ID</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--set<span class="w"> </span>secrets.aws.secretAccessKey<span class="o">=</span><span class="nv">$AWS_SECRET_ACCESS_KEY</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>...
+</code></pre></div>
+<p><strong>NOTE:</strong> KubeAI does not automatically react to updates to credentials. You will need to manually delete and allow KubeAI to recreate any failed Jobs/Pods that required credentials.</p>
 
 
 
