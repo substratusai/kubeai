@@ -1,11 +1,9 @@
 package modelcontroller
 
 import (
-	"context"
 	"sort"
 
 	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
-	v1 "github.com/substratusai/kubeai/api/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -28,17 +26,17 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 		"--model=" + vllmModelFlag,
 		"--served-model-name=" + m.Name,
 	}
-	if m.Spec.Adapters != nil {
-		args = append(args, "--enable-lora")
-	}
 	args = append(args, m.Spec.Args...)
 
-	env := []corev1.EnvVar{
-		{
+	env := []corev1.EnvVar{}
+
+	if m.Spec.Adapters != nil {
+		args = append(args, "--enable-lora")
+		env = append(env, corev1.EnvVar{
 			// https://docs.vllm.ai/en/latest/models/lora.html#dynamically-serving-lora-adapters
 			Name:  "VLLM_ALLOW_RUNTIME_LORA_UPDATING",
 			Value: "True",
-		},
+		})
 	}
 
 	var envKeys []string
@@ -150,8 +148,4 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 	c.Source.modelAuthCredentials.applyToPodSpec(&pod.Spec, 0)
 
 	return pod
-}
-
-func (r *ModelReconciler) vLLMLoadAdapter(ctx context.Context, pod *corev1.Pod, adapter v1.Adapter) error {
-	return nil
 }
