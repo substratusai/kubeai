@@ -15,6 +15,11 @@ const (
 	loaderContainerName = "loader"
 )
 
+// reconcileAdapters ensures that the specified adapters are loaded in the model server pods.
+// Loaded adapters are identified by the presence of a label with the adapter name and the hash
+// of the adapter URL.
+// At request-time, the endpoint resolver will inspect these labels to determine which adapters
+// are loaded in the pod.
 func (r *ModelReconciler) reconcileAdapters(ctx context.Context, pods []*corev1.Pod, adapters []v1.Adapter) error {
 	type reconcileParam struct {
 		pod         *corev1.Pod
