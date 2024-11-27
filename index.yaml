@@ -2,6 +2,31 @@ apiVersion: v1
 entries:
   kubeai:
   - apiVersion: v2
+    appVersion: v0.11.0
+    created: "2024-11-27T08:07:44.871191532Z"
+    dependencies:
+    - condition: openwebui.enabled
+      name: openwebui
+      repository: ""
+      version: 0.1.1
+    description: Private Open AI Platform for Kubernetes.
+    digest: 3bb730ac8862e470fc541af4f98d4402985cfd52cd005599400c3cbf6042fbfc
+    home: https://www.substratus.ai
+    keywords:
+    - LLM
+    - AI
+    maintainers:
+    - name: nstogner
+      url: https://www.linkedin.com/in/nstogner/
+    - email: sammiestoel@gmail.com
+      name: samos123
+      url: https://www.linkedin.com/in/samstoelinga/
+    name: kubeai
+    type: application
+    urls:
+    - https://github.com/substratusai/kubeai/releases/download/helm-chart-kubeai-0.9.0/kubeai-0.9.0.tgz
+    version: 0.9.0
+  - apiVersion: v2
     appVersion: v0.10.0
     created: "2024-10-25T06:22:43.980483396Z"
     dependencies:
@@ -633,6 +658,22 @@ entries:
   models:
   - apiVersion: v2
     appVersion: 1.16.0
+    created: "2024-11-27T08:07:45.025615679Z"
+    description: A Helm chart for Kubernetes
+    digest: 34573cbf0867b36a1279c13b7dca2f19629af7ed543395ede21f4171fddac784
+    maintainers:
+    - name: nstogner
+      url: https://www.linkedin.com/in/nstogner/
+    - email: sammiestoel@gmail.com
+      name: samos123
+      url: https://www.linkedin.com/in/samstoelinga/
+    name: models
+    type: application
+    urls:
+    - https://github.com/substratusai/kubeai/releases/download/helm-chart-models-0.9.0/models-0.9.0.tgz
+    version: 0.9.0
+  - apiVersion: v2
+    appVersion: 1.16.0
     created: "2024-10-25T06:22:44.166059812Z"
     description: A Helm chart for Kubernetes
     digest: ff78ddc1b2ca323ef11c6e6234259da01c1f2c0e62d4b5ad8dd67cb4a74b916e
@@ -711,4 +752,4 @@ entries:
     urls:
     - https://github.com/substratusai/kubeai/releases/download/kubeai-helm-chart-0.4.1/models-0.4.1.tgz
     version: 0.4.1
-generated: "2024-10-25T06:22:44.166257363Z"
+generated: "2024-11-27T08:07:45.025831746Z"
