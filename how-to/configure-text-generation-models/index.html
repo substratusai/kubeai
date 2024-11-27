@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://www.kubeai.org/how-to/install-models/">
+        <link rel="canonical" href="https://www.kubeai.org/how-to/configure-text-generation-models/">
       
       
-        <link rel="prev" href="../configure-text-generation-models/">
+        <link rel="prev" href="../configure-speech-to-text/">
       
       
-        <link rel="next" href="../serve-lora-adapters/">
+        <link rel="next" href="../install-models/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Install models - KubeAI</title>
+        <title>Configure Text Generation Models - KubeAI</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#install-models" class="md-skip">
+        <a href="#configure-text-generation-models" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Install models
+              Configure Text Generation Models
             
           </span>
         </div>
@@ -573,27 +573,6 @@
                 
   
   
-  
-  
-    <li class="md-nav__item">
-      <a href="../configure-text-generation-models/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Configure Text Generation Models
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
     
   
   
@@ -610,7 +589,7 @@
           
   
   <span class="md-ellipsis">
-    Install models
+    Configure Text Generation Models
   </span>
   
 
@@ -621,7 +600,7 @@
         
   
   <span class="md-ellipsis">
-    Install models
+    Configure Text Generation Models
   </span>
   
 
@@ -643,28 +622,19 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#installing-models-with-helm" class="md-nav__link">
+  <a href="#install-a-text-generation-model-using-helm" class="md-nav__link">
     <span class="md-ellipsis">
-      Installing models with helm
+      Install a Text Generation Model using Helm
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Installing models with helm">
+    <nav class="md-nav" aria-label="Install a Text Generation Model using Helm">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#preconfigured-models-with-helm" class="md-nav__link">
+  <a href="#install-text-generation-model-using-l4-gpu" class="md-nav__link">
     <span class="md-ellipsis">
-      Preconfigured models with helm
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#custom-models-with-helm" class="md-nav__link">
-    <span class="md-ellipsis">
-      Custom models with helm
+      Install Text Generation Model using L4 GPU
     </span>
   </a>
   
@@ -676,28 +646,19 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#installing-models-with-kubectl" class="md-nav__link">
+  <a href="#install-a-text-generation-model-using-kubectl" class="md-nav__link">
     <span class="md-ellipsis">
-      Installing models with kubectl
+      Install a Text Generation Model using kubectl
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Installing models with kubectl">
+    <nav class="md-nav" aria-label="Install a Text Generation Model using kubectl">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#example-gemma-2-2b-using-ollama-on-cpu" class="md-nav__link">
+  <a href="#install-text-generation-model-using-l4-gpu_1" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Gemma 2 2B using Ollama on CPU
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-llama-31-8b-using-vllm-on-nvidia-l4-gpu" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example Llama 3.1 8B using vLLM on NVIDIA L4 GPU
+      Install Text Generation Model using L4 GPU
     </span>
   </a>
   
@@ -709,29 +670,35 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#programmatically-installing-models" class="md-nav__link">
+  <a href="#interact-with-the-text-generation-model" class="md-nav__link">
     <span class="md-ellipsis">
-      Programmatically installing models
+      Interact with the Text Generation Model
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interact with the Text Generation Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-curl-to-interact-with-the-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using curl to interact with the model
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#calling-a-model" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#using-the-openai-python-sdk-to-interact-with-the-model" class="md-nav__link">
     <span class="md-ellipsis">
-      Calling a model
+      Using the OpenAI Python SDK to interact with the model
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#feedback-welcome-a-model-management-ui" class="md-nav__link">
-    <span class="md-ellipsis">
-      Feedback welcome: A model management UI
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -739,6 +706,27 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install-models/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Install models
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -1324,28 +1312,19 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#installing-models-with-helm" class="md-nav__link">
+  <a href="#install-a-text-generation-model-using-helm" class="md-nav__link">
     <span class="md-ellipsis">
-      Installing models with helm
+      Install a Text Generation Model using Helm
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Installing models with helm">
+    <nav class="md-nav" aria-label="Install a Text Generation Model using Helm">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#preconfigured-models-with-helm" class="md-nav__link">
+  <a href="#install-text-generation-model-using-l4-gpu" class="md-nav__link">
     <span class="md-ellipsis">
-      Preconfigured models with helm
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#custom-models-with-helm" class="md-nav__link">
-    <span class="md-ellipsis">
-      Custom models with helm
+      Install Text Generation Model using L4 GPU
     </span>
   </a>
   
@@ -1357,28 +1336,19 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#installing-models-with-kubectl" class="md-nav__link">
+  <a href="#install-a-text-generation-model-using-kubectl" class="md-nav__link">
     <span class="md-ellipsis">
-      Installing models with kubectl
+      Install a Text Generation Model using kubectl
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Installing models with kubectl">
+    <nav class="md-nav" aria-label="Install a Text Generation Model using kubectl">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#example-gemma-2-2b-using-ollama-on-cpu" class="md-nav__link">
+  <a href="#install-text-generation-model-using-l4-gpu_1" class="md-nav__link">
     <span class="md-ellipsis">
-      Example Gemma 2 2B using Ollama on CPU
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-llama-31-8b-using-vllm-on-nvidia-l4-gpu" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example Llama 3.1 8B using vLLM on NVIDIA L4 GPU
+      Install Text Generation Model using L4 GPU
     </span>
   </a>
   
@@ -1390,29 +1360,35 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#programmatically-installing-models" class="md-nav__link">
+  <a href="#interact-with-the-text-generation-model" class="md-nav__link">
     <span class="md-ellipsis">
-      Programmatically installing models
+      Interact with the Text Generation Model
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interact with the Text Generation Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-curl-to-interact-with-the-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using curl to interact with the model
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#calling-a-model" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#using-the-openai-python-sdk-to-interact-with-the-model" class="md-nav__link">
     <span class="md-ellipsis">
-      Calling a model
+      Using the OpenAI Python SDK to interact with the model
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#feedback-welcome-a-model-management-ui" class="md-nav__link">
-    <span class="md-ellipsis">
-      Feedback welcome: A model management UI
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1434,64 +1410,47 @@
   
 
 
-<h1 id="install-models">Install models<a class="headerlink" href="#install-models" title="Permanent link">&para;</a></h1>
-<p>This guide provides instructions on how to configure KubeAI models.</p>
-<h2 id="installing-models-with-helm">Installing models with helm<a class="headerlink" href="#installing-models-with-helm" title="Permanent link">&para;</a></h2>
-<p>KubeAI provides a <a href="https://github.com/substratusai/kubeai/blob/main/charts/models">chart</a> that contains preconfigured models.</p>
-<h3 id="preconfigured-models-with-helm">Preconfigured models with helm<a class="headerlink" href="#preconfigured-models-with-helm" title="Permanent link">&para;</a></h3>
-<p>When you are defining Helm values for the <code>kubeai/models</code> chart you can install a preconfigured Model by setting <code>enabled: true</code>. You can view a list of all preconfigured models in the chart's <a href="https://github.com/substratusai/kubeai/blob/main/charts/models/values.yaml">default values file</a>. </p>
-<div class="highlight"><pre><span></span><code><span class="c1"># helm-values.yaml</span>
-<span class="nt">catalog</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">llama-3.1-8b-instruct-fp8-l4</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<h1 id="configure-text-generation-models">Configure Text Generation Models<a class="headerlink" href="#configure-text-generation-models" title="Permanent link">&para;</a></h1>
+<p>KubeAI supports the following engines for text generation models (LLMs, VLMs, ..):</p>
+<ul>
+<li>vLLM (Recommended for GPU)</li>
+<li>Ollama (Recommended for CPU)</li>
+<li>Need something else? Please file an issue on <a href="https://github.com/substratusai/kubeai">GitHub</a>.</li>
+</ul>
+<p>There are 2 ways to install a text generation model in KubeAI:
+- Use Helm with the <code>kubeai/models</code> chart.
+- Use <code>kubectl apply -f model.yaml</code> to install a Model Custom Resource.</p>
+<p>KubeAI comes with pre-validated and optimized Model configurations for popular text generation models. These models are available in the
+<a href="https://github.com/substratusai/kubeai/tree/main/charts/models">kubeai/models Helm chart</a>
+and are also published as raw manifests in the
+<a href="https://github.com/substratusai/kubeai/tree/main/manifests/models">manifests/model directory</a>.</p>
+<p>You can also easily define your own models using the Model Custom Resource directly or by using the <code>kubeai/models</code> Helm chart.</p>
+<h2 id="install-a-text-generation-model-using-helm">Install a Text Generation Model using Helm<a class="headerlink" href="#install-a-text-generation-model-using-helm" title="Permanent link">&para;</a></h2>
+<p>You can take a look at all the pre-configured models in the chart's <a href="https://github.com/substratusai/kubeai/blob/main/charts/models/values.yaml">default values file</a>.</p>
+<p>You can get the default values for the models chart using the following command:
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>show<span class="w"> </span>values<span class="w"> </span>kubeai/models
+</code></pre></div></p>
+<h3 id="install-text-generation-model-using-l4-gpu">Install Text Generation Model using L4 GPU<a class="headerlink" href="#install-text-generation-model-using-l4-gpu" title="Permanent link">&para;</a></h3>
+<p>Enable the Llama 3.1 8B model using the Helm chart:</p>
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--reuse-values<span class="w"> </span>kubeai-models<span class="w"> </span>kubeai/models<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;EOF</span>
+<span class="s">catalog:</span>
+<span class="s">  llama-3.1-8b-instruct-fp8-l4:</span>
+<span class="s">    enabled: true</span>
+<span class="s">    engine: VLLM</span>
+<span class="s">    resourceProfile: nvidia-gpu-l4:1</span>
+<span class="s">    minReplicas: 1 # by default this is 0</span>
+<span class="s">EOF</span>
 </code></pre></div>
-<p>You can optionally override preconfigured settings, for example, <code>resourceProfile</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># helm-values.yaml</span>
-<span class="nt">catalog</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">llama-3.1-8b-instruct-fp8-l4</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">    </span><span class="nt">resourceProfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nvidia-gpu-l4:2</span><span class="w"> </span><span class="c1"># Require &quot;2 NVIDIA L4 GPUs&quot;</span>
-</code></pre></div>
-<h3 id="custom-models-with-helm">Custom models with helm<a class="headerlink" href="#custom-models-with-helm" title="Permanent link">&para;</a></h3>
-<p>If you prefer to add a custom model via the same Helm chart you use for installed KubeAI, you can add your custom model entry into the <code>.catalog</code> array of your existing values file for the <code>kubeai/models</code> Helm chart:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># helm-values.yaml</span>
-<span class="nt">catalog</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">my-custom-model-name</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">    </span><span class="nt">features</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;TextEmbedding&quot;</span><span class="p p-Indicator">]</span>
-<span class="w">    </span><span class="nt">owner</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">me</span>
-<span class="w">    </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;hf://me/my-custom-model&quot;</span>
-<span class="w">    </span><span class="nt">resourceProfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CPU:1</span>
-</code></pre></div>
-<h2 id="installing-models-with-kubectl">Installing models with kubectl<a class="headerlink" href="#installing-models-with-kubectl" title="Permanent link">&para;</a></h2>
-<p>You can add your own model by defining a Model yaml file and applying it using <code>kubectl apply -f model.yaml</code>.</p>
-<p>Take a look at the KubeAI <a href="../../reference/kubernetes-api/">API docs</a> to view Model schema documentation.</p>
-<p>If you have a running cluster with KubeAI installed you can inspect the schema for a Model using <code>kubectl explain</code>:</p>
-<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>explain<span class="w"> </span>models
-kubectl<span class="w"> </span>explain<span class="w"> </span>models.spec
-kubectl<span class="w"> </span>explain<span class="w"> </span>models.spec.engine
-</code></pre></div>
-<p>You can view all example manifests on the <a href="https://github.com/substratusai/kubeai/tree/main/manifests/models">GitHub repository</a>.</p>
-<p>Below are few examples using various engines and resource profiles.</p>
-<h3 id="example-gemma-2-2b-using-ollama-on-cpu">Example Gemma 2 2B using Ollama on CPU<a class="headerlink" href="#example-gemma-2-2b-using-ollama-on-cpu" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubeai.org/v1</span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Model</span>
-<span class="nt">metadata</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gemma2-2b-cpu</span>
-<span class="nt">spec</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">features</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">TextGeneration</span><span class="p p-Indicator">]</span>
-<span class="w">  </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ollama://gemma2:2b</span>
-<span class="w">  </span><span class="nt">engine</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OLlama</span>
-<span class="w">  </span><span class="nt">resourceProfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cpu:2</span>
-</code></pre></div>
-<h3 id="example-llama-31-8b-using-vllm-on-nvidia-l4-gpu">Example Llama 3.1 8B using vLLM on NVIDIA L4 GPU<a class="headerlink" href="#example-llama-31-8b-using-vllm-on-nvidia-l4-gpu" title="Permanent link">&para;</a></h3>
+<h2 id="install-a-text-generation-model-using-kubectl">Install a Text Generation Model using kubectl<a class="headerlink" href="#install-a-text-generation-model-using-kubectl" title="Permanent link">&para;</a></h2>
+<p>You can use the Model Custom Resource directly to install a model using <code>kubectl apply -f model.yaml</code>.</p>
+<h3 id="install-text-generation-model-using-l4-gpu_1">Install Text Generation Model using L4 GPU<a class="headerlink" href="#install-text-generation-model-using-l4-gpu_1" title="Permanent link">&para;</a></h3>
+<p>Apply the following Model Custom Resource to install the Llama 3.1 8B model using vLLM on L4 GPU:
 <div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubeai.org/v1</span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Model</span>
 <span class="nt">metadata</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">llama-3.1-8b-instruct-fp8-l4</span>
 <span class="nt">spec</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">features</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">TextGeneration</span><span class="p p-Indicator">]</span>
-<span class="w">  </span><span class="nt">owner</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">neuralmagic</span>
 <span class="w">  </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hf://neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8</span>
 <span class="w">  </span><span class="nt">engine</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">VLLM</span>
 <span class="w">  </span><span class="nt">args</span><span class="p">:</span>
@@ -1500,13 +1459,60 @@ kubectl<span class="w"> </span>explain<span class="w"> </span>models.spec.engine
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--gpu-memory-utilization=0.9</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--disable-log-requests</span>
 <span class="w">  </span><span class="nt">resourceProfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nvidia-gpu-l4:1</span>
+</code></pre></div></p>
+<h2 id="interact-with-the-text-generation-model">Interact with the Text Generation Model<a class="headerlink" href="#interact-with-the-text-generation-model" title="Permanent link">&para;</a></h2>
+<p>The KubeAI service exposes an OpenAI compatible API that you can use to query the available models and interact with them.</p>
+<p>The KubeAI service is available at <code>http://kubeai/openai/v1</code> within the Kubernetes cluster.</p>
+<p>You can also port-forward the KubeAI service to your local machine to interact with the models:</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>port-forward<span class="w"> </span>svc/kubeai<span class="w"> </span><span class="m">8000</span>:80
 </code></pre></div>
-<h2 id="programmatically-installing-models">Programmatically installing models<a class="headerlink" href="#programmatically-installing-models" title="Permanent link">&para;</a></h2>
-<p>See the <a href="https://github.com/substratusai/kubeai/tree/main/examples/k8s-api-clients">examples</a>.</p>
-<h2 id="calling-a-model">Calling a model<a class="headerlink" href="#calling-a-model" title="Permanent link">&para;</a></h2>
-<p>You can inference a model by calling the KubeAI OpenAI compatible API. The model name should match the KubeAI model name.</p>
-<h2 id="feedback-welcome-a-model-management-ui">Feedback welcome: A model management UI<a class="headerlink" href="#feedback-welcome-a-model-management-ui" title="Permanent link">&para;</a></h2>
-<p>We are considering adding a UI for managing models in a running KubeAI instance. Give the <a href="https://github.com/substratusai/kubeai/issues/148">GitHub Issue</a> a thumbs up if you would be interested in this feature.</p>
+<p>You can now query the available models using curl:</p>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/openai/v1/models
+</code></pre></div>
+<h3 id="using-curl-to-interact-with-the-model">Using curl to interact with the model<a class="headerlink" href="#using-curl-to-interact-with-the-model" title="Permanent link">&para;</a></h3>
+<p>Run the following curl command to interact with the model named <code>llama-3.1-8b-instruct-fp8-l4</code>:
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span><span class="s2">&quot;http://localhost:8000/openai/v1/chat/completions&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
+<span class="s1">        &quot;model&quot;: &quot;llama-3.1-8b-instruct-fp8-l4&quot;,</span>
+<span class="s1">        &quot;messages&quot;: [</span>
+<span class="s1">            {</span>
+<span class="s1">                &quot;role&quot;: &quot;system&quot;,</span>
+<span class="s1">                &quot;content&quot;: &quot;You are a helpful assistant.&quot;</span>
+<span class="s1">            },</span>
+<span class="s1">            {</span>
+<span class="s1">                &quot;role&quot;: &quot;user&quot;,</span>
+<span class="s1">                &quot;content&quot;: &quot;Write a haiku about recursion in programming.&quot;</span>
+<span class="s1">            }</span>
+<span class="s1">        ]</span>
+<span class="s1">    }&#39;</span>
+</code></pre></div></p>
+<h3 id="using-the-openai-python-sdk-to-interact-with-the-model">Using the OpenAI Python SDK to interact with the model<a class="headerlink" href="#using-the-openai-python-sdk-to-interact-with-the-model" title="Permanent link">&para;</a></h3>
+<p>Once the pod is ready, you can use the OpenAI Python SDK to interact with the model:
+All OpenAI SDKs work with KubeAI since the KubeAI service is OpenAI API compatible.</p>
+<p>See the below example code to interact with the model using the OpenAI Python SDK:
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">openai</span> <span class="kn">import</span> <span class="n">OpenAI</span>
+<span class="c1"># Assumes port-forward of kubeai service to localhost:8000.</span>
+<span class="n">kubeai_endpoint</span> <span class="o">=</span> <span class="s2">&quot;http://localhost:8000/openai/v1&quot;</span>
+<span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;llama-3.1-8b-instruct-fp8-l4&quot;</span>
+
+<span class="c1"># If you are running in a Kubernetes cluster, you can use the kubeai service endpoint.</span>
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;KUBERNETES_SERVICE_HOST&quot;</span><span class="p">):</span>
+    <span class="n">kubeai_endpoint</span> <span class="o">=</span> <span class="s2">&quot;http://kubeai/openai/v1&quot;</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">OpenAI</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span><span class="p">,</span> <span class="n">base_url</span><span class="o">=</span><span class="n">kubeai_endpoint</span><span class="p">)</span>
+
+<span class="n">chat_completion</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+    <span class="n">messages</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;Say this is a test&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div></p>
 
 
 
