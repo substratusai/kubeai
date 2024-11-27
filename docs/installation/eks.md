@@ -145,17 +145,9 @@ helm upgrade --install kubeai kubeai/kubeai \
     --wait
 ```
 
-## 3. Optionally configure models
+## 4. Deploying models
 
-Optionally install preconfigured models.
-
-```bash
-cat <<EOF > kubeai-models.yaml
-catalog:
-  llama-3.1-8b-instruct-fp8-l4:
-    enabled: true
-EOF
-
-helm install kubeai-models kubeai/models \
-    -f ./kubeai-models.yaml
-```
+Take a look at the following how-to guides to deploy models:
+* [Configure Text Generation Models](../how-to/configure-text-generation-models.md)
+* [Configure Embedding Models](../how-to/configure-embedding-models.md)
+* [Configure Speech to Text Models](../how-to/configure-speech-to-text.md)

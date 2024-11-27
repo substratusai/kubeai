@@ -67,4 +67,8 @@ helm upgrade --install kubeai kubeai/kubeai \
 
 ## Deploying models
 
-See the [How to install models guide](/how-to/installing-models.md) for instructions on deploying models and examples.
+Take a look at the following how-to guides to deploy models:
+* [Configure Text Generation Models](../how-to/configure-text-generation-models.md)
+* [Configure Embedding Models](../how-to/configure-embedding-models.md)
+* [Configure Speech to Text Models](../how-to/configure-speech-to-text.md)
+
