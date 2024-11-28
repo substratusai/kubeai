@@ -1,0 +1,53 @@
+version: 2
+updates:
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: daily
+      time: "01:00"
+
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: daily
+      time: "01:00"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: daily
+      time: "01:00"
+    groups:
+      actions-all:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "pip"
+    directory: "/docs"
+    schedule:
+      interval: daily
+      time: "01:00"
+
+  - package-ecosystem: "docker"
+    directory: "/components/model-loader"
+    schedule:
+      interval: daily
+      time: "01:00"
+
+  - package-ecosystem: "docker"
+    directory: "/examples/ollama-builtin"
+    schedule:
+      interval: daily
+      time: "01:00"
+
+  - package-ecosystem: "gomod"
+    directory: "/examples/private-deep-chat"
+    schedule:
+      interval: daily
+      time: "01:00"
+
+  - package-ecosystem: "docker"
+    directory: "/examples/private-deep-chat"
+    schedule:
+      interval: daily
+      time: "01:00"
