@@ -19,3 +19,6 @@ resourceProfiles:
     nodeSelector:
       nvidia.com/gpu.family: "ampere"
       nvidia.com/gpu.memory: "40960"
+  nvidia-gpu-8gb:
+    nodeSelector:
+      nvidia.com/gpu.memory: "8188"
