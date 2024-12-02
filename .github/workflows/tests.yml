@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Run unit tests
         run: make test-unit
@@ -30,7 +30,7 @@ jobs:
         testcase: ["quickstart", "openai-python-client", "autoscaler-restart", "cache-shared-filesystem"]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Install kind
         run: |
@@ -62,7 +62,7 @@ jobs:
         cacheProfile: ["", "e2e-test-kind-pv"]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Install kind
         run: |
