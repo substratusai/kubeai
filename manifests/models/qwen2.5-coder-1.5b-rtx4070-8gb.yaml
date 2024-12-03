@@ -1,0 +1,19 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: qwen2.5-coder-1.5b-rtx4070-8gb
+spec:
+  features: [TextGeneration]
+  owner:
+  url: hf://Qwen/Qwen2.5-Coder-1.5B-Instruct
+  engine: VLLM
+  args:
+    - --max-model-len=2048
+    - --max-num-seqs=16
+    - --quantization=fp8
+    - --kv-cache-dtype=fp8
+  env:
+    VLLM_ATTENTION_BACKEND: FLASHINFER
+  minReplicas: 1
+  resourceProfile: nvidia-gpu-rtx4070-8gb:1
