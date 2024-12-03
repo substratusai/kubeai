@@ -168,7 +168,7 @@ resourceProfiles:
         operator: "Equal"
         value: "present"
         effect: "NoSchedule"
-  nvidia-gpu-8gb:
+  nvidia-gpu-rtx4070-8gb:
     imageName: "nvidia-gpu"
     limits:
       nvidia.com/gpu: "1"
