@@ -17,7 +17,7 @@ require (
 	go.opentelemetry.io/otel/sdk/metric v1.30.0
 	gocloud.dev v0.40.0
 	gocloud.dev/pubsub/kafkapubsub v0.40.0
-	gocloud.dev/pubsub/natspubsub v0.39.0
+	gocloud.dev/pubsub/natspubsub v0.40.0
 	gocloud.dev/pubsub/rabbitpubsub v0.40.0
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e
 	k8s.io/api v0.30.1
