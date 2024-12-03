@@ -271,11 +271,10 @@ catalog:
     resourceProfile: nvidia-gpu-l4:1
   # Qwen #
   qwen2.5-coder-1.5b-cpu:
-    enabled: true
+    enabled: false
     features: ["TextGeneration"]
     url: "ollama://qwen2.5-coder:1.5b"
     engine: OLlama
-    minReplicas: 1
     resourceProfile: cpu:1
   qwen2.5-coder-1.5b-rtx4070-8gb:
     enabled: false
@@ -292,11 +291,10 @@ catalog:
     minReplicas: 1
     resourceProfile: nvidia-gpu-rtx4070-8gb:1
   qwen2.5-7b-cpu:
-    enabled: true
+    enabled: false
     features: ["TextGeneration"]
     url: "ollama://qwen2.5:7b"
     engine: OLlama
-    minReplicas: 1
     resourceProfile: cpu:2
   qwen2-500m-cpu:
     enabled: false
