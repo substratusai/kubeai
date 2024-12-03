@@ -123,6 +123,7 @@ List of known adopters:
 | Google Cloud Distributed Edge | KubeAI is included as a reference architecture for inferencing at the edge. | [LinkedIn](https://www.linkedin.com/posts/mikeensor_gcp-solutions-public-retail-edge-available-cluster-traits-activity-7237515920259104769-vBs9?utm_source=share&utm_medium=member_desktop), [GitLab](https://gitlab.com/gcp-solutions-public/retail-edge/available-cluster-traits/kubeai-cluster-trait) |
 | Lambda | You can try KubeAI on the Lambda AI Developer Cloud. See Lambda's [tutorial](https://docs.lambdalabs.com/education/large-language-models/kubeai-hermes-3/) and [video](https://youtu.be/HEtPO2Wuiac). | [Lambda](https://lambdalabs.com/) |
 | Vultr | KubeAI can be deployed on Vultr Managed Kubernetes using the application marketplace. | [Vultr](https://www.vultr.com) |
+| Arcee | Arcee uses KubeAI for multi-region, multi-tenant SLM inference. | [Arcee](https://www.arcee.ai/) |
 
 If you are using KubeAI and would like to be listed as an adopter, please make a PR.
 
