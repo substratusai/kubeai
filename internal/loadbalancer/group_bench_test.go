@@ -1,4 +1,4 @@
-package endpoints
+package loadbalancer
 
 import (
 	"context"
@@ -11,7 +11,7 @@ func BenchmarkEndpointGroup(b *testing.B) {
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			_, f, err := e.getBestAddr(context.Background(), "", false)
+			_, f, err := e.getBestAddr(context.Background(), AddressRequest{}, false)
 			if err != nil {
 				b.Fatal(err)
 			}

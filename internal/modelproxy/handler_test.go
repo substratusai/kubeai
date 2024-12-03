@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/substratusai/kubeai/internal/apiutils"
+	"github.com/substratusai/kubeai/internal/loadbalancer"
 	"github.com/substratusai/kubeai/internal/metrics/metricstest"
 )
 
@@ -294,9 +295,9 @@ func (t *testModelInterface) ScaleAtLeastOneReplica(ctx context.Context, model s
 	return nil
 }
 
-func (t *testModelInterface) AwaitBestAddress(ctx context.Context, model, adapter string) (string, func(), error) {
+func (t *testModelInterface) AwaitBestAddress(ctx context.Context, req loadbalancer.AddressRequest) (string, func(), error) {
 	t.hostRequestCount++
-	t.requestedModel = model
-	t.requestedAdapter = adapter
+	t.requestedModel = req.Model
+	t.requestedAdapter = req.Adapter
 	return t.address, func() {}, nil
 }

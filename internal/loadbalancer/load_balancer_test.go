@@ -1,4 +1,4 @@
-package endpoints
+package loadbalancer
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	v1 "github.com/substratusai/kubeai/api/v1"
 )
 
 func TestAwaitBestHost(t *testing.T) {
@@ -19,7 +20,7 @@ func TestAwaitBestHost(t *testing.T) {
 		myAddrWithAdapter    = "10.0.0.2:8000"
 	)
 
-	manager := &Resolver{endpoints: make(map[string]*group, 1)}
+	manager := &LoadBalancer{endpoints: make(map[string]*group, 1)}
 
 	testCases := map[string]struct {
 		model     string
@@ -67,7 +68,13 @@ func TestAwaitBestHost(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond)
 			defer cancel()
 
-			gotAddr, gotFunc, gotErr := manager.AwaitBestAddress(ctx, spec.model, spec.adapter)
+			gotAddr, gotFunc, gotErr := manager.AwaitBestAddress(ctx, AddressRequest{
+				Model:   spec.model,
+				Adapter: spec.adapter,
+				LoadBalancing: v1.LoadBalancing{
+					Strategy: v1.LeastLoadStrategy,
+				},
+			})
 			if spec.expErr != nil {
 				require.ErrorIs(t, spec.expErr, gotErr)
 				return

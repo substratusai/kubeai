@@ -117,6 +117,10 @@ type ModelSpec struct {
 	// DEPRECATED.
 	// +kubebuilder:validation:Optional
 	Owner string `json:"owner"`
+
+	// LoadBalancing configuration for the model.
+	// If not specified, a default is used based on the engine and request.
+	LoadBalancing *LoadBalancing `json:"loadBalancing,omitempty"`
 }
 
 // +kubebuilder:validation:Enum=TextGeneration;TextEmbedding;SpeechToText
@@ -144,6 +148,33 @@ type Adapter struct {
 	Name string `json:"name"`
 	// +kubebuilder:validation:XValidation:rule="self.startsWith(\"hf://\") || self.startsWith(\"s3://\") || self.startsWith(\"gs://\") || self.startsWith(\"oss://\")", message="adapter url must start with \"hf://\", \"s3://\", \"gs://\", or \"oss://\"."
 	URL string `json:"url"`
+}
+
+type LoadBalancing struct {
+	Strategy LoadBalancingStrategy `json:"strategy"`
+	CHWBL    CHWBL                 `json:"chwbl"`
+}
+
+// +kubebuilder:validation:Enum=LeastLoad;CHWBL
+type LoadBalancingStrategy string
+
+const (
+	LeastLoadStrategy LoadBalancingStrategy = "LeastLoad"
+	CHWBLStrategy     LoadBalancingStrategy = "CHWBL"
+)
+
+type CHWBL struct {
+	// MeanLoadPercentage is the percentage that any given endpoint's load must not exceed
+	// over the mean load of all endpoints in the hash ring. Defaults to 125% which is
+	// a widely accepted value for CHWBL.
+	// +kubebuilder:default=125
+	MeanLoadPercentage int `json:"meanLoadFactor"`
+	// Replication is the number of replicas of each endpoint on the hash ring.
+	// Higher values will result in a more even distribution of load but will
+	// decrease lookup performance.
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf", message="replication is immutable."
+	// +kubebuilder:default=20
+	Replication int `json:"replication"`
 }
 
 // ModelStatus defines the observed state of Model.

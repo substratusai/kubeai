@@ -33,13 +33,13 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
-	"github.com/substratusai/kubeai/internal/endpoints"
 	"github.com/substratusai/kubeai/internal/leader"
+	"github.com/substratusai/kubeai/internal/loadbalancer"
 	"github.com/substratusai/kubeai/internal/messenger"
 	"github.com/substratusai/kubeai/internal/modelautoscaler"
+	"github.com/substratusai/kubeai/internal/modelclient"
 	"github.com/substratusai/kubeai/internal/modelcontroller"
 	"github.com/substratusai/kubeai/internal/modelproxy"
-	"github.com/substratusai/kubeai/internal/modelscaler"
 	"github.com/substratusai/kubeai/internal/openaiserver"
 	"github.com/substratusai/kubeai/internal/vllmclient"
 
@@ -204,7 +204,7 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 		cfg.LeaderElection.RetryPeriod.Duration,
 	)
 
-	endpointResolver, err := endpoints.NewResolver(mgr)
+	loadBalancer, err := loadbalancer.New(mgr)
 	if err != nil {
 		return fmt.Errorf("unable to setup model resolver: %w", err)
 	}
@@ -239,7 +239,7 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 		return fmt.Errorf("unable to set up ready check: %w", err)
 	}
 
-	modelScaler := modelscaler.NewModelScaler(mgr.GetClient(), namespace)
+	modelClient := modelclient.NewModelClient(mgr.GetClient(), namespace)
 
 	metricsPort, err := parsePortFromAddr(cfg.MetricsAddr)
 	if err != nil {
@@ -250,8 +250,8 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 		ctx,
 		k8sClient,
 		leaderElection,
-		modelScaler,
-		endpointResolver,
+		modelClient,
+		loadBalancer,
 		cfg.ModelAutoscaling,
 		metricsPort,
 		types.NamespacedName{Name: cfg.ModelAutoscaling.StateConfigMapName, Namespace: namespace},
@@ -261,7 +261,7 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 		return fmt.Errorf("unable to create model autoscaler: %w", err)
 	}
 
-	modelProxy := modelproxy.NewHandler(modelScaler, endpointResolver, 3, nil)
+	modelProxy := modelproxy.NewHandler(modelClient, loadBalancer, 3, nil)
 	openaiHandler := openaiserver.NewHandler(mgr.GetClient(), modelProxy)
 	mux := http.NewServeMux()
 	mux.Handle("/openai/", openaiHandler)
@@ -288,8 +288,8 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 			stream.ResponsesURL,
 			stream.MaxHandlers,
 			cfg.Messaging.ErrorMaxBackoff.Duration,
-			modelScaler,
-			endpointResolver,
+			modelClient,
+			loadBalancer,
 			httpClient,
 		)
 		if err != nil {

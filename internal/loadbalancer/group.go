@@ -1,4 +1,4 @@
-package endpoints
+package loadbalancer
 
 import (
 	"context"
@@ -6,6 +6,8 @@ import (
 	"log"
 	"sync"
 	"sync/atomic"
+
+	v1 "github.com/substratusai/kubeai/api/v1"
 )
 
 func newEndpointGroup() *group {
@@ -49,7 +51,7 @@ const (
 
 // getBestAddr returns the best "IP:Port". It blocks until there are available endpoints
 // in the endpoint group.
-func (g *group) getBestAddr(ctx context.Context, strategy LoadBalancingStrategy, adapter string, awaitChangeEndpoints bool) (string, func(), error) {
+func (g *group) getBestAddr(ctx context.Context, req AddressRequest, awaitChangeEndpoints bool) (string, func(), error) {
 	g.mtx.RLock()
 	// await endpoints exists
 	for awaitChangeEndpoints || len(g.endpoints) == 0 {
@@ -64,19 +66,19 @@ func (g *group) getBestAddr(ctx context.Context, strategy LoadBalancingStrategy,
 
 	var ep endpoint
 	var found bool
-	switch strategy {
-	case CHWBL:
+	switch req.Strategy {
+	case v1.CHWBLStrategy:
 		// TODO: prefix
-		ep, found = g.chwbl.getAddr(adapter + prefix)
-	case LeastLoaded:
-		ep, found = g.getAddrLeastLoad(adapter)
+		ep, found = g.chwbl.getAddr(req.Adapter + req.Prefix)
+	case v1.LeastLoadStrategy:
+		ep, found = g.getAddrLeastLoad(req.Adapter)
 	default:
-		return "", func() {}, fmt.Errorf("unknown load balancing strategy: %v", strategy)
+		return "", func() {}, fmt.Errorf("unknown load balancing strategy: %v", req.Strategy)
 	}
 
 	if !found {
 		g.mtx.RUnlock()
-		return g.getBestAddr(ctx, strategy, adapter, true)
+		return g.getBestAddr(ctx, req, true)
 	}
 
 	g.addInFlight(ep.inFlight, 1)

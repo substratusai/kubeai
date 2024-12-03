@@ -8,40 +8,41 @@ import (
 	"net/http/httputil"
 	"net/url"
 
+	"github.com/substratusai/kubeai/internal/loadbalancer"
 	"github.com/substratusai/kubeai/internal/metrics"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 )
 
-type ModelScaler interface {
+type ModelClient interface {
 	LookupModel(ctx context.Context, model, adapter string, selectors []string) (bool, error)
 	ScaleAtLeastOneReplica(ctx context.Context, model string) error
 }
 
-type EndpointResolver interface {
-	AwaitBestAddress(ctx context.Context, model, adapter string) (string, func(), error)
+type LoadBalancer interface {
+	AwaitBestAddress(ctx context.Context, req loadbalancer.AddressRequest) (string, func(), error)
 }
 
 // Handler serves http requests for end-clients.
 // It is also responsible for triggering scale-from-zero.
 type Handler struct {
-	modelScaler ModelScaler
-	resolver    EndpointResolver
-	maxRetries  int
-	retryCodes  map[int]struct{}
+	modelScaler  ModelClient
+	loadBalancer LoadBalancer
+	maxRetries   int
+	retryCodes   map[int]struct{}
 }
 
 func NewHandler(
-	modelScaler ModelScaler,
-	resolver EndpointResolver,
+	modelScaler ModelClient,
+	loadBalancer LoadBalancer,
 	maxRetries int,
 	retryCodes map[int]struct{},
 ) *Handler {
 	return &Handler{
-		modelScaler: modelScaler,
-		resolver:    resolver,
-		maxRetries:  maxRetries,
-		retryCodes:  retryCodes,
+		modelScaler:  modelScaler,
+		loadBalancer: loadBalancer,
+		maxRetries:   maxRetries,
+		retryCodes:   retryCodes,
 	}
 }
 
@@ -100,7 +101,11 @@ var AdditionalProxyRewrite = func(*httputil.ProxyRequest) {}
 func (h *Handler) proxyHTTP(w http.ResponseWriter, pr *proxyRequest) {
 	log.Printf("Waiting for host: %v", pr.id)
 
-	addr, decrementInflight, err := h.resolver.AwaitBestAddress(pr.r.Context(), pr.model, pr.adapter)
+	addr, decrementInflight, err := h.loadBalancer.AwaitBestAddress(pr.r.Context(), loadbalancer.AddressRequest{
+		Model:   pr.model,
+		Adapter: pr.adapter,
+		// TODO: Prefix
+	})
 	if err != nil {
 		switch {
 		case errors.Is(err, context.Canceled):

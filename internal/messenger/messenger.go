@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/substratusai/kubeai/internal/apiutils"
+	"github.com/substratusai/kubeai/internal/loadbalancer"
 	"github.com/substratusai/kubeai/internal/metrics"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
@@ -21,8 +22,8 @@ import (
 )
 
 type Messenger struct {
-	modelScaler ModelScaler
-	resolver    EndpointResolver
+	modelScaler  ModelScaler
+	loadBalancer LoadBalancer
 
 	HTTPC *http.Client
 
@@ -44,7 +45,7 @@ func NewMessenger(
 	maxHandlers int,
 	errorMaxBackoff time.Duration,
 	modelScaler ModelScaler,
-	resolver EndpointResolver,
+	lb LoadBalancer,
 	httpClient *http.Client,
 ) (*Messenger, error) {
 	requests, err := pubsub.OpenSubscription(ctx, requestsURL)
@@ -59,7 +60,7 @@ func NewMessenger(
 
 	return &Messenger{
 		modelScaler:     modelScaler,
-		resolver:        resolver,
+		loadBalancer:    lb,
 		HTTPC:           httpClient,
 		requestsURL:     requestsURL,
 		requests:        requests,
@@ -74,8 +75,8 @@ type ModelScaler interface {
 	ScaleAtLeastOneReplica(ctx context.Context, model string) error
 }
 
-type EndpointResolver interface {
-	AwaitBestAddress(ctx context.Context, model, adapter string) (string, func(), error)
+type LoadBalancer interface {
+	AwaitBestAddress(ctx context.Context, req loadbalancer.AddressRequest) (string, func(), error)
 }
 
 func (m *Messenger) Start(ctx context.Context) error {
@@ -222,7 +223,11 @@ func (m *Messenger) handleRequest(ctx context.Context, msg *pubsub.Message) {
 
 	log.Printf("Awaiting host for message %s", msg.LoggableID)
 
-	host, completeFunc, err := m.resolver.AwaitBestAddress(ctx, req.model, req.adapter)
+	host, completeFunc, err := m.loadBalancer.AwaitBestAddress(ctx, loadbalancer.AddressRequest{
+		Model:   req.model,
+		Adapter: req.adapter,
+		// TODO: Prefix
+	})
 	if err != nil {
 		m.sendResponse(req, m.jsonError("error awaiting host for backend: %v", err), http.StatusBadGateway)
 		return

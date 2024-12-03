@@ -1,4 +1,4 @@
-package endpoints
+package loadbalancer
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
+	v1 "github.com/substratusai/kubeai/api/v1"
 	"github.com/substratusai/kubeai/internal/k8sutils"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/utils/ptr"
@@ -17,8 +18,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func NewResolver(mgr ctrl.Manager) (*Resolver, error) {
-	r := &Resolver{}
+func New(mgr ctrl.Manager) (*LoadBalancer, error) {
+	r := &LoadBalancer{}
 	r.Client = mgr.GetClient()
 	r.endpoints = map[string]*group{}
 	r.ExcludePods = map[string]struct{}{}
@@ -28,7 +29,7 @@ func NewResolver(mgr ctrl.Manager) (*Resolver, error) {
 	return r, nil
 }
 
-type Resolver struct {
+type LoadBalancer struct {
 	client.Client
 
 	endpointsMtx sync.Mutex
@@ -41,14 +42,14 @@ type Resolver struct {
 	ExcludePods map[string]struct{}
 }
 
-func (r *Resolver) SetupWithManager(mgr ctrl.Manager) error {
+func (r *LoadBalancer) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		WithOptions(controller.Options{NeedLeaderElection: ptr.To(false)}).
 		For(&corev1.Pod{}).
 		Complete(r)
 }
 
-func (r *Resolver) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *LoadBalancer) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	var pod corev1.Pod
 	if err := r.Get(ctx, req.NamespacedName, &pod); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
@@ -148,7 +149,10 @@ func getPodAnnotation(pod corev1.Pod, key string) string {
 	return ""
 }
 
-func (r *Resolver) getEndpoints(model string) *group {
+// getEndpoints returns the endpoint group for the given model.
+// If the group does not exist, it is created.
+// This assumes that the existance of the model is already checked.
+func (r *LoadBalancer) getEndpoints(model string) *group {
 	r.endpointsMtx.Lock()
 	e, ok := r.endpoints[model]
 	if !ok {
@@ -159,7 +163,7 @@ func (r *Resolver) getEndpoints(model string) *group {
 	return e
 }
 
-func (r *Resolver) GetSelfIPs() []string {
+func (r *LoadBalancer) GetSelfIPs() []string {
 	r.selfIPsMtx.RLock()
 	defer r.selfIPsMtx.RUnlock()
 	return r.selfIPs
@@ -169,16 +173,17 @@ type AddressRequest struct {
 	Model   string
 	Adapter string
 	Prefix  string
+	v1.LoadBalancing
 }
 
 // AwaitBestAddress returns the "IP:Port" with the lowest number of in-flight requests. It will block until an endpoint
 // becomes available or the context times out. It returns a function that should be called when the
 // request is complete to decrement the in-flight count.
-func (r *Resolver) AwaitBestAddress(ctx context.Context, req AddressRequest) (string, func(), error) {
-	return r.getEndpoints(req.Model).getBestAddr(ctx, req.Adapter, req.Prefix, false)
+func (r *LoadBalancer) AwaitBestAddress(ctx context.Context, req AddressRequest) (string, func(), error) {
+	return r.getEndpoints(req.Model).getBestAddr(ctx, req, false)
 }
 
 // GetAllHosts retrieves the list of all hosts for a given model.
-func (r *Resolver) GetAllAddresses(model string) []string {
+func (r *LoadBalancer) GetAllAddresses(model string) []string {
 	return r.getEndpoints(model).getAllAddrs()
 }

@@ -1,4 +1,4 @@
-package endpoints
+package loadbalancer
 
 func (g *group) getAddrLeastLoad(adapter string) (endpoint, bool) {
 	var bestEp endpoint

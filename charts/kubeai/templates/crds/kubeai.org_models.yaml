@@ -106,6 +106,43 @@ spec:
                   Image to be used for the server process.
                   Will be set from ResourceProfile + Engine if not specified.
                 type: string
+              loadBalancing:
+                description: |-
+                  LoadBalancing configuration for the model.
+                  If not specified, a default is used based on the engine and request.
+                properties:
+                  chwbl:
+                    properties:
+                      meanLoadFactor:
+                        default: 125
+                        description: |-
+                          MeanLoadPercentage is the percentage that any given endpoint's load must not exceed
+                          over the mean load of all endpoints in the hash ring. Defaults to 125% which is
+                          a widely accepted value for CHWBL.
+                        type: integer
+                      replication:
+                        default: 20
+                        description: |-
+                          Replication is the number of replicas of each endpoint on the hash ring.
+                          Higher values will result in a more even distribution of load but will
+                          decrease lookup performance.
+                        type: integer
+                        x-kubernetes-validations:
+                        - message: replication is immutable.
+                          rule: self == oldSelf
+                    required:
+                    - meanLoadFactor
+                    - replication
+                    type: object
+                  strategy:
+                    enum:
+                    - LeastLoad
+                    - CHWBL
+                    type: string
+                required:
+                - chwbl
+                - strategy
+                type: object
               maxReplicas:
                 description: |-
                   MaxReplicas is the maximum number of Pod replicas that the model can scale up to.
