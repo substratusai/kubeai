@@ -5,7 +5,6 @@ metadata:
   name: e5-mistral-7b-instruct-cpu
 spec:
   features: [TextEmbedding]
-  owner: intfloat
   url: hf://intfloat/e5-mistral-7b-instruct
   engine: VLLM
   args:

@@ -5,7 +5,6 @@ metadata:
   name: gemma2-2b-cpu
 spec:
   features: [TextGeneration]
-  owner: google
   url: ollama://gemma2:2b
   engine: OLlama
   resourceProfile: cpu:2

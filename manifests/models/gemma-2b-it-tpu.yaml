@@ -5,7 +5,6 @@ metadata:
   name: gemma-2b-it-tpu
 spec:
   features: [TextGeneration]
-  owner: google
   url: hf://google/gemma-2b-it
   engine: VLLM
   args:

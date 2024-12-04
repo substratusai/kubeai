@@ -5,7 +5,6 @@ metadata:
   name: qwen2.5-coder-1.5b-rtx4070-8gb
 spec:
   features: [TextGeneration]
-  owner:
   url: hf://Qwen/Qwen2.5-Coder-1.5B-Instruct
   engine: VLLM
   args:

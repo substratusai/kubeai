@@ -5,7 +5,6 @@ metadata:
   name: qwen2.5-7b-cpu
 spec:
   features: [TextGeneration]
-  owner:
   url: ollama://qwen2.5:7b
   engine: OLlama
   resourceProfile: cpu:2

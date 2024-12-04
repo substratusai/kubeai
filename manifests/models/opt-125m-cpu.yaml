@@ -5,7 +5,6 @@ metadata:
   name: opt-125m-cpu
 spec:
   features: [TextGeneration]
-  owner: facebook
   url: hf://facebook/opt-125m
   engine: VLLM
   resourceProfile: cpu:1
