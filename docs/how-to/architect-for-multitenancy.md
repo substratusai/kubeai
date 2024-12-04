@@ -22,6 +22,15 @@ spec:
 # ...
 ```
 
+Example Model using Helm chart:
+```yaml
+catalog:
+  llama-3.2:
+    labels:
+      tenancy: public
+    # ...
+```
+
 Example HTTP requests:
 
 ```bash
