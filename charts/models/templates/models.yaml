@@ -5,6 +5,10 @@ apiVersion: kubeai.org/v1
 kind: Model
 metadata:
   name: {{ $name }}
+  {{- with $model.labels }}
+  labels:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   features: {{ $model.features }}
   {{- with $model.owner }}
