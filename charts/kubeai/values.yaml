@@ -168,7 +168,15 @@ resourceProfiles:
         operator: "Equal"
         value: "present"
         effect: "NoSchedule"
-
+  nvidia-gpu-rtx4070-8gb:
+    imageName: "nvidia-gpu"
+    limits:
+      nvidia.com/gpu: "1"
+    tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Equal"
+        value: "present"
+        effect: "NoSchedule"
 
 cacheProfiles: {}
 

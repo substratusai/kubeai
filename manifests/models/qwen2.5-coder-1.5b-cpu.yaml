@@ -1,0 +1,11 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: qwen2.5-coder-1.5b-cpu
+spec:
+  features: [TextGeneration]
+  owner:
+  url: ollama://qwen2.5-coder:1.5b
+  engine: OLlama
+  resourceProfile: cpu:1
