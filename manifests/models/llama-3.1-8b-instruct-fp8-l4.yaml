@@ -5,7 +5,6 @@ metadata:
   name: llama-3.1-8b-instruct-fp8-l4
 spec:
   features: [TextGeneration]
-  owner: neuralmagic
   url: hf://neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8
   engine: VLLM
   args:

@@ -27,7 +27,6 @@ catalog:
   e5-mistral-7b-instruct-cpu:
     enabled: false
     features: ["TextEmbedding"]
-    owner: intfloat
     url: "hf://intfloat/e5-mistral-7b-instruct"
     engine: VLLM
     # TODO: Adjust - the memory associated with this request is too low.
@@ -38,14 +37,12 @@ catalog:
   gemma2-2b-cpu:
     enabled: false
     features: ["TextGeneration"]
-    owner: google
     url: "ollama://gemma2:2b"
     engine: OLlama
     resourceProfile: cpu:2
   gemma-2b-it-tpu:
     enabled: false
     features: ["TextGeneration"]
-    owner: google
     url: "hf://google/gemma-2b-it"
     engine: VLLM
     resourceProfile: google-tpu-v5e-1x1:1
@@ -54,7 +51,6 @@ catalog:
   # gemma2-9b-it-fp8-tpu:
   #   enabled: false
   #   features: ["TextGeneration"]
-  #   owner: neuralmagic
   #   # vLLM logs: "ValueError: fp8 quantization is currently not supported in TPU Backend."
   #   #url: "hf://neuralmagic/gemma-2-9b-it-FP8"
   #   engine: VLLM
@@ -64,7 +60,6 @@ catalog:
   # gemma2-9b-it-int8-tpu:
   #   enabled: false
   #   features: ["TextGeneration"]
-  #   owner: neuralmagic
   #   # vLLM logs: "ValueError: compressed-tensors quantization is currently not supported in TPU Backend."
   #   #url: "hf://neuralmagic/gemma-2-9b-it-quantized.w8a8"
   #   #url: "hf://neuralmagic/gemma-2-9b-it-quantized.w8a16"
@@ -76,7 +71,6 @@ catalog:
   llama-3.1-8b-instruct-cpu:
     enabled: false
     features: ["TextGeneration"]
-    owner: "meta-llama"
     url: "hf://meta-llama/Meta-Llama-3.1-8B-Instruct"
     engine: VLLM
     resourceProfile: cpu:6
@@ -88,7 +82,6 @@ catalog:
   llama-3.1-8b-instruct-tpu:
     enabled: false
     features: ["TextGeneration"]
-    owner: meta-llama
     url: "hf://meta-llama/Meta-Llama-3.1-8B-Instruct"
     engine: VLLM
     resourceProfile: google-tpu-v5e-2x2:4
@@ -120,7 +113,6 @@ catalog:
   llama-3.1-8b-instruct-fp8-l4:
     enabled: false
     features: ["TextGeneration"]
-    owner: "neuralmagic"
     url: "hf://neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8"
     engine: VLLM
     resourceProfile: nvidia-gpu-l4:1
@@ -242,14 +234,12 @@ catalog:
   nomic-embed-text-cpu:
     enabled: false
     features: ["TextEmbedding"]
-    owner: nomic
     url: "ollama://nomic-embed-text"
     engine: OLlama
     resourceProfile: cpu:1
   bge-embed-text-cpu:
     enabled: false
     features: ["TextEmbedding"]
-    owner: baai
     url: "hf://BAAI/bge-small-en-v1.5"
     engine: Infinity
     resourceProfile: cpu:1
@@ -257,7 +247,6 @@ catalog:
   opt-125m-cpu:
     enabled: false
     features: ["TextGeneration"]
-    owner: facebook
     url: "hf://facebook/opt-125m"
     engine: VLLM
     # TODO: Adjust - the memory associated with this request is too low.
@@ -265,7 +254,6 @@ catalog:
   opt-125m-l4:
     enabled: false
     features: ["TextGeneration"]
-    owner: facebook
     url: "hf://facebook/opt-125m"
     engine: VLLM
     resourceProfile: nvidia-gpu-l4:1
@@ -299,14 +287,12 @@ catalog:
   qwen2-500m-cpu:
     enabled: false
     features: ["TextGeneration"]
-    owner: alibaba
     url: "ollama://qwen2:0.5b"
     engine: OLlama
     resourceProfile: cpu:1
   faster-whisper-medium-en-cpu:
     enabled: false
     features: ["SpeechToText"]
-    owner: Systran
     url: "hf://Systran/faster-whisper-medium.en"
     engine: FasterWhisper
     resourceProfile: cpu:1

@@ -7,7 +7,9 @@ metadata:
   name: {{ $name }}
 spec:
   features: {{ $model.features }}
-  owner: {{ $model.owner }}
+  {{- with $model.owner }}
+  owner: {{ . }}
+  {{- end }}
   url: {{ $model.url }}
   {{- with $model.adapters }}
   adapters:

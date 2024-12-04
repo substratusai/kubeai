@@ -5,7 +5,6 @@ metadata:
   name: llama-3.1-70b-instruct-fp8-gh200
 spec:
   features: [TextGeneration]
-  owner:
   url: hf://neuralmagic/Meta-Llama-3.1-70B-Instruct-FP8
   engine: VLLM
   args:
