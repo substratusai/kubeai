@@ -30,6 +30,7 @@ EOF
 
 sleep 5
 
+# There are 2 replicas so send 10 requests to ensure that both replicas are used.
 for i in {1..10}; do
   echo "Sending request $i"
   curl http://localhost:8000/openai/v1/completions \
