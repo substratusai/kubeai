@@ -8,6 +8,8 @@ pip install -U "huggingface_hub[cli]"
 
 PV_HOST_PATH=/tmp/data
 
+mkdir -p ${PV_HOST_PATH}
+
 huggingface-cli download facebook/opt-125m --local-dir ${PV_HOST_PATH} \
   --exclude "tf_model.h5" --exclude "flax_model.msgpack"
 
