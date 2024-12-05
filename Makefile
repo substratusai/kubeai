@@ -91,6 +91,10 @@ test-e2e-autoscaler-restart: skaffold
 test-e2e-cache-shared-filesystem: skaffold
 	./test/e2e/run.sh cache-shared-filesystem --profile e2e-test-default
 
+.PHONY: test-e2e-engine-vllm-pvc
+test-e2e-engine-vllm-pvc: skaffold
+	./test/e2e/run.sh engine-vllm-pvc --profile e2e-test-default
+
 .PHONY: test-e2e-engine
 test-e2e-engine: skaffold
 	CACHE_PROFILE=$(CACHE_PROFILE) ./test/e2e/run.sh engine-$(ENGINE) --profile e2e-test-default
