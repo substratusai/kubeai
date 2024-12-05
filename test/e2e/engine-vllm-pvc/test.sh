@@ -13,6 +13,7 @@ mkdir -p ${PV_HOST_PATH}
 huggingface-cli download facebook/opt-125m --local-dir ${PV_HOST_PATH} \
   --exclude "tf_model.h5" "flax_model.msgpack"
 
+kubectl apply -f $REPO_DIR/test/e2e/engine-vllm-pvc/pv.yaml
 kubectl apply -f $REPO_DIR/test/e2e/engine-vllm-pvc/pvc.yaml
 
 helm install $models_release $REPO_DIR/charts/models -f - <<EOF
