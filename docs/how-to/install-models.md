@@ -94,6 +94,22 @@ spec:
   resourceProfile: nvidia-gpu-l4:1
 ```
 
+## Load Models from PVC
+
+You can store your models in a Persistent Volume Claim (PVC) and load them into KubeAI for serving. This guide will show you how to load models from a PVC.
+
+Currenly only vLLM supports loading models from PVCs.
+
+The following formats are supported to load models from a PVC:
+
+- `url: pvc://$PVC_NAME` - Loads the model from the PVC named `$PVC_NAME`.
+- `url: pvc://$PVC_NAME/$PATH` - Loads the model from the PVC named `$PVC_NAME` and mounts the subpath `$PATH` within the PVC.
+
+You need to make sure the model is preloaded into the PVC before you can use it in KubeAI.
+
+The Access Mode of the PVC should be `ReadOnlyMany` or `ReadWriteMany`, because otherwise
+KubeAI won't be able to spin up more than 1 replica of the model.
+
 ## Programmatically installing models
 
 See the [examples](https://github.com/substratusai/kubeai/tree/main/examples/k8s-api-clients).
