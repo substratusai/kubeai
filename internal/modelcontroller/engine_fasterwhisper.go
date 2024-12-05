@@ -137,7 +137,7 @@ func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, c ModelCon
 	}
 
 	patchServerCacheVolumes(&pod.Spec, m, c)
-	c.Source.modelAuthCredentials.applyToPodSpec(&pod.Spec, 0)
+	c.Source.modelSourcePodAdditions.applyToPodSpec(&pod.Spec, 0)
 
 	return pod
 }

@@ -51,6 +51,13 @@ func Test_parseModelURL(t *testing.T) {
 				ref:    "test-user/model-name",
 			},
 		},
+		"valid-pvc": {
+			input: "pvc://my-vpc/path/to/model",
+			want: modelURL{
+				scheme: "pvc",
+				ref:    "my-vpc/path/to/model",
+			},
+		},
 	}
 
 	for name, c := range cases {
@@ -67,4 +74,45 @@ func Test_parseModelURL(t *testing.T) {
 			require.Equal(t, c.want, got)
 		})
 	}
+}
+
+func Test_parsePVCNamePath(t *testing.T) {
+	t.Parallel()
+
+	cases := map[string]struct {
+		ref     string
+		pvcName string
+		path    string
+	}{
+		"fully-specified": {
+			ref:     "my-pvc/llama",
+			pvcName: "my-pvc",
+			path:    "llama",
+		},
+		"root": {
+			ref:     "my-pvc/",
+			pvcName: "my-pvc",
+			path:    "",
+		},
+		"root-with-additional-slash": {
+			ref:     "my-pvc//",
+			pvcName: "my-pvc",
+			path:    "",
+		},
+		"no-slash-in-middle": {
+			ref:     "my-pvc",
+			pvcName: "my-pvc",
+			path:    "",
+		},
+	}
+
+	for name, c := range cases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			pvcName, path := parsePVCNamePath(modelURL{ref: c.ref})
+			require.Equal(t, c.pvcName, pvcName)
+			require.Equal(t, c.path, path)
+		})
+	}
+
 }

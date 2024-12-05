@@ -351,7 +351,7 @@ func (r *ModelReconciler) loadCacheJobForModel(m *kubeaiv1.Model, c ModelConfig)
 		m.Spec.URL,
 		modelCacheDir(m),
 	}
-	c.Source.modelAuthCredentials.applyToPodSpec(&job.Spec.Template.Spec, 0)
+	c.Source.modelSourcePodAdditions.applyToPodSpec(&job.Spec.Template.Spec, 0)
 
 	return job
 }
