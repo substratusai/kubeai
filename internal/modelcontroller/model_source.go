@@ -188,24 +188,18 @@ func (r *ModelReconciler) authForOSS() *modelSourcePodAdditions {
 	}
 }
 
-func parsePVCNamePath(url modelURL) (string, string) {
-	// Parse pvc://PVC_NAME/PATH into PVC_NAME and PATH
-	splitted := strings.Split(url.ref, "/")
-	pvcName := splitted[0]
-	path := strings.Join(splitted[1:], "")
-	return pvcName, path
-}
-
 func (r *ModelReconciler) pvcPodAdditions(url modelURL) *modelSourcePodAdditions {
-	pvcName, modelPath := parsePVCNamePath(url)
 	volumeName := "model"
+	// Kubernetes does not support an subPath with a leading slash. SubPath needs to be
+	// a relative path or empty string to mount the entire volume.
+	path := strings.TrimLeft(url.path, "/")
 	return &modelSourcePodAdditions{
 		volumes: []corev1.Volume{
 			{
 				Name: volumeName,
 				VolumeSource: corev1.VolumeSource{
 					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-						ClaimName: pvcName,
+						ClaimName: url.name,
 						ReadOnly:  true,
 					},
 				},
@@ -215,7 +209,7 @@ func (r *ModelReconciler) pvcPodAdditions(url modelURL) *modelSourcePodAdditions
 			{
 				Name:      volumeName,
 				MountPath: "/model",
-				SubPath:   modelPath,
+				SubPath:   path,
 			},
 		},
 	}
@@ -228,10 +222,14 @@ func parseModelURL(urlStr string) (modelURL, error) {
 	if len(matches) != 3 {
 		return modelURL{}, fmt.Errorf("invalid model URL: %s", urlStr)
 	}
+	scheme, ref := matches[1], matches[2]
+	name, path, _ := strings.Cut(ref, "/")
 	return modelURL{
 		original: urlStr,
-		scheme:   matches[1],
-		ref:      matches[2],
+		scheme:   scheme,
+		ref:      ref,
+		name:     name,
+		path:     path,
 	}, nil
 }
 
@@ -239,4 +237,6 @@ type modelURL struct {
 	original string // e.g. "hf://username/model"
 	scheme   string // e.g. "hf", "s3", "gs", "oss"
 	ref      string // e.g. "username/model"
+	name     string // e.g. username or bucket-name
+	path     string // e.g. model or path/to/model
 }

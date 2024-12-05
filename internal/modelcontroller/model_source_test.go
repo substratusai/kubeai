@@ -28,6 +28,8 @@ func Test_parseModelURL(t *testing.T) {
 			want: modelURL{
 				scheme: "a",
 				ref:    "path/b://to/model",
+				name:   "path",
+				path:   "b://to/model",
 			},
 		},
 		"valid-google-storage": {
@@ -35,6 +37,8 @@ func Test_parseModelURL(t *testing.T) {
 			want: modelURL{
 				scheme: "gs",
 				ref:    "bucket-name/path/to/model",
+				name:   "bucket-name",
+				path:   "path/to/model",
 			},
 		},
 		"valid-ollama": {
@@ -42,6 +46,8 @@ func Test_parseModelURL(t *testing.T) {
 			want: modelURL{
 				scheme: "ollama",
 				ref:    "gemma2:2b",
+				name:   "gemma2:2b",
+				path:   "",
 			},
 		},
 		"valid-huggingface": {
@@ -49,6 +55,8 @@ func Test_parseModelURL(t *testing.T) {
 			want: modelURL{
 				scheme: "hf",
 				ref:    "test-user/model-name",
+				name:   "test-user",
+				path:   "model-name",
 			},
 		},
 		"valid-pvc": {
@@ -56,6 +64,35 @@ func Test_parseModelURL(t *testing.T) {
 			want: modelURL{
 				scheme: "pvc",
 				ref:    "my-vpc/path/to/model",
+				name:   "my-vpc",
+				path:   "path/to/model",
+			},
+		},
+		"valid-pvc-no-path": {
+			input: "pvc://my-vpc",
+			want: modelURL{
+				scheme: "pvc",
+				ref:    "my-vpc",
+				name:   "my-vpc",
+				path:   "",
+			},
+		},
+		"valid-pvc-with-slash-empty": {
+			input: "pvc://my-vpc/",
+			want: modelURL{
+				scheme: "pvc",
+				ref:    "my-vpc/",
+				name:   "my-vpc",
+				path:   "",
+			},
+		},
+		"valid-pvc-with-double-slash": {
+			input: "pvc://my-vpc//",
+			want: modelURL{
+				scheme: "pvc",
+				ref:    "my-vpc//",
+				name:   "my-vpc",
+				path:   "/",
 			},
 		},
 	}
@@ -74,45 +111,4 @@ func Test_parseModelURL(t *testing.T) {
 			require.Equal(t, c.want, got)
 		})
 	}
-}
-
-func Test_parsePVCNamePath(t *testing.T) {
-	t.Parallel()
-
-	cases := map[string]struct {
-		ref     string
-		pvcName string
-		path    string
-	}{
-		"fully-specified": {
-			ref:     "my-pvc/llama",
-			pvcName: "my-pvc",
-			path:    "llama",
-		},
-		"root": {
-			ref:     "my-pvc/",
-			pvcName: "my-pvc",
-			path:    "",
-		},
-		"root-with-additional-slash": {
-			ref:     "my-pvc//",
-			pvcName: "my-pvc",
-			path:    "",
-		},
-		"no-slash-in-middle": {
-			ref:     "my-pvc",
-			pvcName: "my-pvc",
-			path:    "",
-		},
-	}
-
-	for name, c := range cases {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-			pvcName, path := parsePVCNamePath(modelURL{ref: c.ref})
-			require.Equal(t, c.pvcName, pvcName)
-			require.Equal(t, c.path, path)
-		})
-	}
-
 }
