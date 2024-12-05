@@ -9,4 +9,4 @@ spec:
   resources:
     requests:
       storage: 10Gi
-  volumeName: kind-hostpath
+  volumeName: kind-model-hostpath

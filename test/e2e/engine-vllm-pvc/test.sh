@@ -6,7 +6,7 @@ models_release="kubeai-models"
 
 pip install -U "huggingface_hub[cli]"
 
-PV_HOST_PATH=/tmp/data
+PV_HOST_PATH=/tmp/model
 
 mkdir -p ${PV_HOST_PATH}
 
@@ -20,12 +20,15 @@ catalog:
   opt-125m-cpu:
     enabled: true
     url: pvc://model-pvc
-    minReplicas: 1
+    minReplicas: 2
 EOF
 
 sleep 5
 
-curl http://localhost:8000/openai/v1/completions \
-  --max-time 900 \
-  -H "Content-Type: application/json" \
-  -d '{"model": "opt-125m-cpu", "prompt": "Who was the first president of the United States?", "max_tokens": 40}'
+for i in {1..10}; do
+  echo "Sending request $i"
+  curl http://localhost:8000/openai/v1/completions \
+    --max-time 600 \
+    -H "Content-Type: application/json" \
+    -d '{"model": "opt-125m-cpu", "prompt": "Who was the first president of the United States?", "max_tokens": 40}'
+done

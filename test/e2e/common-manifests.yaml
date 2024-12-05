@@ -3,13 +3,10 @@ kind: PersistentVolume
 metadata:
   name: kind-hostpath
 spec:
-  storageClassName: manual
   capacity:
     storage: 10Gi
   accessModes:
     - ReadWriteMany
-    - ReadOnlyMany
-    - ReadWriteOnce
   hostPath:
     path: /tmp/data
     type: DirectoryOrCreate
