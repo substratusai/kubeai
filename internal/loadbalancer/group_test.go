@@ -25,9 +25,8 @@ func TestConcurrentAccess(t *testing.T) {
 	}
 	for name, spec := range testCases {
 		randomReadFn := []func(g *group){
-			func(g *group) { g.getBestAddr(context.Background(), "", false) },
+			func(g *group) { g.getBestAddr(context.Background(), AddressRequest{}, false) },
 			func(g *group) { g.getAllAddrs() },
-			func(g *group) { g.lenIPs() },
 		}
 		t.Run(name, func(t *testing.T) {
 			// setup endpoint with one service so that requests are not waiting
@@ -80,7 +79,7 @@ func TestBlockAndWaitForEndpoints(t *testing.T) {
 	group := newEndpointGroup()
 	ctx := context.TODO()
 	startTogether(100, func() {
-		group.getBestAddr(ctx, "", false)
+		group.getBestAddr(ctx, AddressRequest{}, false)
 	})
 	startWg.Wait()
 
@@ -102,7 +101,7 @@ func TestAbortOnCtxCancel(t *testing.T) {
 	go func(t *testing.T) {
 		startWg.Wait()
 		endpoint := newEndpointGroup()
-		_, f, err := endpoint.getBestAddr(ctx, "", false)
+		_, f, err := endpoint.getBestAddr(ctx, AddressRequest{}, false)
 		defer f()
 		require.Error(t, err)
 		doneWg.Done()

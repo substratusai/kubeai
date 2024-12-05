@@ -12,11 +12,10 @@ import (
 
 func newEndpointGroup() *group {
 	g := &group{
-		endpoints: make(map[string]endpoint),
-		chwbl: newCHWBL(chwblConfig{
-			LoadFactor:  1.25,
-			Replication: 100,
-		}),
+		endpoints:         make(map[string]endpoint),
+		chwblReplication:  100,
+		chwblHashes:       map[uint64]string{},
+		chwblSortedHashes: []uint64{},
 	}
 	return g
 }
@@ -28,7 +27,12 @@ type group struct {
 
 	totalInFlight *atomic.Int64
 
-	chwbl *chwbl
+	// the number of times an endpoint is replicated on the hash ring
+	chwblReplication int
+	// map of hash to endpoint
+	chwblHashes map[uint64]string
+	// sorted list of hashed node-replicas
+	chwblSortedHashes []uint64
 
 	bmtx  sync.RWMutex
 	bcast chan struct{} // closed when there's a broadcast
@@ -67,9 +71,8 @@ func (g *group) getBestAddr(ctx context.Context, req AddressRequest, awaitChange
 	var ep endpoint
 	var found bool
 	switch req.Strategy {
-	case v1.CHWBLStrategy:
-		// TODO: prefix
-		ep, found = g.chwbl.getAddr(req.Adapter + req.Prefix)
+	case v1.PrefixHashStrategy:
+		ep, found = g.chwblGetAddr(req.Adapter+req.Prefix, float64(req.PrefixHash.MeanLoadPercentage/100))
 	case v1.LeastLoadStrategy:
 		ep, found = g.getAddrLeastLoad(req.Adapter)
 	default:
@@ -107,12 +110,6 @@ func (g *group) getAllAddrs() []string {
 	return hosts
 }
 
-func (g *group) lenIPs() int {
-	g.mtx.RLock()
-	defer g.mtx.RUnlock()
-	return len(g.endpoints)
-}
-
 func (g *group) reconcileEndpoints(observed map[string]endpoint) {
 	g.mtx.Lock()
 	for name, observedEp := range observed {
@@ -124,10 +121,13 @@ func (g *group) reconcileEndpoints(observed map[string]endpoint) {
 				address:  observedEp.address,
 				adapters: observedEp.adapters,
 			}
+			g.chwblAddEndpoint(name)
 		}
 	}
 	for name := range g.endpoints {
-		if _, ok := observed[name]; !ok {
+		if ep, ok := observed[name]; !ok {
+			g.totalInFlight.Add(-ep.inFlight.Load())
+			g.chwblRemoveEndpoint(name)
 			delete(g.endpoints, name)
 		}
 	}

@@ -151,22 +151,22 @@ type Adapter struct {
 }
 
 type LoadBalancing struct {
-	Strategy LoadBalancingStrategy `json:"strategy"`
-	CHWBL    CHWBL                 `json:"chwbl"`
+	Strategy   LoadBalancingStrategy `json:"strategy"`
+	PrefixHash PrefixHash            `json:"prefixHash"`
 }
 
 // +kubebuilder:validation:Enum=LeastLoad;CHWBL
 type LoadBalancingStrategy string
 
 const (
-	LeastLoadStrategy LoadBalancingStrategy = "LeastLoad"
-	CHWBLStrategy     LoadBalancingStrategy = "CHWBL"
+	LeastLoadStrategy  LoadBalancingStrategy = "LeastLoad"
+	PrefixHashStrategy LoadBalancingStrategy = "PrefixHash"
 )
 
-type CHWBL struct {
+type PrefixHash struct {
 	// MeanLoadPercentage is the percentage that any given endpoint's load must not exceed
 	// over the mean load of all endpoints in the hash ring. Defaults to 125% which is
-	// a widely accepted value for CHWBL.
+	// a widely accepted value for the Consistent Hashing with Bounded Loads algorithm.
 	// +kubebuilder:default=125
 	MeanLoadPercentage int `json:"meanLoadFactor"`
 	// Replication is the number of replicas of each endpoint on the hash ring.
@@ -175,6 +175,8 @@ type CHWBL struct {
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf", message="replication is immutable."
 	// +kubebuilder:default=20
 	Replication int `json:"replication"`
+	// PrefixByteLength is the number of bytes to count when building the prefix to hash.
+	PrefixByteLength int `json:"prefixByteLength"`
 }
 
 // ModelStatus defines the observed state of Model.
