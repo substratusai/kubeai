@@ -193,19 +193,15 @@ spec:
             type: object
             x-kubernetes-validations:
             - message: cacheProfile is only supported with urls of format "hf://...",
-                "pvc://...", "s3://...", "gs://...", or "oss://..." at the moment.
-              rule: '!has(self.cacheProfile) || self.url.startsWith("hf://") || self.url.startsWith("pvc://")
-                || self.url.startsWith("s3://") || self.url.startsWith("gs://") ||
-                self.url.startsWith("oss://")'
+                "s3://...", "gs://...", or "oss://..." at the moment.
+              rule: '!has(self.cacheProfile) || self.url.startsWith("hf://") || self.url.startsWith("s3://")
+                || self.url.startsWith("gs://") || self.url.startsWith("oss://")'
             - message: urls of format "s3://..." only supported when using a cacheProfile
               rule: '!self.url.startsWith("s3://") || has(self.cacheProfile)'
             - message: urls of format "gs://..." only supported when using a cacheProfile
               rule: '!self.url.startsWith("gs://") || has(self.cacheProfile)'
             - message: urls of format "oss://..." only supported when using a cacheProfile
               rule: '!self.url.startsWith("oss://") || has(self.cacheProfile)'
-            - message: urls of format "pvc://..." do not support cacheProfile. Remove
-                cacheProfile or use a different url.
-              rule: self.url.startsWith("pvc://") || has(self.cacheProfile)
             - message: minReplicas should be less than or equal to maxReplicas.
               rule: '!has(self.maxReplicas) || self.minReplicas <= self.maxReplicas'
             - message: adapters only supported with VLLM engine.
