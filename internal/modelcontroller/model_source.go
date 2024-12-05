@@ -200,7 +200,6 @@ func (r *ModelReconciler) pvcPodAdditions(url modelURL) *modelSourcePodAdditions
 				VolumeSource: corev1.VolumeSource{
 					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
 						ClaimName: url.name,
-						ReadOnly:  true,
 					},
 				},
 			},
