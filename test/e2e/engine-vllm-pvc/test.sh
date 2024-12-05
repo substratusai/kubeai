@@ -12,7 +12,7 @@ mkdir -p ${PV_HOST_PATH}
 kind_container=$(docker ps --filter "name=kind-control-plane" --format "{{.ID}}")
 docker exec -i $kind_container bash -c "
   apt update -y && apt install -y python3-pip
-  pip install -U "huggingface_hub[cli]"
+  pip install -U "huggingface_hub[cli]" --break-system-packages
   mkdir -p ${PV_HOST_PATH}
   huggingface-cli download facebook/opt-125m --local-dir ${PV_HOST_PATH} \
     --exclude 'tf_model.h5' 'flax_model.msgpack'"
