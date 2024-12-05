@@ -10,7 +10,7 @@ mkdir -p ${PV_HOST_PATH}
 
 # Execute into the kind container
 kind_container=$(docker ps --filter "name=kind-control-plane" --format "{{.ID}}")
-docker exec -it $kind_container bash -c "
+docker exec -i $kind_container bash -c "
   apt-update -y && apt-get install -y python3-pip
   pip install -U "huggingface_hub[cli]"
   mkdir -p ${PV_HOST_PATH}
