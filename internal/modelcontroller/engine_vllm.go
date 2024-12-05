@@ -21,6 +21,10 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 	if m.Spec.CacheProfile != "" {
 		vllmModelFlag = modelCacheDir(m)
 	}
+	// TODO we should throw an error if cache profile is set AND the model is on PVC.
+	if c.Source.url.scheme == "pvc" {
+		vllmModelFlag = "/model"
+	}
 
 	args := []string{
 		"--model=" + vllmModelFlag,

@@ -21,10 +21,11 @@ import (
 )
 
 // ModelSpec defines the desired state of Model.
-// +kubebuilder:validation:XValidation:rule="!has(self.cacheProfile) || self.url.startsWith(\"hf://\") || self.url.startsWith(\"s3://\") || self.url.startsWith(\"gs://\") || self.url.startsWith(\"oss://\")", message="cacheProfile is only supported with urls of format \"hf://...\", \"s3://...\", \"gs://...\", or \"oss://...\" at the moment."
+// +kubebuilder:validation:XValidation:rule="!has(self.cacheProfile) || self.url.startsWith(\"hf://\") || self.url.startsWith(\"pvc://\") || self.url.startsWith(\"s3://\") || self.url.startsWith(\"gs://\") || self.url.startsWith(\"oss://\")", message="cacheProfile is only supported with urls of format \"hf://...\", \"pvc://...\", \"s3://...\", \"gs://...\", or \"oss://...\" at the moment."
 // +kubebuilder:validation:XValidation:rule="!self.url.startsWith(\"s3://\") || has(self.cacheProfile)", message="urls of format \"s3://...\" only supported when using a cacheProfile"
 // +kubebuilder:validation:XValidation:rule="!self.url.startsWith(\"gs://\") || has(self.cacheProfile)", message="urls of format \"gs://...\" only supported when using a cacheProfile"
 // +kubebuilder:validation:XValidation:rule="!self.url.startsWith(\"oss://\") || has(self.cacheProfile)", message="urls of format \"oss://...\" only supported when using a cacheProfile"
+// +kubebuilder:validation:XValidation:rule="self.url.startsWith(\"pvc://\") || has(self.cacheProfile)", message="urls of format \"pvc://...\" do not support cacheProfile. Remove cacheProfile or use a different url."
 // +kubebuilder:validation:XValidation:rule="!has(self.maxReplicas) || self.minReplicas <= self.maxReplicas", message="minReplicas should be less than or equal to maxReplicas."
 // +kubebuilder:validation:XValidation:rule="!has(self.adapters) || self.engine == \"VLLM\"", message="adapters only supported with VLLM engine."
 type ModelSpec struct {
@@ -34,6 +35,8 @@ type ModelSpec struct {
 	// For VLLM, FasterWhisper, Infinity engines:
 	//
 	// "hf://<repo>/<model>"
+	// "pvc://<pvcName>"
+	// "pvc://<pvcName>/<pvcSubpath>"
 	// "gs://<bucket>/<path>" (only with cacheProfile)
 	// "oss://<bucket>/<path>" (only with cacheProfile)
 	// "s3://<bucket>/<path>" (only with cacheProfile)
