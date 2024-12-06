@@ -709,6 +709,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#load-models-from-pvc" class="md-nav__link">
+    <span class="md-ellipsis">
+      Load Models from PVC
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#programmatically-installing-models" class="md-nav__link">
     <span class="md-ellipsis">
       Programmatically installing models
@@ -1390,6 +1399,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#load-models-from-pvc" class="md-nav__link">
+    <span class="md-ellipsis">
+      Load Models from PVC
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#programmatically-installing-models" class="md-nav__link">
     <span class="md-ellipsis">
       Programmatically installing models
@@ -1501,6 +1519,17 @@ kubectl<span class="w"> </span>explain<span class="w"> </span>models.spec.engine
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--disable-log-requests</span>
 <span class="w">  </span><span class="nt">resourceProfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nvidia-gpu-l4:1</span>
 </code></pre></div>
+<h2 id="load-models-from-pvc">Load Models from PVC<a class="headerlink" href="#load-models-from-pvc" title="Permanent link">&para;</a></h2>
+<p>You can store your models in a Persistent Volume Claim (PVC) and load them into KubeAI for serving. This guide will show you how to load models from a PVC.</p>
+<p>Currenly only vLLM supports loading models from PVCs.</p>
+<p>The following formats are supported to load models from a PVC:</p>
+<ul>
+<li><code>url: pvc://$PVC_NAME</code> - Loads the model from the PVC named <code>$PVC_NAME</code>.</li>
+<li><code>url: pvc://$PVC_NAME/$PATH</code> - Loads the model from the PVC named <code>$PVC_NAME</code> and mounts the subpath <code>$PATH</code> within the PVC.</li>
+</ul>
+<p>You need to make sure the model is preloaded into the PVC before you can use it in KubeAI.</p>
+<p>The Access Mode of the PVC should be <code>ReadOnlyMany</code> or <code>ReadWriteMany</code>, because otherwise
+KubeAI won't be able to spin up more than 1 replica of the model.</p>
 <h2 id="programmatically-installing-models">Programmatically installing models<a class="headerlink" href="#programmatically-installing-models" title="Permanent link">&para;</a></h2>
 <p>See the <a href="https://github.com/substratusai/kubeai/tree/main/examples/k8s-api-clients">examples</a>.</p>
 <h2 id="calling-a-model">Calling a model<a class="headerlink" href="#calling-a-model" title="Permanent link">&para;</a></h2>
