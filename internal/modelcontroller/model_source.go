@@ -3,13 +3,14 @@ package modelcontroller
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/utils/ptr"
 )
 
 type modelSource struct {
-	*modelAuthCredentials
+	*modelSourcePodAdditions
 	url modelURL
 }
 
@@ -24,39 +25,41 @@ func (r *ModelReconciler) parseModelSource(urlStr string) (modelSource, error) {
 
 	switch {
 	case u.scheme == "gs":
-		src.modelAuthCredentials = r.authForGCS()
+		src.modelSourcePodAdditions = r.authForGCS()
 	case u.scheme == "oss":
-		src.modelAuthCredentials = r.authForOSS()
+		src.modelSourcePodAdditions = r.authForOSS()
 	case u.scheme == "s3":
-		src.modelAuthCredentials = r.authForS3()
+		src.modelSourcePodAdditions = r.authForS3()
 	case u.scheme == "hf":
-		src.modelAuthCredentials = r.authForHuggingfaceHub()
-	case u.scheme == "ollama":
-		src.modelAuthCredentials = &modelAuthCredentials{}
+		src.modelSourcePodAdditions = r.authForHuggingfaceHub()
+	case u.scheme == "pvc":
+		src.modelSourcePodAdditions = r.pvcPodAdditions(u)
+	default:
+		src.modelSourcePodAdditions = &modelSourcePodAdditions{}
 	}
 	return src, nil
 }
 
-type modelAuthCredentials struct {
+type modelSourcePodAdditions struct {
 	env          []corev1.EnvVar
 	volumes      []corev1.Volume
 	volumeMounts []corev1.VolumeMount
 }
 
-func (c *modelAuthCredentials) append(other *modelAuthCredentials) {
+func (c *modelSourcePodAdditions) append(other *modelSourcePodAdditions) {
 	c.env = append(c.env, other.env...)
 	c.volumes = append(c.volumes, other.volumes...)
 	c.volumeMounts = append(c.volumeMounts, other.volumeMounts...)
 }
 
-func (c *modelAuthCredentials) applyToPodSpec(spec *corev1.PodSpec, containerIndex int) {
+func (c *modelSourcePodAdditions) applyToPodSpec(spec *corev1.PodSpec, containerIndex int) {
 	spec.Containers[containerIndex].Env = append(spec.Containers[containerIndex].Env, c.env...)
 	spec.Volumes = append(spec.Volumes, c.volumes...)
 	spec.Containers[containerIndex].VolumeMounts = append(spec.Containers[containerIndex].VolumeMounts, c.volumeMounts...)
 }
 
-func (r *ModelReconciler) modelAuthCredentialsForAllSources() *modelAuthCredentials {
-	c := &modelAuthCredentials{}
+func (r *ModelReconciler) modelAuthCredentialsForAllSources() *modelSourcePodAdditions {
+	c := &modelSourcePodAdditions{}
 	c.append(r.authForHuggingfaceHub())
 	c.append(r.authForGCS())
 	c.append(r.authForOSS())
@@ -64,8 +67,8 @@ func (r *ModelReconciler) modelAuthCredentialsForAllSources() *modelAuthCredenti
 	return c
 }
 
-func (r *ModelReconciler) authForS3() *modelAuthCredentials {
-	return &modelAuthCredentials{
+func (r *ModelReconciler) authForS3() *modelSourcePodAdditions {
+	return &modelSourcePodAdditions{
 		env: []corev1.EnvVar{
 			{
 				Name: "AWS_ACCESS_KEY_ID",
@@ -95,8 +98,8 @@ func (r *ModelReconciler) authForS3() *modelAuthCredentials {
 	}
 }
 
-func (r *ModelReconciler) authForHuggingfaceHub() *modelAuthCredentials {
-	return &modelAuthCredentials{
+func (r *ModelReconciler) authForHuggingfaceHub() *modelSourcePodAdditions {
+	return &modelSourcePodAdditions{
 		env: []corev1.EnvVar{
 			{
 				Name: "HF_TOKEN",
@@ -114,14 +117,14 @@ func (r *ModelReconciler) authForHuggingfaceHub() *modelAuthCredentials {
 	}
 }
 
-func (r *ModelReconciler) authForGCS() *modelAuthCredentials {
+func (r *ModelReconciler) authForGCS() *modelSourcePodAdditions {
 	const (
 		credentialsDir      = "/secrets/gcp-credentials"
 		credentialsFilename = "credentials.json"
 		credentialsPath     = credentialsDir + "/" + credentialsFilename
 		volumeName          = "gcp-credentials"
 	)
-	return &modelAuthCredentials{
+	return &modelSourcePodAdditions{
 		env: []corev1.EnvVar{
 			{
 				Name:  "GOOGLE_APPLICATION_CREDENTIALS",
@@ -154,8 +157,8 @@ func (r *ModelReconciler) authForGCS() *modelAuthCredentials {
 	}
 }
 
-func (r *ModelReconciler) authForOSS() *modelAuthCredentials {
-	return &modelAuthCredentials{
+func (r *ModelReconciler) authForOSS() *modelSourcePodAdditions {
+	return &modelSourcePodAdditions{
 		env: []corev1.EnvVar{
 			{
 				Name: "OSS_ACCESS_KEY_ID",
@@ -185,6 +188,32 @@ func (r *ModelReconciler) authForOSS() *modelAuthCredentials {
 	}
 }
 
+func (r *ModelReconciler) pvcPodAdditions(url modelURL) *modelSourcePodAdditions {
+	volumeName := "model"
+	// Kubernetes does not support an subPath with a leading slash. SubPath needs to be
+	// a relative path or empty string to mount the entire volume.
+	path := strings.TrimLeft(url.path, "/")
+	return &modelSourcePodAdditions{
+		volumes: []corev1.Volume{
+			{
+				Name: volumeName,
+				VolumeSource: corev1.VolumeSource{
+					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+						ClaimName: url.name,
+					},
+				},
+			},
+		},
+		volumeMounts: []corev1.VolumeMount{
+			{
+				Name:      volumeName,
+				MountPath: "/model",
+				SubPath:   path,
+			},
+		},
+	}
+}
+
 var modelURLRegex = regexp.MustCompile(`^([a-z]+):\/\/(\S+)$`)
 
 func parseModelURL(urlStr string) (modelURL, error) {
@@ -192,10 +221,14 @@ func parseModelURL(urlStr string) (modelURL, error) {
 	if len(matches) != 3 {
 		return modelURL{}, fmt.Errorf("invalid model URL: %s", urlStr)
 	}
+	scheme, ref := matches[1], matches[2]
+	name, path, _ := strings.Cut(ref, "/")
 	return modelURL{
 		original: urlStr,
-		scheme:   matches[1],
-		ref:      matches[2],
+		scheme:   scheme,
+		ref:      ref,
+		name:     name,
+		path:     path,
 	}, nil
 }
 
@@ -203,4 +236,6 @@ type modelURL struct {
 	original string // e.g. "hf://username/model"
 	scheme   string // e.g. "hf", "s3", "gs", "oss"
 	ref      string // e.g. "username/model"
+	name     string // e.g. username or bucket-name
+	path     string // e.g. model or path/to/model
 }

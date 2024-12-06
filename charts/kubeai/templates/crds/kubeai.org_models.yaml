@@ -165,6 +165,8 @@ spec:
 
 
                   "hf://<repo>/<model>"
+                  "pvc://<pvcName>"
+                  "pvc://<pvcName>/<pvcSubpath>"
                   "gs://<bucket>/<path>" (only with cacheProfile)
                   "oss://<bucket>/<path>" (only with cacheProfile)
                   "s3://<bucket>/<path>" (only with cacheProfile)
@@ -178,10 +180,10 @@ spec:
                 x-kubernetes-validations:
                 - message: url is immutable.
                   rule: self == oldSelf
-                - message: url must start with "hf://", "ollama://", "s3://", "gs://",
-                    or "oss://" and not be empty.
-                  rule: self.startsWith("hf://") || self.startsWith("ollama://") ||
-                    self.startsWith("s3://") || self.startsWith("gs://") || self.startsWith("oss://")
+                - message: url must start with "hf://", "pvc://", "ollama://", "s3://",
+                    "gs://", or "oss://" and not be empty.
+                  rule: self.startsWith("hf://") || self.startsWith("pvc://") || self.startsWith("ollama://")
+                    || self.startsWith("s3://") || self.startsWith("gs://") || self.startsWith("oss://")
             required:
             - engine
             - features

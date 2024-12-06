@@ -21,6 +21,11 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 	if m.Spec.CacheProfile != "" {
 		vllmModelFlag = modelCacheDir(m)
 	}
+	// The vllmModelFlag can be safely overridden because validation logic ensures
+	// that a model with PVC source and cacheProfile won't be admitted.
+	if c.Source.url.scheme == "pvc" {
+		vllmModelFlag = "/model"
+	}
 
 	args := []string{
 		"--model=" + vllmModelFlag,
@@ -145,7 +150,7 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 
 	r.patchServerAdapterLoader(&pod.Spec, m, r.ModelLoaders.Image)
 	patchServerCacheVolumes(&pod.Spec, m, c)
-	c.Source.modelAuthCredentials.applyToPodSpec(&pod.Spec, 0)
+	c.Source.modelSourcePodAdditions.applyToPodSpec(&pod.Spec, 0)
 
 	return pod
 }

@@ -264,6 +264,22 @@ func TestModelValidation(t *testing.T) {
 		},
 		{
 			model: v1.Model{
+				ObjectMeta: metadata("cache-profile-with-non-pvc-url-invalid"),
+				Spec: v1.ModelSpec{
+					URL:          "pvc://test-pvc/test-model",
+					Engine:       "VLLM",
+					Features:     []v1.ModelFeature{},
+					CacheProfile: "some-cache-profile",
+				},
+			},
+			expErrContains: []string{
+				"cacheProfile is only supported with urls of format",
+				"hf://",
+				"s3://",
+			},
+		},
+		{
+			model: v1.Model{
 				ObjectMeta: metadata("update-no-changes-valid"),
 				Spec: v1.ModelSpec{
 					URL:      "hf://test-repo/test-model",
