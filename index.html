@@ -278,6 +278,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#adopters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adopters
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#local-quickstart" class="md-nav__link">
     <span class="md-ellipsis">
       Local Quickstart
@@ -314,15 +323,6 @@
   <a href="#documentation" class="md-nav__link">
     <span class="md-ellipsis">
       Documentation
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#adopters" class="md-nav__link">
-    <span class="md-ellipsis">
-      Adopters
     </span>
   </a>
   
@@ -1323,6 +1323,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#adopters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adopters
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#local-quickstart" class="md-nav__link">
     <span class="md-ellipsis">
       Local Quickstart
@@ -1359,15 +1368,6 @@
   <a href="#documentation" class="md-nav__link">
     <span class="md-ellipsis">
       Documentation
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#adopters" class="md-nav__link">
-    <span class="md-ellipsis">
-      Adopters
     </span>
   </a>
   
@@ -1419,17 +1419,17 @@
 
 
 <h1 id="kubeai-ai-inferencing-operator">KubeAI: AI Inferencing Operator<a class="headerlink" href="#kubeai-ai-inferencing-operator" title="Permanent link">&para;</a></h1>
-<p>Get inferencing running on Kubernetes: LLMs, Embeddings, Speech-to-Text.</p>
-<p>✅️  Drop-in replacement for OpenAI with API compatibility<br />
-⚖️  Scale from zero, autoscale based on load<br />
-🧠  Serve text generation models (LLMs, VLMs, etc.)<br />
-💬  Speech to Text API<br />
-🧮  Embedding/Vector API<br />
-🚀  Multi-platform: CPU-only, GPU, TPU<br />
+<p>The easiest way to serve ML models in production. Supports LLMs, embeddings, and speech-to-text.</p>
+<p>✅️  OpenAI API Compatibility: Drop-in replacement for OpenAI<br />
+⚖️  Autoscaling: Scale from zero, autoscale based on load<br />
+🧠  Serve text generation models with vLLM or Ollama<br />
+🔌  Lora Adapter aware routing<br />
+💬  Speech to Text API with FasterWhisper<br />
+🧮  Embedding/Vector API with Infinity<br />
+🚀  Multi-platform: CPU, GPU, TPU<br />
 💾  Model caching with shared filesystems (EFS, Filestore, etc.)<br />
 🛠️  Zero dependencies (does not depend on Istio, Knative, etc.)<br />
 💬  Chat UI included (<a href="https://github.com/open-webui/open-webui">OpenWebUI</a>)<br />
-🤖  Operates OSS model servers (vLLM, Ollama, FasterWhisper, Infinity)<br />
 ✉  Stream/batch inference via messaging integrations (Kafka, PubSub, etc.)  </p>
 <p>Quotes from the community:</p>
 <blockquote>
@@ -1438,6 +1438,45 @@
 <h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
 <p>KubeAI serves an OpenAI compatible HTTP API. Admins can configure ML models via <code>kind: Model</code> Kubernetes Custom Resources. KubeAI can be thought of as a Model Operator (See <a href="https://kubernetes.io/docs/concepts/extend-kubernetes/operator/">Operator Pattern</a>) that manages <a href="https://github.com/vllm-project/vllm">vLLM</a> and <a href="https://github.com/ollama/ollama">Ollama</a> servers.</p>
 <p><img src="./diagrams/arch.excalidraw.png"></img></p>
+<h2 id="adopters">Adopters<a class="headerlink" href="#adopters" title="Permanent link">&para;</a></h2>
+<p>List of known adopters:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+<th>Link</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Telescope</td>
+<td>Telescope uses KubeAI for multi-region large scale batch LLM inference.</td>
+<td><a href="https://trytelescope.ai">trytelescope.ai</a></td>
+</tr>
+<tr>
+<td>Google Cloud Distributed Edge</td>
+<td>KubeAI is included as a reference architecture for inferencing at the edge.</td>
+<td><a href="https://www.linkedin.com/posts/mikeensor_gcp-solutions-public-retail-edge-available-cluster-traits-activity-7237515920259104769-vBs9?utm_source=share&amp;utm_medium=member_desktop">LinkedIn</a>, <a href="https://gitlab.com/gcp-solutions-public/retail-edge/available-cluster-traits/kubeai-cluster-trait">GitLab</a></td>
+</tr>
+<tr>
+<td>Lambda</td>
+<td>You can try KubeAI on the Lambda AI Developer Cloud. See Lambda's <a href="https://docs.lambdalabs.com/education/large-language-models/kubeai-hermes-3/">tutorial</a> and <a href="https://youtu.be/HEtPO2Wuiac">video</a>.</td>
+<td><a href="https://lambdalabs.com/">Lambda</a></td>
+</tr>
+<tr>
+<td>Vultr</td>
+<td>KubeAI can be deployed on Vultr Managed Kubernetes using the application marketplace.</td>
+<td><a href="https://www.vultr.com">Vultr</a></td>
+</tr>
+<tr>
+<td>Arcee</td>
+<td>Arcee uses KubeAI for multi-region, multi-tenant SLM inference.</td>
+<td><a href="https://www.arcee.ai/">Arcee</a></td>
+</tr>
+</tbody>
+</table>
+<p>If you are using KubeAI and would like to be listed as an adopter, please make a PR.</p>
 <h2 id="local-quickstart">Local Quickstart<a class="headerlink" href="#local-quickstart" title="Permanent link">&para;</a></h2>
 <video controls src="https://github.com/user-attachments/assets/711d1279-6af9-4c6c-a052-e59e7730b757" width="800"></video>
 
@@ -1499,45 +1538,6 @@ helm<span class="w"> </span>install<span class="w"> </span>kubeai-models<span cl
 <li>Concepts (how the components of KubeAI work).</li>
 <li>How to contribute</li>
 </ul>
-<h2 id="adopters">Adopters<a class="headerlink" href="#adopters" title="Permanent link">&para;</a></h2>
-<p>List of known adopters:</p>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Description</th>
-<th>Link</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Telescope</td>
-<td>Telescope uses KubeAI for multi-region large scale batch LLM inference.</td>
-<td><a href="https://trytelescope.ai">trytelescope.ai</a></td>
-</tr>
-<tr>
-<td>Google Cloud Distributed Edge</td>
-<td>KubeAI is included as a reference architecture for inferencing at the edge.</td>
-<td><a href="https://www.linkedin.com/posts/mikeensor_gcp-solutions-public-retail-edge-available-cluster-traits-activity-7237515920259104769-vBs9?utm_source=share&amp;utm_medium=member_desktop">LinkedIn</a>, <a href="https://gitlab.com/gcp-solutions-public/retail-edge/available-cluster-traits/kubeai-cluster-trait">GitLab</a></td>
-</tr>
-<tr>
-<td>Lambda</td>
-<td>You can try KubeAI on the Lambda AI Developer Cloud. See Lambda's <a href="https://docs.lambdalabs.com/education/large-language-models/kubeai-hermes-3/">tutorial</a> and <a href="https://youtu.be/HEtPO2Wuiac">video</a>.</td>
-<td><a href="https://lambdalabs.com/">Lambda</a></td>
-</tr>
-<tr>
-<td>Vultr</td>
-<td>KubeAI can be deployed on Vultr Managed Kubernetes using the application marketplace.</td>
-<td><a href="https://www.vultr.com">Vultr</a></td>
-</tr>
-<tr>
-<td>Arcee</td>
-<td>Arcee uses KubeAI for multi-region, multi-tenant SLM inference.</td>
-<td><a href="https://www.arcee.ai/">Arcee</a></td>
-</tr>
-</tbody>
-</table>
-<p>If you are using KubeAI and would like to be listed as an adopter, please make a PR.</p>
 <h2 id="openai-api-compatibility">OpenAI API Compatibility<a class="headerlink" href="#openai-api-compatibility" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><span class="c1"># Implemented #</span>
 /v1/chat/completions
