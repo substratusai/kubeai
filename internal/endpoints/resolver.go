@@ -20,7 +20,7 @@ import (
 func NewResolver(mgr ctrl.Manager) (*Resolver, error) {
 	r := &Resolver{}
 	r.Client = mgr.GetClient()
-	r.endpoints = map[string]*endpointGroup{}
+	r.endpoints = map[string]*group{}
 	r.ExcludePods = map[string]struct{}{}
 	if err := r.SetupWithManager(mgr); err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ type Resolver struct {
 
 	endpointsMtx sync.Mutex
 	// map[<model-name>]endpointGroup
-	endpoints map[string]*endpointGroup
+	endpoints map[string]*group
 
 	selfIPsMtx sync.RWMutex
 	selfIPs    []string
@@ -90,7 +90,7 @@ func (r *Resolver) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result
 		return ctrl.Result{}, fmt.Errorf("listing matching pods: %w", err)
 	}
 
-	addrs := map[string]endpointAttrs{}
+	observedEndpoints := map[string]endpoint{}
 	for _, pod := range podList.Items {
 		if _, exclude := r.ExcludePods[pod.Name]; exclude {
 			continue
@@ -118,26 +118,27 @@ func (r *Resolver) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result
 			continue
 		}
 
-		addrs[ip+":"+port] = getEndpointAttrs(pod)
+		observedEndpoints[pod.Namespace+"/"+pod.Name] = endpoint{
+			address:  ip + ":" + port,
+			adapters: getEndpointAdapters(pod),
+		}
 	}
 
-	r.getEndpoints(modelName).setAddrs(addrs)
+	r.getEndpoints(modelName).reconcileEndpoints(observedEndpoints)
 
 	return ctrl.Result{}, nil
 }
 
-func getEndpointAttrs(pod corev1.Pod) endpointAttrs {
-	attrs := endpointAttrs{
-		adapters: map[string]struct{}{},
-	}
+func getEndpointAdapters(pod corev1.Pod) map[string]struct{} {
+	adapters := map[string]struct{}{}
 
 	for k := range pod.GetLabels() {
 		if strings.HasPrefix(k, kubeaiv1.PodAdapterLabelPrefix) {
-			attrs.adapters[strings.TrimPrefix(k, kubeaiv1.PodAdapterLabelPrefix)] = struct{}{}
+			adapters[strings.TrimPrefix(k, kubeaiv1.PodAdapterLabelPrefix)] = struct{}{}
 		}
 	}
 
-	return attrs
+	return adapters
 }
 
 func getPodAnnotation(pod corev1.Pod, key string) string {
@@ -147,7 +148,7 @@ func getPodAnnotation(pod corev1.Pod, key string) string {
 	return ""
 }
 
-func (r *Resolver) getEndpoints(model string) *endpointGroup {
+func (r *Resolver) getEndpoints(model string) *group {
 	r.endpointsMtx.Lock()
 	e, ok := r.endpoints[model]
 	if !ok {
@@ -164,11 +165,17 @@ func (r *Resolver) GetSelfIPs() []string {
 	return r.selfIPs
 }
 
+type AddressRequest struct {
+	Model   string
+	Adapter string
+	Prefix  string
+}
+
 // AwaitBestAddress returns the "IP:Port" with the lowest number of in-flight requests. It will block until an endpoint
 // becomes available or the context times out. It returns a function that should be called when the
 // request is complete to decrement the in-flight count.
-func (r *Resolver) AwaitBestAddress(ctx context.Context, model, adapter string) (string, func(), error) {
-	return r.getEndpoints(model).getBestAddr(ctx, adapter, false)
+func (r *Resolver) AwaitBestAddress(ctx context.Context, req AddressRequest) (string, func(), error) {
+	return r.getEndpoints(req.Model).getBestAddr(ctx, req.Adapter, req.Prefix, false)
 }
 
 // GetAllHosts retrieves the list of all hosts for a given model.

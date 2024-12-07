@@ -3,6 +3,7 @@ module github.com/substratusai/kubeai
 go 1.22.0
 
 require (
+	github.com/cespare/xxhash v1.1.0
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/google/uuid v1.6.0
 	github.com/onsi/ginkgo/v2 v2.17.1

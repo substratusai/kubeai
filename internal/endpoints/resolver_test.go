@@ -13,39 +13,47 @@ func TestAwaitBestHost(t *testing.T) {
 	const (
 		myModel              = "my-model"
 		myAdapter            = "my-adapter"
+		myPodWithoutAdapter  = "pod1"
+		myPodWithAdapter     = "pod2"
 		myAddrWithoutAdapter = "10.0.0.1:8000"
 		myAddrWithAdapter    = "10.0.0.2:8000"
 	)
 
-	manager := &Resolver{endpoints: make(map[string]*endpointGroup, 1)}
+	manager := &Resolver{endpoints: make(map[string]*group, 1)}
 
 	testCases := map[string]struct {
-		model   string
-		adapter string
-		addrs   map[string]endpointAttrs
-		expAddr string
-		expErr  error
+		model     string
+		adapter   string
+		endpoints map[string]endpoint
+		expAddr   string
+		expErr    error
 	}{
 		"model without adapter": {
 			model:   myModel,
 			expAddr: myAddrWithoutAdapter,
-			addrs:   map[string]endpointAttrs{myAddrWithoutAdapter: {}},
+			endpoints: map[string]endpoint{
+				myPodWithoutAdapter: {address: myAddrWithoutAdapter},
+			},
 		},
 		"model with adapter": {
 			model:   myModel,
 			adapter: myAdapter,
-			addrs: map[string]endpointAttrs{
-				myAddrWithoutAdapter: {},
-				myAddrWithAdapter: {adapters: map[string]struct{}{
-					myAdapter: {},
-				}},
+			endpoints: map[string]endpoint{
+				myPodWithoutAdapter: {
+					address: myAddrWithoutAdapter,
+				},
+				myPodWithAdapter: {
+					address: myAddrWithAdapter,
+					adapters: map[string]struct{}{
+						myAdapter: {},
+					}},
 			},
 			expAddr: myAddrWithAdapter,
 		},
 		"unknown model blocks until timeout": {
 			model: "unknown-model",
-			addrs: map[string]endpointAttrs{
-				myAddrWithoutAdapter: {},
+			endpoints: map[string]endpoint{
+				myPodWithoutAdapter: {address: myAddrWithoutAdapter},
 			},
 			expErr: context.DeadlineExceeded,
 		},
@@ -54,7 +62,7 @@ func TestAwaitBestHost(t *testing.T) {
 
 	for name, spec := range testCases {
 		t.Run(name, func(t *testing.T) {
-			manager.getEndpoints(myModel).setAddrs(spec.addrs)
+			manager.getEndpoints(myModel).reconcileEndpoints(spec.endpoints)
 
 			ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond)
 			defer cancel()

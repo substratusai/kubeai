@@ -24,16 +24,16 @@ func TestConcurrentAccess(t *testing.T) {
 		"lot of both":   {readerCount: 1_000, writerCount: 1_000},
 	}
 	for name, spec := range testCases {
-		randomReadFn := []func(g *endpointGroup){
-			func(g *endpointGroup) { g.getBestAddr(context.Background(), "", false) },
-			func(g *endpointGroup) { g.getAllAddrs() },
-			func(g *endpointGroup) { g.lenIPs() },
+		randomReadFn := []func(g *group){
+			func(g *group) { g.getBestAddr(context.Background(), "", false) },
+			func(g *group) { g.getAllAddrs() },
+			func(g *group) { g.lenIPs() },
 		}
 		t.Run(name, func(t *testing.T) {
 			// setup endpoint with one service so that requests are not waiting
-			endpoint := newEndpointGroup()
-			endpoint.setAddrs(
-				map[string]endpointAttrs{myModel: {}},
+			group := newEndpointGroup()
+			group.reconcileEndpoints(
+				map[string]endpoint{myModel: {}},
 			)
 
 			var startWg, doneWg sync.WaitGroup
@@ -50,10 +50,10 @@ func TestConcurrentAccess(t *testing.T) {
 				}
 			}
 			// when
-			startTogether(spec.readerCount, func() { randomReadFn[rand.Intn(len(randomReadFn)-1)](endpoint) })
+			startTogether(spec.readerCount, func() { randomReadFn[rand.Intn(len(randomReadFn)-1)](group) })
 			startTogether(spec.writerCount, func() {
-				endpoint.setAddrs(
-					map[string]endpointAttrs{rand.String(1): {}},
+				group.reconcileEndpoints(
+					map[string]endpoint{rand.String(1): {}},
 				)
 			})
 			doneWg.Wait()
@@ -77,16 +77,16 @@ func TestBlockAndWaitForEndpoints(t *testing.T) {
 			}()
 		}
 	}
-	endpoint := newEndpointGroup()
+	group := newEndpointGroup()
 	ctx := context.TODO()
 	startTogether(100, func() {
-		endpoint.getBestAddr(ctx, "", false)
+		group.getBestAddr(ctx, "", false)
 	})
 	startWg.Wait()
 
 	// when broadcast triggered
-	endpoint.setAddrs(
-		map[string]endpointAttrs{rand.String(4): {}},
+	group.reconcileEndpoints(
+		map[string]endpoint{rand.String(4): {}},
 	)
 	// then
 	doneWg.Wait()
