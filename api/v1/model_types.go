@@ -151,11 +151,12 @@ type Adapter struct {
 }
 
 type LoadBalancing struct {
+	// +kubebuilder:default=LeastLoad
 	Strategy   LoadBalancingStrategy `json:"strategy"`
 	PrefixHash PrefixHash            `json:"prefixHash"`
 }
 
-// +kubebuilder:validation:Enum=LeastLoad;CHWBL
+// +kubebuilder:validation:Enum=LeastLoad;PrefixHash
 type LoadBalancingStrategy string
 
 const (

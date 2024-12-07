@@ -140,9 +140,10 @@ spec:
                     - replication
                     type: object
                   strategy:
+                    default: LeastLoad
                     enum:
                     - LeastLoad
-                    - CHWBL
+                    - PrefixHash
                     type: string
                 required:
                 - prefixHash
