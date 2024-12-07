@@ -13,9 +13,11 @@ import (
 func newEndpointGroup() *group {
 	g := &group{
 		endpoints:         make(map[string]endpoint),
+		totalInFlight:     &atomic.Int64{},
 		chwblReplication:  100,
 		chwblHashes:       map[uint64]string{},
 		chwblSortedHashes: []uint64{},
+		bcast:             make(chan struct{}),
 	}
 	return g
 }
@@ -103,8 +105,8 @@ func (g *group) getAllAddrs() []string {
 	defer g.mtx.RUnlock()
 
 	var hosts []string
-	for ip := range g.endpoints {
-		hosts = append(hosts, ip)
+	for _, ep := range g.endpoints {
+		hosts = append(hosts, ep.address)
 	}
 
 	return hosts
@@ -115,6 +117,7 @@ func (g *group) reconcileEndpoints(observed map[string]endpoint) {
 	for name, observedEp := range observed {
 		if currentEp, ok := g.endpoints[name]; ok {
 			currentEp.adapters = observedEp.adapters
+			g.endpoints[name] = currentEp
 		} else {
 			g.endpoints[name] = endpoint{
 				inFlight: &atomic.Int64{},

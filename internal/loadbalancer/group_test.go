@@ -8,31 +8,46 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	v1 "github.com/substratusai/kubeai/api/v1"
 
 	"k8s.io/apimachinery/pkg/util/rand"
 )
 
 func TestConcurrentAccess(t *testing.T) {
-	const myModel = "myModel"
+	const (
+		myModel = "myModel"
+		myAddr  = "10.0.0.1:8000"
+	)
 
 	testCases := map[string]struct {
 		readerCount int
 		writerCount int
 	}{
-		"lot of reader": {readerCount: 1_000, writerCount: 1},
-		"lot of writer": {readerCount: 1, writerCount: 1_000},
-		"lot of both":   {readerCount: 1_000, writerCount: 1_000},
+		"one reader_one_writer": {readerCount: 1, writerCount: 1},
+		"lot of reader":         {readerCount: 1_000, writerCount: 1},
+		"lot of writer":         {readerCount: 1, writerCount: 1_000},
+		"lot of both":           {readerCount: 1_000, writerCount: 1_000},
 	}
 	for name, spec := range testCases {
 		randomReadFn := []func(g *group){
-			func(g *group) { g.getBestAddr(context.Background(), AddressRequest{}, false) },
+			func(g *group) {
+				ip, f, err := g.getBestAddr(context.Background(), AddressRequest{
+					Model: myModel,
+					LoadBalancing: v1.LoadBalancing{
+						Strategy: v1.LeastLoadStrategy,
+					},
+				}, false)
+				require.NoError(t, err)
+				defer f()
+				assert.Equal(t, myAddr, ip)
+			},
 			func(g *group) { g.getAllAddrs() },
 		}
 		t.Run(name, func(t *testing.T) {
-			// setup endpoint with one service so that requests are not waiting
+			// setup endpoint with one endpoint so that requests are not waiting
 			group := newEndpointGroup()
 			group.reconcileEndpoints(
-				map[string]endpoint{myModel: {}},
+				map[string]endpoint{myModel: {address: myAddr}},
 			)
 
 			var startWg, doneWg sync.WaitGroup
@@ -52,7 +67,7 @@ func TestConcurrentAccess(t *testing.T) {
 			startTogether(spec.readerCount, func() { randomReadFn[rand.Intn(len(randomReadFn)-1)](group) })
 			startTogether(spec.writerCount, func() {
 				group.reconcileEndpoints(
-					map[string]endpoint{rand.String(1): {}},
+					map[string]endpoint{myModel: {address: myAddr}},
 				)
 			})
 			doneWg.Wait()

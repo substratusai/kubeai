@@ -23,18 +23,18 @@ type proxyRequest struct {
 }
 
 func newProxyRequest(r *http.Request) (*proxyRequest, error) {
+	pr := &proxyRequest{
+		http:   r,
+		status: http.StatusOK,
+	}
+
 	apiReq, err := apiutils.ParseRequest(r.Body, r.Header)
 	if err != nil {
-		return nil, err
+		return pr, err
 	}
 	// The content length might have changed after the body was read and rewritten.
 	r.ContentLength = apiReq.ContentLength
-
-	pr := &proxyRequest{
-		Request: apiReq,
-		http:    r,
-		status:  http.StatusOK,
-	}
+	pr.Request = apiReq
 
 	return pr, nil
 }

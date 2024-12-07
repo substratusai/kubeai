@@ -20,8 +20,6 @@ func TestAwaitBestHost(t *testing.T) {
 		myAddrWithAdapter    = "10.0.0.2:8000"
 	)
 
-	manager := &LoadBalancer{endpoints: make(map[string]*group, 1)}
-
 	testCases := map[string]struct {
 		model     string
 		adapter   string
@@ -63,6 +61,10 @@ func TestAwaitBestHost(t *testing.T) {
 
 	for name, spec := range testCases {
 		t.Run(name, func(t *testing.T) {
+			manager := &LoadBalancer{
+				endpoints: make(map[string]*group, 1),
+			}
+
 			manager.getEndpoints(myModel).reconcileEndpoints(spec.endpoints)
 
 			ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond)
