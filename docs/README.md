@@ -1,17 +1,17 @@
 # KubeAI: AI Inferencing Operator
 
-Get inferencing running on Kubernetes: LLMs, Embeddings, Speech-to-Text.
+The easiest way to serve ML models in production. Supports LLMs, embeddings, and speech-to-text.
 
-✅️  Drop-in replacement for OpenAI with API compatibility  
-⚖️  Scale from zero, autoscale based on load  
-🧠  Serve text generation models (LLMs, VLMs, etc.)  
-💬  Speech to Text API  
-🧮  Embedding/Vector API  
-🚀  Multi-platform: CPU-only, GPU, TPU  
+✅️  OpenAI API Compatibility: Drop-in replacement for OpenAI  
+⚖️  Autoscaling: Scale from zero, autoscale based on load  
+🧠  Serve text generation models with vLLM or Ollama  
+🔌  Lora Adapter aware routing  
+💬  Speech to Text API with FasterWhisper  
+🧮  Embedding/Vector API with Infinity  
+🚀  Multi-platform: CPU, GPU, TPU  
 💾  Model caching with shared filesystems (EFS, Filestore, etc.)  
 🛠️  Zero dependencies (does not depend on Istio, Knative, etc.)  
 💬  Chat UI included ([OpenWebUI](https://github.com/open-webui/open-webui))  
-🤖  Operates OSS model servers (vLLM, Ollama, FasterWhisper, Infinity)  
 ✉  Stream/batch inference via messaging integrations (Kafka, PubSub, etc.)  
 
 Quotes from the community:
@@ -23,6 +23,20 @@ Quotes from the community:
 KubeAI serves an OpenAI compatible HTTP API. Admins can configure ML models via `kind: Model` Kubernetes Custom Resources. KubeAI can be thought of as a Model Operator (See [Operator Pattern](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/)) that manages [vLLM](https://github.com/vllm-project/vllm) and [Ollama](https://github.com/ollama/ollama) servers.
 
 <img src="./diagrams/arch.excalidraw.png"></img>
+
+## Adopters
+
+List of known adopters:
+
+| Name | Description | Link |
+| ---- | ----------- | ---- |
+| Telescope | Telescope uses KubeAI for multi-region large scale batch LLM inference. | [trytelescope.ai](https://trytelescope.ai) |
+| Google Cloud Distributed Edge | KubeAI is included as a reference architecture for inferencing at the edge. | [LinkedIn](https://www.linkedin.com/posts/mikeensor_gcp-solutions-public-retail-edge-available-cluster-traits-activity-7237515920259104769-vBs9?utm_source=share&utm_medium=member_desktop), [GitLab](https://gitlab.com/gcp-solutions-public/retail-edge/available-cluster-traits/kubeai-cluster-trait) |
+| Lambda | You can try KubeAI on the Lambda AI Developer Cloud. See Lambda's [tutorial](https://docs.lambdalabs.com/education/large-language-models/kubeai-hermes-3/) and [video](https://youtu.be/HEtPO2Wuiac). | [Lambda](https://lambdalabs.com/) |
+| Vultr | KubeAI can be deployed on Vultr Managed Kubernetes using the application marketplace. | [Vultr](https://www.vultr.com) |
+| Arcee | Arcee uses KubeAI for multi-region, multi-tenant SLM inference. | [Arcee](https://www.arcee.ai/) |
+
+If you are using KubeAI and would like to be listed as an adopter, please make a PR.
 
 ## Local Quickstart
 
@@ -112,20 +126,6 @@ Checkout our documentation on [kubeai.org](https://www.kubeai.org) to find info 
 * How to guides (e.g. how to manage models and resource profiles).
 * Concepts (how the components of KubeAI work).
 * How to contribute
-
-## Adopters
-
-List of known adopters:
-
-| Name | Description | Link |
-| ---- | ----------- | ---- |
-| Telescope | Telescope uses KubeAI for multi-region large scale batch LLM inference. | [trytelescope.ai](https://trytelescope.ai) |
-| Google Cloud Distributed Edge | KubeAI is included as a reference architecture for inferencing at the edge. | [LinkedIn](https://www.linkedin.com/posts/mikeensor_gcp-solutions-public-retail-edge-available-cluster-traits-activity-7237515920259104769-vBs9?utm_source=share&utm_medium=member_desktop), [GitLab](https://gitlab.com/gcp-solutions-public/retail-edge/available-cluster-traits/kubeai-cluster-trait) |
-| Lambda | You can try KubeAI on the Lambda AI Developer Cloud. See Lambda's [tutorial](https://docs.lambdalabs.com/education/large-language-models/kubeai-hermes-3/) and [video](https://youtu.be/HEtPO2Wuiac). | [Lambda](https://lambdalabs.com/) |
-| Vultr | KubeAI can be deployed on Vultr Managed Kubernetes using the application marketplace. | [Vultr](https://www.vultr.com) |
-| Arcee | Arcee uses KubeAI for multi-region, multi-tenant SLM inference. | [Arcee](https://www.arcee.ai/) |
-
-If you are using KubeAI and would like to be listed as an adopter, please make a PR.
 
 ## OpenAI API Compatibility
 
