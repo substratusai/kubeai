@@ -234,6 +234,23 @@ catalog:
     minReplicas: 1
     maxReplicas: 1
     resourceProfile: nvidia-gpu-a100-80gb:8
+  llama-3.3-70b-instruct-bf16-gh200:
+    enabled: false
+    features: [TextGeneration]
+    url: hf://meta-llama/Llama-3.3-70B-Instruct
+    engine: VLLM
+    env:
+      VLLM_ATTENTION_BACKEND: FLASHINFER
+    args:
+      - --max-model-len=32768
+      - --max-num-batched-token=32768
+      - --gpu-memory-utilization=0.98
+      - --kv-cache-dtype=fp8
+      - --cpu-offload-gb=60
+      - --enable-prefix-caching
+      - --disable-log-requests
+    resourceProfile: nvidia-gpu-gh200:1
+    targetRequests: 200
   nomic-embed-text-cpu:
     enabled: false
     features: ["TextEmbedding"]

@@ -45,9 +45,9 @@ modelServers:
       google-tpu: "substratusai/vllm:v0.6.4.post1-tpu"
       nvidia-gpu: "vllm/vllm-openai:v0.6.4.post1"
       # TODO (samos123) switch to the official image when it is available.
-      # Note this is simply a clone of drikster80/vllm-gh200-openai:v0.6.3.post1.
       # Source: https://github.com/drikster80/vllm/tree/gh200-docker
-      gh200: "substratusai/vllm-gh200-openai:v0.6.3.post1"
+      # gh200: "drikster80/vllm-gh200-openai:v0.6.4.post1"
+      gh200: "substratusai/vllm-gh200-openai:v0.6.4.post1"
   OLlama:
     images:
       default: "ollama/ollama:latest"

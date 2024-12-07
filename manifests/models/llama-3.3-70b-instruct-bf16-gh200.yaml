@@ -1,0 +1,21 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: llama-3.3-70b-instruct-bf16-gh200
+spec:
+  features: [TextGeneration]
+  url: hf://meta-llama/Llama-3.3-70B-Instruct
+  engine: VLLM
+  args:
+    - --max-model-len=32768
+    - --max-num-batched-token=32768
+    - --gpu-memory-utilization=0.98
+    - --kv-cache-dtype=fp8
+    - --cpu-offload-gb=60
+    - --enable-prefix-caching
+    - --disable-log-requests
+  env:
+    VLLM_ATTENTION_BACKEND: FLASHINFER
+  targetRequests: 200
+  resourceProfile: nvidia-gpu-gh200:1
