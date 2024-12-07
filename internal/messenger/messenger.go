@@ -200,13 +200,13 @@ func (m *Messenger) handleRequest(ctx context.Context, msg *pubsub.Message) {
 	}
 
 	metricAttrs := metric.WithAttributeSet(attribute.NewSet(
-		metrics.AttrRequestModel.String(req.model),
+		metrics.AttrRequestModel.String(req.Model),
 		metrics.AttrRequestType.String(metrics.AttrRequestTypeMessage),
 	))
 	metrics.InferenceRequestsActive.Add(ctx, 1, metricAttrs)
 	defer metrics.InferenceRequestsActive.Add(ctx, -1, metricAttrs)
 
-	modelExists, err := m.modelScaler.LookupModel(ctx, req.model, req.adapter, nil)
+	modelExists, err := m.modelScaler.LookupModel(ctx, req.Model, req.Adapter, nil)
 	if err != nil {
 		m.sendResponse(req, m.jsonError("error checking if model exists: %v", err), http.StatusInternalServerError)
 		return
@@ -214,18 +214,18 @@ func (m *Messenger) handleRequest(ctx context.Context, msg *pubsub.Message) {
 	if !modelExists {
 		// Send a 400 response to the client, however it is possible the backend
 		// will be deployed soon or another subscriber will handle it.
-		m.sendResponse(req, m.jsonError("model not found: %s", req.model), http.StatusNotFound)
+		m.sendResponse(req, m.jsonError("model not found: %s", req.RequestedModel), http.StatusNotFound)
 		return
 	}
 
 	// Ensure the backend is scaled to at least one Pod.
-	m.modelScaler.ScaleAtLeastOneReplica(ctx, req.model)
+	m.modelScaler.ScaleAtLeastOneReplica(ctx, req.Model)
 
 	log.Printf("Awaiting host for message %s", msg.LoggableID)
 
 	host, completeFunc, err := m.loadBalancer.AwaitBestAddress(ctx, loadbalancer.AddressRequest{
-		Model:   req.model,
-		Adapter: req.adapter,
+		Model:   req.Model,
+		Adapter: req.Adapter,
 		// TODO: Prefix
 	})
 	if err != nil {
@@ -236,7 +236,7 @@ func (m *Messenger) handleRequest(ctx context.Context, msg *pubsub.Message) {
 
 	url := fmt.Sprintf("http://%s%s", host, req.path)
 	log.Printf("Sending request to backend for message %s: %s", msg.LoggableID, url)
-	respPayload, respCode, err := m.sendBackendRequest(ctx, url, req.body)
+	respPayload, respCode, err := m.sendBackendRequest(ctx, url, req.Body)
 	if err != nil {
 		m.sendResponse(req, m.jsonError("error sending request to backend: %v", err), http.StatusBadGateway)
 		return
@@ -250,14 +250,11 @@ func (m *Messenger) Stop(ctx context.Context) error {
 }
 
 type request struct {
-	ctx            context.Context
-	msg            *pubsub.Message
-	metadata       map[string]interface{}
-	path           string
-	body           json.RawMessage
-	requestedModel string
-	model          string
-	adapter        string
+	ctx context.Context
+	*apiutils.Request
+	msg      *pubsub.Message
+	metadata map[string]interface{}
+	path     string
 }
 
 func parseRequest(ctx context.Context, msg *pubsub.Message) (*request, error) {
@@ -285,34 +282,12 @@ func parseRequest(ctx context.Context, msg *pubsub.Message) (*request, error) {
 
 	req.metadata = payload.Metadata
 	req.path = path
-	req.body = payload.Body
 
-	var payloadBody map[string]interface{}
-	if err := json.Unmarshal(payload.Body, &payloadBody); err != nil {
-		return nil, fmt.Errorf("decoding: %w", err)
+	apiR, err := apiutils.ParseRequest(bytes.NewReader(payload.Body), http.Header{})
+	if err != nil {
+		return nil, fmt.Errorf("parsing request: %w", err)
 	}
-	modelInf, ok := payloadBody["model"]
-	if !ok {
-		return nil, fmt.Errorf("missing '.body.model' field")
-	}
-	modelStr, ok := modelInf.(string)
-	if !ok {
-		return nil, fmt.Errorf("field '.body.model' should be a string")
-	}
-
-	req.requestedModel = modelStr
-	req.model, req.adapter = apiutils.SplitModelAdapter(modelStr)
-
-	// Assuming this is a vLLM request.
-	// vLLM expects the adapter to be in the model field.
-	if req.adapter != "" {
-		payloadBody["model"] = req.adapter
-		rewrittenBody, err := json.Marshal(payloadBody)
-		if err != nil {
-			return nil, fmt.Errorf("remarshalling: %w", err)
-		}
-		req.body = rewrittenBody
-	}
+	req.Request = apiR
 
 	return req, nil
 }

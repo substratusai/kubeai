@@ -58,35 +58,34 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("X-Proxy", "lingo")
 
-	pr := newProxyRequest(r)
-
 	// TODO: Only parse model for paths that would have a model.
-	if err := pr.parse(); err != nil {
+	pr, err := newProxyRequest(r)
+	if err != nil {
 		pr.sendErrorResponse(w, http.StatusBadRequest, "unable to parse model: %v", err)
 		return
 	}
 
-	log.Println("model:", pr.model, "adapter:", pr.adapter)
+	log.Println("model:", pr.Model, "adapter:", pr.Adapter)
 
 	metricAttrs := metric.WithAttributeSet(attribute.NewSet(
-		metrics.AttrRequestModel.String(pr.requestedModel),
+		metrics.AttrRequestModel.String(pr.RequestedModel),
 		metrics.AttrRequestType.String(metrics.AttrRequestTypeHTTP),
 	))
-	metrics.InferenceRequestsActive.Add(pr.r.Context(), 1, metricAttrs)
-	defer metrics.InferenceRequestsActive.Add(pr.r.Context(), -1, metricAttrs)
+	metrics.InferenceRequestsActive.Add(pr.http.Context(), 1, metricAttrs)
+	defer metrics.InferenceRequestsActive.Add(pr.http.Context(), -1, metricAttrs)
 
-	modelExists, err := h.modelScaler.LookupModel(r.Context(), pr.model, pr.adapter, pr.selectors)
+	modelExists, err := h.modelScaler.LookupModel(r.Context(), pr.Model, pr.Adapter, pr.Selectors)
 	if err != nil {
 		pr.sendErrorResponse(w, http.StatusInternalServerError, "unable to resolve model: %v", err)
 		return
 	}
 	if !modelExists {
-		pr.sendErrorResponse(w, http.StatusNotFound, "model not found: %v", pr.requestedModel)
+		pr.sendErrorResponse(w, http.StatusNotFound, "model not found: %v", pr.RequestedModel)
 		return
 	}
 
 	// Ensure the backend is scaled to at least one Pod.
-	if err := h.modelScaler.ScaleAtLeastOneReplica(r.Context(), pr.model); err != nil {
+	if err := h.modelScaler.ScaleAtLeastOneReplica(r.Context(), pr.Model); err != nil {
 		pr.sendErrorResponse(w, http.StatusInternalServerError, "unable to scale model: %v", err)
 		return
 	}
@@ -99,11 +98,11 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 var AdditionalProxyRewrite = func(*httputil.ProxyRequest) {}
 
 func (h *Handler) proxyHTTP(w http.ResponseWriter, pr *proxyRequest) {
-	log.Printf("Waiting for host: %v", pr.id)
+	log.Printf("Waiting for host: %v", pr.ID)
 
-	addr, decrementInflight, err := h.loadBalancer.AwaitBestAddress(pr.r.Context(), loadbalancer.AddressRequest{
-		Model:   pr.model,
-		Adapter: pr.adapter,
+	addr, decrementInflight, err := h.loadBalancer.AwaitBestAddress(pr.http.Context(), loadbalancer.AddressRequest{
+		Model:   pr.Model,
+		Adapter: pr.Adapter,
 		// TODO: Prefix
 	})
 	if err != nil {
@@ -153,7 +152,7 @@ func (h *Handler) proxyHTTP(w http.ResponseWriter, pr *proxyRequest) {
 		if err != nil && r.Context().Err() == nil && pr.attempt < h.maxRetries {
 			pr.attempt++
 
-			log.Printf("Retrying request (%v/%v): %v: %v", pr.attempt, h.maxRetries, pr.id, err)
+			log.Printf("Retrying request (%v/%v): %v: %v", pr.attempt, h.maxRetries, pr.ID, err)
 			h.proxyHTTP(w, pr)
 			return
 		}
@@ -163,7 +162,7 @@ func (h *Handler) proxyHTTP(w http.ResponseWriter, pr *proxyRequest) {
 		}
 	}
 
-	log.Printf("Proxying request to ip %v: %v\n", addr, pr.id)
+	log.Printf("Proxying request to ip %v: %v\n", addr, pr.ID)
 	proxy.ServeHTTP(w, pr.httpRequest())
 }
 
