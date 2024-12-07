@@ -11,6 +11,10 @@ resourceProfiles:
     nodeSelector:
       nvidia.com/gpu.family: "hopper"
       nvidia.com/gpu.memory: "81920"
+  nvidia-gpu-gh200:
+    nodeSelector:
+      nvidia.com/gpu.family: "hopper"
+      nvidia.com/gpu.memory: "97871"
   nvidia-gpu-a100-80gb:
     nodeSelector:
       nvidia.com/gpu.family: "ampere"
