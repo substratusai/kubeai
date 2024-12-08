@@ -120,7 +120,8 @@ type ModelSpec struct {
 
 	// LoadBalancing configuration for the model.
 	// If not specified, a default is used based on the engine and request.
-	LoadBalancing *LoadBalancing `json:"loadBalancing,omitempty"`
+	// +kubebuilder:default={}
+	LoadBalancing LoadBalancing `json:"loadBalancing,omitempty"`
 }
 
 // +kubebuilder:validation:Enum=TextGeneration;TextEmbedding;SpeechToText
@@ -151,9 +152,12 @@ type Adapter struct {
 }
 
 type LoadBalancing struct {
+	// +kubebuilder:validation:Optional
 	// +kubebuilder:default=LeastLoad
-	Strategy   LoadBalancingStrategy `json:"strategy"`
-	PrefixHash PrefixHash            `json:"prefixHash"`
+	Strategy LoadBalancingStrategy `json:"strategy,omitempty"`
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default={}
+	PrefixHash PrefixHash `json:"prefixHash,omitempty"`
 }
 
 // +kubebuilder:validation:Enum=LeastLoad;PrefixHash
@@ -169,15 +173,19 @@ type PrefixHash struct {
 	// over the mean load of all endpoints in the hash ring. Defaults to 125% which is
 	// a widely accepted value for the Consistent Hashing with Bounded Loads algorithm.
 	// +kubebuilder:default=125
-	MeanLoadPercentage int `json:"meanLoadFactor"`
+	// +kubebuilder:validation:Optional
+	MeanLoadPercentage int `json:"meanLoadFactor,omitempty"`
 	// Replication is the number of replicas of each endpoint on the hash ring.
 	// Higher values will result in a more even distribution of load but will
 	// decrease lookup performance.
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf", message="replication is immutable."
 	// +kubebuilder:default=20
-	Replication int `json:"replication"`
+	// +kubebuilder:validation:Optional
+	Replication int `json:"replication,omitempty"`
 	// PrefixByteLength is the number of bytes to count when building the prefix to hash.
-	PrefixByteLength int `json:"prefixByteLength"`
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default=100
+	PrefixByteLength int `json:"prefixByteLength,omitempty"`
 }
 
 // ModelStatus defines the observed state of Model.

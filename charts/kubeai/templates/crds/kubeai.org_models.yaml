@@ -107,11 +107,13 @@ spec:
                   Will be set from ResourceProfile + Engine if not specified.
                 type: string
               loadBalancing:
+                default: {}
                 description: |-
                   LoadBalancing configuration for the model.
                   If not specified, a default is used based on the engine and request.
                 properties:
                   prefixHash:
+                    default: {}
                     properties:
                       meanLoadFactor:
                         default: 125
@@ -121,6 +123,7 @@ spec:
                           a widely accepted value for the Consistent Hashing with Bounded Loads algorithm.
                         type: integer
                       prefixByteLength:
+                        default: 100
                         description: PrefixByteLength is the number of bytes to count
                           when building the prefix to hash.
                         type: integer
@@ -134,10 +137,6 @@ spec:
                         x-kubernetes-validations:
                         - message: replication is immutable.
                           rule: self == oldSelf
-                    required:
-                    - meanLoadFactor
-                    - prefixByteLength
-                    - replication
                     type: object
                   strategy:
                     default: LeastLoad
@@ -145,9 +144,6 @@ spec:
                     - LeastLoad
                     - PrefixHash
                     type: string
-                required:
-                - prefixHash
-                - strategy
                 type: object
               maxReplicas:
                 description: |-

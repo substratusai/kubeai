@@ -8,6 +8,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 
+	"github.com/substratusai/kubeai/api/v1"
 	"github.com/substratusai/kubeai/internal/loadbalancer"
 	"github.com/substratusai/kubeai/internal/metrics"
 	"go.opentelemetry.io/otel/attribute"
@@ -15,7 +16,7 @@ import (
 )
 
 type ModelClient interface {
-	LookupModel(ctx context.Context, model, adapter string, selectors []string) (bool, error)
+	LookupModel(ctx context.Context, model, adapter string, selectors []string) (*v1.Model, error)
 	ScaleAtLeastOneReplica(ctx context.Context, model string) error
 }
 
@@ -74,12 +75,12 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	metrics.InferenceRequestsActive.Add(pr.http.Context(), 1, metricAttrs)
 	defer metrics.InferenceRequestsActive.Add(pr.http.Context(), -1, metricAttrs)
 
-	modelExists, err := h.modelScaler.LookupModel(r.Context(), pr.Model, pr.Adapter, pr.Selectors)
+	model, err := h.modelScaler.LookupModel(r.Context(), pr.Model, pr.Adapter, pr.Selectors)
 	if err != nil {
 		pr.sendErrorResponse(w, http.StatusInternalServerError, "unable to resolve model: %v", err)
 		return
 	}
-	if !modelExists {
+	if model == nil {
 		pr.sendErrorResponse(w, http.StatusNotFound, "model not found: %v", pr.RequestedModel)
 		return
 	}
@@ -104,6 +105,7 @@ func (h *Handler) proxyHTTP(w http.ResponseWriter, pr *proxyRequest) {
 		Model:   pr.Model,
 		Adapter: pr.Adapter,
 		// TODO: Prefix
+		// TODO: LoadBalancing
 	})
 	if err != nil {
 		switch {

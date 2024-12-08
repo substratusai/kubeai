@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/substratusai/kubeai/api/v1"
 	"github.com/substratusai/kubeai/internal/apiutils"
 	"github.com/substratusai/kubeai/internal/loadbalancer"
 	"github.com/substratusai/kubeai/internal/metrics"
@@ -71,7 +72,7 @@ func NewMessenger(
 }
 
 type ModelScaler interface {
-	LookupModel(ctx context.Context, model, adapter string, selectors []string) (bool, error)
+	LookupModel(ctx context.Context, model, adapter string, selectors []string) (*v1.Model, error)
 	ScaleAtLeastOneReplica(ctx context.Context, model string) error
 }
 
@@ -206,12 +207,12 @@ func (m *Messenger) handleRequest(ctx context.Context, msg *pubsub.Message) {
 	metrics.InferenceRequestsActive.Add(ctx, 1, metricAttrs)
 	defer metrics.InferenceRequestsActive.Add(ctx, -1, metricAttrs)
 
-	modelExists, err := m.modelScaler.LookupModel(ctx, req.Model, req.Adapter, nil)
+	model, err := m.modelScaler.LookupModel(ctx, req.Model, req.Adapter, nil)
 	if err != nil {
 		m.sendResponse(req, m.jsonError("error checking if model exists: %v", err), http.StatusInternalServerError)
 		return
 	}
-	if !modelExists {
+	if model == nil {
 		// Send a 400 response to the client, however it is possible the backend
 		// will be deployed soon or another subscriber will handle it.
 		m.sendResponse(req, m.jsonError("model not found: %s", req.RequestedModel), http.StatusNotFound)
@@ -224,9 +225,9 @@ func (m *Messenger) handleRequest(ctx context.Context, msg *pubsub.Message) {
 	log.Printf("Awaiting host for message %s", msg.LoggableID)
 
 	host, completeFunc, err := m.loadBalancer.AwaitBestAddress(ctx, loadbalancer.AddressRequest{
-		Model:   req.Model,
-		Adapter: req.Adapter,
-		// TODO: Prefix
+		Model:         req.Model,
+		Adapter:       req.Adapter,
+		LoadBalancing: model.Spec.LoadBalancing,
 	})
 	if err != nil {
 		m.sendResponse(req, m.jsonError("error awaiting host for backend: %v", err), http.StatusBadGateway)

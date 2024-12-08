@@ -24,13 +24,13 @@ func NewModelClient(client client.Client, namespace string) *ModelClient {
 }
 
 // LookupModel checks if a model exists and matches the given label selectors.
-func (c *ModelClient) LookupModel(ctx context.Context, model, adapter string, labelSelectors []string) (bool, error) {
+func (c *ModelClient) LookupModel(ctx context.Context, model, adapter string, labelSelectors []string) (*kubeaiv1.Model, error) {
 	m := &kubeaiv1.Model{}
 	if err := c.client.Get(ctx, types.NamespacedName{Name: model, Namespace: c.namespace}, m); err != nil {
 		if apierrors.IsNotFound(err) {
-			return false, nil
+			return nil, nil
 		}
-		return false, err
+		return nil, err
 	}
 
 	modelLabels := m.GetLabels()
@@ -40,10 +40,10 @@ func (c *ModelClient) LookupModel(ctx context.Context, model, adapter string, la
 	for _, sel := range labelSelectors {
 		parsedSel, err := labels.Parse(sel)
 		if err != nil {
-			return false, fmt.Errorf("parse label selector: %w", err)
+			return nil, fmt.Errorf("parse label selector: %w", err)
 		}
 		if !parsedSel.Matches(labels.Set(modelLabels)) {
-			return false, nil
+			return nil, nil
 		}
 	}
 
@@ -56,11 +56,11 @@ func (c *ModelClient) LookupModel(ctx context.Context, model, adapter string, la
 			}
 		}
 		if !adapterFound {
-			return false, nil
+			return nil, nil
 		}
 	}
 
-	return true, nil
+	return m, nil
 }
 
 func (s *ModelClient) ListAllModels(ctx context.Context) ([]kubeaiv1.Model, error) {
