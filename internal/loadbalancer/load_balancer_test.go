@@ -1,4 +1,4 @@
-package endpoints
+package loadbalancer
 
 import (
 	"context"
@@ -7,45 +7,52 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	v1 "github.com/substratusai/kubeai/api/v1"
 )
 
 func TestAwaitBestHost(t *testing.T) {
 	const (
 		myModel              = "my-model"
 		myAdapter            = "my-adapter"
+		myPodWithoutAdapter  = "pod1"
+		myPodWithAdapter     = "pod2"
 		myAddrWithoutAdapter = "10.0.0.1:8000"
 		myAddrWithAdapter    = "10.0.0.2:8000"
 	)
 
-	manager := &Resolver{endpoints: make(map[string]*endpointGroup, 1)}
-
 	testCases := map[string]struct {
-		model   string
-		adapter string
-		addrs   map[string]endpointAttrs
-		expAddr string
-		expErr  error
+		model     string
+		adapter   string
+		endpoints map[string]endpoint
+		expAddr   string
+		expErr    error
 	}{
 		"model without adapter": {
 			model:   myModel,
 			expAddr: myAddrWithoutAdapter,
-			addrs:   map[string]endpointAttrs{myAddrWithoutAdapter: {}},
+			endpoints: map[string]endpoint{
+				myPodWithoutAdapter: {address: myAddrWithoutAdapter},
+			},
 		},
 		"model with adapter": {
 			model:   myModel,
 			adapter: myAdapter,
-			addrs: map[string]endpointAttrs{
-				myAddrWithoutAdapter: {},
-				myAddrWithAdapter: {adapters: map[string]struct{}{
-					myAdapter: {},
-				}},
+			endpoints: map[string]endpoint{
+				myPodWithoutAdapter: {
+					address: myAddrWithoutAdapter,
+				},
+				myPodWithAdapter: {
+					address: myAddrWithAdapter,
+					adapters: map[string]struct{}{
+						myAdapter: {},
+					}},
 			},
 			expAddr: myAddrWithAdapter,
 		},
 		"unknown model blocks until timeout": {
 			model: "unknown-model",
-			addrs: map[string]endpointAttrs{
-				myAddrWithoutAdapter: {},
+			endpoints: map[string]endpoint{
+				myPodWithoutAdapter: {address: myAddrWithoutAdapter},
 			},
 			expErr: context.DeadlineExceeded,
 		},
@@ -54,12 +61,22 @@ func TestAwaitBestHost(t *testing.T) {
 
 	for name, spec := range testCases {
 		t.Run(name, func(t *testing.T) {
-			manager.getEndpoints(myModel).setAddrs(spec.addrs)
+			manager := &LoadBalancer{
+				endpoints: make(map[string]*group, 1),
+			}
+
+			manager.getEndpoints(myModel).reconcileEndpoints(spec.endpoints)
 
 			ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond)
 			defer cancel()
 
-			gotAddr, gotFunc, gotErr := manager.AwaitBestAddress(ctx, spec.model, spec.adapter)
+			gotAddr, gotFunc, gotErr := manager.AwaitBestAddress(ctx, AddressRequest{
+				Model:   spec.model,
+				Adapter: spec.adapter,
+				LoadBalancing: v1.LoadBalancing{
+					Strategy: v1.LeastLoadStrategy,
+				},
+			})
 			if spec.expErr != nil {
 				require.ErrorIs(t, spec.expErr, gotErr)
 				return
