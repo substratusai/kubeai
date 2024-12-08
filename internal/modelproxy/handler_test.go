@@ -13,9 +13,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/substratusai/kubeai/api/v1"
 	"github.com/substratusai/kubeai/internal/apiutils"
 	"github.com/substratusai/kubeai/internal/loadbalancer"
 	"github.com/substratusai/kubeai/internal/metrics/metricstest"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestHandler(t *testing.T) {
@@ -277,18 +279,20 @@ type testModelInterface struct {
 	models map[string]testMockModel
 }
 
-func (t *testModelInterface) LookupModel(ctx context.Context, model, adapter string, selector []string) (bool, error) {
+func (t *testModelInterface) LookupModel(ctx context.Context, model, adapter string, selector []string) (*v1.Model, error) {
 	m, ok := t.models[model]
 	if ok {
 		if adapter == "" {
-			return true, nil
+			return &v1.Model{ObjectMeta: metav1.ObjectMeta{Name: model}}, nil
 		}
 		if m.adapters == nil {
-			return false, nil
+			return nil, nil
 		}
-		return m.adapters[adapter], nil
+		if m.adapters[adapter] {
+			return &v1.Model{ObjectMeta: metav1.ObjectMeta{Name: model}}, nil
+		}
 	}
-	return false, nil
+	return nil, nil
 }
 
 func (t *testModelInterface) ScaleAtLeastOneReplica(ctx context.Context, model string) error {
