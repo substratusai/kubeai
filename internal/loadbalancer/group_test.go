@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	v1 "github.com/substratusai/kubeai/api/v1"
+	"github.com/substratusai/kubeai/internal/apiutils"
 
 	"k8s.io/apimachinery/pkg/util/rand"
 )
@@ -31,7 +32,7 @@ func TestConcurrentAccess(t *testing.T) {
 	for name, spec := range testCases {
 		randomReadFn := []func(g *group){
 			func(g *group) {
-				ip, f, err := g.getBestAddr(context.Background(), AddressRequest{
+				ip, f, err := g.getBestAddr(context.Background(), &apiutils.Request{
 					Model: myModel,
 					LoadBalancing: v1.LoadBalancing{
 						Strategy: v1.LeastLoadStrategy,
@@ -94,7 +95,7 @@ func TestBlockAndWaitForEndpoints(t *testing.T) {
 	group := newEndpointGroup()
 	ctx := context.TODO()
 	startTogether(100, func() {
-		group.getBestAddr(ctx, AddressRequest{}, false)
+		group.getBestAddr(ctx, &apiutils.Request{}, false)
 	})
 	startWg.Wait()
 
@@ -116,7 +117,7 @@ func TestAbortOnCtxCancel(t *testing.T) {
 	go func(t *testing.T) {
 		startWg.Wait()
 		endpoint := newEndpointGroup()
-		_, f, err := endpoint.getBestAddr(ctx, AddressRequest{}, false)
+		_, f, err := endpoint.getBestAddr(ctx, &apiutils.Request{}, false)
 		defer f()
 		require.Error(t, err)
 		doneWg.Done()

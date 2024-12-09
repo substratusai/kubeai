@@ -7,8 +7,8 @@ import (
 	"strings"
 	"sync"
 
-	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
 	v1 "github.com/substratusai/kubeai/api/v1"
+	"github.com/substratusai/kubeai/internal/apiutils"
 	"github.com/substratusai/kubeai/internal/k8sutils"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/utils/ptr"
@@ -81,13 +81,13 @@ func (r *LoadBalancer) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Re
 		return ctrl.Result{}, nil
 	}
 
-	modelName, ok := labels[kubeaiv1.PodModelLabel]
+	modelName, ok := labels[v1.PodModelLabel]
 	if !ok {
 		return ctrl.Result{}, nil
 	}
 
 	var podList corev1.PodList
-	if err := r.List(ctx, &podList, client.InNamespace(pod.Namespace), client.MatchingLabels{kubeaiv1.PodModelLabel: modelName}); err != nil {
+	if err := r.List(ctx, &podList, client.InNamespace(pod.Namespace), client.MatchingLabels{v1.PodModelLabel: modelName}); err != nil {
 		return ctrl.Result{}, fmt.Errorf("listing matching pods: %w", err)
 	}
 
@@ -102,14 +102,14 @@ func (r *LoadBalancer) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Re
 
 		// The Model controller should always set the port annotation in the Pods it creates
 		// to communicate the port that the given backend listens on.
-		port := getPodAnnotation(pod, kubeaiv1.ModelPodPortAnnotation)
+		port := getPodAnnotation(pod, v1.ModelPodPortAnnotation)
 		if port == "" {
-			log.Printf("ERROR: No port annotation %q found for pod %s, skipping", kubeaiv1.ModelPodPortAnnotation, pod.Name)
+			log.Printf("ERROR: No port annotation %q found for pod %s, skipping", v1.ModelPodPortAnnotation, pod.Name)
 			continue
 		}
 
 		// Allow overriding the IP address of the pod.
-		ip := getPodAnnotation(pod, kubeaiv1.ModelPodIPAnnotation)
+		ip := getPodAnnotation(pod, v1.ModelPodIPAnnotation)
 		if ip == "" {
 			ip = pod.Status.PodIP
 		}
@@ -134,8 +134,8 @@ func getEndpointAdapters(pod corev1.Pod) map[string]struct{} {
 	adapters := map[string]struct{}{}
 
 	for k := range pod.GetLabels() {
-		if strings.HasPrefix(k, kubeaiv1.PodAdapterLabelPrefix) {
-			adapters[strings.TrimPrefix(k, kubeaiv1.PodAdapterLabelPrefix)] = struct{}{}
+		if strings.HasPrefix(k, v1.PodAdapterLabelPrefix) {
+			adapters[strings.TrimPrefix(k, v1.PodAdapterLabelPrefix)] = struct{}{}
 		}
 	}
 
@@ -169,17 +169,10 @@ func (r *LoadBalancer) GetSelfIPs() []string {
 	return r.selfIPs
 }
 
-type AddressRequest struct {
-	Model   string
-	Adapter string
-	Prefix  string
-	v1.LoadBalancing
-}
-
 // AwaitBestAddress returns the "IP:Port" with the lowest number of in-flight requests. It will block until an endpoint
 // becomes available or the context times out. It returns a function that should be called when the
 // request is complete to decrement the in-flight count.
-func (r *LoadBalancer) AwaitBestAddress(ctx context.Context, req AddressRequest) (string, func(), error) {
+func (r *LoadBalancer) AwaitBestAddress(ctx context.Context, req *apiutils.Request) (string, func(), error) {
 	return r.getEndpoints(req.Model).getBestAddr(ctx, req, false)
 }
 

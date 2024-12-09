@@ -8,6 +8,7 @@ import (
 	"sync/atomic"
 
 	v1 "github.com/substratusai/kubeai/api/v1"
+	"github.com/substratusai/kubeai/internal/apiutils"
 )
 
 func newEndpointGroup() *group {
@@ -48,16 +49,9 @@ type endpoint struct {
 	adapters map[string]struct{}
 }
 
-type LoadBalancingStrategy int
-
-const (
-	LeastLoaded LoadBalancingStrategy = iota
-	CHWBL                             // Consistent Hashing with Bounded Load
-)
-
 // getBestAddr returns the best "IP:Port". It blocks until there are available endpoints
 // in the endpoint group.
-func (g *group) getBestAddr(ctx context.Context, req AddressRequest, awaitChangeEndpoints bool) (string, func(), error) {
+func (g *group) getBestAddr(ctx context.Context, req *apiutils.Request, awaitChangeEndpoints bool) (string, func(), error) {
 	g.mtx.RLock()
 	// await endpoints exists
 	for awaitChangeEndpoints || len(g.endpoints) == 0 {
@@ -72,13 +66,13 @@ func (g *group) getBestAddr(ctx context.Context, req AddressRequest, awaitChange
 
 	var ep endpoint
 	var found bool
-	switch req.Strategy {
+	switch req.LoadBalancing.Strategy {
 	case v1.PrefixHashStrategy:
-		ep, found = g.chwblGetAddr(req.Adapter+req.Prefix, float64(req.PrefixHash.MeanLoadPercentage/100))
+		ep, found = g.chwblGetAddr(req.Adapter+req.Prefix, float64(req.LoadBalancing.PrefixHash.MeanLoadPercentage/100))
 	case v1.LeastLoadStrategy:
 		ep, found = g.getAddrLeastLoad(req.Adapter)
 	default:
-		return "", func() {}, fmt.Errorf("unknown load balancing strategy: %v", req.Strategy)
+		return "", func() {}, fmt.Errorf("unknown load balancing strategy: %v", req.LoadBalancing.Strategy)
 	}
 
 	if !found {

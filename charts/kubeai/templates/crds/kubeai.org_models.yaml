@@ -122,10 +122,10 @@ spec:
                           over the mean load of all endpoints in the hash ring. Defaults to 125% which is
                           a widely accepted value for the Consistent Hashing with Bounded Loads algorithm.
                         type: integer
-                      prefixByteLength:
+                      prefixCharLength:
                         default: 100
-                        description: PrefixByteLength is the number of bytes to count
-                          when building the prefix to hash.
+                        description: PrefixCharLength is the number of characters
+                          to count when building the prefix to hash.
                         type: integer
                       replication:
                         default: 20

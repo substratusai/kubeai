@@ -15,7 +15,6 @@ import (
 
 	"github.com/substratusai/kubeai/api/v1"
 	"github.com/substratusai/kubeai/internal/apiutils"
-	"github.com/substratusai/kubeai/internal/loadbalancer"
 	"github.com/substratusai/kubeai/internal/metrics"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
@@ -23,7 +22,7 @@ import (
 )
 
 type Messenger struct {
-	modelScaler  ModelScaler
+	modelClient  ModelClient
 	loadBalancer LoadBalancer
 
 	HTTPC *http.Client
@@ -45,7 +44,7 @@ func NewMessenger(
 	responsesURL string,
 	maxHandlers int,
 	errorMaxBackoff time.Duration,
-	modelScaler ModelScaler,
+	modelClient ModelClient,
 	lb LoadBalancer,
 	httpClient *http.Client,
 ) (*Messenger, error) {
@@ -60,7 +59,7 @@ func NewMessenger(
 	}
 
 	return &Messenger{
-		modelScaler:     modelScaler,
+		modelClient:     modelClient,
 		loadBalancer:    lb,
 		HTTPC:           httpClient,
 		requestsURL:     requestsURL,
@@ -71,13 +70,13 @@ func NewMessenger(
 	}, nil
 }
 
-type ModelScaler interface {
+type ModelClient interface {
 	LookupModel(ctx context.Context, model, adapter string, selectors []string) (*v1.Model, error)
 	ScaleAtLeastOneReplica(ctx context.Context, model string) error
 }
 
 type LoadBalancer interface {
-	AwaitBestAddress(ctx context.Context, req loadbalancer.AddressRequest) (string, func(), error)
+	AwaitBestAddress(ctx context.Context, req *apiutils.Request) (string, func(), error)
 }
 
 func (m *Messenger) Start(ctx context.Context) error {
@@ -194,63 +193,59 @@ func (m *Messenger) handleRequest(ctx context.Context, msg *pubsub.Message) {
 			}
 		}
 	*/
-	req, err := parseRequest(ctx, msg)
+	mr, err := m.parseMsgRequest(ctx, msg)
 	if err != nil {
-		m.sendResponse(req, m.jsonError("error parsing request: %v", err), http.StatusBadRequest)
+		m.sendResponse(mr, m.jsonError("error parsing request: %v", err), http.StatusBadRequest)
 		return
 	}
 
 	metricAttrs := metric.WithAttributeSet(attribute.NewSet(
-		metrics.AttrRequestModel.String(req.Model),
+		metrics.AttrRequestModel.String(mr.Model),
 		metrics.AttrRequestType.String(metrics.AttrRequestTypeMessage),
 	))
 	metrics.InferenceRequestsActive.Add(ctx, 1, metricAttrs)
 	defer metrics.InferenceRequestsActive.Add(ctx, -1, metricAttrs)
 
-	model, err := m.modelScaler.LookupModel(ctx, req.Model, req.Adapter, nil)
+	model, err := m.modelClient.LookupModel(ctx, mr.Model, mr.Adapter, nil)
 	if err != nil {
-		m.sendResponse(req, m.jsonError("error checking if model exists: %v", err), http.StatusInternalServerError)
+		m.sendResponse(mr, m.jsonError("error checking if model exists: %v", err), http.StatusInternalServerError)
 		return
 	}
 	if model == nil {
 		// Send a 400 response to the client, however it is possible the backend
 		// will be deployed soon or another subscriber will handle it.
-		m.sendResponse(req, m.jsonError("model not found: %s", req.RequestedModel), http.StatusNotFound)
+		m.sendResponse(mr, m.jsonError("model not found: %s", mr.RequestedModel), http.StatusNotFound)
 		return
 	}
 
 	// Ensure the backend is scaled to at least one Pod.
-	m.modelScaler.ScaleAtLeastOneReplica(ctx, req.Model)
+	m.modelClient.ScaleAtLeastOneReplica(ctx, mr.Model)
 
 	log.Printf("Awaiting host for message %s", msg.LoggableID)
 
-	host, completeFunc, err := m.loadBalancer.AwaitBestAddress(ctx, loadbalancer.AddressRequest{
-		Model:         req.Model,
-		Adapter:       req.Adapter,
-		LoadBalancing: model.Spec.LoadBalancing,
-	})
+	host, completeFunc, err := m.loadBalancer.AwaitBestAddress(ctx, mr.Request)
 	if err != nil {
-		m.sendResponse(req, m.jsonError("error awaiting host for backend: %v", err), http.StatusBadGateway)
+		m.sendResponse(mr, m.jsonError("error awaiting host for backend: %v", err), http.StatusBadGateway)
 		return
 	}
 	defer completeFunc()
 
-	url := fmt.Sprintf("http://%s%s", host, req.path)
+	url := fmt.Sprintf("http://%s%s", host, mr.path)
 	log.Printf("Sending request to backend for message %s: %s", msg.LoggableID, url)
-	respPayload, respCode, err := m.sendBackendRequest(ctx, url, req.Body)
+	respPayload, respCode, err := m.sendBackendRequest(ctx, url, mr.Body)
 	if err != nil {
-		m.sendResponse(req, m.jsonError("error sending request to backend: %v", err), http.StatusBadGateway)
+		m.sendResponse(mr, m.jsonError("error sending request to backend: %v", err), http.StatusBadGateway)
 		return
 	}
 
-	m.sendResponse(req, respPayload, respCode)
+	m.sendResponse(mr, respPayload, respCode)
 }
 
 func (m *Messenger) Stop(ctx context.Context) error {
 	return m.requests.Shutdown(ctx)
 }
 
-type request struct {
+type msgRequest struct {
 	ctx context.Context
 	*apiutils.Request
 	msg      *pubsub.Message
@@ -258,8 +253,8 @@ type request struct {
 	path     string
 }
 
-func parseRequest(ctx context.Context, msg *pubsub.Message) (*request, error) {
-	req := &request{
+func (m *Messenger) parseMsgRequest(ctx context.Context, msg *pubsub.Message) (*msgRequest, error) {
+	req := &msgRequest{
 		ctx: ctx,
 		msg: msg,
 	}
@@ -284,7 +279,7 @@ func parseRequest(ctx context.Context, msg *pubsub.Message) (*request, error) {
 	req.metadata = payload.Metadata
 	req.path = path
 
-	apiR, err := apiutils.ParseRequest(bytes.NewReader(payload.Body), http.Header{})
+	apiR, err := apiutils.ParseRequest(ctx, m.modelClient, bytes.NewReader(payload.Body), path, http.Header{})
 	if err != nil {
 		return nil, fmt.Errorf("parsing request: %w", err)
 	}
@@ -316,7 +311,7 @@ func (m *Messenger) sendBackendRequest(ctx context.Context, url string, body []b
 	return payload, resp.StatusCode, nil
 }
 
-func (m *Messenger) sendResponse(req *request, body []byte, statusCode int) {
+func (m *Messenger) sendResponse(req *msgRequest, body []byte, statusCode int) {
 	log.Printf("Sending response to message: %v", req.msg.LoggableID)
 
 	response := struct {

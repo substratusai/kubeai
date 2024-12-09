@@ -9,11 +9,20 @@ import (
 	"mime/multipart"
 	"net/http"
 
+	"context"
+
 	"github.com/google/uuid"
+	v1 "github.com/substratusai/kubeai/api/v1"
+)
+
+var (
+	ErrBadRequest    = fmt.Errorf("bad request")
+	ErrModelNotFound = fmt.Errorf("model not found")
 )
 
 type Request struct {
-	Body []byte
+	Body        []byte
+	bodyPayload map[string]interface{}
 
 	Selectors []string
 
@@ -26,10 +35,18 @@ type Request struct {
 	Model   string
 	Adapter string
 
+	LoadBalancing v1.LoadBalancing
+
+	Prefix string
+
 	ContentLength int64
 }
 
-func ParseRequest(body io.Reader, headers http.Header) (*Request, error) {
+type ModelClient interface {
+	LookupModel(ctx context.Context, model, adapter string, selectors []string) (*v1.Model, error)
+}
+
+func ParseRequest(ctx context.Context, client ModelClient, body io.Reader, path string, headers http.Header) (*Request, error) {
 	r := &Request{
 		ID: uuid.New().String(),
 	}
@@ -49,7 +66,7 @@ func ParseRequest(body io.Reader, headers http.Header) (*Request, error) {
 		var err error
 		mediaType, mediaParams, err = mime.ParseMediaType(contentType)
 		if err != nil {
-			return nil, fmt.Errorf("parse media type: %w", err)
+			return nil, fmt.Errorf("%w: parse media type: %w", ErrBadRequest, err)
 		}
 	}
 
@@ -57,14 +74,18 @@ func ParseRequest(body io.Reader, headers http.Header) (*Request, error) {
 	// Multipart form data is used for endpoints that accept file uploads:
 	case "multipart/form-data":
 		if err := r.readyMultiPartBody(body, mediaParams); err != nil {
-			return nil, fmt.Errorf("reading multipart form data: %w", err)
+			return nil, fmt.Errorf("%w: reading multipart form data: %w", ErrBadRequest, err)
 		}
 
 	// Assume "application/json":
 	default:
 		if err := r.readJSONBody(body); err != nil {
-			return nil, fmt.Errorf("reading model from body: %w", err)
+			return nil, fmt.Errorf("%w: reading model from body: %w", ErrBadRequest, err)
 		}
+	}
+
+	if err := r.lookupModel(ctx, client, path); err != nil {
+		return nil, err
 	}
 
 	return r, nil
@@ -158,4 +179,108 @@ func (r *Request) readJSONBody(body io.Reader) error {
 	r.ContentLength = int64(len(r.Body))
 
 	return nil
+}
+
+func (r *Request) lookupModel(ctx context.Context, client ModelClient, path string) error {
+	model, err := client.LookupModel(ctx, r.Model, r.Adapter, r.Selectors)
+	if err != nil {
+		return fmt.Errorf("lookup model: %w", err)
+	}
+	if model == nil {
+		return fmt.Errorf("%w: %q", ErrModelNotFound, r.RequestedModel)
+	}
+
+	if r.bodyPayload == nil {
+		return nil
+	}
+	defer func() {
+		r.bodyPayload = nil
+	}()
+
+	r.LoadBalancing = model.Spec.LoadBalancing
+	if r.LoadBalancing.Strategy == v1.PrefixHashStrategy {
+		switch path {
+		case "/v1/completions":
+			r.Prefix = getPrefixForCompletionRequest(r.bodyPayload, r.LoadBalancing.PrefixHash.PrefixCharLength)
+		case "/v1/chat/completions":
+			r.Prefix = getPrefixForChatCompletionRequest(r.bodyPayload, r.LoadBalancing.PrefixHash.PrefixCharLength)
+		}
+	}
+
+	return nil
+}
+
+func getPrefixForCompletionRequest(body map[string]interface{}, n int) string {
+	// Example request body:
+	// {
+	//   "model": "gpt-3.5-turbo-instruct",
+	//   "prompt": "Say this is a test",
+	//   "max_tokens": 7,
+	//   "temperature": 0
+	// }
+	promptInf, ok := body["prompt"]
+	if !ok {
+		return ""
+	}
+	prompt, ok := promptInf.(string)
+	if !ok {
+		return ""
+	}
+	return firstNChars(prompt, n)
+}
+
+func getPrefixForChatCompletionRequest(body map[string]interface{}, n int) string {
+	// Example request body:
+	// {
+	//   "model": "gpt-4o",
+	//   "messages": [
+	//     {
+	//       "role": "system",
+	//       "content": "You are a helpful assistant."
+	//     },
+	//     {
+	//       "role": "user",
+	//       "content": "Hello!"
+	//     }
+	//   ]
+	// }
+	messagesInf, ok := body["messages"]
+	if !ok {
+		return ""
+	}
+	messages, ok := messagesInf.([]interface{})
+	if !ok {
+		return ""
+	}
+	if len(messages) == 0 {
+		return ""
+	}
+
+	// Find the first user request and return the first n characters.
+	for _, msgInf := range messages {
+		msg, ok := msgInf.(map[string]interface{})
+		if !ok {
+			return ""
+		}
+		if msg["role"] == "user" {
+			textInf, ok := msg["content"]
+			if !ok {
+				return ""
+			}
+			text, ok := textInf.(string)
+			if !ok {
+				return ""
+			}
+			return firstNChars(text, n)
+		}
+	}
+
+	return ""
+}
+
+// firstNChars returns the first n characters of a string.
+// This function is needed because Go's string indexing is based on bytes, not runes.
+func firstNChars(s string, n int) string {
+	runes := []rune(s)
+	return string(runes[:min(n, len(runes))])
 }

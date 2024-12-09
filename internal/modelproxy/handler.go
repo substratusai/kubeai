@@ -8,8 +8,8 @@ import (
 	"net/http/httputil"
 	"net/url"
 
-	"github.com/substratusai/kubeai/api/v1"
-	"github.com/substratusai/kubeai/internal/loadbalancer"
+	v1 "github.com/substratusai/kubeai/api/v1"
+	"github.com/substratusai/kubeai/internal/apiutils"
 	"github.com/substratusai/kubeai/internal/metrics"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
@@ -21,26 +21,26 @@ type ModelClient interface {
 }
 
 type LoadBalancer interface {
-	AwaitBestAddress(ctx context.Context, req loadbalancer.AddressRequest) (string, func(), error)
+	AwaitBestAddress(ctx context.Context, req *apiutils.Request) (string, func(), error)
 }
 
 // Handler serves http requests for end-clients.
 // It is also responsible for triggering scale-from-zero.
 type Handler struct {
-	modelScaler  ModelClient
+	modelClient  ModelClient
 	loadBalancer LoadBalancer
 	maxRetries   int
 	retryCodes   map[int]struct{}
 }
 
 func NewHandler(
-	modelScaler ModelClient,
+	modelClient ModelClient,
 	loadBalancer LoadBalancer,
 	maxRetries int,
 	retryCodes map[int]struct{},
 ) *Handler {
 	return &Handler{
-		modelScaler:  modelScaler,
+		modelClient:  modelClient,
 		loadBalancer: loadBalancer,
 		maxRetries:   maxRetries,
 		retryCodes:   retryCodes,
@@ -60,9 +60,15 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Proxy", "lingo")
 
 	// TODO: Only parse model for paths that would have a model.
-	pr, err := newProxyRequest(r)
+	pr, err := h.parseProxyRequest(r)
 	if err != nil {
-		pr.sendErrorResponse(w, http.StatusBadRequest, "unable to parse model: %v", err)
+		if errors.Is(err, apiutils.ErrBadRequest) {
+			pr.sendErrorResponse(w, http.StatusBadRequest, "%v", err)
+		} else if errors.Is(err, apiutils.ErrModelNotFound) {
+			pr.sendErrorResponse(w, http.StatusNotFound, "%v", err)
+		} else {
+			pr.sendErrorResponse(w, http.StatusInternalServerError, "parsing request: %v", err)
+		}
 		return
 	}
 
@@ -75,18 +81,8 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	metrics.InferenceRequestsActive.Add(pr.http.Context(), 1, metricAttrs)
 	defer metrics.InferenceRequestsActive.Add(pr.http.Context(), -1, metricAttrs)
 
-	model, err := h.modelScaler.LookupModel(r.Context(), pr.Model, pr.Adapter, pr.Selectors)
-	if err != nil {
-		pr.sendErrorResponse(w, http.StatusInternalServerError, "unable to resolve model: %v", err)
-		return
-	}
-	if model == nil {
-		pr.sendErrorResponse(w, http.StatusNotFound, "model not found: %v", pr.RequestedModel)
-		return
-	}
-
 	// Ensure the backend is scaled to at least one Pod.
-	if err := h.modelScaler.ScaleAtLeastOneReplica(r.Context(), pr.Model); err != nil {
+	if err := h.modelClient.ScaleAtLeastOneReplica(r.Context(), pr.Model); err != nil {
 		pr.sendErrorResponse(w, http.StatusInternalServerError, "unable to scale model: %v", err)
 		return
 	}
@@ -101,12 +97,7 @@ var AdditionalProxyRewrite = func(*httputil.ProxyRequest) {}
 func (h *Handler) proxyHTTP(w http.ResponseWriter, pr *proxyRequest) {
 	log.Printf("Waiting for host: %v", pr.ID)
 
-	addr, decrementInflight, err := h.loadBalancer.AwaitBestAddress(pr.http.Context(), loadbalancer.AddressRequest{
-		Model:   pr.Model,
-		Adapter: pr.Adapter,
-		// TODO: Prefix
-		// TODO: LoadBalancing
-	})
+	addr, decrementInflight, err := h.loadBalancer.AwaitBestAddress(pr.http.Context(), pr.Request)
 	if err != nil {
 		switch {
 		case errors.Is(err, context.Canceled):

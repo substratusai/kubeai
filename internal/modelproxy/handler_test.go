@@ -13,9 +13,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/substratusai/kubeai/api/v1"
+	v1 "github.com/substratusai/kubeai/api/v1"
 	"github.com/substratusai/kubeai/internal/apiutils"
-	"github.com/substratusai/kubeai/internal/loadbalancer"
 	"github.com/substratusai/kubeai/internal/metrics/metricstest"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -61,13 +60,13 @@ func TestHandler(t *testing.T) {
 		"no model": {
 			reqBody:                "{}",
 			expCode:                http.StatusBadRequest,
-			expBody:                `{"error":"unable to parse model: reading model from body: missing 'model' field"}` + "\n",
+			expBody:                `{"error":"bad request: reading model from body: missing 'model' field"}` + "\n",
 			expBackendRequestCount: 0,
 		},
 		"model not found": {
 			reqBody:                `{"model":"does-not-exist"}`,
 			expCode:                http.StatusNotFound,
-			expBody:                `{"error":"model not found: does-not-exist"}` + "\n",
+			expBody:                fmt.Sprintf(`{"error":%q}`, `model not found: "does-not-exist"`) + "\n",
 			expBackendRequestCount: 0,
 		},
 		"happy 200 model in body": {
@@ -96,7 +95,7 @@ func TestHandler(t *testing.T) {
 		"404 model+adapter in body but missing adapter": {
 			reqBody: fmt.Sprintf(`{"model":%q}`, apiutils.MergeModelAdapter(model1, "no-such-adapter")),
 			expCode: http.StatusNotFound,
-			expBody: fmt.Sprintf(`{"error":"model not found: %s"}`, apiutils.MergeModelAdapter(model1, "no-such-adapter")) + "\n",
+			expBody: fmt.Sprintf(`{"error":%q}`, `model not found: "`+apiutils.MergeModelAdapter(model1, "no-such-adapter")+`"`) + "\n",
 		},
 		"happy 200 only model in form data": {
 			reqHeaders: map[string]string{"Content-Type": "multipart/form-data; boundary=12345"},
@@ -299,7 +298,7 @@ func (t *testModelInterface) ScaleAtLeastOneReplica(ctx context.Context, model s
 	return nil
 }
 
-func (t *testModelInterface) AwaitBestAddress(ctx context.Context, req loadbalancer.AddressRequest) (string, func(), error) {
+func (t *testModelInterface) AwaitBestAddress(ctx context.Context, req *apiutils.Request) (string, func(), error) {
 	t.hostRequestCount++
 	t.requestedModel = req.Model
 	t.requestedAdapter = req.Adapter

@@ -182,10 +182,10 @@ type PrefixHash struct {
 	// +kubebuilder:default=20
 	// +kubebuilder:validation:Optional
 	Replication int `json:"replication,omitempty"`
-	// PrefixByteLength is the number of bytes to count when building the prefix to hash.
+	// PrefixCharLength is the number of characters to count when building the prefix to hash.
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:default=100
-	PrefixByteLength int `json:"prefixByteLength,omitempty"`
+	PrefixCharLength int `json:"prefixCharLength,omitempty"`
 }
 
 // ModelStatus defines the observed state of Model.

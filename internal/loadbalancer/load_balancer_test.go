@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	v1 "github.com/substratusai/kubeai/api/v1"
+	"github.com/substratusai/kubeai/internal/apiutils"
 )
 
 func TestAwaitBestHost(t *testing.T) {
@@ -70,7 +71,7 @@ func TestAwaitBestHost(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond)
 			defer cancel()
 
-			gotAddr, gotFunc, gotErr := manager.AwaitBestAddress(ctx, AddressRequest{
+			gotAddr, gotFunc, gotErr := manager.AwaitBestAddress(ctx, &apiutils.Request{
 				Model:   spec.model,
 				Adapter: spec.adapter,
 				LoadBalancing: v1.LoadBalancing{

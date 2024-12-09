@@ -22,13 +22,13 @@ type proxyRequest struct {
 	attempt int
 }
 
-func newProxyRequest(r *http.Request) (*proxyRequest, error) {
+func (h *Handler) parseProxyRequest(r *http.Request) (*proxyRequest, error) {
 	pr := &proxyRequest{
 		http:   r,
 		status: http.StatusOK,
 	}
 
-	apiReq, err := apiutils.ParseRequest(r.Body, r.Header)
+	apiReq, err := apiutils.ParseRequest(r.Context(), h.modelClient, r.Body, r.URL.Path, r.Header)
 	if err != nil {
 		return pr, err
 	}
