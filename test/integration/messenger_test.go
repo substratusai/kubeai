@@ -76,17 +76,12 @@ func TestMessenger(t *testing.T) {
 	requireModelReplicas(t, m, 1, "Replicas should be scaled up to 1 to process messaging request", 5*time.Second)
 	requireModelPods(t, m, 1, "Pod should be created for the messaging request", 5*time.Second)
 	markAllModelPodsReady(t, m)
-	fmt.Println("A")
 	completeBackendRequests(backendComplete, 1)
 
-	fmt.Println("B")
 	shouldReceiveResponseMessage(t, m.Name, "a")
 
-	fmt.Println("C")
 	sendRequestMessage(t, "/v1/completions", "non-existant-model", "b")
-	fmt.Println("D")
-	shouldReceiveResponseErrMessage(t, http.StatusNotFound, "model not found: non-existant-model", "b")
-	fmt.Println("E")
+	shouldReceiveResponseErrMessage(t, http.StatusNotFound, "model not found: \"non-existant-model\"", "b")
 }
 
 func shouldReceiveResponseErrMessage(t *testing.T, statusCode int, message string, id string) {

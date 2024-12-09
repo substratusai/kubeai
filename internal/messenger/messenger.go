@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/substratusai/kubeai/api/v1"
+	v1 "github.com/substratusai/kubeai/api/v1"
 	"github.com/substratusai/kubeai/internal/apiutils"
 	"github.com/substratusai/kubeai/internal/metrics"
 	"go.opentelemetry.io/otel/attribute"
@@ -195,7 +195,13 @@ func (m *Messenger) handleRequest(ctx context.Context, msg *pubsub.Message) {
 	*/
 	mr, err := m.parseMsgRequest(ctx, msg)
 	if err != nil {
-		m.sendResponse(mr, m.jsonError("error parsing request: %v", err), http.StatusBadRequest)
+		if errors.Is(err, apiutils.ErrBadRequest) {
+			m.sendResponse(mr, m.jsonError("%v", err), http.StatusBadRequest)
+		} else if errors.Is(err, apiutils.ErrModelNotFound) {
+			m.sendResponse(mr, m.jsonError("%v", err), http.StatusNotFound)
+		} else {
+			m.sendResponse(mr, m.jsonError("parsing request: %v", err), http.StatusInternalServerError)
+		}
 		return
 	}
 
@@ -205,18 +211,6 @@ func (m *Messenger) handleRequest(ctx context.Context, msg *pubsub.Message) {
 	))
 	metrics.InferenceRequestsActive.Add(ctx, 1, metricAttrs)
 	defer metrics.InferenceRequestsActive.Add(ctx, -1, metricAttrs)
-
-	model, err := m.modelClient.LookupModel(ctx, mr.Model, mr.Adapter, nil)
-	if err != nil {
-		m.sendResponse(mr, m.jsonError("error checking if model exists: %v", err), http.StatusInternalServerError)
-		return
-	}
-	if model == nil {
-		// Send a 400 response to the client, however it is possible the backend
-		// will be deployed soon or another subscriber will handle it.
-		m.sendResponse(mr, m.jsonError("model not found: %s", mr.RequestedModel), http.StatusNotFound)
-		return
-	}
 
 	// Ensure the backend is scaled to at least one Pod.
 	m.modelClient.ScaleAtLeastOneReplica(ctx, mr.Model)
@@ -281,7 +275,7 @@ func (m *Messenger) parseMsgRequest(ctx context.Context, msg *pubsub.Message) (*
 
 	apiR, err := apiutils.ParseRequest(ctx, m.modelClient, bytes.NewReader(payload.Body), path, http.Header{})
 	if err != nil {
-		return nil, fmt.Errorf("parsing request: %w", err)
+		return req, err
 	}
 	req.Request = apiR
 

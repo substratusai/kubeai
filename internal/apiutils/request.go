@@ -190,15 +190,12 @@ func (r *Request) lookupModel(ctx context.Context, client ModelClient, path stri
 		return fmt.Errorf("%w: %q", ErrModelNotFound, r.RequestedModel)
 	}
 
-	if r.bodyPayload == nil {
-		return nil
-	}
-	defer func() {
-		r.bodyPayload = nil
-	}()
-
 	r.LoadBalancing = model.Spec.LoadBalancing
-	if r.LoadBalancing.Strategy == v1.PrefixHashStrategy {
+
+	if r.LoadBalancing.Strategy == v1.PrefixHashStrategy && r.bodyPayload != nil {
+		defer func() {
+			r.bodyPayload = nil
+		}()
 		switch path {
 		case "/v1/completions":
 			r.Prefix = getPrefixForCompletionRequest(r.bodyPayload, r.LoadBalancing.PrefixHash.PrefixCharLength)
