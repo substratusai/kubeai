@@ -121,8 +121,8 @@ func (g *group) reconcileEndpoints(observed map[string]endpoint) {
 			g.chwblAddEndpoint(name)
 		}
 	}
-	for name := range g.endpoints {
-		if ep, ok := observed[name]; !ok {
+	for name, ep := range g.endpoints {
+		if _, ok := observed[name]; !ok {
 			g.totalInFlight.Add(-ep.inFlight.Load())
 			g.chwblRemoveEndpoint(name)
 			delete(g.endpoints, name)

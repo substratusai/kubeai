@@ -21,7 +21,7 @@ import (
 func New(mgr ctrl.Manager) (*LoadBalancer, error) {
 	r := &LoadBalancer{}
 	r.Client = mgr.GetClient()
-	r.endpoints = map[string]*group{}
+	r.groups = map[string]*group{}
 	r.ExcludePods = map[string]struct{}{}
 	if err := r.SetupWithManager(mgr); err != nil {
 		return nil, err
@@ -34,7 +34,7 @@ type LoadBalancer struct {
 
 	endpointsMtx sync.Mutex
 	// map[<model-name>]endpointGroup
-	endpoints map[string]*group
+	groups map[string]*group
 
 	selfIPsMtx sync.RWMutex
 	selfIPs    []string
@@ -154,13 +154,13 @@ func getPodAnnotation(pod corev1.Pod, key string) string {
 // This assumes that the existance of the model is already checked.
 func (r *LoadBalancer) getEndpoints(model string) *group {
 	r.endpointsMtx.Lock()
-	e, ok := r.endpoints[model]
+	g, ok := r.groups[model]
 	if !ok {
-		e = newEndpointGroup()
-		r.endpoints[model] = e
+		g = newEndpointGroup()
+		r.groups[model] = g
 	}
 	r.endpointsMtx.Unlock()
-	return e
+	return g
 }
 
 func (r *LoadBalancer) GetSelfIPs() []string {

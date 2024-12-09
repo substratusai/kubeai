@@ -63,7 +63,7 @@ func TestAwaitBestHost(t *testing.T) {
 	for name, spec := range testCases {
 		t.Run(name, func(t *testing.T) {
 			manager := &LoadBalancer{
-				endpoints: make(map[string]*group, 1),
+				groups: make(map[string]*group, 1),
 			}
 
 			manager.getEndpoints(myModel).reconcileEndpoints(spec.endpoints)
