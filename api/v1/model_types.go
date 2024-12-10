@@ -174,6 +174,7 @@ type PrefixHash struct {
 	// a widely accepted value for the Consistent Hashing with Bounded Loads algorithm.
 	// +kubebuilder:default=125
 	// +kubebuilder:validation:Optional
+	// +kubebuilder:validation:Minimum=100
 	MeanLoadPercentage int `json:"meanLoadFactor,omitempty"`
 	// Replication is the number of replicas of each endpoint on the hash ring.
 	// Higher values will result in a more even distribution of load but will

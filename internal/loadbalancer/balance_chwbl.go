@@ -12,7 +12,7 @@ func (g *group) chwblGetAddr(key string, loadFactor float64) (endpoint, bool) {
 		return endpoint{}, false
 	}
 
-	h := g.chwblHash(key)
+	h := chwblHash(key)
 	_, idx := g.chwblSearch(h)
 
 	i := idx
@@ -33,12 +33,21 @@ func (g *group) chwblGetAddr(key string, loadFactor float64) (endpoint, bool) {
 		}
 	}
 
-	return endpoint{}, false
+	// If we reach this point, we have not found a suitable endpoint.
+	// Default to the first endpoint.
+	// This could happen if all endpoints have equal load and the factor
+	// is set to 1.
+	name := g.chwblHashes[g.chwblSortedHashes[idx]]
+	preferredEp, ok := g.endpoints[name]
+	if !ok {
+		return endpoint{}, false
+	}
+	return preferredEp, false
 }
 
 func (g *group) chwblAddEndpoint(name string) {
 	for i := 0; i < g.chwblReplication; i++ {
-		h := g.chwblHashEndpointReplica(name, i)
+		h := chwblHashEndpointReplica(name, i)
 		g.chwblHashes[h] = name
 		g.chwblSortedHashes = append(g.chwblSortedHashes, h)
 	}
@@ -51,7 +60,7 @@ func (g *group) chwblAddEndpoint(name string) {
 
 func (g *group) chwblRemoveEndpoint(name string) {
 	for i := 0; i < g.chwblReplication; i++ {
-		h := g.chwblHashEndpointReplica(name, i)
+		h := chwblHashEndpointReplica(name, i)
 		delete(g.chwblHashes, h)
 		g.chwblDeleteSortedHash(h)
 	}
@@ -89,12 +98,16 @@ func (g *group) chwblDeleteSortedHash(val uint64) {
 	}
 }
 
-func (g *group) chwblHash(s string) uint64 {
+func chwblHash(s string) uint64 {
 	return xxhash.Sum64([]byte(s))
 }
 
-func (g *group) chwblHashEndpointReplica(name string, replica int) uint64 {
-	return g.chwblHash(fmt.Sprintf("%s%d", name, replica))
+func chwblHashEndpointReplica(name string, replica int) uint64 {
+	return chwblHash(chwblEndpointReplicaHashInput(name, replica))
+}
+
+func chwblEndpointReplicaHashInput(name string, replica int) string {
+	return fmt.Sprintf("%s%d", name, replica)
 }
 
 func chwblLoadOK(load, totalLoad int64, n int, loadFactor float64) bool {
@@ -104,6 +117,14 @@ func chwblLoadOK(load, totalLoad int64, n int, loadFactor float64) bool {
 
 	avgLoad := float64(totalLoad+1) / float64(n)
 	threshold := avgLoad * loadFactor
-
-	return float64(load)+1 <= threshold
+	ok := float64(load)+1 <= threshold
+	//fmt.Println(
+	//	"load+1:", float64(load)+1,
+	//	"totalLoad+1:", totalLoad+1,
+	//	"n:", n,
+	//	"loadFactor:", loadFactor,
+	//	"avgLoad+1:", avgLoad,
+	//	"threshold:", threshold,
+	//)
+	return ok
 }

@@ -3,7 +3,6 @@ package loadbalancer
 import (
 	"context"
 	"fmt"
-	"log"
 	"sync"
 	"sync/atomic"
 
@@ -68,7 +67,7 @@ func (g *group) getBestAddr(ctx context.Context, req *apiutils.Request, awaitCha
 	var found bool
 	switch req.LoadBalancing.Strategy {
 	case v1.PrefixHashStrategy:
-		ep, found = g.chwblGetAddr(req.Adapter+req.Prefix, float64(req.LoadBalancing.PrefixHash.MeanLoadPercentage/100))
+		ep, found = g.chwblGetAddr(req.Adapter+req.Prefix, float64(req.LoadBalancing.PrefixHash.MeanLoadPercentage)/100)
 	case v1.LeastLoadStrategy:
 		ep, found = g.getAddrLeastLoad(req.Adapter)
 	default:
@@ -82,7 +81,7 @@ func (g *group) getBestAddr(ctx context.Context, req *apiutils.Request, awaitCha
 
 	g.addInFlight(ep.inFlight, 1)
 	decFunc := func() {
-		log.Printf("decrementing in-flight count for %s, new in-flight: %v", ep.address, g.addInFlight(ep.inFlight, -1))
+		g.addInFlight(ep.inFlight, -1)
 	}
 	g.mtx.RUnlock()
 	return ep.address, decFunc, nil
