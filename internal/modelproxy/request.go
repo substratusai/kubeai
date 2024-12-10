@@ -6,164 +6,37 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"mime"
-	"mime/multipart"
 	"net/http"
 
-	"github.com/google/uuid"
 	"github.com/substratusai/kubeai/internal/apiutils"
 )
 
 // proxyRequest keeps track of the state of a request that is to be proxied.
 type proxyRequest struct {
+	*apiutils.Request
+
 	// r is the original request. It is stored here so that is can be cloned
 	// and sent to the backend while preserving the original request body.
-	r *http.Request
-	// body will be stored here if the request body needed to be read
-	// in order to determine the model.
-	body []byte
-
-	selectors []string
-
-	id             string
-	status         int
-	requestedModel string
-	model          string
-	adapter        string
-	attempt        int
+	http    *http.Request
+	status  int
+	attempt int
 }
 
-func newProxyRequest(r *http.Request) *proxyRequest {
+func (h *Handler) parseProxyRequest(r *http.Request) (*proxyRequest, error) {
 	pr := &proxyRequest{
-		r:      r,
-		id:     uuid.New().String(),
+		http:   r,
 		status: http.StatusOK,
 	}
 
-	return pr
-}
-
-// parse attempts to determine the model from the request.
-// It first checks the "X-Model" header, and if that is not set, it
-// attempts to unmarshal the request body as JSON and extract the
-// .model field.
-func (pr *proxyRequest) parse() error {
-	pr.selectors = pr.r.Header.Values("X-Label-Selector")
-
-	// Parse media type (with params - which are used for multipart form data)
-	var (
-		contentType = pr.r.Header.Get("Content-Type")
-		mediaType   string
-		mediaParams map[string]string
-	)
-	if contentType == "" {
-		mediaType = "application/json"
-		mediaParams = map[string]string{}
-	} else {
-		var err error
-		mediaType, mediaParams, err = mime.ParseMediaType(contentType)
-		if err != nil {
-			return fmt.Errorf("parse media type: %w", err)
-		}
-	}
-
-	switch mediaType {
-	// Multipart form data is used for endpoints that accept file uploads:
-	case "multipart/form-data":
-		boundary := mediaParams["boundary"]
-		if boundary == "" {
-			return fmt.Errorf("no boundary specified in multipart form data")
-		}
-
-		var buf bytes.Buffer
-		mw := multipart.NewWriter(&buf)
-		// Keep the same boundary as the initial request (probably not necessary)
-		mw.SetBoundary(boundary)
-
-		// Iterate over the parts of the multipart form data:
-		// - If the part is named "model", save the value to the proxy request.
-		// - Otherwise, just copy the part to the new multipart writer.
-		mr := multipart.NewReader(pr.r.Body, boundary)
-		for {
-			p, err := mr.NextPart()
-			if err == io.EOF {
-				break
-			}
-			if err != nil {
-				return fmt.Errorf("interating over multipart form: %w", err)
-			}
-
-			if p.FormName() == "model" {
-				value, err := io.ReadAll(p)
-				if err != nil {
-					return fmt.Errorf("reading multipart form value: %w", err)
-				}
-				pr.model, pr.adapter = apiutils.SplitModelAdapter(string(value))
-				pr.requestedModel = string(value)
-				// WORKAROUND ALERT:
-				// Omit the "model" field from the proxy request to avoid FasterWhisper validation issues:
-				// See https://github.com/fedirz/faster-whisper-server/issues/71
-				continue
-			}
-
-			// Copy the part to the new multipart writer.
-			pp, err := mw.CreatePart(p.Header)
-			if err != nil {
-				return fmt.Errorf("creating part: %w", err)
-			}
-			if _, err := io.Copy(pp, p); err != nil {
-				return fmt.Errorf("copying part: %w", err)
-			}
-		}
-
-		// Fully write to buffer.
-		if err := mw.Close(); err != nil {
-			return fmt.Errorf("closing multipart writer: %w", err)
-		}
-		pr.body = buf.Bytes()
-		// Set a new content length based on the new body - which had the "model" field removed.
-		pr.r.ContentLength = int64(len(pr.body))
-
-	// Assume "application/json":
-	default:
-		if err := pr.readModelFromBody(pr.r.Body); err != nil {
-			return fmt.Errorf("reading model from body: %w", err)
-		}
-	}
-
-	return nil
-}
-
-func (pr *proxyRequest) readModelFromBody(r io.ReadCloser) error {
-	var payload map[string]interface{}
-	if err := json.NewDecoder(r).Decode(&payload); err != nil {
-		return fmt.Errorf("decoding: %w", err)
-	}
-	modelInf, ok := payload["model"]
-	if !ok {
-		return fmt.Errorf("missing 'model' field")
-	}
-	modelStr, ok := modelInf.(string)
-	if !ok {
-		return fmt.Errorf("field 'model' should be a string")
-	}
-
-	pr.requestedModel = modelStr
-	pr.model, pr.adapter = apiutils.SplitModelAdapter(modelStr)
-
-	if pr.adapter != "" {
-		// vLLM expects the adapter to be in the model field.
-		payload["model"] = pr.adapter
-	}
-
-	body, err := json.Marshal(payload)
+	apiReq, err := apiutils.ParseRequest(r.Context(), h.modelClient, r.Body, r.URL.Path, r.Header)
 	if err != nil {
-		return fmt.Errorf("remarshalling: %w", err)
+		return pr, err
 	}
-	pr.body = body
-	pr.r.ContentLength = int64(len(pr.body))
+	// The content length might have changed after the body was read and rewritten.
+	r.ContentLength = apiReq.ContentLength
+	pr.Request = apiReq
 
-	return nil
+	return pr, nil
 }
 
 // sendErrorResponse sends an error response to the client and
@@ -198,9 +71,9 @@ func (pr *proxyRequest) setStatus(w http.ResponseWriter, code int) {
 // request, preserving the original request body even if it was already
 // read (i.e. if the body was inspected to determine the model).
 func (pr *proxyRequest) httpRequest() *http.Request {
-	clone := pr.r.Clone(pr.r.Context())
-	if pr.body != nil {
-		clone.Body = io.NopCloser(bytes.NewReader(pr.body))
+	clone := pr.http.Clone(pr.http.Context())
+	if pr.Body != nil {
+		clone.Body = io.NopCloser(bytes.NewReader(pr.Body))
 	}
 	return clone
 }

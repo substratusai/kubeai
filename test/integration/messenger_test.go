@@ -81,7 +81,7 @@ func TestMessenger(t *testing.T) {
 	shouldReceiveResponseMessage(t, m.Name, "a")
 
 	sendRequestMessage(t, "/v1/completions", "non-existant-model", "b")
-	shouldReceiveResponseErrMessage(t, http.StatusNotFound, "model not found: non-existant-model", "b")
+	shouldReceiveResponseErrMessage(t, http.StatusNotFound, "model not found: \"non-existant-model\"", "b")
 }
 
 func shouldReceiveResponseErrMessage(t *testing.T, statusCode int, message string, id string) {
