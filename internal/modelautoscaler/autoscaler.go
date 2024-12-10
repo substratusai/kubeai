@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/substratusai/kubeai/internal/config"
-	"github.com/substratusai/kubeai/internal/endpoints"
 	"github.com/substratusai/kubeai/internal/leader"
-	"github.com/substratusai/kubeai/internal/modelscaler"
+	"github.com/substratusai/kubeai/internal/loadbalancer"
+	"github.com/substratusai/kubeai/internal/modelclient"
 	"github.com/substratusai/kubeai/internal/movingaverage"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -21,8 +21,8 @@ func New(
 	ctx context.Context,
 	k8sClient client.Client,
 	leaderElection *leader.Election,
-	scaler *modelscaler.ModelScaler,
-	resolver *endpoints.Resolver,
+	modelClient *modelclient.ModelClient,
+	resolver *loadbalancer.LoadBalancer,
 	cfg config.ModelAutoscaling,
 	metricsPort int,
 	stateConfigMapRef types.NamespacedName,
@@ -31,7 +31,7 @@ func New(
 	a := &Autoscaler{
 		k8sClient:            k8sClient,
 		leaderElection:       leaderElection,
-		scaler:               scaler,
+		modelClient:          modelClient,
 		resolver:             resolver,
 		movingAvgByModel:     map[string]*movingaverage.Simple{},
 		cfg:                  cfg,
@@ -78,8 +78,8 @@ type Autoscaler struct {
 
 	leaderElection *leader.Election
 
-	scaler   *modelscaler.ModelScaler
-	resolver *endpoints.Resolver
+	modelClient *modelclient.ModelClient
+	resolver    *loadbalancer.LoadBalancer
 
 	cfg config.ModelAutoscaling
 
@@ -107,7 +107,7 @@ func (a *Autoscaler) Start(ctx context.Context) {
 
 		// TODO: Remove hardcoded Service lookup by name "lingo".
 
-		models, err := a.scaler.ListAllModels(ctx)
+		models, err := a.modelClient.ListAllModels(ctx)
 		if err != nil {
 			log.Printf("Failed to list models: %v", err)
 			continue
@@ -159,7 +159,7 @@ func (a *Autoscaler) Start(ctx context.Context) {
 			ceil := math.Ceil(normalized)
 			log.Printf("Calculated target replicas for model %q: ceil(%v/%v) = %v, current requests: sum(%v) = %v, history: %v",
 				m.Name, avgActiveRequests, *m.Spec.TargetRequests, ceil, activeRequests, activeRequestSum, avg.History())
-			a.scaler.Scale(ctx, &m, int32(ceil), a.cfg.RequiredConsecutiveScaleDowns(*m.Spec.ScaleDownDelaySeconds))
+			a.modelClient.Scale(ctx, &m, int32(ceil), a.cfg.RequiredConsecutiveScaleDowns(*m.Spec.ScaleDownDelaySeconds))
 
 			nextModelState.Models[m.Name] = modelState{
 				AverageActiveRequests: avgActiveRequests,
