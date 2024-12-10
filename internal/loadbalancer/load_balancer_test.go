@@ -22,20 +22,25 @@ func TestAwaitBestHostBehavior(t *testing.T) {
 	)
 
 	testCases := map[string]struct {
-		model     string
-		adapter   string
-		endpoints map[string]endpoint
-		expAddr   string
-		expErr    error
+		model      string
+		adapter    string
+		endpoints  map[string]endpoint
+		strategies []v1.LoadBalancingStrategy
+		expAddr    string
+		expErr     error
 	}{
-		"model without adapter": {
-			model:   myModel,
+		"model only": {
+			model: myModel,
+			strategies: []v1.LoadBalancingStrategy{
+				v1.LeastLoadStrategy,
+				v1.PrefixHashStrategy,
+			},
 			expAddr: myAddrWithoutAdapter,
 			endpoints: map[string]endpoint{
 				myPodWithoutAdapter: {address: myAddrWithoutAdapter},
 			},
 		},
-		"model with adapter": {
+		"model and adapter": {
 			model:   myModel,
 			adapter: myAdapter,
 			endpoints: map[string]endpoint{
@@ -48,12 +53,32 @@ func TestAwaitBestHostBehavior(t *testing.T) {
 						myAdapter: {},
 					}},
 			},
+			strategies: []v1.LoadBalancingStrategy{
+				v1.LeastLoadStrategy,
+				v1.PrefixHashStrategy,
+			},
 			expAddr: myAddrWithAdapter,
 		},
-		"unknown model blocks until timeout": {
+		"no matching model blocks until timeout": {
 			model: "unknown-model",
 			endpoints: map[string]endpoint{
 				myPodWithoutAdapter: {address: myAddrWithoutAdapter},
+			},
+			strategies: []v1.LoadBalancingStrategy{
+				v1.LeastLoadStrategy,
+				v1.PrefixHashStrategy,
+			},
+			expErr: context.DeadlineExceeded,
+		},
+		"no matching adapter blocks until timeout": {
+			model:   myModel,
+			adapter: "unknown-adapter",
+			endpoints: map[string]endpoint{
+				myPodWithoutAdapter: {address: myAddrWithoutAdapter},
+			},
+			strategies: []v1.LoadBalancingStrategy{
+				v1.LeastLoadStrategy,
+				v1.PrefixHashStrategy,
 			},
 			expErr: context.DeadlineExceeded,
 		},
@@ -61,14 +86,10 @@ func TestAwaitBestHostBehavior(t *testing.T) {
 	}
 
 	for name, spec := range testCases {
-		// Behavior in these tests should be the same for both strategies.
-		for _, strategy := range []v1.LoadBalancingStrategy{
-			v1.LeastLoadStrategy,
-			v1.PrefixHashStrategy,
-		} {
+		for _, strategy := range spec.strategies {
 			t.Run(name+" with "+string(strategy)+" strategy", func(t *testing.T) {
 				manager := &LoadBalancer{
-					groups: make(map[string]*group, 1),
+					groups: map[string]*group{},
 				}
 
 				manager.getEndpoints(myModel).reconcileEndpoints(spec.endpoints)
@@ -81,6 +102,10 @@ func TestAwaitBestHostBehavior(t *testing.T) {
 					Adapter: spec.adapter,
 					LoadBalancing: v1.LoadBalancing{
 						Strategy: strategy,
+						PrefixHash: v1.PrefixHash{
+							MeanLoadPercentage: 125,
+							Replication:        1,
+						},
 					},
 				})
 				if spec.expErr != nil {

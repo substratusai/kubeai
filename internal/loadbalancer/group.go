@@ -67,7 +67,7 @@ func (g *group) getBestAddr(ctx context.Context, req *apiutils.Request, awaitCha
 	var found bool
 	switch req.LoadBalancing.Strategy {
 	case v1.PrefixHashStrategy:
-		ep, found = g.chwblGetAddr(req.Adapter+req.Prefix, float64(req.LoadBalancing.PrefixHash.MeanLoadPercentage)/100)
+		ep, found = g.chwblGetAddr(req.Adapter+req.Prefix, float64(req.LoadBalancing.PrefixHash.MeanLoadPercentage)/100, req.Adapter)
 	case v1.LeastLoadStrategy:
 		ep, found = g.getAddrLeastLoad(req.Adapter)
 	default:

@@ -7,25 +7,43 @@ import (
 	"github.com/cespare/xxhash"
 )
 
-func (g *group) chwblGetAddr(key string, loadFactor float64) (endpoint, bool) {
+func (g *group) chwblGetAddr(key string, loadFactor float64, adapter string) (endpoint, bool) {
 	if len(g.chwblHashes) == 0 {
 		return endpoint{}, false
 	}
 
 	h := chwblHash(key)
-	_, idx := g.chwblSearch(h)
+	_, i0 := g.chwblSearch(h)
 
-	i := idx
+	var defaultEndpoint *endpoint
+
+	i := i0
 	// Avoid an infinite loop by checking if we've checked all the endpoints.
 	for n := 0; n < len(g.chwblSortedHashes); n++ {
 		name := g.chwblHashes[g.chwblSortedHashes[i]]
 		ep, ok := g.endpoints[name]
 		if !ok {
-			continue
+			panic(fmt.Sprintf("endpoints corrupted, %q should be in map", name))
 		}
-		if chwblLoadOK(ep.inFlight.Load(), g.totalInFlight.Load(), len(g.endpoints), loadFactor) {
-			return ep, true
+
+		var adapterMatches bool
+		if adapter == "" {
+			adapterMatches = true
+		} else {
+			_, adapterMatches = ep.adapters[adapter]
 		}
+
+		if adapterMatches {
+			if defaultEndpoint == nil {
+				// Save the first endpoint that has the adapter in case no
+				// endpoint is found with acceptable load.
+				defaultEndpoint = &ep
+			}
+			if chwblLoadOK(ep.inFlight.Load(), g.totalInFlight.Load(), len(g.endpoints), loadFactor) {
+				return ep, true
+			}
+		}
+
 		i++
 		if i >= len(g.chwblSortedHashes) {
 			// wrap around
@@ -33,16 +51,10 @@ func (g *group) chwblGetAddr(key string, loadFactor float64) (endpoint, bool) {
 		}
 	}
 
-	// If we reach this point, we have not found a suitable endpoint.
-	// Default to the first endpoint.
-	// This could happen if all endpoints have equal load and the factor
-	// is set to 1.
-	name := g.chwblHashes[g.chwblSortedHashes[idx]]
-	preferredEp, ok := g.endpoints[name]
-	if !ok {
-		return endpoint{}, false
+	if defaultEndpoint != nil {
+		return *defaultEndpoint, true
 	}
-	return preferredEp, false
+	return endpoint{}, false
 }
 
 func (g *group) chwblAddEndpoint(name string) {
