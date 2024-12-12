@@ -154,10 +154,13 @@ func (r *Request) readJSONBody(body io.Reader) error {
 	if err := json.NewDecoder(body).Decode(&payload); err != nil {
 		return fmt.Errorf("decoding: %w", err)
 	}
+
 	modelInf, ok := payload["model"]
 	if !ok {
 		return fmt.Errorf("missing 'model' field")
 	}
+	r.bodyPayload = payload
+
 	modelStr, ok := modelInf.(string)
 	if !ok {
 		return fmt.Errorf("field 'model' should be a string")
@@ -198,16 +201,24 @@ func (r *Request) lookupModel(ctx context.Context, client ModelClient, path stri
 		}()
 		switch path {
 		case "/v1/completions":
-			r.Prefix = getPrefixForCompletionRequest(r.bodyPayload, r.LoadBalancing.PrefixHash.PrefixCharLength)
+			prefix, err := getPrefixForCompletionRequest(r.bodyPayload, r.LoadBalancing.PrefixHash.PrefixCharLength)
+			if err != nil {
+				return fmt.Errorf("getting prefix for completion request: %w", err)
+			}
+			r.Prefix = prefix
 		case "/v1/chat/completions":
-			r.Prefix = getPrefixForChatCompletionRequest(r.bodyPayload, r.LoadBalancing.PrefixHash.PrefixCharLength)
+			prefix, err := getPrefixForChatCompletionRequest(r.bodyPayload, r.LoadBalancing.PrefixHash.PrefixCharLength)
+			if err != nil {
+				return fmt.Errorf("getting prefix for chat completion request: %w", err)
+			}
+			r.Prefix = prefix
 		}
 	}
 
 	return nil
 }
 
-func getPrefixForCompletionRequest(body map[string]interface{}, n int) string {
+func getPrefixForCompletionRequest(body map[string]interface{}, n int) (string, error) {
 	// Example request body:
 	// {
 	//   "model": "gpt-3.5-turbo-instruct",
@@ -217,16 +228,16 @@ func getPrefixForCompletionRequest(body map[string]interface{}, n int) string {
 	// }
 	promptInf, ok := body["prompt"]
 	if !ok {
-		return ""
+		return "", fmt.Errorf("missing '.prompt' field")
 	}
 	prompt, ok := promptInf.(string)
 	if !ok {
-		return ""
+		return "", fmt.Errorf("'.prompt' field should be a string")
 	}
-	return firstNChars(prompt, n)
+	return firstNChars(prompt, n), nil
 }
 
-func getPrefixForChatCompletionRequest(body map[string]interface{}, n int) string {
+func getPrefixForChatCompletionRequest(body map[string]interface{}, n int) (string, error) {
 	// Example request body:
 	// {
 	//   "model": "gpt-4o",
@@ -243,36 +254,36 @@ func getPrefixForChatCompletionRequest(body map[string]interface{}, n int) strin
 	// }
 	messagesInf, ok := body["messages"]
 	if !ok {
-		return ""
+		return "", fmt.Errorf("missing '.messages' field")
 	}
 	messages, ok := messagesInf.([]interface{})
 	if !ok {
-		return ""
+		return "", fmt.Errorf("'.messages' field should be an array")
 	}
 	if len(messages) == 0 {
-		return ""
+		return "", fmt.Errorf("empty '.messages' field")
 	}
 
 	// Find the first user request and return the first n characters.
-	for _, msgInf := range messages {
+	for i, msgInf := range messages {
 		msg, ok := msgInf.(map[string]interface{})
 		if !ok {
-			return ""
+			return "", fmt.Errorf("'.messages[i]' should be an object")
 		}
 		if msg["role"] == "user" {
 			textInf, ok := msg["content"]
 			if !ok {
-				return ""
+				return "", fmt.Errorf("missing '.messages[%d].content' field", i)
 			}
 			text, ok := textInf.(string)
 			if !ok {
-				return ""
+				return "", fmt.Errorf("'.messages[%d].content' should be a string", i)
 			}
-			return firstNChars(text, n)
+			return firstNChars(text, n), nil
 		}
 	}
 
-	return ""
+	return "", fmt.Errorf("no user message found")
 }
 
 // firstNChars returns the first n characters of a string.
