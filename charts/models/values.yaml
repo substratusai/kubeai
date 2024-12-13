@@ -304,6 +304,12 @@ catalog:
     url: "ollama://qwen2.5:7b"
     engine: OLlama
     resourceProfile: cpu:2
+  qwen2.5-0.5b-cpu:
+    enabled: false
+    features: ["TextGeneration"]
+    engine: VLLM
+    url: "hf://Qwen/Qwen2.5-0.5B-Instruct"
+    resourceProfile: cpu:1
   qwen2-500m-cpu:
     enabled: false
     features: ["TextGeneration"]

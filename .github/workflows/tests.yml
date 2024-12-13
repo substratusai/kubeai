@@ -33,6 +33,7 @@ jobs:
         - "autoscaler-restart"
         - "cache-shared-filesystem"
         - "engine-vllm-pvc"
+        - "engine-vllm-adapters"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
