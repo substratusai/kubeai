@@ -10,7 +10,7 @@ catalog:
     enabled: true
     minReplicas: 1
     adapters:
-    - id: colorist
+    - name: colorist
       url: hf://samos123/opt-125m-colorist
 EOF
 
