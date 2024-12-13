@@ -1,10 +1,12 @@
 package loadbalancer
 
 import (
+	"context"
 	"fmt"
 	"sort"
 
 	"github.com/cespare/xxhash"
+	"github.com/substratusai/kubeai/internal/metrics"
 )
 
 func (g *group) chwblGetAddr(key string, loadFactor float64, adapter string) (endpoint, bool) {
@@ -20,6 +22,7 @@ func (g *group) chwblGetAddr(key string, loadFactor float64, adapter string) (en
 	i := i0
 	// Avoid an infinite loop by checking if we've checked all the endpoints.
 	for n := 0; n < len(g.chwblSortedHashes); n++ {
+		fmt.Println("i:", i, "hash", g.chwblSortedHashes[i], "prefix", key)
 		name := g.chwblHashes[g.chwblSortedHashes[i]]
 		ep, ok := g.endpoints[name]
 		if !ok {
@@ -40,6 +43,7 @@ func (g *group) chwblGetAddr(key string, loadFactor float64, adapter string) (en
 				defaultEndpoint = &ep
 			}
 			if chwblLoadOK(ep.inFlight.Load(), g.totalInFlight.Load(), len(g.endpoints), loadFactor) {
+				metrics.InferenceRequestsHashLookupIterations.Record(context.Background(), int64(n+1))
 				return ep, true
 			}
 		}
@@ -52,6 +56,7 @@ func (g *group) chwblGetAddr(key string, loadFactor float64, adapter string) (en
 	}
 
 	if defaultEndpoint != nil {
+		metrics.InferenceRequestsHashLookupIterations.Record(context.Background(), int64(len(g.chwblSortedHashes)))
 		return *defaultEndpoint, true
 	}
 	return endpoint{}, false

@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: chat-benchmark
+spec:
+  restartPolicy: Never
+  containers:
+    - name: k6
+      image: grafana/k6
+      command: ["sleep", "infinity"]
+      #args: ["run", "/config/k6.js"] #, "--http-debug"]
+      volumeMounts:
+        - name: work
+          mountPath: /work
+  volumes:
+    - name: work
+      configMap:
+        name: chat-benchmark
