@@ -18,8 +18,6 @@ export USE_GPU_CLUSTER=${USE_GPU_CLUSTER:-false}
 mkdir -p $REPO_DIR/tmp
 
 if [ "$USE_GPU_CLUSTER" = "true" ]; then
-    base64 -d <<< $TEST_KUBECONFIG > $REPO_DIR/tmp/kubeconfig
-    export KUBECONFIG=$REPO_DIR/tmp/kubeconfig
     export TEST_KUBECTL_CONTEXT=$(kubectl config current-context)
 fi
 
