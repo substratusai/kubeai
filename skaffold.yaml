@@ -65,6 +65,16 @@ profiles:
         - ./test/e2e/common-values.yaml
         setValueTemplates:
           openwebui.enabled: false
+- name: e2e-test-gpu
+  deploy:
+    helm:
+      releases:
+      - name: kubeai
+        chartPath: ./charts/kubeai
+        valuesFiles:
+        - ./charts/kubeai/values-nvidia-k8s-device-plugin.yaml
+        setValueTemplates:
+          openwebui.enabled: false
 - name: e2e-test-autoscaler-restart
   deploy:
     helm:

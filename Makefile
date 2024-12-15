@@ -98,7 +98,7 @@ test-e2e-engine-vllm-pvc: skaffold
 .PHONY: test-e2e-engine-vllm-adapters
 test-e2e-engine-vllm-adapters: export USE_GPU_CLUSTER=true
 test-e2e-engine-vllm-adapters: skaffold
-	./test/e2e/run.sh engine-vllm-adapters --profile e2e-test-default
+	./test/e2e/run.sh engine-vllm-adapters --profile e2e-test-gpu
 
 .PHONY: test-e2e-engine
 test-e2e-engine: skaffold
