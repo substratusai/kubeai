@@ -30,7 +30,7 @@ deploy:
 portForward:
 - resourceType: service
   resourceName: kubeai
-  namespace: default
+  namespace: '{{ default "default" .NAMESPACE}}'
   port: 80
   localPort: 8000
 
