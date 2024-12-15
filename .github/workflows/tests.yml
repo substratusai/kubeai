@@ -55,6 +55,8 @@ jobs:
 
       - name: Run the e2e testcase
         run: make test-e2e-${{ matrix.testcase }}
+        env:
+          TEST_KUBECONFIG: ${{ secrets.TEST_KUBECONFIG }}
 
   e2e-engines:
     runs-on: ubuntu-latest
