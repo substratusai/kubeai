@@ -6,7 +6,7 @@ models_release="kubeai-models"
 
 helm install $models_release $REPO_DIR/charts/models -f - <<EOF
 catalog:
-  opt-125m-cpu:
+  opt-125m-a16:
     enabled: true
     minReplicas: 1
     adapters:
@@ -20,10 +20,10 @@ sleep 5
 curl http://localhost:8000/openai/v1/completions \
   --max-time 600 \
   -H "Content-Type: application/json" \
-  -d '{"model": "opt-125m-cpu", "prompt": "Who was the first president of the United States?", "max_tokens": 40}'
+  -d '{"model": "opt-125m-a16", "prompt": "Who was the first president of the United States?", "max_tokens": 40}'
 
 # Test the adapter model
 curl http://localhost:8000/openai/v1/completions \
   --max-time 600 \
   -H "Content-Type: application/json" \
-  -d '{"model": "opt-125m-cpu_colorist", "prompt": "Who was the first president of the United States?", "max_tokens": 40}'
+  -d '{"model": "opt-125m-a16_colorist", "prompt": "Who was the first president of the United States?", "max_tokens": 40}'
