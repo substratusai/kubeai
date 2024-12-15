@@ -44,12 +44,22 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create and change namespace
+        run: |
+          NAMESPACE=kubeai-${{ github.run_id }}
+          kubectl create namespace $NAMESPACE
+          kubectl config set-context --current --namespace=$NAMESPACE
+          echo "NAMESPACE=$namespace" >> $GITHUB_ENV
       - name: Run the e2e testcase
         run: make test-e2e-${{ matrix.testcase }}
         env:
           TEST_KUBECONFIG: "${{ secrets.TEST_KUBECONFIG }}"
           USE_GPU_CLUSTER: "true"
-          SKAFFOLD_DEFAULT_REPO: "ghcr.io"
+          SKAFFOLD_DEFAULT_REPO: "ghcr.io/substratusai/"
+      - name: Delete namespace
+        if: always()
+        run: |
+          kubectl delete namespace $NAMESPACE
 
   e2e-general:
     runs-on: ubuntu-latest
