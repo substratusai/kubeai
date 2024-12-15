@@ -19,6 +19,9 @@ build:
     #
   local:
     push: false
+      # Needed for preventing gcloud auth error even when GCR isn't used.
+      # Reference: https://github.com/GoogleContainerTools/skaffold/issues/9336#issuecomment-2105523768
+      useBuildkit: true
 deploy:
   helm:
     releases:
