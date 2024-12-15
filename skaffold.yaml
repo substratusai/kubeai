@@ -66,6 +66,9 @@ profiles:
         setValueTemplates:
           openwebui.enabled: false
 - name: e2e-test-gpu
+  build:
+    local:
+      push: true
   deploy:
     helm:
       releases:
