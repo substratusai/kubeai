@@ -60,7 +60,7 @@ jobs:
         run: make test-e2e-${{ matrix.testcase }}
         env:
           USE_GPU_CLUSTER: "true"
-          SKAFFOLD_DEFAULT_REPO: "ghcr.io/substratusai/"
+          SKAFFOLD_DEFAULT_REPO: "ghcr.io/substratusai"
       - name: Delete namespace
         if: always()
         run: |
