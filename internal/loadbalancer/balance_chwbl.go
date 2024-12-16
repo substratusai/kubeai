@@ -17,6 +17,8 @@ func (g *group) chwblGetAddr(key string, loadFactor float64, adapter string) (en
 	h := chwblHash(key)
 	_, i0 := g.chwblSearch(h)
 
+	// The default endpoint is the endpoint that is able to serve the request (has the adapter)
+	// but might not meet the load requirement after all other endpoints have been checked.
 	var defaultEndpoint *endpoint
 
 	i := i0
@@ -100,12 +102,13 @@ func (g *group) chwblDeleteSortedHash(val uint64) {
 	right := len(g.chwblSortedHashes) - 1
 	for left <= right {
 		middle := (left + right) / 2
-		if g.chwblSortedHashes[middle] == val {
+		current := g.chwblSortedHashes[middle]
+		if current == val {
 			idx = middle
 			break
-		} else if g.chwblSortedHashes[middle] < val {
+		} else if current < val {
 			left = middle + 1
-		} else if g.chwblSortedHashes[middle] > val {
+		} else if current > val {
 			right = middle - 1
 		}
 	}
@@ -131,16 +134,9 @@ func chwblLoadOK(load, totalLoad int64, n int, loadFactor float64) bool {
 		return true
 	}
 
+	// The "+1"s are to simulate the load of the new request.
 	avgLoad := float64(totalLoad+1) / float64(n)
 	threshold := avgLoad * loadFactor
 	ok := float64(load)+1 <= threshold
-	//fmt.Println(
-	//	"load+1:", float64(load)+1,
-	//	"totalLoad+1:", totalLoad+1,
-	//	"n:", n,
-	//	"loadFactor:", loadFactor,
-	//	"avgLoad+1:", avgLoad,
-	//	"threshold:", threshold,
-	//)
 	return ok
 }
