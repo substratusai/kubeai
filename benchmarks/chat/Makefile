@@ -5,9 +5,6 @@ data/ShareGPT_V3_unfiltered_cleaned_split.json:
 data: data/ShareGPT_V3_unfiltered_cleaned_split.json
 	cd data && python prepare-message-threads.py
 
-configure:
-	kubectl create cm chat-benchmark --from-file=Makefile --from-file=k6.js --from-file=prepare-message-threads.py
-
 run: 
 	ls scenarios/${SCENARIO}
 	CONFIG_DIR=scenarios/${SCENARIO} DATA_DIR=data MODEL_ADDR=kubeai/openai k6 run ./k6.js
