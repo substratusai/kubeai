@@ -55,7 +55,7 @@ jobs:
           NAMESPACE=kubeai-${{ github.run_id }}
           kubectl create namespace $NAMESPACE
           kubectl config set-context --current --namespace=$NAMESPACE
-          echo "NAMESPACE=$namespace" >> $GITHUB_ENV
+          echo "NAMESPACE=$NAMESPACE" >> $GITHUB_ENV
       - name: Run the e2e testcase
         run: make test-e2e-${{ matrix.testcase }}
         env:
