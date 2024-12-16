@@ -1,1 +1,0 @@
-kubectl create cm chat-benchmark --from-file=message-threads.json --from-file=k6.js

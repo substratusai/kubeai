@@ -4,40 +4,24 @@ import http from 'k6/http';
 import { Trend, Counter } from 'k6/metrics';
 
 const model_addr = __ENV.MODEL_ADDR;
-const model_id = __ENV.MODEL_ID;
+const config_dir = __ENV.CONFIG_DIR;
+const data_dir = __ENV.DATA_DIR;
+
 const timePerToken = new Trend('time_per_token', true);
 const tokens = new Counter('tokens');
 const new_tokens = new Counter('new_tokens');
 const input_tokens = new Counter('input_tokens');
-const max_new_tokens = 50;
 
-const messageThreads = JSON.parse(open("message-threads.json"))
+const k6Options = JSON.parse(open(`${config_dir}/k6.json`));
+const baseRequest = JSON.parse(open(`${config_dir}/base-request.json`));
+const messageThreads = JSON.parse(open(`${data_dir}/message-threads.json`))
 
-export const options = {
-    thresholds: {
-        http_req_failed: ['rate==0'],
-    },
-    scenarios: {
-        chat: {
-            executor: 'shared-iterations',
-            // Number of VUs to run concurrently.
-            vus: 20,
-            // Total number of script iterations to execute across all VUs (b/c using 'shared-iterations' executor).
-            iterations: 200,
-            maxDuration: '120s',
-        },
-    },
-};
+export const options = k6Options;
 
 export default function run() {
     const headers = { 'Content-Type': 'application/json' };
     const msgThread = messageThreads[scenario.iterationInTest % messageThreads.length];
-    var payload = {
-        "messages": [],
-        "temperature": 0,
-        "model": `${model_id}`,
-        "max_tokens": max_new_tokens
-    };
+    var payload = JSON.parse(JSON.stringify(baseRequest));
 
     // console.log(`Message thread: ${JSON.stringify(msgThread)}`);
 

@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 	v1 "github.com/substratusai/kubeai/api/v1"
 	"github.com/substratusai/kubeai/internal/apiutils"
+	"github.com/substratusai/kubeai/internal/metrics/metricstest"
 )
 
 func TestAwaitBestHostBehavior(t *testing.T) {
@@ -88,6 +89,8 @@ func TestAwaitBestHostBehavior(t *testing.T) {
 	for name, spec := range testCases {
 		for _, strategy := range spec.strategies {
 			t.Run(name+" with "+string(strategy)+" strategy", func(t *testing.T) {
+				metricstest.Init(t)
+
 				manager := &LoadBalancer{
 					groups: map[string]*group{},
 				}

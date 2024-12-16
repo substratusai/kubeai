@@ -22,7 +22,6 @@ func (g *group) chwblGetAddr(key string, loadFactor float64, adapter string) (en
 	i := i0
 	// Avoid an infinite loop by checking if we've checked all the endpoints.
 	for n := 0; n < len(g.chwblSortedHashes); n++ {
-		fmt.Println("i:", i, "hash", g.chwblSortedHashes[i], "prefix", key)
 		name := g.chwblHashes[g.chwblSortedHashes[i]]
 		ep, ok := g.endpoints[name]
 		if !ok {

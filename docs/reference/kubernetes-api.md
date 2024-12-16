@@ -30,6 +30,41 @@ _Appears in:_
 | `url` _string_ |  |  |  |
 
 
+#### LoadBalancing
+
+
+
+
+
+
+
+_Appears in:_
+- [ModelSpec](#modelspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `strategy` _[LoadBalancingStrategy](#loadbalancingstrategy)_ |  | LeastLoad | Enum: [LeastLoad PrefixHash] <br />Optional: \{\} <br /> |
+| `prefixHash` _[PrefixHash](#prefixhash)_ |  | \{  \} | Optional: \{\} <br /> |
+
+
+#### LoadBalancingStrategy
+
+_Underlying type:_ _string_
+
+
+
+_Validation:_
+- Enum: [LeastLoad PrefixHash]
+
+_Appears in:_
+- [LoadBalancing](#loadbalancing)
+
+| Field | Description |
+| --- | --- |
+| `LeastLoad` |  |
+| `PrefixHash` |  |
+
+
 #### Model
 
 
@@ -92,6 +127,7 @@ _Appears in:_
 | `targetRequests` _integer_ | TargetRequests is average number of active requests that the autoscaler<br />will try to maintain on model server Pods. | 100 | Minimum: 1 <br /> |
 | `scaleDownDelaySeconds` _integer_ | ScaleDownDelay is the minimum time before a deployment is scaled down after<br />the autoscaling algorithm determines that it should be scaled down. | 30 |  |
 | `owner` _string_ | Owner of the model. Used solely to populate the owner field in the<br />OpenAI /v1/models endpoint.<br />DEPRECATED. |  | Optional: \{\} <br /> |
+| `loadBalancing` _[LoadBalancing](#loadbalancing)_ | LoadBalancing configuration for the model.<br />If not specified, a default is used based on the engine and request. | \{  \} |  |
 
 
 #### ModelStatus
@@ -142,5 +178,23 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `all` _integer_ |  |  |  |
 | `ready` _integer_ |  |  |  |
+
+
+#### PrefixHash
+
+
+
+
+
+
+
+_Appears in:_
+- [LoadBalancing](#loadbalancing)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `meanLoadFactor` _integer_ | MeanLoadPercentage is the percentage that any given endpoint's load must not exceed<br />over the mean load of all endpoints in the hash ring. Defaults to 125% which is<br />a widely accepted value for the Consistent Hashing with Bounded Loads algorithm. | 125 | Minimum: 100 <br />Optional: \{\} <br /> |
+| `replication` _integer_ | Replication is the number of replicas of each endpoint on the hash ring.<br />Higher values will result in a more even distribution of load but will<br />decrease lookup performance. | 20 | Optional: \{\} <br /> |
+| `prefixCharLength` _integer_ | PrefixCharLength is the number of characters to count when building the prefix to hash. | 100 | Optional: \{\} <br /> |
 
 
