@@ -5,7 +5,8 @@ The easiest way to serve ML models in production. Supports LLMs, embeddings, and
 ✅️  OpenAI API Compatibility: Drop-in replacement for OpenAI  
 ⚖️  Autoscaling: Scale from zero, autoscale based on load  
 🧠  Serve text generation models with vLLM or Ollama  
-🔌  Lora Adapter aware routing  
+🔌  Dynamic LoRA adapter loading  
+⛕  Inference-optimized load balancing  
 💬  Speech to Text API with FasterWhisper  
 🧮  Embedding/Vector API with Infinity  
 🚀  Multi-platform: CPU, GPU, TPU  

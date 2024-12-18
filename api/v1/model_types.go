@@ -117,6 +117,11 @@ type ModelSpec struct {
 	// DEPRECATED.
 	// +kubebuilder:validation:Optional
 	Owner string `json:"owner"`
+
+	// LoadBalancing configuration for the model.
+	// If not specified, a default is used based on the engine and request.
+	// +kubebuilder:default={}
+	LoadBalancing LoadBalancing `json:"loadBalancing,omitempty"`
 }
 
 // +kubebuilder:validation:Enum=TextGeneration;TextEmbedding;SpeechToText
@@ -144,6 +149,44 @@ type Adapter struct {
 	Name string `json:"name"`
 	// +kubebuilder:validation:XValidation:rule="self.startsWith(\"hf://\") || self.startsWith(\"s3://\") || self.startsWith(\"gs://\") || self.startsWith(\"oss://\")", message="adapter url must start with \"hf://\", \"s3://\", \"gs://\", or \"oss://\"."
 	URL string `json:"url"`
+}
+
+type LoadBalancing struct {
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default=LeastLoad
+	Strategy LoadBalancingStrategy `json:"strategy,omitempty"`
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default={}
+	PrefixHash PrefixHash `json:"prefixHash,omitempty"`
+}
+
+// +kubebuilder:validation:Enum=LeastLoad;PrefixHash
+type LoadBalancingStrategy string
+
+const (
+	LeastLoadStrategy  LoadBalancingStrategy = "LeastLoad"
+	PrefixHashStrategy LoadBalancingStrategy = "PrefixHash"
+)
+
+type PrefixHash struct {
+	// MeanLoadPercentage is the percentage that any given endpoint's load must not exceed
+	// over the mean load of all endpoints in the hash ring. Defaults to 125% which is
+	// a widely accepted value for the Consistent Hashing with Bounded Loads algorithm.
+	// +kubebuilder:default=125
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:validation:Minimum=100
+	MeanLoadPercentage int `json:"meanLoadFactor,omitempty"`
+	// Replication is the number of replicas of each endpoint on the hash ring.
+	// Higher values will result in a more even distribution of load but will
+	// decrease lookup performance.
+	// +kubebuilder:validation:XValidation:rule="self == oldSelf", message="replication is immutable."
+	// +kubebuilder:default=20
+	// +kubebuilder:validation:Optional
+	Replication int `json:"replication,omitempty"`
+	// PrefixCharLength is the number of characters to count when building the prefix to hash.
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default=100
+	PrefixCharLength int `json:"prefixCharLength,omitempty"`
 }
 
 // ModelStatus defines the observed state of Model.

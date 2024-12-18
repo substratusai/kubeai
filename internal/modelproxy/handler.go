@@ -8,40 +8,42 @@ import (
 	"net/http/httputil"
 	"net/url"
 
+	v1 "github.com/substratusai/kubeai/api/v1"
+	"github.com/substratusai/kubeai/internal/apiutils"
 	"github.com/substratusai/kubeai/internal/metrics"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 )
 
-type ModelScaler interface {
-	LookupModel(ctx context.Context, model, adapter string, selectors []string) (bool, error)
+type ModelClient interface {
+	LookupModel(ctx context.Context, model, adapter string, selectors []string) (*v1.Model, error)
 	ScaleAtLeastOneReplica(ctx context.Context, model string) error
 }
 
-type EndpointResolver interface {
-	AwaitBestAddress(ctx context.Context, model, adapter string) (string, func(), error)
+type LoadBalancer interface {
+	AwaitBestAddress(ctx context.Context, req *apiutils.Request) (string, func(), error)
 }
 
 // Handler serves http requests for end-clients.
 // It is also responsible for triggering scale-from-zero.
 type Handler struct {
-	modelScaler ModelScaler
-	resolver    EndpointResolver
-	maxRetries  int
-	retryCodes  map[int]struct{}
+	modelClient  ModelClient
+	loadBalancer LoadBalancer
+	maxRetries   int
+	retryCodes   map[int]struct{}
 }
 
 func NewHandler(
-	modelScaler ModelScaler,
-	resolver EndpointResolver,
+	modelClient ModelClient,
+	loadBalancer LoadBalancer,
 	maxRetries int,
 	retryCodes map[int]struct{},
 ) *Handler {
 	return &Handler{
-		modelScaler: modelScaler,
-		resolver:    resolver,
-		maxRetries:  maxRetries,
-		retryCodes:  retryCodes,
+		modelClient:  modelClient,
+		loadBalancer: loadBalancer,
+		maxRetries:   maxRetries,
+		retryCodes:   retryCodes,
 	}
 }
 
@@ -57,35 +59,30 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("X-Proxy", "lingo")
 
-	pr := newProxyRequest(r)
-
 	// TODO: Only parse model for paths that would have a model.
-	if err := pr.parse(); err != nil {
-		pr.sendErrorResponse(w, http.StatusBadRequest, "unable to parse model: %v", err)
+	pr, err := h.parseProxyRequest(r)
+	if err != nil {
+		if errors.Is(err, apiutils.ErrBadRequest) {
+			pr.sendErrorResponse(w, http.StatusBadRequest, "%v", err)
+		} else if errors.Is(err, apiutils.ErrModelNotFound) {
+			pr.sendErrorResponse(w, http.StatusNotFound, "%v", err)
+		} else {
+			pr.sendErrorResponse(w, http.StatusInternalServerError, "parsing request: %v", err)
+		}
 		return
 	}
 
-	log.Println("model:", pr.model, "adapter:", pr.adapter)
+	log.Println("model:", pr.Model, "adapter:", pr.Adapter)
 
 	metricAttrs := metric.WithAttributeSet(attribute.NewSet(
-		metrics.AttrRequestModel.String(pr.requestedModel),
+		metrics.AttrRequestModel.String(pr.RequestedModel),
 		metrics.AttrRequestType.String(metrics.AttrRequestTypeHTTP),
 	))
-	metrics.InferenceRequestsActive.Add(pr.r.Context(), 1, metricAttrs)
-	defer metrics.InferenceRequestsActive.Add(pr.r.Context(), -1, metricAttrs)
-
-	modelExists, err := h.modelScaler.LookupModel(r.Context(), pr.model, pr.adapter, pr.selectors)
-	if err != nil {
-		pr.sendErrorResponse(w, http.StatusInternalServerError, "unable to resolve model: %v", err)
-		return
-	}
-	if !modelExists {
-		pr.sendErrorResponse(w, http.StatusNotFound, "model not found: %v", pr.requestedModel)
-		return
-	}
+	metrics.InferenceRequestsActive.Add(pr.http.Context(), 1, metricAttrs)
+	defer metrics.InferenceRequestsActive.Add(pr.http.Context(), -1, metricAttrs)
 
 	// Ensure the backend is scaled to at least one Pod.
-	if err := h.modelScaler.ScaleAtLeastOneReplica(r.Context(), pr.model); err != nil {
+	if err := h.modelClient.ScaleAtLeastOneReplica(r.Context(), pr.Model); err != nil {
 		pr.sendErrorResponse(w, http.StatusInternalServerError, "unable to scale model: %v", err)
 		return
 	}
@@ -98,9 +95,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 var AdditionalProxyRewrite = func(*httputil.ProxyRequest) {}
 
 func (h *Handler) proxyHTTP(w http.ResponseWriter, pr *proxyRequest) {
-	log.Printf("Waiting for host: %v", pr.id)
+	log.Printf("Waiting for host: %v", pr.ID)
 
-	addr, decrementInflight, err := h.resolver.AwaitBestAddress(pr.r.Context(), pr.model, pr.adapter)
+	addr, decrementInflight, err := h.loadBalancer.AwaitBestAddress(pr.http.Context(), pr.Request)
 	if err != nil {
 		switch {
 		case errors.Is(err, context.Canceled):
@@ -148,7 +145,7 @@ func (h *Handler) proxyHTTP(w http.ResponseWriter, pr *proxyRequest) {
 		if err != nil && r.Context().Err() == nil && pr.attempt < h.maxRetries {
 			pr.attempt++
 
-			log.Printf("Retrying request (%v/%v): %v: %v", pr.attempt, h.maxRetries, pr.id, err)
+			log.Printf("Retrying request (%v/%v): %v: %v", pr.attempt, h.maxRetries, pr.ID, err)
 			h.proxyHTTP(w, pr)
 			return
 		}
@@ -158,7 +155,7 @@ func (h *Handler) proxyHTTP(w http.ResponseWriter, pr *proxyRequest) {
 		}
 	}
 
-	log.Printf("Proxying request to ip %v: %v\n", addr, pr.id)
+	log.Printf("Proxying request to ip %v: %v\n", addr, pr.ID)
 	proxy.ServeHTTP(w, pr.httpRequest())
 }
 

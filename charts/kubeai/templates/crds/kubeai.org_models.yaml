@@ -106,6 +106,46 @@ spec:
                   Image to be used for the server process.
                   Will be set from ResourceProfile + Engine if not specified.
                 type: string
+              loadBalancing:
+                default: {}
+                description: |-
+                  LoadBalancing configuration for the model.
+                  If not specified, a default is used based on the engine and request.
+                properties:
+                  prefixHash:
+                    default: {}
+                    properties:
+                      meanLoadFactor:
+                        default: 125
+                        description: |-
+                          MeanLoadPercentage is the percentage that any given endpoint's load must not exceed
+                          over the mean load of all endpoints in the hash ring. Defaults to 125% which is
+                          a widely accepted value for the Consistent Hashing with Bounded Loads algorithm.
+                        minimum: 100
+                        type: integer
+                      prefixCharLength:
+                        default: 100
+                        description: PrefixCharLength is the number of characters
+                          to count when building the prefix to hash.
+                        type: integer
+                      replication:
+                        default: 20
+                        description: |-
+                          Replication is the number of replicas of each endpoint on the hash ring.
+                          Higher values will result in a more even distribution of load but will
+                          decrease lookup performance.
+                        type: integer
+                        x-kubernetes-validations:
+                        - message: replication is immutable.
+                          rule: self == oldSelf
+                    type: object
+                  strategy:
+                    default: LeastLoad
+                    enum:
+                    - LeastLoad
+                    - PrefixHash
+                    type: string
+                type: object
               maxReplicas:
                 description: |-
                   MaxReplicas is the maximum number of Pod replicas that the model can scale up to.
