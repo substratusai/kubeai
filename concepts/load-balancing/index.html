@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://www.kubeai.org/installation/eks/">
+        <link rel="canonical" href="https://www.kubeai.org/concepts/load-balancing/">
       
       
-        <link rel="prev" href="../any/">
+        <link rel="prev" href="../backend-servers/">
       
       
-        <link rel="next" href="../gke/">
+        <link rel="next" href="../lora-adapters/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Install on EKS - KubeAI</title>
+        <title>Load Balancing - KubeAI</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#install-on-eks" class="md-skip">
+        <a href="#load-balancing" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Install on EKS
+              Load Balancing
             
           </span>
         </div>
@@ -242,19 +242,17 @@
       
   
   
-    
   
   
-  
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
@@ -268,7 +266,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Installation
@@ -282,7 +280,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../any/" class="md-nav__link">
+      <a href="../../installation/any/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -300,30 +298,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Install on EKS
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../installation/eks/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -332,62 +310,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-create-eks-cluster-with-karpenter" class="md-nav__link">
-    <span class="md-ellipsis">
-      1. Create EKS cluster with Karpenter
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-configure-a-karpenter-gpu-nodepool" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Configure a Karpenter GPU NodePool
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-install-kubeai" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. Install KubeAI
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-deploying-models" class="md-nav__link">
-    <span class="md-ellipsis">
-      4. Deploying models
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -400,7 +322,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../gke/" class="md-nav__link">
+      <a href="../../installation/gke/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -719,17 +641,19 @@
       
   
   
+    
   
   
+  
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
           <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
@@ -743,7 +667,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             Concepts
@@ -757,7 +681,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/autoscaling/" class="md-nav__link">
+      <a href="../autoscaling/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -778,7 +702,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/backend-servers/" class="md-nav__link">
+      <a href="../backend-servers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -796,10 +720,30 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../concepts/load-balancing/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Load Balancing
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -808,6 +752,53 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#least-load" class="md-nav__link">
+    <span class="md-ellipsis">
+      Least Load
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prefix-hash" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prefix Hash
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -820,7 +811,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/lora-adapters/" class="md-nav__link">
+      <a href="../lora-adapters/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -841,7 +832,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/resource-profiles/" class="md-nav__link">
+      <a href="../resource-profiles/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -862,7 +853,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/storage-caching/" class="md-nav__link">
+      <a href="../storage-caching/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1288,36 +1279,27 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-create-eks-cluster-with-karpenter" class="md-nav__link">
+  <a href="#least-load" class="md-nav__link">
     <span class="md-ellipsis">
-      1. Create EKS cluster with Karpenter
+      Least Load
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-configure-a-karpenter-gpu-nodepool" class="md-nav__link">
+  <a href="#prefix-hash" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Configure a Karpenter GPU NodePool
+      Prefix Hash
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-install-kubeai" class="md-nav__link">
+  <a href="#next" class="md-nav__link">
     <span class="md-ellipsis">
-      3. Install KubeAI
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-deploying-models" class="md-nav__link">
-    <span class="md-ellipsis">
-      4. Deploying models
+      Next
     </span>
   </a>
   
@@ -1341,132 +1323,20 @@
   
 
 
-<h1 id="install-on-eks">Install on EKS<a class="headerlink" href="#install-on-eks" title="Permanent link">&para;</a></h1>
-<details>
-<summary>TIP: Make sure you have enough GPU quota in your AWS account.</summary>
-<p>The default quotas for GPU instances are often 0. You will need to request a quota increase for the GPU instances you want to use.</p>
-<p>The following quotas may require an increase if you wish to use GPUs in your EKS cluster:
-- All G and VT Spot Instance Requests
-- All P5 Spot Instance Requests
-- All P4, P3 and P2 Spot Instance Requests
-- Running Dedicated p4d Hosts</p>
-</details>
-<h2 id="1-create-eks-cluster-with-karpenter">1. Create EKS cluster with Karpenter<a class="headerlink" href="#1-create-eks-cluster-with-karpenter" title="Permanent link">&para;</a></h2>
-<p>Set the environment variables used throughout this guide:</p>
-<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">CLUSTER_NAME</span><span class="o">=</span><span class="s2">&quot;cluster-with-karpenter&quot;</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">AWS_DEFAULT_REGION</span><span class="o">=</span><span class="s2">&quot;us-west-2&quot;</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">K8S_VERSION</span><span class="o">=</span><span class="s2">&quot;1.30&quot;</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">GPU_AMI_ID</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>aws<span class="w"> </span>ssm<span class="w"> </span>get-parameter<span class="w"> </span>--name<span class="w"> </span>/aws/service/eks/optimized-ami/<span class="si">${</span><span class="nv">K8S_VERSION</span><span class="si">}</span>/amazon-linux-2-gpu/recommended/image_id<span class="w"> </span>--query<span class="w"> </span>Parameter.Value<span class="w"> </span>--output<span class="w"> </span>text<span class="k">)</span><span class="s2">&quot;</span>
+<h1 id="load-balancing">Load Balancing<a class="headerlink" href="#load-balancing" title="Permanent link">&para;</a></h1>
+<p>To optimize inference performance and resource utilization, KubeAI supports load balancing strategies specifically tailored for model inference servers such as vLLM. This document explains two primary load balancing strategies available in KubeAI: Least Load and Prefix Hash.</p>
+<h2 id="least-load">Least Load<a class="headerlink" href="#least-load" title="Permanent link">&para;</a></h2>
+<p>The Least Load strategy distributes inference requests to the model replica that has the least number of in-flight requests. This strategy aims to balance the inference workload evenly across available replicas, reducing the risk of overloading any single server.</p>
+<h2 id="prefix-hash">Prefix Hash<a class="headerlink" href="#prefix-hash" title="Permanent link">&para;</a></h2>
+<p>The Prefix Hash strategy leverages the <a target="_blank" href="https://research.google/blog/consistent-hashing-with-bounded-loads/">Consistent Hashing with With Bounded Loads</a> (CHWBL) algorithm to optimize the performance of engines such as vLLM that support prefix caching. This strategy increases the likelihood of KV cache hits for common prefixes. See <a target="_blank" href="https://docs.vllm.ai/en/latest/automatic_prefix_caching/apc.html">vLLM prefix hashing docs</a> for more info.</p>
+<p>With this strategy, KubeAI hashes incoming requests based on their prefixes (in addition to a requested LoRA adapter name - if present). Requests with the same hash value are routed to the same replica, except when that replica's in-flight requests exceed the overall average by a configurable percentage.</p>
+<p>This strategy has the most benefit for use cases such as chat completion. This is because the entire chat thread is sent in each successive chat requests.</p>
+<p>KubeAI supports this strategy for the following endpoints:</p>
+<div class="highlight"><pre><span></span><code>/openai/v1/completions
+/openai/v1/chat/completions
 </code></pre></div>
-<p>Create the EKS cluster using eksctl:
-<div class="highlight"><pre><span></span><code>eksctl<span class="w"> </span>create<span class="w"> </span>cluster<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;EOF</span>
-<span class="s">---</span>
-<span class="s">apiVersion: eksctl.io/v1alpha5</span>
-<span class="s">kind: ClusterConfig</span>
-<span class="s">metadata:</span>
-<span class="s">  name: &quot;${CLUSTER_NAME}&quot;</span>
-<span class="s">  region: &quot;${AWS_DEFAULT_REGION}&quot;</span>
-<span class="s">  version: &quot;${K8S_VERSION}&quot;</span>
-<span class="s">  tags:</span>
-<span class="s">    karpenter.sh/discovery: &quot;${CLUSTER_NAME}&quot; # here, it is set to the cluster name</span>
-
-<span class="s">iam:</span>
-<span class="s">  withOIDC: true # required</span>
-
-<span class="s">karpenter:</span>
-<span class="s">  version: &#39;1.0.6&#39; # Exact version must be specified</span>
-
-<span class="s">managedNodeGroups:</span>
-<span class="s">- instanceType: m5.large</span>
-<span class="s">  amiFamily: AmazonLinux2</span>
-<span class="s">  name: &quot;${CLUSTER_NAME}-m5-ng&quot;</span>
-<span class="s">  desiredCapacity: 2</span>
-<span class="s">  minSize: 1</span>
-<span class="s">  maxSize: 10</span>
-<span class="s">EOF</span>
-</code></pre></div></p>
-<h2 id="2-configure-a-karpenter-gpu-nodepool">2. Configure a Karpenter GPU NodePool<a class="headerlink" href="#2-configure-a-karpenter-gpu-nodepool" title="Permanent link">&para;</a></h2>
-<p>Create the NodePool and EC2NodeClass objects:</p>
-<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;EOF</span>
-<span class="s">apiVersion: karpenter.sh/v1</span>
-<span class="s">kind: NodePool</span>
-<span class="s">metadata:</span>
-<span class="s">  name: gpu</span>
-<span class="s">spec:</span>
-<span class="s">  template:</span>
-<span class="s">    spec:</span>
-<span class="s">      requirements:</span>
-<span class="s">        - key: karpenter.sh/capacity-type</span>
-<span class="s">          operator: In</span>
-<span class="s">          values: [&quot;spot&quot;, &quot;on-demand&quot;]</span>
-<span class="s">        - key: karpenter.k8s.aws/instance-category</span>
-<span class="s">          operator: In</span>
-<span class="s">          values: [&quot;g&quot;, &quot;p&quot;]</span>
-<span class="s">      nodeClassRef:</span>
-<span class="s">        group: karpenter.k8s.aws</span>
-<span class="s">        kind: EC2NodeClass</span>
-<span class="s">        name: gpu</span>
-<span class="s">      expireAfter: 720h # 30 * 24h = 720h</span>
-<span class="s">      taints:</span>
-<span class="s">      - key: nvidia.com/gpu</span>
-<span class="s">        value: &quot;true&quot;</span>
-<span class="s">        effect: NoSchedule</span>
-<span class="s">  limits:</span>
-<span class="s">    cpu: 1000</span>
-<span class="s">  disruption:</span>
-<span class="s">    consolidationPolicy: WhenEmptyOrUnderutilized</span>
-<span class="s">    consolidateAfter: 1m</span>
-<span class="s">---</span>
-<span class="s">apiVersion: karpenter.k8s.aws/v1</span>
-<span class="s">kind: EC2NodeClass</span>
-<span class="s">metadata:</span>
-<span class="s">  name: gpu</span>
-<span class="s">spec:</span>
-<span class="s">  amiFamily: AL2 # Amazon Linux 2</span>
-<span class="s">  role: &quot;eksctl-KarpenterNodeRole-${CLUSTER_NAME}&quot;</span>
-<span class="s">  subnetSelectorTerms:</span>
-<span class="s">    - tags:</span>
-<span class="s">        karpenter.sh/discovery: &quot;${CLUSTER_NAME}&quot; # replace with your cluster name</span>
-<span class="s">  securityGroupSelectorTerms:</span>
-<span class="s">    - tags:</span>
-<span class="s">        karpenter.sh/discovery: &quot;${CLUSTER_NAME}&quot; # replace with your cluster name</span>
-<span class="s">  amiSelectorTerms:</span>
-<span class="s">    - id: &quot;${GPU_AMI_ID}&quot; # &lt;- GPU Optimized AMD AMI </span>
-<span class="s">  blockDeviceMappings:</span>
-<span class="s">    - deviceName: /dev/xvda</span>
-<span class="s">      ebs:</span>
-<span class="s">        volumeSize: 300Gi</span>
-<span class="s">        volumeType: gp3</span>
-<span class="s">        encrypted: true</span>
-<span class="s">EOF</span>
-</code></pre></div>
-<p>Install the NVIDIA device plugin (needed for Karpenter nodes):</p>
-<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.16.1/deployments/static/nvidia-device-plugin.yml
-</code></pre></div>
-<h2 id="3-install-kubeai">3. Install KubeAI<a class="headerlink" href="#3-install-kubeai" title="Permanent link">&para;</a></h2>
-<p>Add KubeAI Helm repository.</p>
-<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>kubeai<span class="w"> </span>https://www.kubeai.org
-helm<span class="w"> </span>repo<span class="w"> </span>update
-</code></pre></div>
-<p><strong>Make sure</strong> you have a HuggingFace Hub token set in your environment (<code>HUGGING_FACE_HUB_TOKEN</code>).</p>
-<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">HF_TOKEN</span><span class="o">=</span><span class="s2">&quot;replace-with-your-huggingface-token&quot;</span>
-</code></pre></div>
-<p>Install KubeAI with <a href="https://helm.sh/docs/intro/install/">Helm</a>.</p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>-L<span class="w"> </span>-O<span class="w"> </span>https://raw.githubusercontent.com/substratusai/kubeai/refs/heads/main/charts/kubeai/values-eks.yaml
-<span class="c1"># Please review the values-eks.yaml file and edit the nodeSelectors if needed.</span>
-cat<span class="w"> </span>values-eks.yaml
-helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>kubeai<span class="w"> </span>kubeai/kubeai<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>-f<span class="w"> </span>values-eks.yaml<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--set<span class="w"> </span>secrets.huggingface.token<span class="o">=</span><span class="nv">$HF_TOKEN</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--wait
-</code></pre></div>
-<h2 id="4-deploying-models">4. Deploying models<a class="headerlink" href="#4-deploying-models" title="Permanent link">&para;</a></h2>
-<p>Take a look at the following how-to guides to deploy models:</p>
-<ul>
-<li><a href="../../how-to/configure-text-generation-models/">Configure Text Generation Models</a></li>
-<li><a href="../../how-to/configure-embedding-models/">Configure Embedding Models</a></li>
-<li><a href="../../how-to/configure-speech-to-text/">Configure Speech to Text Models</a></li>
-</ul>
+<h2 id="next">Next<a class="headerlink" href="#next" title="Permanent link">&para;</a></h2>
+<p>See the <a href="../../reference/kubernetes-api/">Kubernetes API docs</a> to view how to configure Model load balancing.</p>
 
 
 

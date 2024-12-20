@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.48">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.49">
     
     
       
@@ -721,6 +721,27 @@
   
   
     <li class="md-nav__item">
+      <a href="../../concepts/load-balancing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Load Balancing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../concepts/lora-adapters/" class="md-nav__link">
         
   
@@ -1143,6 +1164,24 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#loadbalancing" class="md-nav__link">
+    <span class="md-ellipsis">
+      LoadBalancing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loadbalancingstrategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      LoadBalancingStrategy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#model" class="md-nav__link">
     <span class="md-ellipsis">
       Model
@@ -1191,6 +1230,15 @@
   <a href="#modelstatusreplicas" class="md-nav__link">
     <span class="md-ellipsis">
       ModelStatusReplicas
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefixhash" class="md-nav__link">
+    <span class="md-ellipsis">
+      PrefixHash
     </span>
   </a>
   
@@ -1371,6 +1419,24 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#loadbalancing" class="md-nav__link">
+    <span class="md-ellipsis">
+      LoadBalancing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#loadbalancingstrategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      LoadBalancingStrategy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#model" class="md-nav__link">
     <span class="md-ellipsis">
       Model
@@ -1419,6 +1485,15 @@
   <a href="#modelstatusreplicas" class="md-nav__link">
     <span class="md-ellipsis">
       ModelStatusReplicas
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prefixhash" class="md-nav__link">
+    <span class="md-ellipsis">
+      PrefixHash
     </span>
   </a>
   
@@ -1486,6 +1561,57 @@
 <td><code>url</code> <em>string</em></td>
 <td></td>
 <td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="loadbalancing">LoadBalancing<a class="headerlink" href="#loadbalancing" title="Permanent link">&para;</a></h4>
+<p><em>Appears in:</em>
+- <a href="#modelspec">ModelSpec</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>strategy</code> <em><a href="#loadbalancingstrategy">LoadBalancingStrategy</a></em></td>
+<td></td>
+<td>LeastLoad</td>
+<td>Enum: [LeastLoad PrefixHash] <br />Optional: {} <br /></td>
+</tr>
+<tr>
+<td><code>prefixHash</code> <em><a href="#prefixhash">PrefixHash</a></em></td>
+<td></td>
+<td>{  }</td>
+<td>Optional: {} <br /></td>
+</tr>
+</tbody>
+</table>
+<h4 id="loadbalancingstrategy">LoadBalancingStrategy<a class="headerlink" href="#loadbalancingstrategy" title="Permanent link">&para;</a></h4>
+<p><em>Underlying type:</em> <em>string</em></p>
+<p><em>Validation:</em>
+- Enum: [LeastLoad PrefixHash]</p>
+<p><em>Appears in:</em>
+- <a href="#loadbalancing">LoadBalancing</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>LeastLoad</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>PrefixHash</code></td>
 <td></td>
 </tr>
 </tbody>
@@ -1650,6 +1776,12 @@
 <td></td>
 <td>Optional: {} <br /></td>
 </tr>
+<tr>
+<td><code>loadBalancing</code> <em><a href="#loadbalancing">LoadBalancing</a></em></td>
+<td>LoadBalancing configuration for the model.<br />If not specified, a default is used based on the engine and request.</td>
+<td>{  }</td>
+<td></td>
+</tr>
 </tbody>
 </table>
 <h4 id="modelstatus">ModelStatus<a class="headerlink" href="#modelstatus" title="Permanent link">&para;</a></h4>
@@ -1728,6 +1860,39 @@
 </tr>
 </tbody>
 </table>
+<h4 id="prefixhash">PrefixHash<a class="headerlink" href="#prefixhash" title="Permanent link">&para;</a></h4>
+<p><em>Appears in:</em>
+- <a href="#loadbalancing">LoadBalancing</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>meanLoadFactor</code> <em>integer</em></td>
+<td>MeanLoadPercentage is the percentage that any given endpoint's load must not exceed<br />over the mean load of all endpoints in the hash ring. Defaults to 125% which is<br />a widely accepted value for the Consistent Hashing with Bounded Loads algorithm.</td>
+<td>125</td>
+<td>Minimum: 100 <br />Optional: {} <br /></td>
+</tr>
+<tr>
+<td><code>replication</code> <em>integer</em></td>
+<td>Replication is the number of replicas of each endpoint on the hash ring.<br />Higher values will result in a more even distribution of load but will<br />decrease lookup performance.</td>
+<td>20</td>
+<td>Optional: {} <br /></td>
+</tr>
+<tr>
+<td><code>prefixCharLength</code> <em>integer</em></td>
+<td>PrefixCharLength is the number of characters to count when building the prefix to hash.</td>
+<td>100</td>
+<td>Optional: {} <br /></td>
+</tr>
+</tbody>
+</table>
 
 
 
@@ -1777,7 +1942,7 @@
     <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.83f73b43.min.js"></script>
+      <script src="../../assets/javascripts/bundle.88dd0f4e.min.js"></script>
       
     
   </body>
