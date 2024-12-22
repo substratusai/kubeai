@@ -1,14 +1,14 @@
 # KubeAI: AI Inferencing Operator
 
-Deploy and scale machine learning models in production. Built for LLMs, embeddings, and speech-to-text.
+Deploy and scale machine learning models on Kubernetes. Built for LLMs, embeddings, and speech-to-text.
 
 ## Key Features
 
 🚀 **LLM Operator** - Manages vLLM and Ollama servers  
-🔗 **OpenAI Compatible** - WoWorks withpenAI clclient librarie 
+🔗 **OpenAI Compatible** - Works with OpenAI client libraries  
 🛠️ **Simple Deployment** - No external depencies required  
 ⚡️ **Intelligent Scaling** - Scale from zero to meet demand  
-⛕ **Smart Routing** - Load balancing algo purpose built for LLMs  
+⛕ **Smart Routing** - LLM-specific load balancing algorithms  
 🧩 **Dynamic LoRA** - Hot-swap model adapters with zero downtime  
 🖥 **Hardware Flexible** - Runs on CPU, GPU, or TPU  
 💾 **Efficient Caching** - Supports EFS, Filestore, and more  
@@ -38,7 +38,7 @@ List of known adopters:
 | Vultr | KubeAI can be deployed on Vultr Managed Kubernetes using the application marketplace. | [Vultr](https://www.vultr.com) |
 | Arcee | Arcee uses KubeAI for multi-region, multi-tenant SLM inference. | [Arcee](https://www.arcee.ai/) |
 
-If you are using KubeAI and would like to be listed as an adopter, please make a PR.
+If you are using KubeAI and would like to be listed as an adopter, please [submit a PR](https://github.com/substratusai/kubeai/edit/main/docs/README.md).
 
 ## Local Quickstart
 
