@@ -1,19 +1,20 @@
 # KubeAI: AI Inferencing Operator
 
-The easiest way to serve ML models in production. Supports LLMs, embeddings, and speech-to-text.
+Deploy and scale machine learning models in production. Built for LLMs, embeddings, and speech-to-text.
 
-✅️  OpenAI API Compatibility: Drop-in replacement for OpenAI  
-⚖️  Autoscaling: Scale from zero, autoscale based on load  
-🧠  Serve text generation models with vLLM or Ollama  
-🔌  Dynamic LoRA adapter loading  
-⛕  Inference-optimized load balancing  
-💬  Speech to Text API with FasterWhisper  
-🧮  Embedding/Vector API with Infinity  
-🚀  Multi-platform: CPU, GPU, TPU  
-💾  Model caching with shared filesystems (EFS, Filestore, etc.)  
-🛠️  Zero dependencies (does not depend on Istio, Knative, etc.)  
-💬  Chat UI included ([OpenWebUI](https://github.com/open-webui/open-webui))  
-✉  Stream/batch inference via messaging integrations (Kafka, PubSub, etc.)  
+## Key Features
+
+🚀 **LLM Operator** - Manages vLLM and Ollama servers  
+🔗 **OpenAI Compatible** - WoWorks withpenAI clclient librarie 
+🛠️ **Simple Deployment** - No external depencies required  
+⚡️ **Intelligent Scaling** - Scale from zero to meet demand  
+⛕ **Smart Routing** - Load balancing algo purpose built for LLMs  
+🧩 **Dynamic LoRA** - Hot-swap model adapters with zero downtime  
+🖥 **Hardware Flexible** - Runs on CPU, GPU, or TPU  
+💾 **Efficient Caching** - Supports EFS, Filestore, and more  
+🎙️ **Speech Processing** - Transcribe audio via FasterWhisper  
+🔢 **Vector Operations** - Generate embeddings via Infinity  
+📨 **Event Streaming** - Native integrations with Kafka and more  
 
 Quotes from the community:
 
@@ -21,7 +22,7 @@ Quotes from the community:
 
 ## Architecture
 
-KubeAI serves an OpenAI compatible HTTP API. Admins can configure ML models via `kind: Model` Kubernetes Custom Resources. KubeAI can be thought of as a Model Operator (See [Operator Pattern](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/)) that manages [vLLM](https://github.com/vllm-project/vllm) and [Ollama](https://github.com/ollama/ollama) servers.
+KubeAI exposes an OpenAI-compatible API and manages ML models through Kubernetes Custom Resources. It is architected as a Model Operator ([learn more](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/)) that orchestrates [vLLM](https://github.com/vllm-project/vllm) and [Ollama](https://github.com/ollama/ollama) servers.
 
 <img src="./diagrams/arch.excalidraw.png"></img>
 
@@ -40,9 +41,6 @@ List of known adopters:
 If you are using KubeAI and would like to be listed as an adopter, please make a PR.
 
 ## Local Quickstart
-
-
-<video controls src="https://github.com/user-attachments/assets/711d1279-6af9-4c6c-a052-e59e7730b757" width="800"></video>
 
 Create a local cluster using [kind](https://kind.sigs.k8s.io/) or [minikube](https://minikube.sigs.k8s.io/docs/).
 
@@ -119,50 +117,13 @@ Now open your browser to [localhost:8000](http://localhost:8000) and select the 
 
 If you go back to the browser and start a chat with Qwen2, you will notice that it will take a while to respond at first. This is because we set `minReplicas: 0` for this model and KubeAI needs to spin up a new Pod (you can verify with `kubectl get models -oyaml qwen2-500m-cpu`).
 
-## Documentation
+## Get Started
 
-Checkout our documentation on [kubeai.org](https://www.kubeai.org) to find info on:
+Learn more at [kubeai.org](https://www.kubeai.org)!
 
-* Installing KubeAI in the cloud
-* How to guides (e.g. how to manage models and resource profiles).
-* Concepts (how the components of KubeAI work).
-* How to contribute
+Join the [Discord channel](https://discord.gg/JeXhcmjZVm) to chat.
 
-## OpenAI API Compatibility
-
-```bash
-# Implemented #
-/v1/chat/completions
-/v1/completions
-/v1/embeddings
-/v1/models
-/v1/audio/transcriptions
-
-# Planned #
-# /v1/assistants/*
-# /v1/batches/*
-# /v1/fine_tuning/*
-# /v1/images/*
-# /v1/vector_stores/*
-```
-
-## Immediate Roadmap
-
-* Model caching
-* LoRA finetuning (compatible with OpenAI finetuning API)
-* Image generation (compatible with OpenAI images API)
-
-*NOTE:* KubeAI was born out of a project called Lingo which was a simple Kubernetes LLM proxy with basic autoscaling. We relaunched the project as KubeAI (late August 2024) and expanded the roadmap to what it is today.
-
-🌟 Don't forget to drop us a star on GitHub and follow the repo to stay up to date!
-
-[![KubeAI Star history Chart](https://api.star-history.com/svg?repos=substratusai/kubeai&type=Date)](https://star-history.com/#substratusai/kubeai&Date)
-
-## Contact
-
-Let us know about features you are interested in seeing or reach out with questions. [Visit our Discord channel](https://discord.gg/JeXhcmjZVm) to join the discussion!
-
-Or just reach out on LinkedIn if you want to connect:
+Or just reach out on LinkedIn:
 
 * [Nick Stogner](https://www.linkedin.com/in/nstogner/)
 * [Sam Stoelinga](https://www.linkedin.com/in/samstoelinga/)
