@@ -6,7 +6,7 @@ spec:
   restartPolicy: Never
   containers:
     - name: bench
-      image: us-central1-docker.pkg.dev/substratus-dev/default/kubeai-benchmark-chat:v0.0.2
+      image: $IMG
       command: ["sleep", "infinity"]
       resources:
         requests:
