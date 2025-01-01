@@ -1,14 +1,32 @@
-# Results
+# Prefix Hash Benchmark - Llama 3.1 70B with 8 replicas
 
 Under specific conditions:
 
-* Restricted GPU memory
-* Low `max_tokens` to be generated
+* Set `max_tokens` to 10 to see understand performance impact when significant time is spent on input.
 * Chat threads with decently long user messages
 
-Prefix hashing was shown to have `34%` decrease in average time per token.
+Summary of how Prefix Hashing affects performance:
+* `12%` decrease in average time per token: `405.39 ms (LeastLoad) --> 361.07ms (PrefixHash)`
+* input_tokens: `51846.973437/s (LeastLoad) --> 57789.588176/s (PrefixHash)`. An increase of `11%` in throughput of input tokens.
 
-`712.11ms (LeastLoad) --> 469.34ms (PrefixHash)`
+Least Load results:
+```
+     input_tokens...................: 4990249 51846.973437/s
+     iteration_duration.............: avg=26.06s   min=3.61s    med=24.15s   max=1m25s   p(90)=39.9s    p(95)=48.14s
+     iterations.....................: 1000    10.389657/s
+     new_tokens.....................: 67790   704.314821/s
+     time_per_token.................: avg=405.39ms min=34.22ms  med=384.49ms max=2.2s    p(90)=650.92ms p(95)=749.72ms
+```
+
+
+Prefix Hashing results:
+```
+     input_tokens...................: 4989621 57789.588176/s
+     iteration_duration.............: avg=23.03s   min=1.71s   med=22.05s   max=1m20s   p(90)=41.36s   p(95)=49.67s
+     iterations.....................: 1000    11.581959/s
+     new_tokens.....................: 67718   784.307131/s
+     time_per_token.................: avg=361.07ms min=35.86ms med=235.35ms max=2.78s   p(90)=723.57ms p(95)=827ms
+```
 
 ## Steps taken
 
@@ -38,7 +56,7 @@ kubectl exec -it chat-benchmark -- SCENARIO=$SCENARIO make run
 ```
 
 
-## Benchmark Output
+## Benchmark Outputs
 
 ### LeastLoad - single replica
 
