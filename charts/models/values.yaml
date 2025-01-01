@@ -139,6 +139,18 @@ catalog:
       - --disable-log-requests
     resourceProfile: nvidia-gpu-h100:2
     targetRequests: 500
+  llama-3.1-70b-instruct-fp8-1xh100:
+    features: [TextGeneration]
+    url: hf://neuralmagic/Meta-Llama-3.1-70B-Instruct-FP8
+    engine: VLLM
+    args:
+      - --enable-prefix-caching
+      - --max-model-len=16384
+      - --max-num-batched-token=16384
+      - --gpu-memory-utilization=0.95
+      - --disable-log-requests
+      - --kv-cache-dtype=fp8
+    resourceProfile: nvidia-gpu-h100:1
   llama-3.1-70b-instruct-fp8-l4:
     enabled: false
     features: [TextGeneration]
