@@ -95,6 +95,12 @@ test-e2e-cache-shared-filesystem: skaffold
 test-e2e-engine-vllm-pvc: skaffold
 	./test/e2e/run.sh engine-vllm-pvc --profile e2e-test-default
 
+.PHONY: test-e2e-engine-vllm-adapters
+# The Lora adapters only work on vLLM with GPU.
+test-e2e-engine-vllm-adapters: export USE_GPU_CLUSTER=true
+test-e2e-engine-vllm-adapters: skaffold
+	./test/e2e/run.sh engine-vllm-adapters --profile e2e-test-gpu
+
 .PHONY: test-e2e-engine
 test-e2e-engine: skaffold
 	CACHE_PROFILE=$(CACHE_PROFILE) ./test/e2e/run.sh engine-$(ENGINE) --profile e2e-test-default

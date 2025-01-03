@@ -19,6 +19,9 @@ build:
     #
   local:
     push: false
+    # Needed for preventing gcloud auth error even when GCR isn't used.
+    # Reference: https://github.com/GoogleContainerTools/skaffold/issues/9336#issuecomment-2105523768
+    useBuildkit: true
 deploy:
   helm:
     releases:
@@ -27,7 +30,7 @@ deploy:
 portForward:
 - resourceType: service
   resourceName: kubeai
-  namespace: default
+  namespace: '{{ default "default" .NAMESPACE}}'
   port: 80
   localPort: 8000
 
@@ -63,6 +66,19 @@ profiles:
         chartPath: ./charts/kubeai
         valuesFiles:
         - ./test/e2e/common-values.yaml
+        setValueTemplates:
+          openwebui.enabled: false
+- name: e2e-test-gpu
+  build:
+    local:
+      push: true
+  deploy:
+    helm:
+      releases:
+      - name: kubeai
+        chartPath: ./charts/kubeai
+        valuesFiles:
+        - ./charts/kubeai/values-nvidia-k8s-device-plugin.yaml
         setValueTemplates:
           openwebui.enabled: false
 - name: e2e-test-autoscaler-restart
