@@ -7,13 +7,23 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-    - port: {{ .Values.service.port }}
+    - name: http
+      port: {{ .Values.service.port }}
       targetPort: http
       protocol: TCP
-      name: http
-    - port: 8080
+      {{ if or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer") }}
+      {{ if .Values.service.httpNodePort }}
+      nodePort: {{ .Values.service.httpNodePort }}
+      {{ end }}
+      {{ end }}
+    - name: http-metrics
+      port: 8080
       targetPort: 8080
       protocol: TCP
-      name: http-metrics
+      {{ if or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer") }}
+      {{ if .Values.service.metricsNodePort }}
+      nodePort: {{ .Values.service.metricsNodePort }}
+      {{ end }}
+      {{ end }}
   selector:
     {{- include "kubeai.selectorLabels" . | nindent 4 }}

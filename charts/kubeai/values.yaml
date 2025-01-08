@@ -197,7 +197,13 @@ messaging:
 
 # Configure the openwebui subchart.
 openwebui:
+  enabled: true
   fullnameOverride: "openwebui"
+  service:
+    type: ClusterIP  # ClusterIP, NodePort, LoadBalancer
+    port: 80
+    # openwebui nodeport (Optional): Specify NodePort for openwebui if Nodeport or LoadBalancer service type (leave empty for random assignment)
+    httpNodePort: ""
   image:
     tag: v0.3.19
   env:
@@ -284,8 +290,12 @@ securityContext:
   # runAsUser: 1000
 
 service:
-  type: ClusterIP
+  type: ClusterIP  # ClusterIP, NodePort, LoadBalancer
   port: 80
+  # kubeai nodeport (Optional): Specify NodePort for kubeai if Nodeport or LoadBalancer service type (leave empty for random assignment)
+  httpNodePort: ""
+  # metrics nodeport (Optional): Specify a nodePort for Metrics if Nodeport or LoadBalancer service type (leave empty for random assignment)
+  metricsNodePort: ""
 
 ingress:
   enabled: false
