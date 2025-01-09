@@ -11,19 +11,15 @@ spec:
       port: {{ .Values.service.port }}
       targetPort: http
       protocol: TCP
-      {{ if or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer") }}
-      {{ if .Values.service.nodePort }}
-      nodePort: {{ .Values.service.nodePort }}
-      {{ end }}
-      {{ end }}
+      {{- with .Values.service.nodePort }}
+      nodePort: {{ . }}
+      {{- end }}
     - name: http-metrics
       port: 8080
       targetPort: 8080
       protocol: TCP
-      {{ if or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer") }}
-      {{ if .Values.service.metricsNodePort }}
-      nodePort: {{ .Values.service.metricsNodePort }}
-      {{ end }}
-      {{ end }}
+      {{- with .Values.service.metricsNodePort }}
+      nodePort: {{ . }}
+      {{- end }}
   selector:
     {{- include "kubeai.selectorLabels" . | nindent 4 }}
