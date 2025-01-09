@@ -197,7 +197,6 @@ messaging:
 
 # Configure the openwebui subchart.
 openwebui:
-  enabled: true
   fullnameOverride: "openwebui"
   service:
     type: ClusterIP  # ClusterIP, NodePort, LoadBalancer
