@@ -12,8 +12,8 @@ spec:
       targetPort: http
       protocol: TCP
       {{ if or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer") }}
-      {{ if .Values.service.httpNodePort }}
-      nodePort: {{ .Values.service.httpNodePort }}
+      {{ if .Values.service.nodePort }}
+      nodePort: {{ .Values.service.nodePort }}
       {{ end }}
       {{ end }}
     - name: http-metrics

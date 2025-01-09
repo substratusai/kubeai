@@ -43,7 +43,7 @@ service:
   type: ClusterIP
   port: 80
   # openwebui nodeport (Optional): Specify NodePort for openwebui if Nodeport or LoadBalancer service type (leave empty for random assignment)
-  httpNodePort: ""
+  nodePort: ""
 
 ingress:
   enabled: false
