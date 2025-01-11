@@ -1364,7 +1364,7 @@ Now the KubeAI OpenAI compatible API is available at <code>http://localhost:8000
 from your local machine.</p>
 <p>Let's create a simple Python script that uses LangChain and is connected to KubeAI.</p>
 <p>Create a file named <code>test-langchain.py</code> with the following content:
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">langchain_openai</span> <span class="kn">import</span> <span class="n">ChatOpenAI</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">langchain_openai</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChatOpenAI</span>
 
 <span class="n">llm</span> <span class="o">=</span> <span class="n">ChatOpenAI</span><span class="p">(</span>
     <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gemma2-2b-cpu&quot;</span><span class="p">,</span>

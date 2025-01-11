@@ -1512,8 +1512,8 @@ and are also published as raw manifests in the
 <p>Once the pod is ready, you can use the OpenAI Python SDK to interact with the model:
 All OpenAI SDKs work with KubeAI since the KubeAI service is OpenAI API compatible.</p>
 <p>See the below example code to interact with the model using the OpenAI Python SDK:
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">openai</span> <span class="kn">import</span> <span class="n">OpenAI</span>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">openai</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenAI</span>
 <span class="c1"># Assumes port-forward of kubeai service to localhost:8000.</span>
 <span class="n">kubeai_endpoint</span> <span class="o">=</span> <span class="s2">&quot;http://localhost:8000/openai/v1&quot;</span>
 <span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;llama-3.1-8b-instruct-fp8-l4&quot;</span>
