@@ -11,10 +11,8 @@ spec:
       port: {{ .Values.service.port }}
       targetPort: http
       protocol: TCP
-      {{ if or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer") }}
-      {{ if .Values.service.nodePort }}
-      nodePort: {{ .Values.service.nodePort }}
-      {{ end }}
-      {{ end }}
+      {{- with .Values.service.nodePort }}
+      nodePort: {{ . }}
+      {{- end }}
   selector:
     {{- include "openwebui.selectorLabels" . | nindent 4 }}

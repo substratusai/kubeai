@@ -14,12 +14,5 @@ spec:
       {{- with .Values.service.nodePort }}
       nodePort: {{ . }}
       {{- end }}
-    - name: http-metrics
-      port: 8080
-      targetPort: 8080
-      protocol: TCP
-      {{- with .Values.service.metricsNodePort }}
-      nodePort: {{ . }}
-      {{- end }}
   selector:
     {{- include "kubeai.selectorLabels" . | nindent 4 }}

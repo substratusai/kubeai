@@ -293,8 +293,6 @@ service:
   port: 80
   # kubeai nodeport (Optional): Specify NodePort for kubeai if Nodeport or LoadBalancer service type (leave empty for random assignment)
   nodePort: ""
-  # metrics nodeport (Optional): Specify a nodePort for Metrics if Nodeport or LoadBalancer service type (leave empty for random assignment)
-  metricsNodePort: ""
 
 ingress:
   enabled: false
