@@ -2,6 +2,31 @@ apiVersion: v1
 entries:
   kubeai:
   - apiVersion: v2
+    appVersion: v0.13.0
+    created: "2025-01-15T00:01:00.352749355Z"
+    dependencies:
+    - condition: openwebui.enabled
+      name: openwebui
+      repository: ""
+      version: 0.2.0
+    description: Private Open AI Platform for Kubernetes.
+    digest: f24ce9897efb0e44971334607917d314ee723029b13f3c4596e3ea9665ec12b6
+    home: https://www.substratus.ai
+    keywords:
+    - LLM
+    - AI
+    maintainers:
+    - name: nstogner
+      url: https://www.linkedin.com/in/nstogner/
+    - email: sammiestoel@gmail.com
+      name: samos123
+      url: https://www.linkedin.com/in/samstoelinga/
+    name: kubeai
+    type: application
+    urls:
+    - https://github.com/substratusai/kubeai/releases/download/helm-chart-kubeai-0.11.0/kubeai-0.11.0.tgz
+    version: 0.11.0
+  - apiVersion: v2
     appVersion: v0.12.0
     created: "2024-12-09T05:54:35.775991111Z"
     dependencies:
@@ -683,6 +708,22 @@ entries:
   models:
   - apiVersion: v2
     appVersion: 1.16.0
+    created: "2025-01-15T00:01:00.460635666Z"
+    description: A Helm chart for Kubernetes
+    digest: 2149a93ef1e887f22ce06566983b8244637082cdeab397749f53cc1d65a1db45
+    maintainers:
+    - name: nstogner
+      url: https://www.linkedin.com/in/nstogner/
+    - email: sammiestoel@gmail.com
+      name: samos123
+      url: https://www.linkedin.com/in/samstoelinga/
+    name: models
+    type: application
+    urls:
+    - https://github.com/substratusai/kubeai/releases/download/helm-chart-models-0.11.0/models-0.11.0.tgz
+    version: 0.11.0
+  - apiVersion: v2
+    appVersion: 1.16.0
     created: "2024-12-09T05:54:35.945846676Z"
     description: A Helm chart for Kubernetes
     digest: 0d6ce8ff468c458b5907d714e528a5ef5837947f96a4d3db9876811e6de91d9b
@@ -793,4 +834,4 @@ entries:
     urls:
     - https://github.com/substratusai/kubeai/releases/download/kubeai-helm-chart-0.4.1/models-0.4.1.tgz
     version: 0.4.1
-generated: "2024-12-09T05:54:35.946065545Z"
+generated: "2025-01-15T00:01:00.460867767Z"
