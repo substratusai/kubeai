@@ -48,6 +48,7 @@ modelServers:
       # Source: https://github.com/drikster80/vllm/tree/gh200-docker
       # gh200: "drikster80/vllm-gh200-openai:v0.6.4.post1"
       gh200: "substratusai/vllm-gh200-openai:v0.6.4.post1"
+      amd-gpu: "substratusai/vllm-rocm:v0.6.6.post1"
   OLlama:
     images:
       default: "ollama/ollama:latest"
@@ -174,6 +175,15 @@ resourceProfiles:
       nvidia.com/gpu: "1"
     tolerations:
       - key: "nvidia.com/gpu"
+        operator: "Equal"
+        value: "present"
+        effect: "NoSchedule"
+  amd-gpu-mi300x:
+    imageName: "amd-gpu"
+    limits:
+      amd.com/gpu: "1"
+    tolerations:
+      - key: "amd.com/gpu"
         operator: "Equal"
         value: "present"
         effect: "NoSchedule"

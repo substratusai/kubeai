@@ -1,0 +1,5 @@
+resourceProfiles:
+  amd-gpu-mi300x:
+    nodeSelector:
+      amd.com/gpu.vram: "192G"
+      amd.com/gpu.family: "AI"
