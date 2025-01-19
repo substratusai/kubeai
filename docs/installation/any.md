@@ -68,12 +68,12 @@ helm upgrade --install kubeai kubeai/kubeai \
 ## Installation using AMD GPUs
 
 This section assumes you have a Kubernetes cluster with AMD GPU resources available and
-installed the NVIDIA device plugin that adds GPU information labels to the nodes.
+installed the AMD device plugin that adds GPU information labels to the nodes.
 
 This time we need to use a custom resource profiles that define the nodeSelectors
 for different GPU types.
 
-Download the values file for the NVIDIA GPU operator:
+Download the values file for the AMD GPU operator:
 
 ```bash
 curl -L -O https://raw.githubusercontent.com/substratusai/kubeai/refs/heads/main/charts/kubeai/values-amd-gpu-device-plugin.yaml
