@@ -40,7 +40,7 @@ helm show values kubeai/kubeai > values.yaml
 
 ## Installation using NVIDIA GPUs
 
-This section assumes you have a Kubernetes cluster with GPU resources available and
+This section assumes you have a Kubernetes cluster with NVIDIA GPU resources available and
 installed the NVIDIA device plugin that adds GPU information labels to the nodes.
 
 This time we need to use a custom resource profiles that define the nodeSelectors
@@ -67,13 +67,30 @@ helm upgrade --install kubeai kubeai/kubeai \
 
 ## Installation using AMD GPUs
 
+This section assumes you have a Kubernetes cluster with AMD GPU resources available and
+installed the NVIDIA device plugin that adds GPU information labels to the nodes.
+
+This time we need to use a custom resource profiles that define the nodeSelectors
+for different GPU types.
+
+Download the values file for the NVIDIA GPU operator:
+
+```bash
+curl -L -O https://raw.githubusercontent.com/substratusai/kubeai/refs/heads/main/charts/kubeai/values-amd-gpu-device-plugin.yaml
 ```
-helm upgrade --install kubeai ./charts/kubeai \
-    -f charts/kubeai/values-amd-gpu-device-plugin.yaml \
+
+You likely will not need to modify the `values-amd-gpu-device-plugin.yaml` file.
+However, do inspect the file to ensure the GPU resourceProfile nodeSelectors match
+the node labels on your nodes.
+
+
+Install KubeAI using the custom resourceProfiles:
+```bash
+helm upgrade --install kubeai kubeai/kubeai \
+    -f values-amd-gpu-device-plugin.yaml \
     --set secrets.huggingface.token=$HF_TOKEN \
     --wait
 ```
-
 
 ## Deploying models
 
