@@ -38,7 +38,7 @@ Optionally, inspect the values file to see the default resourceProfiles:
 helm show values kubeai/kubeai > values.yaml
 ```
 
-## Installation using GPUs
+## Installation using NVIDIA GPUs
 
 This section assumes you have a Kubernetes cluster with GPU resources available and
 installed the NVIDIA device plugin that adds GPU information labels to the nodes.
@@ -64,6 +64,16 @@ helm upgrade --install kubeai kubeai/kubeai \
     --set secrets.huggingface.token=$HF_TOKEN \
     --wait
 ```
+
+## Installation using AMD GPUs
+
+```
+helm upgrade --install kubeai ./charts/kubeai \
+    -f charts/kubeai/values-amd-gpu-device-plugin.yaml \
+    --set secrets.huggingface.token=$HF_TOKEN \
+    --wait
+```
+
 
 ## Deploying models
 
