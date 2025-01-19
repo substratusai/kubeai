@@ -1,5 +1,7 @@
 resourceProfiles:
   amd-gpu-mi300x:
     nodeSelector:
+      # Source: https://gitlab.freedesktop.org/mesa/drm/-/blob/main/data/amdgpu.ids#L569
+      amd.com/gpu.device-id: 74a1
       amd.com/gpu.vram: "192G"
       amd.com/gpu.family: "AI"
