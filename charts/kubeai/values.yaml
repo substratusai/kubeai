@@ -48,6 +48,10 @@ modelServers:
       # Source: https://github.com/drikster80/vllm/tree/gh200-docker
       # gh200: "drikster80/vllm-gh200-openai:v0.6.4.post1"
       gh200: "substratusai/vllm-gh200-openai:v0.6.4.post1"
+      # upstream vLLM seems to have broken ROCm support, so we are using a fork from AMD.
+      # Source: https://hub.docker.com/r/rocm/vllm-dev
+      # Source: https://github.com/ROCm/vllm
+      amd-gpu: substratusai/vllm-rocm:nightly_main_20250117
   OLlama:
     images:
       default: "ollama/ollama:latest"
@@ -174,6 +178,15 @@ resourceProfiles:
       nvidia.com/gpu: "1"
     tolerations:
       - key: "nvidia.com/gpu"
+        operator: "Equal"
+        value: "present"
+        effect: "NoSchedule"
+  amd-gpu-mi300x:
+    imageName: "amd-gpu"
+    limits:
+      amd.com/gpu: "1"
+    tolerations:
+      - key: "amd.com/gpu"
         operator: "Equal"
         value: "present"
         effect: "NoSchedule"

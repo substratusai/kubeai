@@ -1,0 +1,27 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: llama-3.1-405b-instruct-fp8-mi300x
+spec:
+  features: [TextGeneration]
+  url: hf://amd/Llama-3.1-405B-Instruct-FP8-KV
+  engine: VLLM
+  args:
+    - --max-model-len=120000
+    - --max-num-batched-token=120000
+    - --max-num-seqs=1024
+    - --num-scheduler-steps=15
+    - --tensor-parallel-size=8
+    - --gpu-memory-utilization=0.90
+    - --disable-log-requests
+    - --kv-cache-dtype=fp8
+    - --enable-chunked-prefill=false
+    - --max-seq-len-to-capture=16384
+  env:
+    HIP_FORCE_DEV_KERNARG: "1"
+    NCCL_MIN_NCHANNELS: "112"
+    TORCH_BLAS_PREFER_HIPBLASLT: "1"
+    VLLM_USE_TRITON_FLASH_ATTN: "0"
+  targetRequests: 1024
+  resourceProfile: amd-gpu-mi300x:8
