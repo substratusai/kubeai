@@ -307,6 +307,33 @@ catalog:
       - --disable-log-requests
     resourceProfile: nvidia-gpu-gh200:1
     targetRequests: 200
+  deepseek-r1-mi300x:
+    enabled: false
+    features: [TextGeneration]
+    url: hf://deepseek-ai/DeepSeek-R1
+    engine: VLLM
+    env:
+      HIP_FORCE_DEV_KERNARG: "1"
+      NCCL_MIN_NCHANNELS: "112"
+      TORCH_BLAS_PREFER_HIPBLASLT: "1"
+      VLLM_USE_TRITON_FLASH_ATTN: "0"
+      VLLM_FP8_PADDING: "0"
+    args:
+      - --trust-remote-code
+      # Currently only context length =< 32k supported.
+      # See: https://github.com/ROCm/vllm/issues/375
+      - --max-model-len=32768
+      - --max-num-batched-token=32768
+      - --max-num-seqs=1024
+      - --num-scheduler-steps=10
+      - --tensor-parallel-size=8
+      - --gpu-memory-utilization=0.90
+      - --disable-log-requests
+      - --enable-chunked-prefill=false
+      - --max-seq-len-to-capture=16384
+      - --kv-cache-dtype=fp8
+    resourceProfile: amd-gpu-mi300x:8
+    targetRequests: 1024
   nomic-embed-text-cpu:
     enabled: false
     features: ["TextEmbedding"]
