@@ -1,0 +1,29 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: deepseek-r1-mi300x
+spec:
+  features: [TextGeneration]
+  url: hf://deepseek-ai/DeepSeek-R1
+  engine: VLLM
+  args:
+    - --trust-remote-code
+    - --max-model-len=32768
+    - --max-num-batched-token=32768
+    - --max-num-seqs=1024
+    - --num-scheduler-steps=10
+    - --tensor-parallel-size=8
+    - --gpu-memory-utilization=0.90
+    - --disable-log-requests
+    - --enable-chunked-prefill=false
+    - --max-seq-len-to-capture=16384
+    - --kv-cache-dtype=fp8
+  env:
+    HIP_FORCE_DEV_KERNARG: "1"
+    NCCL_MIN_NCHANNELS: "112"
+    TORCH_BLAS_PREFER_HIPBLASLT: "1"
+    VLLM_FP8_PADDING: "0"
+    VLLM_USE_TRITON_FLASH_ATTN: "0"
+  targetRequests: 1024
+  resourceProfile: amd-gpu-mi300x:8
