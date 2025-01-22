@@ -51,7 +51,6 @@ modelServers:
       # upstream vLLM seems to have broken ROCm support, so we are using a fork from AMD.
       # Source: https://hub.docker.com/r/rocm/vllm-dev
       # Source: https://github.com/ROCm/vllm
-      # amd-gpu: substratusai/vllm-rocm:nightly_main_20250117
       amd-gpu: substratusai/vllm-rocm:nightly_main_20250120
   OLlama:
     images:
