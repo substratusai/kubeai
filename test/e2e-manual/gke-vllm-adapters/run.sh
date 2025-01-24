@@ -16,4 +16,4 @@ curl -v http://localhost:8000/openai/v1/completions \
 # with adapter
 curl -v http://localhost:8000/openai/v1/completions \
   -H "Content-Type: application/json" \
-  -d '{"model": "tiny-llama/colorist", "prompt": "Who was the first president of the United States?", "max_tokens": 40}'
+  -d '{"model": "tiny-llama_colorist", "prompt": "Who was the first president of the United States?", "max_tokens": 40}'

@@ -13,8 +13,13 @@ export TEST_DIR=$REPO_DIR/test/e2e/$testcase
 export TMP_DIR=$REPO_DIR/tmp
 export PATH=$REPO_DIR/bin:$PATH
 export DOCKER_BUILDKIT=1
+export USE_GPU_CLUSTER=${USE_GPU_CLUSTER:-false}
 
 mkdir -p $REPO_DIR/tmp
+
+if [ "$USE_GPU_CLUSTER" = "true" ]; then
+    export TEST_KUBECTL_CONTEXT=$(kubectl config current-context)
+fi
 
 source $REPO_DIR/test/e2e/common.sh
 

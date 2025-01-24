@@ -360,6 +360,12 @@ catalog:
     url: "hf://facebook/opt-125m"
     engine: VLLM
     resourceProfile: nvidia-gpu-l4:1
+  opt-125m-a16:
+    enabled: false
+    features: ["TextGeneration"]
+    url: "hf://facebook/opt-125m"
+    engine: VLLM
+    resourceProfile: nvidia-gpu-a16:1
   # Qwen #
   qwen2.5-coder-1.5b-cpu:
     enabled: false
