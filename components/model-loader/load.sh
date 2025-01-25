@@ -20,8 +20,10 @@ fi
 # Download
 case $src in
     "hf://"*)
+        local_cache="/cache"
         repo=${src#hf://}
-        huggingface-cli download --local-dir $dir $repo
+        mkdir -p "${local_cache}"
+        huggingface-cli download --local-dir $dir $repo --cache-dir $local_cache
         rm -rf $dir/.cache
         ;;
     "s3://"*)
