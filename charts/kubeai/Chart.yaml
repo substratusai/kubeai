@@ -18,9 +18,10 @@ appVersion: "v0.14.0"
 dependencies:
   # Open Web UI is an open source ChatGPT-like user interface.
   # https://docs.openwebui.com/
-  - name: openwebui
-    condition: openwebui.enabled
-    version: 0.2.0
+  - name: open-webui
+    condition: open-webui.enabled
+    repository: https://helm.openwebui.com/
+    version: 5.4.0
 
 keywords: ["LLM", "AI"]
 

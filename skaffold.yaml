@@ -24,6 +24,9 @@ deploy:
     releases:
     - name: kubeai
       chartPath: ./charts/kubeai
+      setValueTemplates:
+        open-webui.enabled: false
+      skipBuildDependencies: true
 portForward:
 - resourceType: service
   resourceName: kubeai
@@ -39,7 +42,8 @@ profiles:
       - name: kubeai
         chartPath: ./charts/kubeai
         setValueTemplates:
-          openwebui.enabled: false
+          open-webui.enabled: false
+        skipBuildDependencies: true
 
 - name: kubeai-only-gke
   build:
@@ -51,9 +55,10 @@ profiles:
       - name: kubeai
         chartPath: ./charts/kubeai
         setValueTemplates:
-          openwebui.enabled: false
+          open-webui.enabled: false
         valuesFiles:
         - ./charts/kubeai/values-gke.yaml
+        skipBuildDependencies: true
 
 - name: e2e-test-default
   deploy:
@@ -64,7 +69,8 @@ profiles:
         valuesFiles:
         - ./test/e2e/common-values.yaml
         setValueTemplates:
-          openwebui.enabled: false
+          open-webui.enabled: false
+        skipBuildDependencies: true
 - name: e2e-test-autoscaler-restart
   deploy:
     helm:
@@ -74,9 +80,10 @@ profiles:
         valuesFiles:
         - ./test/e2e/common-values.yaml
         setValueTemplates:
-          openwebui.enabled: false
+          open-webui.enabled: false
           modelAutoscaling.interval: 1s
           modelAutoscaling.timeWindow: 30s
+        skipBuildDependencies: true
 - name: e2e-test-engine
   deploy:
     helm:
@@ -86,4 +93,5 @@ profiles:
         valuesFiles:
         - ./test/e2e/common-values.yaml
         setValueTemplates:
-          openwebui.enabled: false
+          open-webui.enabled: false
+        skipBuildDependencies: true
