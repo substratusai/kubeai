@@ -64,7 +64,7 @@ modelServers:
       default: "michaelf34/infinity:latest"
 
 modelLoading:
-  image: "substratusai/kubeai-model-loader:v0.11.0"
+  image: "substratusai/kubeai-model-loader:v0.14.0"
 
 modelServerPods:
   # Security Context for the model pods
