@@ -290,6 +290,72 @@ catalog:
       - --max-seq-len-to-capture=16384
     resourceProfile: amd-gpu-mi300x:8
     targetRequests: 1024
+  # llama-3.3-70b-instruct-bnb-4bit-l4:
+  #   enabled: true
+  #   features: [TextGeneration]
+  #   url: 'ollama://llama3.3:70b'
+  #   engine: OLlama
+  #   minReplicas: 1
+  #   resourceProfile: 'nvidia-gpu-l4:1'
+ qwen2.5-14b-instruct-1m-l4:
+    enabled: true
+    features: [TextGeneration]
+    url: "hf://Qwen/Qwen2.5-14B-Instruct-1M"
+    env:
+      VLLM_ATTENTION_BACKEND: "FLASHINFER"
+      # VLLM_USE_V1: "1"
+    args:
+      - --max-model-len=2048
+      - --max-num-batched-token=2048
+      - --max-num-seqs=1
+      - --gpu-memory-utilization=0.95
+      - --kv-cache-dtype=fp8
+      - --disable-log-requests
+      - --quantization=fp8
+      - --enforce-eager
+    engine: VLLM
+    minReplicas: 1
+    resourceProfile: 'nvidia-gpu-l4:1'
+  # qwen2.5-14b-instruct-1m-l4:
+  #   enabled: true
+  #   features: [TextGeneration]
+  #   url: "hf://Qwen/Qwen2.5-14B-Instruct-1M"
+  #   env:
+  #     VLLM_ATTENTION_BACKEND: "FLASHINFER"
+  #     # VLLM_USE_V1: "1"
+  #   args:
+  #     - --max-model-len=2048
+  #     - --max-num-batched-token=2048
+  #     - --max-num-seqs=1
+  #     - --gpu-memory-utilization=0.95
+  #     - --kv-cache-dtype=fp8
+  #     - --disable-log-requests
+  #     - --quantization=fp8
+  #     - --enforce-eager
+  #   engine: VLLM
+  #   minReplicas: 1
+  #   resourceProfile: 'nvidia-gpu-l4:1'
+  # llama-3.3-70b-instruct-bnb-4bit-l4:
+  #   enabled: true
+  #   features: [TextGeneration]
+  #   url: 'hf://unsloth/Llama-3.3-70B-Instruct-bnb-4bit'
+  #   env:
+  #     VLLM_ATTENTION_BACKEND: "FLASHINFER"
+  #     # VLLM_USE_V1: "1"
+  #   args:
+  #     - --max-model-len=2048
+  #     - --max-num-batched-token=2048
+  #     - --max-num-seqs=8
+  #     - --gpu-memory-utilization=0.99
+  #     - --kv-cache-dtype=fp8
+  #     - --enforce-eager
+  #     - --disable-log-requests
+  #     - --cpu-offload-gb=25
+  #     - --quantization=bitsandbytes
+  #     - --load-format=bitsandbytes
+  #   engine: VLLM
+  #   minReplicas: 1
+  #   resourceProfile: 'nvidia-gpu-l4:1'
   llama-3.3-70b-instruct-bf16-gh200:
     enabled: false
     features: [TextGeneration]
