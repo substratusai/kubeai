@@ -1,0 +1,10 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: llama-3.3-70b-ollama-l4
+spec:
+  features: [TextGeneration]
+  url: ollama://llama3.3:70b
+  engine: OLlama
+  resourceProfile: nvidia-gpu-l4:1

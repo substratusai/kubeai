@@ -1,0 +1,10 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: gemma-9b-ollama-l4
+spec:
+  features: [TextGeneration]
+  url: ollama://gemma2:9b
+  engine: OLlama
+  resourceProfile: nvidia-gpu-l4:1

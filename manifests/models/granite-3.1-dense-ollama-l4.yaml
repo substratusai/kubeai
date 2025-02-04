@@ -1,0 +1,10 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: granite-3.1-dense-ollama-l4
+spec:
+  features: [TextGeneration]
+  url: ollama://granite3.1-dense
+  engine: OLlama
+  resourceProfile: nvidia-gpu-l4:1

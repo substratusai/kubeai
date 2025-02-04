@@ -1,0 +1,18 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: llama-3.1-tulu-3-8b-l4
+spec:
+  features: [TextGeneration]
+  url: hf://allenai/Llama-3.1-Tulu-3-8B
+  engine: VLLM
+  args:
+    - --max-model-len=8192
+    - --max-num-batched-token=8192
+    - --max-num-seqs=256
+    - --gpu-memory-utilization=0.95
+    - --kv-cache-dtype=fp8
+  env:
+    VLLM_ATTENTION_BACKEND: FLASHINFER
+  resourceProfile: nvidia-gpu-l4:1

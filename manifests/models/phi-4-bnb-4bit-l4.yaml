@@ -1,0 +1,21 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: phi-4-bnb-4bit-l4
+spec:
+  features: [TextGeneration]
+  url: hf://unsloth/phi-4-bnb-4bit
+  engine: VLLM
+  args:
+    - --max-model-len=8192
+    - --max-num-batched-token=8192
+    - --max-num-seqs=1
+    - --gpu-memory-utilization=0.95
+    - --disable-log-requests
+    - --enforce-eager
+    - --quantization=bitsandbytes
+    - --load_format=bitsandbytes
+  env:
+    VLLM_ATTENTION_BACKEND: FLASHINFER
+  resourceProfile: nvidia-gpu-l4:1
