@@ -290,13 +290,12 @@ catalog:
       - --max-seq-len-to-capture=16384
     resourceProfile: amd-gpu-mi300x:8
     targetRequests: 1024
-  # llama-3.3-70b-instruct-bnb-4bit-l4:
-  #   enabled: true
-  #   features: [TextGeneration]
-  #   url: 'ollama://llama3.3:70b'
-  #   engine: OLlama
-  #   minReplicas: 1
-  #   resourceProfile: 'nvidia-gpu-l4:1'
+  llama-3.3-70b-ollama-l4:
+    enabled: false
+    features: [TextGeneration]
+    url: 'ollama://llama3.3:70b'
+    engine: OLlama
+    resourceProfile: 'nvidia-gpu-l4:1'
   granite-3.1-dense-ollama-l4:
     enabled: false
     features: [TextGeneration]
@@ -310,12 +309,11 @@ catalog:
     engine: OLlama
     resourceProfile: 'nvidia-gpu-l4:1'
   gemma-27b-ollama-l4:
-    enabled: true
+    enabled: false
     features: [TextGeneration]
     url: 'ollama://gemma2:27b'
     engine: OLlama
     resourceProfile: 'nvidia-gpu-l4:1'
-    minReplicas: 1
   gemma-9b-ollama-l4:
     enabled: false
     features: [TextGeneration]
