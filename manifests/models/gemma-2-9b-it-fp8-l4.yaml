@@ -1,0 +1,18 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: gemma-2-9b-it-fp8-l4
+spec:
+  features: [TextGeneration]
+  url: hf://neuralmagic/gemma-2-9b-it-FP8
+  engine: VLLM
+  args:
+    - --max-model-len=4096
+    - --max-num-batched-token=4096
+    - --max-num-seqs=256
+    - --gpu-memory-utilization=0.95
+    - --kv-cache-dtype=fp8
+  env:
+    VLLM_USE_V1: "1"
+  resourceProfile: nvidia-gpu-l4:1

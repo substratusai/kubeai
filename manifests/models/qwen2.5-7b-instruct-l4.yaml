@@ -1,0 +1,19 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: qwen2.5-7b-instruct-l4
+spec:
+  features: [TextGeneration]
+  url: hf://Qwen/Qwen2.5-7B-Instruct
+  engine: VLLM
+  args:
+    - --max-model-len=8192
+    - --max-num-batched-token=8192
+    - --max-num-seqs=256
+    - --gpu-memory-utilization=0.95
+    - --kv-cache-dtype=fp8
+    - --enable-prefix-caching
+  env:
+    VLLM_ATTENTION_BACKEND: FLASHINFER
+  resourceProfile: nvidia-gpu-l4:1

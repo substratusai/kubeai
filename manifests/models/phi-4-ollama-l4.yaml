@@ -1,0 +1,10 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: phi-4-ollama-l4
+spec:
+  features: [TextGeneration]
+  url: ollama://phi4
+  engine: OLlama
+  resourceProfile: nvidia-gpu-l4:1

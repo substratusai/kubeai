@@ -290,6 +290,142 @@ catalog:
       - --max-seq-len-to-capture=16384
     resourceProfile: amd-gpu-mi300x:8
     targetRequests: 1024
+  llama-3.3-70b-ollama-l4:
+    enabled: false
+    features: [TextGeneration]
+    url: 'ollama://llama3.3:70b'
+    engine: OLlama
+    resourceProfile: 'nvidia-gpu-l4:1'
+  granite-3.1-dense-ollama-l4:
+    enabled: false
+    features: [TextGeneration]
+    url: 'ollama://granite3.1-dense'
+    engine: OLlama
+    resourceProfile: 'nvidia-gpu-l4:1'
+  phi-4-ollama-l4:
+    enabled: false
+    features: [TextGeneration]
+    url: 'ollama://phi4'
+    engine: OLlama
+    resourceProfile: 'nvidia-gpu-l4:1'
+  gemma-27b-ollama-l4:
+    enabled: false
+    features: [TextGeneration]
+    url: 'ollama://gemma2:27b'
+    engine: OLlama
+    resourceProfile: 'nvidia-gpu-l4:1'
+  gemma-9b-ollama-l4:
+    enabled: false
+    features: [TextGeneration]
+    url: 'ollama://gemma2:9b'
+    engine: OLlama
+    resourceProfile: 'nvidia-gpu-l4:1'
+  gemma-2-9b-it-fp8-l4:
+    enabled: false
+    url: "hf://neuralmagic/gemma-2-9b-it-FP8"
+    features: [TextGeneration]
+    env:
+      # VLLM_ATTENTION_BACKEND: "FLASHINFER"
+      VLLM_USE_V1: "1"
+    args:
+      - --max-model-len=4096
+      - --max-num-batched-token=4096
+      - --max-num-seqs=256
+      - --gpu-memory-utilization=0.95
+      - --kv-cache-dtype=fp8
+      # - --enable-prefix-caching
+      # - --enforce-eager
+    engine: VLLM
+    resourceProfile: 'nvidia-gpu-l4:1'
+  qwen2.5-7b-instruct-l4:
+    enabled: false
+    url: "hf://Qwen/Qwen2.5-7B-Instruct"
+    features: [TextGeneration]
+    env:
+      VLLM_ATTENTION_BACKEND: "FLASHINFER"
+      # VLLM_USE_V1: "1"
+    args:
+      - --max-model-len=8192
+      - --max-num-batched-token=8192
+      - --max-num-seqs=256
+      - --gpu-memory-utilization=0.95
+      - --kv-cache-dtype=fp8
+      - --enable-prefix-caching
+      # - --enforce-eager
+    engine: VLLM
+    resourceProfile: 'nvidia-gpu-l4:1'
+  llama-3.1-tulu-3-8b-l4:
+    enabled: false
+    features: [TextGeneration]
+    url: "hf://allenai/Llama-3.1-Tulu-3-8B"
+    env:
+      VLLM_ATTENTION_BACKEND: "FLASHINFER"
+      # VLLM_USE_V1: "1"
+    args:
+      - --max-model-len=8192
+      - --max-num-batched-token=8192
+      - --max-num-seqs=256
+      - --gpu-memory-utilization=0.95
+      - --kv-cache-dtype=fp8
+      # - --enforce-eager
+    engine: VLLM
+    resourceProfile: 'nvidia-gpu-l4:1'
+  phi-4-bnb-4bit-l4:
+    enabled: false
+    features: [TextGeneration]
+    url: "hf://unsloth/phi-4-bnb-4bit"
+    env:
+      VLLM_ATTENTION_BACKEND: "FLASHINFER"
+      # VLLM_USE_V1: "1"
+    args:
+      - --max-model-len=8192
+      - --max-num-batched-token=8192
+      - --max-num-seqs=1
+      - --gpu-memory-utilization=0.95
+      - --disable-log-requests
+      - --enforce-eager
+      - --quantization=bitsandbytes
+      - --load_format=bitsandbytes
+      # - --kv-cache-dtype=fp8
+      # - --quantization=fp8
+    engine: VLLM
+    resourceProfile: 'nvidia-gpu-l4:1'
+  deepseek-r1-distill-llama-8b-l4:
+    enabled: false
+    features: [TextGeneration]
+    url: "hf://deepseek-ai/DeepSeek-R1-Distill-Llama-8B"
+    env:
+      VLLM_ATTENTION_BACKEND: "FLASHINFER"
+      # VLLM_USE_V1: "1"
+    args:
+      - --max-model-len=8192
+      - --max-num-batched-token=8192
+      - --max-num-seqs=256
+      - --gpu-memory-utilization=0.95
+      - --kv-cache-dtype=fp8
+      - --disable-log-requests
+      - --quantization=fp8
+      - --enforce-eager
+    engine: VLLM
+    resourceProfile: 'nvidia-gpu-l4:1'
+  llama-3.1-supernova-lite-l4:
+    enabled: false
+    features: [TextGeneration]
+    url: "hf://arcee-ai/Llama-3.1-SuperNova-Lite"
+    env:
+      VLLM_ATTENTION_BACKEND: "FLASHINFER"
+      # VLLM_USE_V1: "1"
+    args:
+      - --max-model-len=2048
+      - --max-num-batched-token=2048
+      - --max-num-seqs=1
+      - --gpu-memory-utilization=0.95
+      - --kv-cache-dtype=fp8
+      - --disable-log-requests
+      - --quantization=fp8
+      - --enforce-eager
+    engine: VLLM
+    resourceProfile: 'nvidia-gpu-l4:1'
   llama-3.3-70b-instruct-bf16-gh200:
     enabled: false
     features: [TextGeneration]
