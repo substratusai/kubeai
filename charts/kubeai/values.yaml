@@ -221,8 +221,6 @@ open-webui:
     value: "False"
   - name: OPENAI_API_KEYS
     value: "not-used"
-  - name: ENABLE_OLLAMA_API
-    value: "false"
   - name: SHOW_ADMIN_DETAILS
     value: "false"
   - name: SAFE_MODE
