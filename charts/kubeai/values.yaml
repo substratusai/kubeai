@@ -225,6 +225,8 @@ open-webui:
     value: "false"
   - name: SAFE_MODE
     value: "true"
+  - name: ENABLE_EVALUATION_ARENA_MODELS
+    value: "False"
   # Security Context for the openwebui pod
   # Needed for OpenShift
   containerSecurityContext:
