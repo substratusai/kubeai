@@ -75,27 +75,32 @@ test-unit: fmt vet
 test-integration: fmt vet envtest
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test -v ./test/integration -coverprofile cover.integration.out
 
+.PHONY: helm-dependency-build
+helm-dependency-build: ## Run helm dependency build
+	helm repo add open-webui https://helm.openwebui.com/
+	helm dependency build charts/kubeai
+
 .PHONY: test-e2e-quickstart
-test-e2e-quickstart: skaffold
+test-e2e-quickstart: skaffold helm-dependency-build
 	./test/e2e/run.sh quickstart
 
-.PHONY: test-e2e-openai-python-client
+.PHONY: test-e2e-openai-python-client helm-dependency-build
 test-e2e-openai-python-client: skaffold
 	./test/e2e/run.sh openai-python-client --profile e2e-test-default
 
 .PHONY: test-e2e-autoscaler-restart
-test-e2e-autoscaler-restart: skaffold
+test-e2e-autoscaler-restart: skaffold helm-dependency-build
 	./test/e2e/run.sh autoscaler-restart --profile e2e-test-autoscaler-restart
 
 .PHONY: test-e2e-cache-shared-filesystem
-test-e2e-cache-shared-filesystem: skaffold
+test-e2e-cache-shared-filesystem: skaffold helm-dependency-build
 	./test/e2e/run.sh cache-shared-filesystem --profile e2e-test-default
 
 .PHONY: test-e2e-engine-vllm-pvc
-test-e2e-engine-vllm-pvc: skaffold
+test-e2e-engine-vllm-pvc: skaffold helm-dependency-build
 	./test/e2e/run.sh engine-vllm-pvc --profile e2e-test-default
 
-.PHONY: test-e2e-engine
+.PHONY: test-e2e-engine helm-dependency-build
 test-e2e-engine: skaffold
 	CACHE_PROFILE=$(CACHE_PROFILE) ./test/e2e/run.sh engine-$(ENGINE) --profile e2e-test-default
 
