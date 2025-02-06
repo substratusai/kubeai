@@ -39,3 +39,5 @@ Chart.lock
 site
 
 /tmp
+
+./charts/kubeai/charts/*.tgz
