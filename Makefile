@@ -76,7 +76,7 @@ test-integration: fmt vet envtest
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test -v ./test/integration -coverprofile cover.integration.out
 
 .PHONY: helm-dependency-build
-helm-dependency-build: ## Run helm dependency build
+helm-dependency-build:
 	helm repo add open-webui https://helm.openwebui.com/
 	helm dependency build charts/kubeai
 
