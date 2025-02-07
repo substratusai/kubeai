@@ -78,14 +78,14 @@ test-integration: fmt vet envtest
 .PHONY: helm-dependency-build
 helm-dependency-build:
 	helm repo add open-webui https://helm.openwebui.com/
-	helm dependency build charts/kubeai
+	helm dependency build ./charts/kubeai
 
 .PHONY: test-e2e-quickstart
 test-e2e-quickstart: skaffold helm-dependency-build
 	./test/e2e/run.sh quickstart
 
-.PHONY: test-e2e-openai-python-client helm-dependency-build
-test-e2e-openai-python-client: skaffold
+.PHONY: test-e2e-openai-python-client
+test-e2e-openai-python-client: skaffold helm-dependency-build
 	./test/e2e/run.sh openai-python-client --profile e2e-test-default
 
 .PHONY: test-e2e-autoscaler-restart
@@ -100,8 +100,8 @@ test-e2e-cache-shared-filesystem: skaffold helm-dependency-build
 test-e2e-engine-vllm-pvc: skaffold helm-dependency-build
 	./test/e2e/run.sh engine-vllm-pvc --profile e2e-test-default
 
-.PHONY: test-e2e-engine helm-dependency-build
-test-e2e-engine: skaffold
+.PHONY: test-e2e-engine
+test-e2e-engine: skaffold helm-dependency-build
 	CACHE_PROFILE=$(CACHE_PROFILE) ./test/e2e/run.sh engine-$(ENGINE) --profile e2e-test-default
 
 .PHONY: lint
