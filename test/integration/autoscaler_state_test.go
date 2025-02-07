@@ -2,7 +2,6 @@ package integration
 
 import (
 	"encoding/json"
-	"os"
 	"testing"
 	"time"
 
@@ -62,10 +61,9 @@ func TestAutoscalerState(t *testing.T) {
 		if !assert.NoError(t, json.Unmarshal([]byte(data), &state)) {
 			return
 		}
-		if !assert.Nil(t, state.Models, 1) {
+		if !assert.Len(t, state.Models, 1) {
 			return
 		}
-		json.NewEncoder(os.Stdout).Encode(state)
 		assert.Equal(t, state.Models[m.Name], modelState{
 			AverageActiveRequests: 2.0,
 		})
