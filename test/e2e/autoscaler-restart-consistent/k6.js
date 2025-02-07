@@ -21,5 +21,6 @@ export default function () {
 
   let res = http.post(url, JSON.stringify(data), {
     headers: { 'Content-Type': 'application/json' },
+    timeout: "5s",
   });
 }
