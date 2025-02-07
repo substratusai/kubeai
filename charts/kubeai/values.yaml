@@ -209,38 +209,27 @@ messaging:
   streams: []
 
 # Configure the openwebui subchart.
-openwebui:
-  fullnameOverride: "openwebui"
-  service:
-    type: ClusterIP  # ClusterIP, NodePort, LoadBalancer
-    port: 80
-    # openwebui nodeport (Optional): Specify NodePort for openwebui if Nodeport or LoadBalancer service type (leave empty for random assignment)
-    nodePort: ""
-  image:
-    tag: v0.3.19
-  env:
+open-webui:
+  enabled: true
+  ollama:
+    enabled: false
+  pipelines:
+    enabled: false
+  openaiBaseApiUrl: "http://kubeai/openai/v1"
+  extraEnvVars:
   - name: WEBUI_AUTH
     value: "False"
   - name: OPENAI_API_KEYS
     value: "not-used"
-  # - name: OPENAI_API_BASE_URL
-  #  # TODO: This changes with .fullnameOverride and .service.port, make this more robust.
-  #  value: "http://kubeai/openai/v1"
-  - name: OPENAI_API_BASE_URLS
-    # TODO: This changes with .fullnameOverride and .service.port, make this more robust.
-    value: "http://kubeai/openai/v1"
-  # A good number of features are not compatible with the KubeAI architecture.
-  - name: ENABLE_OLLAMA_API
-    value: "false"
   - name: SHOW_ADMIN_DETAILS
     value: "false"
   - name: SAFE_MODE
     value: "true"
-  - name: ENABLE_LITELLM
-    value: "false"
+  - name: ENABLE_EVALUATION_ARENA_MODELS
+    value: "False"
   # Security Context for the openwebui pod
   # Needed for OpenShift
-  securityContext:
+  containerSecurityContext:
     runAsUser: 0
     readOnlyRootFilesystem: false
     allowPrivilegeEscalation: false

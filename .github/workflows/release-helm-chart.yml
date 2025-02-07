@@ -64,6 +64,15 @@ jobs:
         uses: azure/setup-helm@v4
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Add Helm Dependency Repos
+        run: |
+          helm repo add open-webui https://helm.openwebui.com/
+          helm repo update
+
+      - name: Build Helm Dependencies
+        run: helm dependency build ./charts/kubeai
+
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.6.0
         env:
