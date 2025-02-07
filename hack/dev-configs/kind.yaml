@@ -58,7 +58,7 @@ cacheProfiles:
 
 # Dev-only configuration.
 allowPodAddressOverride: true
-fixedSelfMetricAddrs: ["127.0.0.1:"]
+fixedSelfMetricAddrs: ["127.0.0.1:8080"]
 
 modelAutoscaling:
   interval: 10s

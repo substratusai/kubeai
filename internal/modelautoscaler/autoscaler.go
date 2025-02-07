@@ -142,11 +142,7 @@ func (a *Autoscaler) Start(ctx context.Context) {
 				continue
 			}
 
-			activeRequests, ok := agg.activeRequestsByModel[m.Name]
-			if !ok {
-				log.Printf("No metrics found for model %q, skipping", m.Name)
-				continue
-			}
+			activeRequests := agg.activeRequestsByModel[m.Name]
 			var activeRequestSum int64
 			for _, req := range activeRequests {
 				activeRequestSum += req
