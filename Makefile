@@ -88,13 +88,13 @@ test-e2e-quickstart: skaffold helm-dependency-build
 test-e2e-openai-python-client: skaffold helm-dependency-build
 	./test/e2e/run.sh openai-python-client --profile e2e-test-default
 
-.PHONY: test-e2e-autoscaler-restart-consistent
-test-e2e-autoscaler-restart-consistent: skaffold helm-dependency-build
-	./test/e2e/run.sh autoscaler-restart-consistent --profile e2e-test-autoscaler-restart
+.PHONY: test-e2e-autoscaler-restart-under-load
+test-e2e-autoscaler-restart-under-load: skaffold helm-dependency-build
+	./test/e2e/run.sh autoscaler-restart-under-load --profile e2e-test-autoscaler-restart
 
-.PHONY: test-e2e-autoscaler-restart-scaledown
-test-e2e-autoscaler-restart-scaledown: skaffold helm-dependency-build
-	./test/e2e/run.sh autoscaler-restart-scaledown --profile e2e-test-autoscaler-restart
+.PHONY: test-e2e-autoscaler-restart-no-load
+test-e2e-autoscaler-restart-no-load: skaffold helm-dependency-build
+	./test/e2e/run.sh autoscaler-restart-no-load --profile e2e-test-autoscaler-restart
 
 .PHONY: test-e2e-cache-shared-filesystem
 test-e2e-cache-shared-filesystem: skaffold helm-dependency-build
