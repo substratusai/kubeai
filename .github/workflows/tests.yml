@@ -30,8 +30,8 @@ jobs:
         testcase:
         - "quickstart"
         - "openai-python-client"
-        - "autoscaler-restart-consistent"
-        - "autoscaler-restart-scaledown"
+        - "autoscaler-restart-under-load"
+        - "autoscaler-restart-no-load"
         - "cache-shared-filesystem"
         - "engine-vllm-pvc"
     steps:
