@@ -27,3 +27,7 @@ resourceProfiles:
     nodeSelector:
       nvidia.com/gpu.family: "ampere"
       nvidia.com/gpu.memory: "8188"
+  nvidia-gpu-rtx4090-24gb:
+    nodeSelector:
+      nvidia.com/gpu.family: "ampere"
+      nvidia.com/gpu.memory: "24564"
