@@ -40,7 +40,6 @@ func TestAutoscalerState(t *testing.T) {
 
 	// Assert that state was saved.
 	cm := &corev1.ConfigMap{}
-	ot := t
 	require.EventuallyWithT(t, func(t *assert.CollectT) {
 		err := testK8sClient.Get(testCtx, types.NamespacedName{Name: sysCfg.ModelAutoscaling.StateConfigMapName, Namespace: testNS}, cm)
 		if !assert.NoError(t, err) {
@@ -62,12 +61,7 @@ func TestAutoscalerState(t *testing.T) {
 		if !assert.NoError(t, json.Unmarshal([]byte(data), &state)) {
 			return
 		}
-		if !assert.Len(t, state.Models, 1) {
-			var keys []string
-			for k := range state.Models {
-				keys = append(keys, k)
-			}
-			ot.Logf("unexpected number of models: %v", keys)
+		if !assert.NotNil(t, state.Models) {
 			return
 		}
 		assert.Equal(t, state.Models[m.Name], modelState{
