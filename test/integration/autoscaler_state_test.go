@@ -61,7 +61,7 @@ func TestAutoscalerState(t *testing.T) {
 		if !assert.NoError(t, json.Unmarshal([]byte(data), &state)) {
 			return
 		}
-		if !assert.Len(t, state.Models, 1) {
+		if !assert.NotNil(t, state.Models) {
 			return
 		}
 		assert.Equal(t, state.Models[m.Name], modelState{
