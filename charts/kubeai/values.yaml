@@ -40,10 +40,10 @@ modelServers:
       # The key is the image name (referenced from resourceProfiles) and the value is the image.
       # The "default" image should always be specified.
       # "default" is used when no imageName is specified or if a specific image is not found.
-      default: "vllm/vllm-openai:v0.7.1"
+      default: "vllm/vllm-openai:v0.7.2"
       cpu: "substratusai/vllm:v0.6.3.post1-cpu"
       google-tpu: "substratusai/vllm:v0.6.4.post1-tpu"
-      nvidia-gpu: "vllm/vllm-openai:v0.7.1"
+      nvidia-gpu: "vllm/vllm-openai:v0.7.2"
       # TODO (samos123) switch to the official image when it is available.
       # Source: https://github.com/drikster80/vllm/tree/gh200-docker
       # gh200: "drikster80/vllm-gh200-openai:v0.6.4.post1"
