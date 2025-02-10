@@ -39,9 +39,81 @@ spec:
   maxReplicas: 8
 ```
 
+## 800 concurrent requests
+
+```yaml
+      containers:
+        - name: benchmark-serving
+          image: substratusai/benchmark_serving:v0.0.1
+          args:
+            - --base-url=http://kubeai/openai
+            - --dataset-name=sharegpt
+            - --dataset-path=/app/sharegpt_16_messages_or_more.json
+            - --model=llama-3.1-8b-instruct-fp8-l4
+            - --seed=12345
+            - --tokenizer=neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8
+            - --request-rate=800
+            - --max-concurrency=800
+            - --num-prompts=8000
+            - --max-conversations=800
+      restartPolicy: Never
+```
+
+### without
+
+```
+============ Serving Benchmark Result ============
+Successful requests:                     8000      
+Benchmark duration (s):                  158.39    
+Total input tokens:                      6656338   
+Total generated tokens:                  608447    
+Request throughput (req/s):              50.51     
+Output token throughput (tok/s):         3841.42   
+Total Token throughput (tok/s):          45866.16  
+---------------Time to First Token----------------
+Mean TTFT (ms):                          817.18    
+Median TTFT (ms):                        494.28    
+P99 TTFT (ms):                           5551.81   
+-----Time per Output Token (excl. 1st token)------
+Mean TPOT (ms):                          191.44    
+Median TPOT (ms):                        183.18    
+P99 TPOT (ms):                           520.48    
+---------------Inter-token Latency----------------
+Mean ITL (ms):                           176.03    
+Median ITL (ms):                         124.55    
+P99 ITL (ms):                            691.97    
+==================================================
+```
+
+### with
+
+```
+============ Serving Benchmark Result ============
+Successful requests:                     8000      
+Benchmark duration (s):                  104.67    
+Total input tokens:                      6656338   
+Total generated tokens:                  608447    
+Request throughput (req/s):              76.43     
+Output token throughput (tok/s):         5813.11   
+Total Token throughput (tok/s):          69407.79  
+---------------Time to First Token----------------
+Mean TTFT (ms):                          280.20    
+Median TTFT (ms):                        239.80    
+P99 TTFT (ms):                           1260.53   
+-----Time per Output Token (excl. 1st token)------
+Mean TPOT (ms):                          86.55     
+Median TPOT (ms):                        91.13     
+P99 TPOT (ms):                           139.47    
+---------------Inter-token Latency----------------
+Mean ITL (ms):                           85.78     
+Median ITL (ms):                         77.35     
+P99 ITL (ms):                            272.04    
+==================================================
+```
+
+
 
 ## 1600 concurrent requests
-Had to switch to using k8s job to avoid local connection limits.
 
 ```yaml
 apiVersion: batch/v1
@@ -53,7 +125,7 @@ spec:
     spec:
       containers:
         - name: benchmark-serving
-          image: substratusai/benchmark_serving:latest
+          image: substratusai/benchmark_serving:v0.0.1
           args:
             - --base-url=http://kubeai/openai
             - --dataset-name=sharegpt
@@ -124,7 +196,7 @@ P99 ITL (ms):                            249.71
 job:
 ```yaml
         - name: benchmark-serving
-          image: substratusai/benchmark_serving:latest
+          image: substratusai/benchmark_serving:v0.0.1
           args:
             - --base-url=http://kubeai/openai
             - --dataset-name=sharegpt
@@ -191,7 +263,7 @@ P99 ITL (ms):                            242.44
 ## max concurrency 8k
 ```
         - name: benchmark-serving
-          image: substratusai/benchmark_serving:latest
+          image: substratusai/benchmark_serving:v0.0.1
           args:
             - --base-url=http://kubeai/openai
             - --dataset-name=sharegpt

@@ -16,7 +16,7 @@ spec:
             - --seed=12345
             - --tokenizer=neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8
             - --request-rate=800
-            - --max-concurrency=8000
+            - --max-concurrency=800
             - --num-prompts=8000
             - --max-conversations=800
       restartPolicy: Never
