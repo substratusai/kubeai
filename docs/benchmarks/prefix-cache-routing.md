@@ -1,13 +1,15 @@
+# Benchmarking Prefix Aware Load Balancing
+
+Prefix Aware Load Balancing is able to improve throughput and Time To First Token (TTFT). The benchmarks an demonstrate improvement of of TTFT
+from 39163.80 ms to 237.06 ms simply by enabling Prefix Aware Load
+Balancing.
+
+<img src="./prefix-aware-load-balancing-mean-ttft.png" />
 
 Exploring how Prefix Cache aware routing affects
 1. time to first token
 2. total token throughput
 
-Variables:
-1. Concurrent requests per replica (50, 100, 200)
-2.. Model and GPU type
-  a. L4 GPU, 8 replicas, llama 3 8b
-3. Dataset number of conversations
 
 ## model used
 
