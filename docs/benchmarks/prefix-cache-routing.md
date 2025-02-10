@@ -25,15 +25,14 @@ spec:
   url: hf://neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8
   engine: VLLM
   env:
-    # VLLM_ATTENTION_BACKEND: "FLASHINFER"
     VLLM_USE_V1: "1"
   args:
-    - --enable-prefix-caching
-    - --max-model-len=16384
-    - --max-num-batched-token=16384
-    - --gpu-memory-utilization=0.95
-    - --disable-log-requests
-    - --kv-cache-dtype=fp8
+  - --enable-prefix-caching
+  - --max-model-len=16384
+  - --max-num-batched-token=16384
+  - --gpu-memory-utilization=0.95
+  - --disable-log-requests
+  - --kv-cache-dtype=fp8
   resourceProfile: nvidia-gpu-l4:1
   minReplicas: 8
   maxReplicas: 8
