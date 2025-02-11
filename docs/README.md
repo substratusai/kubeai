@@ -26,7 +26,7 @@ Quotes from the community:
 KubeAI supports Least Load and Prefix Hash load balancing. Prefix Hash
 load balancing with the KubeAI proxy provides a significant performance boost.
 
-<img src="./benchmarks/prefix-aware-load-balancing-mean-ttft.png" />
+<img src="./benchmarks/prefix-aware-load-balancing-mean-ttft.png" width="80%"/>
 
 See the [full benchmark](./benchmarks/prefix-aware-load-balancing.md) for more details.
 
