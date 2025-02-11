@@ -1,6 +1,7 @@
 # KubeAI: AI Inferencing Operator
 
-The simple way to serve ML models in production. Supports LLMs, embeddings, and speech-to-text.
+Serve ML models in production on Kubernetes. Supports LLMs, embeddings, and speech-to-text.
+
 
 ⛕  Better performance with Prefix-aware Load Balancing [(see benchmark)](./benchmarks/prefix-aware-load-balancing.md)  
 ✅️  OpenAI API Compatibility: Drop-in replacement for OpenAI  
@@ -23,8 +24,11 @@ Quotes from the community:
 
 ### Better performance at scale
 KubeAI supports Least Load and Prefix Hash load balancing. Prefix Hash
-load balancing with the KubeAI proxy provides a significant performance boost over using
-native Kubernetes Service.
+load balancing with the KubeAI proxy provides a significant performance boost.
+
+<img src="./benchmarks/prefix-aware-load-balancing-mean-ttft.png" />
+
+See the [full benchmark](./benchmarks/prefix-aware-load-balancing.md) for more details.
 
 ### Simplicity
 KubeAI does not have other dependencies which makes it easy to deploy
