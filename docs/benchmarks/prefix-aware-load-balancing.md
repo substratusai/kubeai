@@ -34,15 +34,28 @@ Comparing the throughput in tokens per second for each load balancing strategy:
 
 The graph shows that even at low load you can get a significant improvement in throughput by enabling Prefix Aware Load Balancing.
 
-## Dataset preparation
+Conclusion: Prefix Aware Load Balancing is a must-have for large scale inference workloads.
 
+## Dataset and Benchmarking script
 
+Dataset: ShareGPT filtered to only include conversations of 16 messages or more. This helps to simulate a scenario where people ask follow up questions and increases the number of partial prefix re-use.
 
+The vLLM benchmark_serving.py script was used for this but with a few  modifications:
+* Removed the limit to only include 2 messages per conversation
+* Create multiple prompts from a single conversation. E.g. prompt 1 would include message (1) of conversation x and prompt 2 would include message  (1, 2, 3) of conversation x. This resembles multi-round conversation of ChatGPT.
+* added `--max-conversations` parameter which limits of unique conversations to use.
+
+The script can be found under `kubeai/benchmarks/benchmark_serving/benchmark_serving.py`.
+
+The image that was used: `substratusai/benchmark_serving:v0.0.1`
 
 
 ## Benchmarking Setup
 
-8 replicas of llama 3 8b and each uses a single L4 GPU
+
+* Scale: 8 instances of vLLM
+* GPU: L4 GPU, 1 per instance
+* Model: Llama 3.1 8B Instruct FP8
 
 
 The following model was deployed in KubeAI:
