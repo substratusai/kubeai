@@ -30,8 +30,8 @@ load balancing with the KubeAI proxy provides a significant performance boost.
 
 See the [full benchmark](./benchmarks/prefix-aware-load-balancing.md) for more details.
 
-### Simplicity
-KubeAI does not have other dependencies which makes it easy to deploy
+### Simplicity and ease of use
+KubeAI does not have other dependencies which makes it possible to deploy
 and manage in any environment. You can deploy models
 using pre-validated models for specific GPU types. This saves you time
 because you don't have to tweak engine arguments for hours to get
