@@ -1,0 +1,2194 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://www.kubeai.org/benchmarks/prefix-aware-load-balancing/">
+      
+      
+        <link rel="prev" href="../llama-3.2-11b-vision/">
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.4">
+    
+    
+      
+        <title>Benchmarking Prefix Aware Load Balancing - KubeAI</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.8608ea7d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#benchmarking-prefix-aware-load-balancing" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="KubeAI" class="md-header__button md-logo" aria-label="KubeAI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            KubeAI
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Benchmarking Prefix Aware Load Balancing
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/substratusai/kubeai" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="KubeAI" class="md-nav__button md-logo" aria-label="KubeAI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    KubeAI
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/substratusai/kubeai" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Installation
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Installation
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/any/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Install on any Kubernetes Cluster
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/eks/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Install on EKS
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/gke/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Install on GKE
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    How to
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            How to
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/architect-for-multitenancy/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Architect for multitenancy
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/authenticate-to-model-repos/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Authenticate to model repos
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/build-models-into-containers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Build models into containers
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/cache-models-with-aws-efs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Cache models with AWS EFS
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/cache-models-with-gcp-filestore/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Cache models with GCP Filestore
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/configure-autoscaling/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configure autoscaling
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/configure-embedding-models/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configure embedding models
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/configure-resource-profiles/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configure resource profiles
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/configure-speech-to-text/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configure speech-to-text
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/configure-text-generation-models/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configure Text Generation Models
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/install-models/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Install models
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/serve-lora-adapters/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Serve LoRA adapters
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Concepts
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Concepts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/autoscaling/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Autoscaling
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/backend-servers/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Backend Servers
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/load-balancing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Load Balancing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/lora-adapters/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    LoRA Adapters
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/resource-profiles/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Resource Profiles
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/storage-caching/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Storage / Caching
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Tutorials
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Tutorials
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/langchain/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Using LangChain with KubeAI
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/langtrace/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Deploying KubeAI with Langtrace
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/private-deep-chat/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Private Deep Chat
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tutorials/weaviate/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Weaviate with local autoscaling embedding and generative models
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Contributing
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Contributing
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/development-environment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Development environment
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/documentation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Documentation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/release-process/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Release Process
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/kubernetes-api/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Kubernetes API
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/openai-api-compatibility/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    OpenAI API Compatibility
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Benchmarks
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Benchmarks
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../llama-3.2-11b-vision/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Llama 3.2 11B Vision Instruct vLLM Benchmarks
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Benchmarking Prefix Aware Load Balancing
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Benchmarking Prefix Aware Load Balancing
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#dataset-and-benchmarking-script" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dataset and Benchmarking script
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#benchmarking-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Benchmarking Setup
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#800-concurrent-requests" class="md-nav__link">
+    <span class="md-ellipsis">
+      800 concurrent requests
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="800 concurrent requests">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#k8s-service-round-robin-no-kubeai-proxy" class="md-nav__link">
+    <span class="md-ellipsis">
+      K8s Service - Round Robin (No KubeAI proxy)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubeai-least-load" class="md-nav__link">
+    <span class="md-ellipsis">
+      KubeAI - Least Load
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubeai-prefix-hash" class="md-nav__link">
+    <span class="md-ellipsis">
+      KubeAI - Prefix Hash
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1600-concurrent-requests" class="md-nav__link">
+    <span class="md-ellipsis">
+      1600 concurrent requests
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1600 concurrent requests">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#k8s-service-round-robin" class="md-nav__link">
+    <span class="md-ellipsis">
+      K8s Service - Round Robin
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubeai-least-load_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      KubeAI - Least Load
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubeai-prefix-hash_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      KubeAI - Prefix Hash
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3200-concurrent-requests" class="md-nav__link">
+    <span class="md-ellipsis">
+      3200 concurrent requests
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3200 concurrent requests">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#k8s-native-round-robin" class="md-nav__link">
+    <span class="md-ellipsis">
+      K8s Native - Round Robin
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubeai-least-load_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      KubeAI - Least Load
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubeai-prefix-hash_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      KubeAI - Prefix Hash
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#concurrent-requests-8000" class="md-nav__link">
+    <span class="md-ellipsis">
+      concurrent requests 8000
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="concurrent requests 8000">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#k8s-native-round-robin_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      K8s Native - Round robin
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubeai-least-load_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      KubeAI - Least Load
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubeai-prefix-hash_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      KubeAI - Prefix Hash
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#dataset-and-benchmarking-script" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dataset and Benchmarking script
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#benchmarking-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Benchmarking Setup
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#800-concurrent-requests" class="md-nav__link">
+    <span class="md-ellipsis">
+      800 concurrent requests
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="800 concurrent requests">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#k8s-service-round-robin-no-kubeai-proxy" class="md-nav__link">
+    <span class="md-ellipsis">
+      K8s Service - Round Robin (No KubeAI proxy)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubeai-least-load" class="md-nav__link">
+    <span class="md-ellipsis">
+      KubeAI - Least Load
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubeai-prefix-hash" class="md-nav__link">
+    <span class="md-ellipsis">
+      KubeAI - Prefix Hash
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1600-concurrent-requests" class="md-nav__link">
+    <span class="md-ellipsis">
+      1600 concurrent requests
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1600 concurrent requests">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#k8s-service-round-robin" class="md-nav__link">
+    <span class="md-ellipsis">
+      K8s Service - Round Robin
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubeai-least-load_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      KubeAI - Least Load
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubeai-prefix-hash_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      KubeAI - Prefix Hash
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3200-concurrent-requests" class="md-nav__link">
+    <span class="md-ellipsis">
+      3200 concurrent requests
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3200 concurrent requests">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#k8s-native-round-robin" class="md-nav__link">
+    <span class="md-ellipsis">
+      K8s Native - Round Robin
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubeai-least-load_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      KubeAI - Least Load
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubeai-prefix-hash_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      KubeAI - Prefix Hash
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#concurrent-requests-8000" class="md-nav__link">
+    <span class="md-ellipsis">
+      concurrent requests 8000
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="concurrent requests 8000">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#k8s-native-round-robin_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      K8s Native - Round robin
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubeai-least-load_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      KubeAI - Least Load
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubeai-prefix-hash_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      KubeAI - Prefix Hash
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="benchmarking-prefix-aware-load-balancing">Benchmarking Prefix Aware Load Balancing<a class="headerlink" href="#benchmarking-prefix-aware-load-balancing" title="Permanent link">&para;</a></h1>
+<p>Prefix Aware Load Balancing is able to improve throughput, inter-token latency and Time To First Token (TTFT). Even under
+heavy load the Time to First Token stays stable.</p>
+<p>The benchmarks demonstrate the following improvements by enabling Prefix Aware Load Balancing under heavy load (8000 concurrent requests):</p>
+<ul>
+<li>164x improvement in Mean TTFT from 39163.80 ms to 237.06 ms.</li>
+<li>41% increased throughput (total token/second) from 47609.83 to 67333.71.</li>
+<li>143% improvement in inter-token latency from 194.44 ms 79.90 ms.</li>
+</ul>
+<p>The benchmarks compare the following load balancing strategies:
+* Kubernetes Native Service - Round Robin. Randomly distribute requests across all instances.
+* KubeAI - Least Load. Send the request to the instance that is handling the least amount of requests.
+* KubeAI - Prefix Hash. Send the request to an instance that has already handled the same prefix or portial prefix.</p>
+<p>The benchmarks were run on 8 instances of vLLM serving LLama 3.1 8B and each uses a single L4 GPU. vLLM was configured to utilize prefix caching.</p>
+<p>The ShareGPT dataset was purposely crafted such that prompts shared partial prefixes. See more about dataset in the dataset section.
+Performance gains are lower when the amount of partial prefix re-use
+is less.</p>
+<p>Comparing the Mean TTFT for each Load Balancing strategy.</p>
+<p><img src="./prefix-aware-load-balancing-mean-ttft.png" /></p>
+<p>We can see that as the engine becomes overloaded, the Mean TTFT increases significantly for both K8s Native service and KubeAI Least Load. However,
+KubeAI Prefix Aware Load Balancing is able to achieve a stable TTFT even
+under heavy load.</p>
+<p>Comparing the throughput in tokens per second for each load balancing strategy:</p>
+<p><img src="./prefix-aware-load-balancing-throughput.png" /></p>
+<p>The graph shows that even at low load you can get a significant improvement in throughput by enabling Prefix Aware Load Balancing.</p>
+<p>Conclusion: Prefix Aware Load Balancing is a must-have for large scale inference workloads.</p>
+<h2 id="dataset-and-benchmarking-script">Dataset and Benchmarking script<a class="headerlink" href="#dataset-and-benchmarking-script" title="Permanent link">&para;</a></h2>
+<p>Dataset: ShareGPT filtered to only include conversations of 16 messages or more. This helps to simulate a scenario where people ask follow up questions and increases the number of partial prefix re-use.</p>
+<p>The vLLM benchmark_serving.py script was used for this but with a few  modifications:
+* Removed the limit to only include 2 messages per conversation
+* Create multiple prompts from a single conversation. E.g. prompt 1 would include message (1) of conversation x and prompt 2 would include message  (1, 2, 3) of conversation x. This resembles multi-round conversation of ChatGPT.
+* added <code>--max-conversations</code> parameter which limits of unique conversations to use.</p>
+<p>The script can be found under <code>kubeai/benchmarks/chat-py/benchmark_serving.py</code>.</p>
+<p>The image that was used: <code>substratusai/benchmark_serving:v0.0.1</code></p>
+<h2 id="benchmarking-setup">Benchmarking Setup<a class="headerlink" href="#benchmarking-setup" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Scale: 8 instances of vLLM</li>
+<li>GPU: L4 GPU, 1 per instance</li>
+<li>Model: Llama 3.1 8B Instruct FP8</li>
+</ul>
+<p>The following model was deployed in KubeAI:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubeai.org/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Model</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">llama-3.1-8b-instruct-fp8-l4</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">features</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">TextGeneration</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hf://neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8</span>
+<span class="w">  </span><span class="nt">engine</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">VLLM</span>
+<span class="w">  </span><span class="nt">env</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">VLLM_USE_V1</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1&quot;</span>
+<span class="w">  </span><span class="nt">args</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--enable-prefix-caching</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--max-model-len=16384</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--max-num-batched-token=16384</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--gpu-memory-utilization=0.95</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--disable-log-requests</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--kv-cache-dtype=fp8</span>
+<span class="w">  </span><span class="nt">resourceProfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nvidia-gpu-l4:1</span>
+<span class="w">  </span><span class="nt">minReplicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8</span>
+<span class="w">  </span><span class="nt">maxReplicas</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8</span>
+</code></pre></div>
+<p>In order to test Prefix Aware Load Balancing, we modify the load balancing
+strategy on the model object itself:</p>
+<p><div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>patch<span class="w"> </span>model<span class="w"> </span>llama-3.1-8b-instruct-fp8-l4<span class="w"> </span>--type<span class="o">=</span><span class="s1">&#39;merge&#39;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;spec&quot;: {&quot;loadBalancing&quot;: {&quot;strategy&quot;: &quot;PrefixHash&quot;}}}&#39;</span>
+</code></pre></div>
+This takes effect right away and does not require recreation of the pods.</p>
+<p>K8s native service was tested by sending requests directly
+to the K8s service instead of the KubeAI proxy/LB. This allows us
+to test the default K8s service Round Robin based load balancing.</p>
+<p>This was the K8s Service used:
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Service</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm-direct</span>
+<span class="w">  </span><span class="nt">labels</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">app</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm-direct</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">selector</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">app.kubernetes.io/name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vllm</span>
+<span class="w">  </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http</span>
+<span class="w">      </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TCP</span>
+<span class="w">      </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">80</span>
+<span class="w">      </span><span class="nt">targetPort</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8000</span>
+<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterIP</span>
+</code></pre></div></p>
+<h2 id="800-concurrent-requests">800 concurrent requests<a class="headerlink" href="#800-concurrent-requests" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="w">      </span><span class="nt">containers</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">benchmark-serving</span>
+<span class="w">          </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">substratusai/benchmark_serving:v0.0.1</span>
+<span class="w">          </span><span class="nt">args</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--base-url=http://kubeai/openai</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--dataset-name=sharegpt</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--dataset-path=/app/sharegpt_16_messages_or_more.json</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--model=llama-3.1-8b-instruct-fp8-l4</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--seed=12345</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--tokenizer=neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--request-rate=800</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--max-concurrency=800</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--num-prompts=8000</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--max-conversations=800</span>
+<span class="w">      </span><span class="nt">restartPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Never</span>
+</code></pre></div>
+<h3 id="k8s-service-round-robin-no-kubeai-proxy">K8s Service - Round Robin (No KubeAI proxy)<a class="headerlink" href="#k8s-service-round-robin-no-kubeai-proxy" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>============ Serving Benchmark Result ============
+Successful requests:                     8000      
+Benchmark duration (s):                  159.98    
+Total input tokens:                      6656338   
+Total generated tokens:                  608447    
+Request throughput (req/s):              50.01     
+Output token throughput (tok/s):         3803.20   
+Total Token throughput (tok/s):          45409.81  
+---------------Time to First Token----------------
+Mean TTFT (ms):                          1319.77   
+Median TTFT (ms):                        601.29    
+P99 TTFT (ms):                           7438.41   
+-----Time per Output Token (excl. 1st token)------
+Mean TPOT (ms):                          189.29    
+Median TPOT (ms):                        184.76    
+P99 TPOT (ms):                           486.16    
+---------------Inter-token Latency----------------
+Mean ITL (ms):                           173.06    
+Median ITL (ms):                         94.60     
+P99 ITL (ms):                            715.66    
+==================================================
+</code></pre></div>
+<h3 id="kubeai-least-load">KubeAI - Least Load<a class="headerlink" href="#kubeai-least-load" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>============ Serving Benchmark Result ============
+Successful requests:                     8000      
+Benchmark duration (s):                  158.39    
+Total input tokens:                      6656338   
+Total generated tokens:                  608447    
+Request throughput (req/s):              50.51     
+Output token throughput (tok/s):         3841.42   
+Total Token throughput (tok/s):          45866.16  
+---------------Time to First Token----------------
+Mean TTFT (ms):                          817.18    
+Median TTFT (ms):                        494.28    
+P99 TTFT (ms):                           5551.81   
+-----Time per Output Token (excl. 1st token)------
+Mean TPOT (ms):                          191.44    
+Median TPOT (ms):                        183.18    
+P99 TPOT (ms):                           520.48    
+---------------Inter-token Latency----------------
+Mean ITL (ms):                           176.03    
+Median ITL (ms):                         124.55    
+P99 ITL (ms):                            691.97    
+==================================================
+</code></pre></div>
+<h3 id="kubeai-prefix-hash">KubeAI - Prefix Hash<a class="headerlink" href="#kubeai-prefix-hash" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>============ Serving Benchmark Result ============
+Successful requests:                     8000      
+Benchmark duration (s):                  104.67    
+Total input tokens:                      6656338   
+Total generated tokens:                  608447    
+Request throughput (req/s):              76.43     
+Output token throughput (tok/s):         5813.11   
+Total Token throughput (tok/s):          69407.79  
+---------------Time to First Token----------------
+Mean TTFT (ms):                          280.20    
+Median TTFT (ms):                        239.80    
+P99 TTFT (ms):                           1260.53   
+-----Time per Output Token (excl. 1st token)------
+Mean TPOT (ms):                          86.55     
+Median TPOT (ms):                        91.13     
+P99 TPOT (ms):                           139.47    
+---------------Inter-token Latency----------------
+Mean ITL (ms):                           85.78     
+Median ITL (ms):                         77.35     
+P99 ITL (ms):                            272.04    
+==================================================
+</code></pre></div>
+<h2 id="1600-concurrent-requests">1600 concurrent requests<a class="headerlink" href="#1600-concurrent-requests" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">batch/v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Job</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">benchmark-serving</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">template</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">spec</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">containers</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">benchmark-serving</span>
+<span class="w">          </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">substratusai/benchmark_serving:v0.0.1</span>
+<span class="w">          </span><span class="nt">args</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--base-url=http://kubeai/openai</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--dataset-name=sharegpt</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--dataset-path=/app/sharegpt_16_messages_or_more.json</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--model=llama-3.1-8b-instruct-fp8-l4</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--seed=12345</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--tokenizer=neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--request-rate=200</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--max-concurrency=1600</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--num-prompts=8000</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--max-conversations=800</span>
+<span class="w">      </span><span class="nt">restartPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Never</span>
+</code></pre></div>
+<h3 id="k8s-service-round-robin">K8s Service - Round Robin<a class="headerlink" href="#k8s-service-round-robin" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>============ Serving Benchmark Result ============
+Successful requests:                     8000      
+Benchmark duration (s):                  157.07    
+Total input tokens:                      6656338   
+Total generated tokens:                  608447    
+Request throughput (req/s):              50.93     
+Output token throughput (tok/s):         3873.62   
+Total Token throughput (tok/s):          46250.51  
+---------------Time to First Token----------------
+Mean TTFT (ms):                          10365.29  
+Median TTFT (ms):                        10068.73  
+P99 TTFT (ms):                           22283.86  
+-----Time per Output Token (excl. 1st token)------
+Mean TPOT (ms):                          216.53    
+Median TPOT (ms):                        207.58    
+P99 TPOT (ms):                           607.73    
+---------------Inter-token Latency----------------
+Mean ITL (ms):                           197.37    
+Median ITL (ms):                         90.35     
+P99 ITL (ms):                            749.96    
+==================================================
+</code></pre></div>
+<h3 id="kubeai-least-load_1">KubeAI - Least Load<a class="headerlink" href="#kubeai-least-load_1" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>============ Serving Benchmark Result ============
+Successful requests:                     8000      
+Benchmark duration (s):                  153.02    
+Total input tokens:                      6656338   
+Total generated tokens:                  608447    
+Request throughput (req/s):              52.28     
+Output token throughput (tok/s):         3976.28   
+Total Token throughput (tok/s):          47476.29  
+---------------Time to First Token----------------
+Mean TTFT (ms):                          10579.01  
+Median TTFT (ms):                        11501.96  
+P99 TTFT (ms):                           15514.10  
+-----Time per Output Token (excl. 1st token)------
+Mean TPOT (ms):                          212.39    
+Median TPOT (ms):                        202.98    
+P99 TPOT (ms):                           613.06    
+---------------Inter-token Latency----------------
+Mean ITL (ms):                           193.34    
+Median ITL (ms):                         92.65     
+P99 ITL (ms):                            747.65    
+==================================================
+</code></pre></div>
+<h3 id="kubeai-prefix-hash_1">KubeAI - Prefix Hash<a class="headerlink" href="#kubeai-prefix-hash_1" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>============ Serving Benchmark Result ============
+Successful requests:                     8000      
+Benchmark duration (s):                  110.00    
+Total input tokens:                      6656338   
+Total generated tokens:                  608447    
+Request throughput (req/s):              72.73     
+Output token throughput (tok/s):         5531.31   
+Total Token throughput (tok/s):          66043.15  
+---------------Time to First Token----------------
+Mean TTFT (ms):                          196.13    
+Median TTFT (ms):                        184.29    
+P99 TTFT (ms):                           492.33    
+-----Time per Output Token (excl. 1st token)------
+Mean TPOT (ms):                          78.51     
+Median TPOT (ms):                        81.50     
+P99 TPOT (ms):                           117.36    
+---------------Inter-token Latency----------------
+Mean ITL (ms):                           79.20     
+Median ITL (ms):                         70.36     
+P99 ITL (ms):                            249.71    
+==================================================
+</code></pre></div>
+<h2 id="3200-concurrent-requests">3200 concurrent requests<a class="headerlink" href="#3200-concurrent-requests" title="Permanent link">&para;</a></h2>
+<p>job:
+<div class="highlight"><pre><span></span><code><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">benchmark-serving</span>
+<span class="w">          </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">substratusai/benchmark_serving:v0.0.1</span>
+<span class="w">          </span><span class="nt">args</span><span class="p">:</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--base-url=http://kubeai/openai</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--dataset-name=sharegpt</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--dataset-path=/app/sharegpt_16_messages_or_more.json</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--model=llama-3.1-8b-instruct-fp8-l4</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--seed=12345</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--tokenizer=neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--request-rate=200</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--max-concurrency=3200</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--num-prompts=8000</span>
+<span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--max-conversations=800</span>
+</code></pre></div></p>
+<h3 id="k8s-native-round-robin">K8s Native - Round Robin<a class="headerlink" href="#k8s-native-round-robin" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>============ Serving Benchmark Result ============
+Successful requests:                     8000      
+Benchmark duration (s):                  156.36    
+Total input tokens:                      6656338   
+Total generated tokens:                  608447    
+Request throughput (req/s):              51.16     
+Output token throughput (tok/s):         3891.22   
+Total Token throughput (tok/s):          46460.74  
+---------------Time to First Token----------------
+Mean TTFT (ms):                          27183.41  
+Median TTFT (ms):                        31260.66  
+P99 TTFT (ms):                           51797.57  
+-----Time per Output Token (excl. 1st token)------
+Mean TPOT (ms):                          214.63    
+Median TPOT (ms):                        205.61    
+P99 TPOT (ms):                           629.95    
+---------------Inter-token Latency----------------
+Mean ITL (ms):                           195.30    
+Median ITL (ms):                         88.07     
+P99 ITL (ms):                            742.53    
+==================================================
+</code></pre></div>
+<h3 id="kubeai-least-load_2">KubeAI - Least Load<a class="headerlink" href="#kubeai-least-load_2" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>============ Serving Benchmark Result ============
+Successful requests:                     8000      
+Benchmark duration (s):                  152.43    
+Total input tokens:                      6656338   
+Total generated tokens:                  608447    
+Request throughput (req/s):              52.48     
+Output token throughput (tok/s):         3991.56   
+Total Token throughput (tok/s):          47658.74  
+---------------Time to First Token----------------
+Mean TTFT (ms):                          24147.86  
+Median TTFT (ms):                        25580.61  
+P99 TTFT (ms):                           46021.48  
+-----Time per Output Token (excl. 1st token)------
+Mean TPOT (ms):                          211.98    
+Median TPOT (ms):                        201.97    
+P99 TPOT (ms):                           598.14    
+---------------Inter-token Latency----------------
+Mean ITL (ms):                           192.94    
+Median ITL (ms):                         93.29     
+P99 ITL (ms):                            721.71    
+==================================================
+</code></pre></div>
+<h3 id="kubeai-prefix-hash_2">KubeAI - Prefix Hash<a class="headerlink" href="#kubeai-prefix-hash_2" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>============ Serving Benchmark Result ============
+Successful requests:                     8000      
+Benchmark duration (s):                  111.37    
+Total input tokens:                      6656338   
+Total generated tokens:                  608447    
+Request throughput (req/s):              71.84     
+Output token throughput (tok/s):         5463.50   
+Total Token throughput (tok/s):          65233.60  
+---------------Time to First Token----------------
+Mean TTFT (ms):                          213.92    
+Median TTFT (ms):                        188.53    
+P99 TTFT (ms):                           838.35    
+-----Time per Output Token (excl. 1st token)------
+Mean TPOT (ms):                          78.73     
+Median TPOT (ms):                        82.17     
+P99 TPOT (ms):                           122.60    
+---------------Inter-token Latency----------------
+Mean ITL (ms):                           78.49     
+Median ITL (ms):                         70.32     
+P99 ITL (ms):                            242.44    
+==================================================
+</code></pre></div>
+<h2 id="concurrent-requests-8000">concurrent requests 8000<a class="headerlink" href="#concurrent-requests-8000" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>        - name: benchmark-serving
+          image: substratusai/benchmark_serving:v0.0.1
+          args:
+            - --base-url=http://kubeai/openai
+            - --dataset-name=sharegpt
+            - --dataset-path=/app/sharegpt_16_messages_or_more.json
+            - --model=llama-3.1-8b-instruct-fp8-l4
+            - --seed=12345
+            - --tokenizer=neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8
+            - --request-rate=800
+            - --max-concurrency=8000
+            - --num-prompts=8000
+            - --max-conversations=800
+</code></pre></div>
+<h3 id="k8s-native-round-robin_1">K8s Native - Round robin<a class="headerlink" href="#k8s-native-round-robin_1" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>============ Serving Benchmark Result ============
+Successful requests:                     8000      
+Benchmark duration (s):                  156.20    
+Total input tokens:                      6656338   
+Total generated tokens:                  608447    
+Request throughput (req/s):              51.22     
+Output token throughput (tok/s):         3895.38   
+Total Token throughput (tok/s):          46510.40  
+---------------Time to First Token----------------
+Mean TTFT (ms):                          48587.55  
+Median TTFT (ms):                        48682.53  
+P99 TTFT (ms):                           101940.11 
+-----Time per Output Token (excl. 1st token)------
+Mean TPOT (ms):                          215.24    
+Median TPOT (ms):                        206.65    
+P99 TPOT (ms):                           566.10    
+---------------Inter-token Latency----------------
+Mean ITL (ms):                           196.77    
+Median ITL (ms):                         87.08     
+P99 ITL (ms):                            751.68    
+==================================================
+</code></pre></div>
+<h3 id="kubeai-least-load_3">KubeAI - Least Load<a class="headerlink" href="#kubeai-least-load_3" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>============ Serving Benchmark Result ============
+Successful requests:                     8000      
+Benchmark duration (s):                  152.59    
+Total input tokens:                      6656338   
+Total generated tokens:                  608447    
+Request throughput (req/s):              52.43     
+Output token throughput (tok/s):         3987.46   
+Total Token throughput (tok/s):          47609.83  
+---------------Time to First Token----------------
+Mean TTFT (ms):                          39163.80  
+Median TTFT (ms):                        40140.70  
+P99 TTFT (ms):                           78489.26  
+-----Time per Output Token (excl. 1st token)------
+Mean TPOT (ms):                          214.09    
+Median TPOT (ms):                        205.62    
+P99 TPOT (ms):                           623.61    
+---------------Inter-token Latency----------------
+Mean ITL (ms):                           194.44    
+Median ITL (ms):                         90.36     
+P99 ITL (ms):                            725.95    
+==================================================
+</code></pre></div>
+<h3 id="kubeai-prefix-hash_3">KubeAI - Prefix Hash<a class="headerlink" href="#kubeai-prefix-hash_3" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>============ Serving Benchmark Result ============
+Successful requests:                     8000      
+Benchmark duration (s):                  107.89    
+Total input tokens:                      6656338   
+Total generated tokens:                  608447    
+Request throughput (req/s):              74.15     
+Output token throughput (tok/s):         5639.40   
+Total Token throughput (tok/s):          67333.71  
+---------------Time to First Token----------------
+Mean TTFT (ms):                          237.06    
+Median TTFT (ms):                        219.27    
+P99 TTFT (ms):                           619.65    
+-----Time per Output Token (excl. 1st token)------
+Mean TPOT (ms):                          79.99     
+Median TPOT (ms):                        81.76     
+P99 TPOT (ms):                           124.28    
+---------------Inter-token Latency----------------
+Mean ITL (ms):                           79.90     
+Median ITL (ms):                         71.31     
+P99 ITL (ms):                            303.14    
+==================================================
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.f1b6f286.min.js"></script>
+      
+    
+  </body>
+</html>

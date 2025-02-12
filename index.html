@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.3">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.4">
     
     
       
@@ -24,7 +24,7 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.d7758b05.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.8608ea7d.min.css">
       
         
         <link rel="stylesheet" href="assets/stylesheets/palette.06af60db.min.css">
@@ -269,6 +269,39 @@
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-kubeai" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why KubeAI?
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Why KubeAI?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#better-performance-at-scale" class="md-nav__link">
+    <span class="md-ellipsis">
+      Better performance at scale
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#simplicity-and-ease-of-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      Simplicity and ease of use
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#architecture" class="md-nav__link">
@@ -1341,6 +1374,28 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="benchmarks/prefix-aware-load-balancing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Benchmarking Prefix Aware Load Balancing
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1373,6 +1428,39 @@
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-kubeai" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why KubeAI?
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Why KubeAI?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#better-performance-at-scale" class="md-nav__link">
+    <span class="md-ellipsis">
+      Better performance at scale
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#simplicity-and-ease-of-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      Simplicity and ease of use
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#architecture" class="md-nav__link">
@@ -1481,12 +1569,12 @@
 
 
 <h1 id="kubeai-ai-inferencing-operator">KubeAI: AI Inferencing Operator<a class="headerlink" href="#kubeai-ai-inferencing-operator" title="Permanent link">&para;</a></h1>
-<p>The easiest way to serve ML models in production. Supports LLMs, embeddings, and speech-to-text.</p>
-<p>✅️  OpenAI API Compatibility: Drop-in replacement for OpenAI<br />
+<p>Serve ML models in production on Kubernetes. Supports LLMs, embeddings, and speech-to-text.</p>
+<p>⛕  Better performance with Prefix-aware Load Balancing <a href="benchmarks/prefix-aware-load-balancing/">(see benchmark)</a><br />
+✅️  OpenAI API Compatibility: Drop-in replacement for OpenAI<br />
 ⚖️  Autoscaling: Scale from zero, autoscale based on load<br />
 🧠  Serve text generation models with vLLM or Ollama<br />
 🔌  Dynamic LoRA adapter loading<br />
-⛕  Inference-optimized load balancing<br />
 💬  Speech to Text API with FasterWhisper<br />
 🧮  Embedding/Vector API with Infinity<br />
 🚀  Multi-platform: CPU, GPU, TPU<br />
@@ -1498,6 +1586,19 @@
 <blockquote>
 <p>reusable, well abstracted solution to run LLMs - <a href="https://www.linkedin.com/posts/mikeensor_gcp-solutions-public-retail-edge-available-cluster-traits-activity-7237515920259104769-vBs9?utm_source=share&amp;utm_medium=member_desktop">Mike Ensor</a></p>
 </blockquote>
+<h2 id="why-kubeai">Why KubeAI?<a class="headerlink" href="#why-kubeai" title="Permanent link">&para;</a></h2>
+<h3 id="better-performance-at-scale">Better performance at scale<a class="headerlink" href="#better-performance-at-scale" title="Permanent link">&para;</a></h3>
+<p>When running multiple replicas of a serving engine such as vLLM, performance under production traffic is heavily influence by the load balancing strategy.</p>
+<p>KubeAI supports Least Load and Prefix Hash load balancing. Prefix Hash
+load balancing with the KubeAI proxy provides a significant performance boost.</p>
+<p><img src="./benchmarks/prefix-aware-load-balancing-mean-ttft.png" width="80%"/></p>
+<p>See the <a href="benchmarks/prefix-aware-load-balancing/">full benchmark</a> for more details.</p>
+<h3 id="simplicity-and-ease-of-use">Simplicity and ease of use<a class="headerlink" href="#simplicity-and-ease-of-use" title="Permanent link">&para;</a></h3>
+<p>KubeAI does not have other dependencies which makes it possible to deploy
+and manage in any environment. You can deploy models
+using pre-validated models for specific GPU types. This saves you time
+because you don't have to tweak engine arguments for hours to get
+a model up and running.</p>
 <h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
 <p>KubeAI serves an OpenAI compatible HTTP API. Admins can configure ML models via <code>kind: Model</code> Kubernetes Custom Resources. KubeAI can be thought of as a Model Operator (See <a href="https://kubernetes.io/docs/concepts/extend-kubernetes/operator/">Operator Pattern</a>) that manages <a href="https://github.com/vllm-project/vllm">vLLM</a> and <a href="https://github.com/ollama/ollama">Ollama</a> servers.</p>
 <p><img src="./diagrams/arch.excalidraw.png"></img></p>
