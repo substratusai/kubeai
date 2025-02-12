@@ -81,6 +81,12 @@ modelRollouts:
   # The number of replicas to add when rolling out a new model.
   surge: 1
 
+metrics:
+  prometheusOperator:
+    vLLMPodMonitor:
+      # Enable creation of PodMonitor resource that scrapes vLLM metrics endpoint.
+      enabled: false
+
 resourceProfiles:
   cpu:
     imageName: "cpu"

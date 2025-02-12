@@ -1,0 +1,13 @@
+{{- $enablePodMonitor :=  -}}
+{{- if .Values.metrics.prometheusOperator.vLLMPodMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ include "kubeai.fullname" . }}-vllm
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: vllm
+  podMetricsEndpoints:
+  - port: http
+{{- end }}
