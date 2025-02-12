@@ -34,4 +34,4 @@ You can get the credential if that doesn't work:
 kubectl get secret prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
 ```
 
-You can use the example vLLM dashboard in the KubeAI repo at [examples/vllm-grafana-dashboard.json](https://github.com/substratusai/kubeai/blob/main/examples/vllm-grafana-dashboard.json).
+You can use the example vLLM dashboard in the KubeAI repo at [examples/observability/vllm-grafana-dashboard.json](https://github.com/substratusai/kubeai/blob/main/examples/observability/vllm-grafana-dashboard.json).
