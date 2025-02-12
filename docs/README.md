@@ -1,12 +1,13 @@
 # KubeAI: AI Inferencing Operator
 
-The easiest way to serve ML models in production. Supports LLMs, embeddings, and speech-to-text.
+Serve ML models in production on Kubernetes. Supports LLMs, embeddings, and speech-to-text.
 
+
+⛕  Better performance with Prefix-aware Load Balancing [(see benchmark)](./benchmarks/prefix-aware-load-balancing.md)  
 ✅️  OpenAI API Compatibility: Drop-in replacement for OpenAI  
 ⚖️  Autoscaling: Scale from zero, autoscale based on load  
 🧠  Serve text generation models with vLLM or Ollama  
 🔌  Dynamic LoRA adapter loading  
-⛕  Inference-optimized load balancing  
 💬  Speech to Text API with FasterWhisper  
 🧮  Embedding/Vector API with Infinity  
 🚀  Multi-platform: CPU, GPU, TPU  
@@ -18,6 +19,26 @@ The easiest way to serve ML models in production. Supports LLMs, embeddings, and
 Quotes from the community:
 
 > reusable, well abstracted solution to run LLMs - [Mike Ensor](https://www.linkedin.com/posts/mikeensor_gcp-solutions-public-retail-edge-available-cluster-traits-activity-7237515920259104769-vBs9?utm_source=share&utm_medium=member_desktop)
+
+## Why KubeAI?
+
+### Better performance at scale
+When running multiple replicas of a serving engine such as vLLM, performance under production traffic is heavily influence by the load balancing strategy.
+
+KubeAI supports Least Load and Prefix Hash load balancing. Prefix Hash
+load balancing with the KubeAI proxy provides a significant performance boost.
+
+<img src="./benchmarks/prefix-aware-load-balancing-mean-ttft.png" width="80%"/>
+
+See the [full benchmark](./benchmarks/prefix-aware-load-balancing.md) for more details.
+
+### Simplicity and ease of use
+KubeAI does not have other dependencies which makes it possible to deploy
+and manage in any environment. You can deploy models
+using pre-validated models for specific GPU types. This saves you time
+because you don't have to tweak engine arguments for hours to get
+a model up and running.
+
 
 ## Architecture
 
