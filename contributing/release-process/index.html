@@ -1395,12 +1395,37 @@
 The <code>main</code> tag points to the latest commit on the main branch.</p>
 <p>If you push a tag <code>vX.Y.Z</code> to the repository, the Docker image with the tag <code>vX.Y.Z</code>
 is built and pushed to Docker Hub. Afterwards, the <code>latest</code> tag is updated to point to the new version.</p>
+<p>Use the commands below to create a new release.</p>
+<p>Check the latest version tag:</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>pull<span class="w"> </span>--tags
+git<span class="w"> </span>tag<span class="w"> </span>-l<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-E<span class="w"> </span><span class="s2">&quot;^v[0-9]&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span>-t<span class="w"> </span><span class="s2">&quot;.&quot;</span><span class="w"> </span>-k1,1n<span class="w"> </span>-k2,2n<span class="w"> </span>-k3,3n
+</code></pre></div>
+<p>This may show <code>v0.14.0</code>. If that's the case then tag the next version with
+<code>v0.15.0</code> by running:</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>checkout<span class="w"> </span>main
+git<span class="w"> </span>pull<span class="w"> </span>origin<span class="w"> </span>main
+git<span class="w"> </span>tag<span class="w"> </span>v0.15.0
+git<span class="w"> </span>push<span class="w"> </span>--tags
+</code></pre></div>
+<p>You can go to the GitHub action page and see that a new action has been triggered. This action to build and publish needs to succeed.</p>
+<p>Afterwards you can pull the new image:</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>pull<span class="w"> </span>substratusai/kubeai:v0.15.0
+</code></pre></div>
 <h2 id="helm-chart">Helm Chart<a class="headerlink" href="#helm-chart" title="Permanent link">&para;</a></h2>
 <p>The Helm chart only gets released when a git tag is pushed to the repository with
 the format <code>helm-v*</code>.</p>
 <p>The appVersion in the Helm chart does not have to point to the latest released version. This allows us to first publish a new version of the Docker image without updating the Helm chart. The Helm chart is updated when we are ready to release a new version.</p>
 <p>This is important when a new appVersion isn't compatible with the current Helm chart.
 In those cases, we can first merge the PR, thoroughly test, release new container image, and then in a separate PR update the Helm chart and the appVersion.</p>
+<p>Steps to release a new version:
+1. Create a new PR and update the helm chart versions and appVersion.
+2. Merge the PR into main.
+3. Create a new tag from main branch with the format <code>helm-vX.Y.Z</code>. Make sure to match the tag to the helm chart version. Push the tag.</p>
+<p>After merging to main:</p>
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>pull<span class="w"> </span>origin<span class="w"> </span>main
+git<span class="w"> </span>tag<span class="w"> </span>helm-v0.12.0
+git<span class="w"> </span>push<span class="w"> </span>--tags
+</code></pre></div>
 
 
 
