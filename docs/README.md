@@ -131,7 +131,7 @@ Because we set `minReplicas: 1` for the Gemma model you should see a model Pod a
 Start a local port-forward to the bundled chat UI.
 
 ```bash
-kubectl port-forward svc/openwebui 8000:80
+kubectl port-forward svc/open-webui 8000:80
 ```
 
 Now open your browser to [localhost:8000](http://localhost:8000) and select the Gemma model to start chatting with.
