@@ -1689,7 +1689,7 @@ helm<span class="w"> </span>install<span class="w"> </span>kubeai-models<span cl
 <h4 id="interact-with-gemma2">Interact with Gemma2<a class="headerlink" href="#interact-with-gemma2" title="Permanent link">&para;</a></h4>
 <p>Because we set <code>minReplicas: 1</code> for the Gemma model you should see a model Pod already coming up.</p>
 <p>Start a local port-forward to the bundled chat UI.</p>
-<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>port-forward<span class="w"> </span>svc/openwebui<span class="w"> </span><span class="m">8000</span>:80
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>port-forward<span class="w"> </span>svc/open-webui<span class="w"> </span><span class="m">8000</span>:80
 </code></pre></div>
 <p>Now open your browser to <a href="http://localhost:8000">localhost:8000</a> and select the Gemma model to start chatting with.</p>
 <h4 id="scale-up-qwen2-from-zero">Scale up Qwen2 from Zero<a class="headerlink" href="#scale-up-qwen2-from-zero" title="Permanent link">&para;</a></h4>

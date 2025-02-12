@@ -1494,7 +1494,7 @@ kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> <
 <span class="c1"># Run KubeAI inside cluster</span>
 <span class="c1"># Change `-f` based on the cluster environment.</span>
 helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>kubeai<span class="w"> </span>./charts/kubeai<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--set<span class="w"> </span>openwebui.enabled<span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--set<span class="w"> </span>open-webui.enabled<span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--set<span class="w"> </span>image.tag<span class="o">=</span>latest<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--set<span class="w"> </span>image.pullPolicy<span class="o">=</span>Always<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--set<span class="w"> </span>image.repository<span class="o">=</span>us-central1-docker.pkg.dev/substratus-dev/default/kubeai<span class="w"> </span><span class="se">\</span>
