@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 # Originally taken from vLLM benchmarking/benchmark_serving.py
+# url: https://github.com/vllm-project/vllm/blob/4c0d93f4b2de241336f4732cb5799cee8fedcb52/benchmarks/benchmark_serving.py
 
 r"""Benchmark online serving throughput.
 
