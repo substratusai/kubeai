@@ -5,7 +5,7 @@ This script was adopted from the vLLM code base. The main differences are:
 - Limit the amount of max conversations and re-use the same conversation if needed.
 
 This allows us to verify whether prefix aware load balancing provides a performance
-boost at large scale.
+boost under heavy production traffic with ongoing chat conversations.
 
 ## Running
 
