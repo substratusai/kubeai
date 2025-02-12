@@ -37,7 +37,7 @@ kubectl apply -f ./hack/dev-models/kind-cpu.yaml
 # Run KubeAI inside cluster
 # Change `-f` based on the cluster environment.
 helm upgrade --install kubeai ./charts/kubeai \
-    --set openwebui.enabled=true \
+    --set open-webui.enabled=true \
     --set image.tag=latest \
     --set image.pullPolicy=Always \
     --set image.repository=us-central1-docker.pkg.dev/substratus-dev/default/kubeai \
