@@ -41,7 +41,7 @@ Create a local cluster with <a href="https://kind.sigs.k8s.io/" target="_blank">
 kind create cluster
 
 helm repo add kubeai https://www.kubeai.org && helm repo update
-helm install kubeai kubeai/kubeai --set open-webui.enabled=true --wait --timeout 5m
+helm install kubeai kubeai/kubeai --set open-webui.enabled=false --wait --timeout 5m
 ```
 
 Clone the KubeAI repo and navigate to the example directory.
