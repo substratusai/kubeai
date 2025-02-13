@@ -1720,12 +1720,12 @@ heavy load the Time to First Token stays stable.</p>
 Performance gains are lower when the amount of partial prefix re-use
 is less.</p>
 <p>Comparing the Mean TTFT for each Load Balancing strategy.</p>
-<p><img src="./prefix-aware-load-balancing-mean-ttft.png" /></p>
+<p><img alt="" src="../prefix-aware-load-balancing-mean-ttft.png" /></p>
 <p>We can see that as the engine becomes overloaded, the Mean TTFT increases significantly for both K8s Native service and KubeAI Least Load. However,
 KubeAI Prefix Aware Load Balancing is able to achieve a stable TTFT even
 under heavy load.</p>
 <p>Comparing the throughput in tokens per second for each load balancing strategy:</p>
-<p><img src="./prefix-aware-load-balancing-throughput.png" /></p>
+<p><img alt="" src="../prefix-aware-load-balancing-throughput.png" /></p>
 <p>The graph shows that even at low load you can get a significant improvement in throughput by enabling Prefix Aware Load Balancing.</p>
 <p>Conclusion: Prefix Aware Load Balancing is a must-have for large scale inference workloads.</p>
 <h2 id="dataset-and-benchmarking-script">Dataset and Benchmarking script<a class="headerlink" href="#dataset-and-benchmarking-script" title="Permanent link">&para;</a></h2>
