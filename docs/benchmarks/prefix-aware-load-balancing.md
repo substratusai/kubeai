@@ -22,7 +22,7 @@ is less.
 
 Comparing the Mean TTFT for each Load Balancing strategy.
 
-<img src="./prefix-aware-load-balancing-mean-ttft.png" />
+![](./prefix-aware-load-balancing-mean-ttft.png)
 
 We can see that as the engine becomes overloaded, the Mean TTFT increases significantly for both K8s Native service and KubeAI Least Load. However,
 KubeAI Prefix Aware Load Balancing is able to achieve a stable TTFT even
@@ -30,7 +30,7 @@ under heavy load.
 
 Comparing the throughput in tokens per second for each load balancing strategy:
 
-<img src="./prefix-aware-load-balancing-throughput.png" />
+![](./prefix-aware-load-balancing-throughput.png)
 
 The graph shows that even at low load you can get a significant improvement in throughput by enabling Prefix Aware Load Balancing.
 
