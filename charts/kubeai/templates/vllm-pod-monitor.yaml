@@ -4,7 +4,10 @@ kind: PodMonitor
 metadata:
   name: {{ include "kubeai.fullname" . }}-vllm
   labels:
-    {{- toYaml .Values.metrics.prometheusOperator.vLLMPodMonitor.labels | nindent 4 }}
+    {{- include "kubeai.labels" . | nindent 4 }}
+    {{- with .Values.metrics.prometheusOperator.vLLMPodMonitor.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   selector:
     matchLabels:
