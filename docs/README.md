@@ -105,9 +105,13 @@ Install some predefined models.
 ```bash
 cat <<EOF > kubeai-models.yaml
 catalog:
-  gemma2-2b-cpu:
+  deepseek-r1-1.5b-ollama:
     enabled: true
+    features: [TextGeneration]
+    url: 'ollama://deepseek-r1:1.5b'
+    engine: OLlama
     minReplicas: 1
+    resourceProfile: 'cpu:1'
   qwen2-500m-cpu:
     enabled: true
   nomic-embed-text-cpu:
@@ -124,9 +128,9 @@ Before progressing to the next steps, start a watch on Pods in a standalone term
 kubectl get pods --watch
 ```
 
-#### Interact with Gemma2
+#### Interact with Deepseek R1 1.5b
 
-Because we set `minReplicas: 1` for the Gemma model you should see a model Pod already coming up.
+Because we set `minReplicas: 1` for the Deepseek model you should see a model Pod already coming up.
 
 Start a local port-forward to the bundled chat UI.
 
@@ -134,7 +138,7 @@ Start a local port-forward to the bundled chat UI.
 kubectl port-forward svc/open-webui 8000:80
 ```
 
-Now open your browser to [localhost:8000](http://localhost:8000) and select the Gemma model to start chatting with.
+Now open your browser to [localhost:8000](http://localhost:8000) and select the Deepseek model to start chatting with.
 
 #### Scale up Qwen2 from Zero
 
