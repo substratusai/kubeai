@@ -332,9 +332,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#interact-with-gemma2" class="md-nav__link">
+  <a href="#interact-with-deepseek-r1-15b" class="md-nav__link">
     <span class="md-ellipsis">
-      Interact with Gemma2
+      Interact with Deepseek R1 1.5b
     </span>
   </a>
   
@@ -1491,9 +1491,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#interact-with-gemma2" class="md-nav__link">
+  <a href="#interact-with-deepseek-r1-15b" class="md-nav__link">
     <span class="md-ellipsis">
-      Interact with Gemma2
+      Interact with Deepseek R1 1.5b
     </span>
   </a>
   
@@ -1671,9 +1671,13 @@ helm<span class="w"> </span>repo<span class="w"> </span>update
 <p>Install some predefined models.</p>
 <div class="highlight"><pre><span></span><code>cat<span class="w"> </span><span class="s">&lt;&lt;EOF &gt; kubeai-models.yaml</span>
 <span class="s">catalog:</span>
-<span class="s">  gemma2-2b-cpu:</span>
+<span class="s">  deepseek-r1-1.5b-cpu:</span>
 <span class="s">    enabled: true</span>
+<span class="s">    features: [TextGeneration]</span>
+<span class="s">    url: &#39;ollama://deepseek-r1:1.5b&#39;</span>
+<span class="s">    engine: OLlama</span>
 <span class="s">    minReplicas: 1</span>
+<span class="s">    resourceProfile: &#39;cpu:1&#39;</span>
 <span class="s">  qwen2-500m-cpu:</span>
 <span class="s">    enabled: true</span>
 <span class="s">  nomic-embed-text-cpu:</span>
@@ -1686,12 +1690,12 @@ helm<span class="w"> </span>install<span class="w"> </span>kubeai-models<span cl
 <p>Before progressing to the next steps, start a watch on Pods in a standalone terminal to see how KubeAI deploys models. </p>
 <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>--watch
 </code></pre></div>
-<h4 id="interact-with-gemma2">Interact with Gemma2<a class="headerlink" href="#interact-with-gemma2" title="Permanent link">&para;</a></h4>
-<p>Because we set <code>minReplicas: 1</code> for the Gemma model you should see a model Pod already coming up.</p>
+<h4 id="interact-with-deepseek-r1-15b">Interact with Deepseek R1 1.5b<a class="headerlink" href="#interact-with-deepseek-r1-15b" title="Permanent link">&para;</a></h4>
+<p>Because we set <code>minReplicas: 1</code> for the Deepseek model you should see a model Pod already coming up.</p>
 <p>Start a local port-forward to the bundled chat UI.</p>
 <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>port-forward<span class="w"> </span>svc/open-webui<span class="w"> </span><span class="m">8000</span>:80
 </code></pre></div>
-<p>Now open your browser to <a href="http://localhost:8000">localhost:8000</a> and select the Gemma model to start chatting with.</p>
+<p>Now open your browser to <a href="http://localhost:8000">localhost:8000</a> and select the Deepseek model to start chatting with.</p>
 <h4 id="scale-up-qwen2-from-zero">Scale up Qwen2 from Zero<a class="headerlink" href="#scale-up-qwen2-from-zero" title="Permanent link">&para;</a></h4>
 <p>If you go back to the browser and start a chat with Qwen2, you will notice that it will take a while to respond at first. This is because we set <code>minReplicas: 0</code> for this model and KubeAI needs to spin up a new Pod (you can verify with <code>kubectl get models -oyaml qwen2-500m-cpu</code>).</p>
 <h2 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h2>
