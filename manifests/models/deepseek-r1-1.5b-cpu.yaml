@@ -2,7 +2,7 @@
 apiVersion: kubeai.org/v1
 kind: Model
 metadata:
-  name: deepseek-r1-1.5b-ollama
+  name: deepseek-r1-1.5b-cpu
 spec:
   features: [TextGeneration]
   url: ollama://deepseek-r1:1.5b

@@ -408,7 +408,7 @@ catalog:
       - --enforce-eager
     engine: VLLM
     resourceProfile: 'nvidia-gpu-l4:1'
-  deepseek-r1-1.5b-ollama:
+  deepseek-r1-1.5b-cpu:
     enabled: false
     features: [TextGeneration]
     url: 'ollama://deepseek-r1:1.5b'

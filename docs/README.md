@@ -105,7 +105,7 @@ Install some predefined models.
 ```bash
 cat <<EOF > kubeai-models.yaml
 catalog:
-  deepseek-r1-1.5b-ollama:
+  deepseek-r1-1.5b-cpu:
     enabled: true
     features: [TextGeneration]
     url: 'ollama://deepseek-r1:1.5b'
