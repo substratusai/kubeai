@@ -1,8 +1,8 @@
 # Configure Observability with Prometheus Stack
 
-KubeAI provides a PodMonitor resource that can be used to scrape metrics
-for vLLM metrics. The podMonitor can be enabled by using the following
-KubeAI helm values:
+KubeAI provides a vLLM PodMonitor resource to scrape vLLM metrics.
+
+The podMonitor can be enabled by using the following KubeAI helm values:
 
 ```yaml
 metrics:
@@ -13,7 +13,11 @@ metrics:
       labels: {}
 ```
 
+If you want to manually create the PodMonitor please take a look at the KubeAI helm chart [vLLM PodMonitor template](https://github.com/substratusai/kubeai/blob/main/charts/kubeai/templates/vllm-pod-monitor.yaml).
+
+
 ## Deploying Prometheus Operator
+The Prometheus Operator is a Kubernetes operator that manages Prometheus and its related components.
 The Prometheus Stack includes Grafana and Prometheus.
 
 Add Prometheus Helm repo:
@@ -22,7 +26,7 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 helm repo update
 ```
 
-Install the Prometheus Stack with PodMonitor for scraping vLLM metrics:
+Install the Prometheus Stack and ensure PodMonitor without special labels works:
 ```sh
 helm install prometheus prometheus-community/kube-prometheus-stack -f - <<EOF
 prometheus:
@@ -37,6 +41,7 @@ EOF
 ## Enable KubeAI vLLM PodMonitor
 
 Install the KubeAI provided PodMonitor:
+
 ```sh
 helm upgrade --reuse-values --install kubeai kubeai/kubeai \
   --set metrics.prometheusOperator.vLLMPodMonitor.enabled=true
