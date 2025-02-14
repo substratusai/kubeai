@@ -3,6 +3,8 @@ apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:
   name: {{ include "kubeai.fullname" . }}-vllm
+  labels:
+    {{- toYaml .Values.metrics.prometheusOperator.vLLMPodMonitor.labels | nindent 4 }}
 spec:
   selector:
     matchLabels:

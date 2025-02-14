@@ -86,6 +86,7 @@ metrics:
     vLLMPodMonitor:
       # Enable creation of PodMonitor resource that scrapes vLLM metrics endpoint.
       enabled: false
+      labels: {}
 
 resourceProfiles:
   cpu:
