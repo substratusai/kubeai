@@ -1,0 +1,10 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: deepseek-r1-1.5b-cpu
+spec:
+  features: [TextGeneration]
+  url: ollama://deepseek-r1:1.5b
+  engine: OLlama
+  resourceProfile: cpu:1
