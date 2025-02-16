@@ -75,7 +75,7 @@ Improvements to ITL and TPS were seen across the board when using the PrefixHash
 
 Summary of Time To First Token (TTFT):
 
-When concurrency was increased **10x** (`800` -> `8000`), mean TTFT (Time To First Token) with a standard Kubernetes Service (Random) increased over **36x** (`1300 ms` -> `48,500 ms`) while ITL remained relatively **constant** for the PrefixHash strategy (`2XX ms` range).
+When concurrency was increased **10x** (`800` -> `8000`), mean TTFT (Time To First Token) with a standard Kubernetes Service (Random) increased over **36x** (`1300 ms` -> `48500 ms`) while mean TTFT remained relatively **constant** for the PrefixHash strategy (`2XX ms` range).
 
 Summary of Inter-Token Latency (ITL):
 
