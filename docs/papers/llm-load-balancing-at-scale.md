@@ -1,6 +1,6 @@
 # LLM Load Balancing at Scale
 
-**TLDR:** Applying the Consistent Hashing with Bounded Loads (CHWBL) algorithm to LLM Load Balancing results in dramatic performance improvements over the default round robin strategy built into Kubernetes.
+**TLDR:** Applying the Consistent Hashing with Bounded Loads (CHWBL) algorithm to LLM Load Balancing results in dramatic performance improvements over the default random strategy built into Kubernetes.
 
 ## Introduction
 
@@ -8,13 +8,13 @@ Before an inference engine such as vLLM can start producing output tokens, it ne
 
 The impact of prefix caching can be significant, especially in multi-turn use-cases such as chat, whether the client is a human or an "agent". This is because multi-turn use-cases operate in a generate-append-generate loop, where the last response ends up being incorporated into the prefix for the next request.
 
-<img src="../diagrams/multi-turn-clients.excalidraw.png" width="60%"></img>
+<img src="../diagrams/multi-turn-clients.excalidraw.png" style="max-width:500px"></img>
 
 When operating at scale (multiple replicas of vLLM) and under load (at the threshold of KV cache-space), choosing a load balancing strategy that can maximize cache-hits and minimize cache-evictions becomes critical.
 
-The default round robin strategy built into Kubernetes leaves a lot of performance on the table. Some sort of consistent routing strategy would be better to keep a relevant cache on each replica.
+The default random strategy built into Kubernetes leaves a lot of performance on the table. Some sort of consistent routing strategy would be better to keep a relevant cache on each replica.
 
-<img src="../diagrams/round-robin-vs-consistent-hash.excalidraw.png" width="80%"></img>
+<img src="../diagrams/random-vs-consistent-hash.excalidraw.png" style="max-width:600px"></img>
 
 ## Finding the right algorithm
 
@@ -51,12 +51,45 @@ When using this strategy, KubeAI will:
 
 ## Performance results
 
+Three load balancing scenarios were tested:
+
+1. Kubernetes Service (Random)
+    * Implemented via a standard Kubernetes Service that bypassed KubeAI (avoided proxying overhead).
+    * The kube-proxy was configured to use `iptables` proxying.
+2. KubeAI (LeastLoad)
+    * Proxied through KubeAI load balancer.
+    * Routes traffic to the replica with the least number of in-flight requests.
+3. KubeAI (PrefixHash)
+    * Proxied through KubeAI load balancer.
+    * Routes traffic to replicas according the CHWBL strategy described above.
+
+Several key performance numbers were considered:
+
+1. TTFT - Time To First Token - How long the user waits for the model to start generating output.
+2. ITL - Inter-Token Latency - How long the user waits for each subsequent token to be generated.
+3. TPS - Tokens Per Second (throughput) - The total number of tokens generated each second by the system.
+
+Overview of the results:
+
+Improvements to ITL and TPS were seen across the board when using the PrefixHash strategy, with the most dramatic improvement showing up in TTFT.
+
+Summary of Time To First Token (TTFT):
+
+When concurrency was increased **10x** (`800` -> `8000`), mean TTFT (Time To First Token) with a standard Kubernetes Service (Random) increased over **36x** (`1300 ms` -> `48,500 ms`) while ITL remained relatively **constant** for the PrefixHash strategy (`2XX ms` range).
+
+Summary of Inter-Token Latency (ITL):
+
+TODO
+
+Summary of Tokens Per Second (TPS):
+
+TODO
 
 ## Conclusion
 
 TODO
 
-## References:
+## References
 
 * https://docs.vllm.ai/en/latest/features/automatic_prefix_caching.html
 * https://research.google/blog/consistent-hashing-with-bounded-loads/
