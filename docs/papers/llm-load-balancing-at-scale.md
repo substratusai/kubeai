@@ -1,6 +1,6 @@
 # LLM Load Balancing at Scale
 
-**TLDR:** Applying the Consistent Hashing with Bounded Loads (CHWBL) algorithm to LLM Load Balancing results in dramatic performance improvements over the default random strategy built into Kubernetes.
+**TLDR:** Applying the Consistent Hashing with Bounded Loads (CHWBL) algorithm to LLM Load Balancing results in dramatic performance improvements over the default random strategy built into Kubernetes (99.5% reduction in TTFT).
 
 ## Introduction
 
@@ -63,6 +63,8 @@ Three load balancing scenarios were tested:
     * Proxied through KubeAI load balancer.
     * Routes traffic to replicas according the CHWBL strategy described above.
 
+The benchmark was conducted using 8 replicas of vLLM each serving LLama 3.1 8B on a single L4 GPU per replica.
+
 Several key performance numbers were considered:
 
 1. TTFT - Time To First Token - How long the user waits for the model to start generating output.
@@ -75,7 +77,7 @@ Improvements to ITL and TPS were seen across the board when using the PrefixHash
 
 Summary of Time To First Token (TTFT):
 
-When concurrency was increased **10x** (`800` -> `8000`), mean TTFT (Time To First Token) with a standard Kubernetes Service (Random) increased over **36x** (`1300 ms` -> `48500 ms`) while mean TTFT remained relatively **constant** for the PrefixHash strategy (`2XX ms` range).
+When concurrency was increased **10x** (`800` -> `8000`), mean TTFT (Time To First Token) with a standard Kubernetes Service (Random) increased over **36x** (`1300 ms` -> `48500 ms`) while mean TTFT remained relatively **constant** for the PrefixHash strategy (`2XX ms` range). While operating at `8000` concurrent requests, the KubeAI PrefixHash strategy resulted in a mean TTFT that was 99.5% lower than using a standard Kubernetes Service (Random load balancing).
 
 Summary of Inter-Token Latency (ITL):
 
