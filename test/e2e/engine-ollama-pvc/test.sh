@@ -17,15 +17,18 @@ docker exec -i $kind_container bash -c "
   huggingface-cli download facebook/opt-125m --local-dir ${PV_HOST_PATH} \
     --exclude 'tf_model.h5' 'flax_model.msgpack'"
 
-kubectl apply -f $REPO_DIR/test/e2e/engine-vllm-pvc/pv.yaml
-kubectl apply -f $REPO_DIR/test/e2e/engine-vllm-pvc/pvc.yaml
-
+# huggingface-cli download facebook/opt-125m --local-dir /tmp/model --exclude 'tf_model.h5' 'flax_model.msgpack'"
+#    
+kubectl apply -f $REPO_DIR/test/e2e/engine-ollama-pvc/pv.yaml
+kubectl apply -f $REPO_DIR/test/e2e/engine-ollama-pvc/pvc.yaml
+#"ollama://qwen2:0.5b" 
 helm install $models_release $REPO_DIR/charts/models -f - <<EOF
 catalog:
   opt-125m-cpu:
     enabled: true
     url: pvc://model-pvc
     minReplicas: 2
+    engine: OLamma
 EOF
 
 sleep 5
@@ -38,5 +41,7 @@ for i in {1..10}; do
     -H "Content-Type: application/json" \
     -d '{"model": "opt-125m-cpu", "prompt": "Who was the first president of the United States?", "max_tokens": 40}'
 done
+
+sleep 300
 
 helm uninstall kubeai-models # cleans up above model helm chart on success
