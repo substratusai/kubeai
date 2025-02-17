@@ -28,7 +28,7 @@ catalog:
     enabled: true
     url: pvc://model-pvc
     minReplicas: 2
-    engine: OLlamma
+    engine: OLlama
 EOF
 
 sleep 5
