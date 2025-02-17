@@ -34,6 +34,7 @@ jobs:
         - "autoscaler-restart-no-load"
         - "cache-shared-filesystem"
         - "engine-vllm-pvc"
+        - "engine-ollama-pvc"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
