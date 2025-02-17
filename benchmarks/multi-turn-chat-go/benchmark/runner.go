@@ -2,6 +2,7 @@ package benchmark
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -13,8 +14,10 @@ import (
 )
 
 type Config struct {
-	MaxConcurrency int
-	MaxTokens      int
+	MaxConcurrentThreads int `json:"max_concurrent_threads"`
+	MaxCompletionTokens  int `json:"max_completion_tokens"`
+	// RequestTimeout must be passed to the openai.Client outside of this package.
+	RequestTimeout Duration `json:"request_timeout"`
 }
 
 type Runner struct {
@@ -25,26 +28,42 @@ type Runner struct {
 
 type Result struct {
 	// Duration of the entire run, waits for all threads to finish (includes stragglers).
-	Duration      time.Duration
-	FailedThreads int
-	TTFT          DurationGroup
-	TPOT          DurationGroup
+	Duration           Duration      `json:"duration"`
+	Requests           int           `json:"requests"`
+	FailedThreads      int           `json:"failed_threads"`
+	TTFT               DurationGroup `json:"ttft"`
+	TPOT               DurationGroup `json:"tpot"`
+	PromptTokens       int           `json:"prompt_tokens"`
+	CachedPromptTokens int           `json:"cached_prompt_tokens"`
+	CompletionTokens   int           `json:"completion_tokens"`
+	TotalTokens        int           `json:"total_tokens"`
 }
 
 func (r Result) String() string {
-	return fmt.Sprintf(`Run Duration: %s
+	return fmt.Sprintf(`=================== Results ===================
+       Run Duration: %s
 Failed Thread Count: %d
-TTFT (mean): %s
-TPOT (mean): %s`,
-		r.Duration,
+           Requests: %d
+      Prompt Tokens: %d (%d cached)
+  Completion Tokens: %d
+       Total Tokens: %d
+        TTFT (mean): %s
+        TPOT (mean): %s
+===============================================`,
+		time.Duration(r.Duration),
 		r.FailedThreads,
-		r.TTFT.Mean,
-		r.TPOT.Mean,
+		r.Requests,
+		r.PromptTokens,
+		r.CachedPromptTokens,
+		r.CompletionTokens,
+		r.TotalTokens,
+		time.Duration(r.TTFT.Mean),
+		time.Duration(r.TPOT.Mean),
 	)
 }
 
 type DurationGroup struct {
-	Mean time.Duration
+	Mean Duration `json:"mean"`
 	// TODO: p95, etc.
 }
 
@@ -62,17 +81,38 @@ type ChunkResult struct {
 }
 
 type Thread struct {
+	id          string
 	inputMsgs   []openai.ChatCompletionMessage
 	currentMsgs []openai.ChatCompletionMessage
+	requests    int
 	results     []RequestResult
 	err         error
 }
 
-func New(client *openai.Client, cfg Config, inputThreads [][]openai.ChatCompletionMessage) *Runner {
+type InputThread struct {
+	ID       string                         `json:"id"`
+	Messages []openai.ChatCompletionMessage `json:"messages"`
+}
+
+func (c Config) Validate() error {
+	if c.MaxConcurrentThreads <= 0 {
+		return errors.New("max_concurrent_threads must be greater than 0")
+	}
+	if c.MaxCompletionTokens <= 0 {
+		return errors.New("max_completion_tokens must be greater than 0")
+	}
+	if c.RequestTimeout <= 0 {
+		return errors.New("request_timeout must be greater than 0")
+	}
+	return nil
+}
+
+func New(client *openai.Client, cfg Config, inputThreads []InputThread) *Runner {
 	threads := make([]*Thread, len(inputThreads))
 	for i := range inputThreads {
 		threads[i] = &Thread{
-			inputMsgs: inputThreads[i],
+			id:        inputThreads[i].ID,
+			inputMsgs: inputThreads[i].Messages,
 		}
 	}
 	return &Runner{
@@ -86,7 +126,7 @@ func (r *Runner) Run() (Result, error) {
 	// Run up to cfg.Concurrency threads at a time, until all threads are ran.
 
 	var wg sync.WaitGroup
-	sem := make(chan struct{}, r.cfg.MaxConcurrency)
+	sem := make(chan struct{}, r.cfg.MaxConcurrentThreads)
 
 	t0 := time.Now()
 	for i, t := range r.threads {
@@ -113,18 +153,28 @@ func (r *Runner) Run() (Result, error) {
 
 func (r *Runner) summarizeResults(duration time.Duration) Result {
 	var (
-		ttfts         []time.Duration
-		tpots         []time.Duration
-		failedThreads int
+		ttfts []time.Duration
+		tpots []time.Duration
 	)
+
+	result := Result{
+		Duration: Duration(duration),
+	}
+
 	for _, t := range r.threads {
+		result.Requests += t.requests
 		if t.err != nil {
 			// TODO: Should we gather the metrics from any successful chunks?
-			failedThreads++
+			result.FailedThreads++
 			continue
 		}
 		for _, reqResult := range t.results {
 			for chunkIdx, chunkResult := range reqResult.Chunks {
+				result.PromptTokens += chunkResult.PromptTokens
+				result.CachedPromptTokens += chunkResult.CachedPromptTokens
+				result.CompletionTokens += chunkResult.CompletionTokens
+				result.TotalTokens += chunkResult.TotalTokens
+
 				if chunkIdx == 0 {
 					ttfts = append(ttfts, chunkResult.Duration)
 				} else {
@@ -137,12 +187,11 @@ func (r *Runner) summarizeResults(duration time.Duration) Result {
 			}
 		}
 	}
-	return Result{
-		Duration:      duration,
-		FailedThreads: failedThreads,
-		TTFT:          DurationGroup{Mean: mean(ttfts)},
-		TPOT:          DurationGroup{Mean: mean(tpots)},
-	}
+
+	result.TTFT = DurationGroup{Mean: Duration(mean(ttfts))}
+	result.TPOT = DurationGroup{Mean: Duration(mean(tpots))}
+
+	return result
 }
 
 func mean(durs []time.Duration) time.Duration {
@@ -180,11 +229,12 @@ func (r *Runner) RunThread(t *Thread) error {
 
 		t0 := time.Now()
 
+		t.requests++
 		stream, err := r.client.CreateChatCompletionStream(
 			context.Background(),
 			openai.ChatCompletionRequest{
 				Model:     openai.GPT3Babbage002,
-				MaxTokens: r.cfg.MaxTokens,
+				MaxTokens: r.cfg.MaxCompletionTokens,
 				Stream:    true,
 				Messages:  t.currentMsgs,
 				StreamOptions: &openai.StreamOptions{
@@ -230,4 +280,25 @@ func (r *Runner) RunThread(t *Thread) error {
 	}
 
 	return nil
+}
+
+type Duration time.Duration
+
+func (d *Duration) UnmarshalJSON(b []byte) error {
+	var s string
+	if err := json.Unmarshal(b, &s); err != nil {
+		return err
+	}
+	pd, err := time.ParseDuration(s)
+	if err != nil {
+		return err
+	}
+
+	*d = Duration(pd)
+
+	return nil
+}
+
+func (d Duration) MarshalJSON() ([]byte, error) {
+	return json.Marshal(time.Duration(d).String())
 }

@@ -18,27 +18,40 @@ func TestRunner(t *testing.T) {
 	// Sanity check...
 	require.Equal(t, 3, testInputThreadUserMessageCount())
 
+	runnerCfg := benchmark.Config{
+		MaxConcurrentThreads: 1,
+		MaxCompletionTokens:  1024,
+		RequestTimeout:       benchmark.Duration(30 * time.Second),
+	}
+
+	require.NoError(t, runnerCfg.Validate())
+
 	testServer := httptest.NewServer(http.HandlerFunc(mockChatCompletionsHandler))
 	openaiCfg := openai.DefaultConfig("test-api-key")
 	openaiCfg.BaseURL = testServer.URL + "/v1"
-	openaiCfg.HTTPClient = &http.Client{Timeout: 30 * time.Second}
+	openaiCfg.HTTPClient = &http.Client{Timeout: time.Duration(runnerCfg.RequestTimeout)}
 	client := openai.NewClientWithConfig(openaiCfg)
 
-	runnerCfg := benchmark.Config{
-		MaxConcurrency: 1,
-		MaxTokens:      1024,
-	}
 	runner := benchmark.New(client, runnerCfg, inputThreads)
 	result, err := runner.Run()
 	require.NoError(t, err)
 
 	fmt.Println(result.String())
 
-	requireRoughlyEqualTo(t, testTimeBetweenChunks/time.Duration(testCompletionTokensPerChunk), result.TPOT.Mean, 1*time.Millisecond)
-	requireRoughlyEqualTo(t, testTimeBeforeChunk0, result.TTFT.Mean, 10*time.Millisecond)
+	require.Equal(t, testInputThreadUserMessageCount(), result.Requests)
+	require.Equal(t, 0, result.FailedThreads)
+
+	require.Equal(t, testInputThreadUserMessageCount()*testNumOfChunksPerRequest*testPromptTokensPerChunk, result.PromptTokens)
+	require.Equal(t, testInputThreadUserMessageCount()*testNumOfChunksPerRequest*testCachedPromptTokensPerChunk, result.CachedPromptTokens)
+	require.Equal(t, testInputThreadUserMessageCount()*testNumOfChunksPerRequest*testCompletionTokensPerChunk, result.CompletionTokens)
+	require.Equal(t, testInputThreadUserMessageCount()*testNumOfChunksPerRequest*(testPromptTokensPerChunk+testCompletionTokensPerChunk), result.TotalTokens)
+
+	requireRoughlyEqualTo(t, testTimeBetweenChunks/time.Duration(testCompletionTokensPerChunk), time.Duration(result.TPOT.Mean), 1*time.Millisecond)
+	requireRoughlyEqualTo(t, testTimeBeforeChunk0, time.Duration(result.TTFT.Mean), 10*time.Millisecond)
 	requireRoughlyEqualTo(t,
 		time.Duration(testInputThreadUserMessageCount())*(testTimeBeforeChunk0+((testNumOfChunksPerRequest-1)*testTimeBetweenChunks)),
-		result.Duration, 100*time.Millisecond)
+		time.Duration(result.Duration), 100*time.Millisecond)
+
 }
 
 func requireRoughlyEqualTo(t *testing.T, want, actual, threshold time.Duration) {
@@ -49,7 +62,7 @@ func requireRoughlyEqualTo(t *testing.T, want, actual, threshold time.Duration) 
 func testInputThreadUserMessageCount() int {
 	var n int
 	for _, thread := range inputThreads {
-		for _, message := range thread {
+		for _, message := range thread.Messages {
 			if message.Role == openai.ChatMessageRoleUser {
 				n++
 			}
@@ -58,38 +71,46 @@ func testInputThreadUserMessageCount() int {
 	return n
 }
 
-var inputThreads = [][]openai.ChatCompletionMessage{
+var inputThreads = []benchmark.InputThread{
 	{
-		{
-			Role:    openai.ChatMessageRoleUser,
-			Content: "Hello, how are you?",
-		},
-		{
-			Role:    openai.ChatMessageRoleAssistant,
-			Content: "I'm just a computer program, so I don't have feelings, but I'm here to help!",
-		},
-		{
-			Role:    openai.ChatMessageRoleUser,
-			Content: "Come again?",
+		ID: "a",
+		Messages: []openai.ChatCompletionMessage{
+			{
+				Role:    openai.ChatMessageRoleUser,
+				Content: "Hello, how are you?",
+			},
+			{
+				Role:    openai.ChatMessageRoleAssistant,
+				Content: "I'm just a computer program, so I don't have feelings, but I'm here to help!",
+			},
+			{
+				Role:    openai.ChatMessageRoleUser,
+				Content: "Come again?",
+			},
 		},
 	},
 	{
-		{
-			Role:    openai.ChatMessageRoleUser,
-			Content: "What's your favorite color?",
-		},
-		{
-			Role:    openai.ChatMessageRoleAssistant,
-			Content: "My favorite color is blue!",
+		ID: "b",
+		Messages: []openai.ChatCompletionMessage{
+			{
+				Role:    openai.ChatMessageRoleUser,
+				Content: "What's your favorite color?",
+			},
+			{
+				Role:    openai.ChatMessageRoleAssistant,
+				Content: "My favorite color is blue!",
+			},
 		},
 	},
 }
 
 const (
-	testTimeBeforeChunk0         = 3 * time.Second
-	testTimeBetweenChunks        = time.Second
-	testCompletionTokensPerChunk = 10
-	testNumOfChunksPerRequest    = 3
+	testTimeBeforeChunk0           = 3 * time.Second
+	testTimeBetweenChunks          = time.Second
+	testPromptTokensPerChunk       = 5
+	testCachedPromptTokensPerChunk = 2
+	testCompletionTokensPerChunk   = 10
+	testNumOfChunksPerRequest      = 3
 )
 
 func mockChatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
@@ -134,10 +155,10 @@ func mockChatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 		streamResp := openai.ChatCompletionStreamResponse{
 			Usage: &openai.Usage{
 				CompletionTokens: testCompletionTokensPerChunk,
-				PromptTokens:     5,
-				TotalTokens:      5 + testCompletionTokensPerChunk,
+				PromptTokens:     testPromptTokensPerChunk,
+				TotalTokens:      testPromptTokensPerChunk + testCompletionTokensPerChunk,
 				PromptTokensDetails: &openai.PromptTokensDetails{
-					CachedTokens: 3,
+					CachedTokens: testCachedPromptTokensPerChunk,
 				},
 			},
 		}
