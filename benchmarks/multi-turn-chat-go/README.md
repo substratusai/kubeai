@@ -45,7 +45,9 @@ make data
 Create a cluster.
 
 ```bash
-kind create cluster
+gcloud container clusters create cluster-1 \
+    --zone us-central1-a \
+    --node-locations us-central1-a --num-nodes 2 --machine-type e2-standard-16
 ```
 
 Install KubeAI. 
@@ -53,29 +55,21 @@ Install KubeAI.
 ```bash
 helm repo add kubeai https://www.kubeai.org
 helm repo update
-helm install kubeai kubeai/kubeai --set open-webui.enabled=false
+helm upgrade --install kubeai kubeai/kubeai --set open-webui.enabled=false --set secrets.huggingface.token=$HUGGING_FACE_HUB_TOKEN
 cat <<EOF > kubeai-models.yaml
 catalog:
-  deepseek-r1-1.5b-cpu:
+  llama-3.1-8b-instruct-cpu:
     enabled: true
-    features: [TextGeneration]
-    url: 'ollama://deepseek-r1:1.5b'
-    engine: OLlama
-    minReplicas: 1
-    resourceProfile: 'cpu:4'
-  qwen2-500m-cpu:
-    enabled: true
-  nomic-embed-text-cpu:
-    enabled: true
+    minReplicas: 2
+    maxReplicas: 2
 EOF
 
-helm install kubeai-models kubeai/models \
+helm upgrade --install kubeai-models kubeai/models \
     -f ./kubeai-models.yaml
 ```
 
 ```bash
-kubectl create secret generic bench-config --from-file=config.yaml=./example/kubeai-config.json
-kubectl wait --timeout 10m --for=jsonpath='{.status.replicas.ready}'=1 model/deepseek-r1-1.5b-cpu
+kubectl wait --timeout 10m --for=jsonpath='{.status.replicas.ready}'=2 model/llama-3.1-8b-instruct-cpu
 kubectl create -f ./example/pod.yaml
 ```
 
