@@ -5,7 +5,9 @@
 Build the docker image.
 
 ```bash
+make data
 make build-docker-image
+make push-docker-image
 ```
 
 ### Ollama
