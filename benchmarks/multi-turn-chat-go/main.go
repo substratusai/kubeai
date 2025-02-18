@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -8,6 +9,7 @@ import (
 	"io"
 	"log"
 	"multi-turn-chat-go/benchmark"
+	"multi-turn-chat-go/tokenizer"
 	"net/http"
 	"os"
 	"time"
@@ -53,12 +55,12 @@ func run() error {
 
 	}
 
-	var runnerCfg benchmark.Config
-	if err := readJSON(flags.config, &runnerCfg); err != nil {
+	var cfg Config
+	if err := readJSON(flags.config, &cfg); err != nil {
 		return fmt.Errorf("reading config: %w", err)
 	}
 
-	if err := runnerCfg.Validate(); err != nil {
+	if err := cfg.Validate(); err != nil {
 		return fmt.Errorf("invalid config: %w", err)
 	}
 
@@ -67,7 +69,8 @@ func run() error {
 	if openaiCfg.BaseURL == "" {
 		return fmt.Errorf("missing required environment variable: OPENAI_BASE_URL")
 	}
-	openaiCfg.HTTPClient = &http.Client{Timeout: time.Duration(runnerCfg.RequestTimeout)}
+	httpc := &http.Client{Timeout: time.Duration(cfg.RequestTimeout)}
+	openaiCfg.HTTPClient = httpc
 	client := openai.NewClientWithConfig(openaiCfg)
 
 	var inputThreads []benchmark.InputThread
@@ -75,7 +78,29 @@ func run() error {
 		return fmt.Errorf("reading input threads: %w", err)
 	}
 
-	runner := benchmark.New(client, runnerCfg, inputThreads)
+	tkn := &tokenizer.Tokenizer{
+		Model: cfg.TokenizerModel,
+		HTTPC: httpc,
+		Port:  7000,
+	}
+	go func() {
+		if err := tkn.Start(); err != nil {
+			log.Fatalf("starting tokenizer: %v", err)
+		}
+	}()
+	defer func() {
+		if err := tkn.Stop(); err != nil {
+			log.Printf("stopping tokenizer: %v", err)
+		}
+	}()
+
+	waitCtx, cancelWaitCtx := context.WithTimeout(context.TODO(), 30*time.Second)
+	defer cancelWaitCtx()
+	if err := tkn.WaitForHealthy(waitCtx); err != nil {
+		return fmt.Errorf("waiting for tokenizer to be healthy: %v", err)
+	}
+
+	runner := benchmark.New(client, tkn, cfg.Config, inputThreads)
 	result, err := runner.Run()
 	if err != nil {
 		return fmt.Errorf("run: %w", err)
@@ -113,4 +138,20 @@ func readJSON(path string, x interface{}) error {
 	}
 
 	return nil
+}
+
+type Config struct {
+	benchmark.Config
+	RequestTimeout benchmark.Duration `json:"request_timeout"`
+	TokenizerModel string             `json:"tokenizer_model"`
+}
+
+func (c Config) Validate() error {
+	if c.RequestTimeout <= 0 {
+		return errors.New("request_timeout must be greater than 0")
+	}
+	if c.TokenizerModel == "" {
+		return errors.New("tokenizer_model must be specified")
+	}
+	return c.Config.Validate()
 }

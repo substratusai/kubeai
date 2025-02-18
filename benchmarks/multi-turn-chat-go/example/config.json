@@ -1,5 +1,0 @@
-{
-    "max_concurrent_threads": 1,
-    "max_completion_tokens": 1024,
-    "request_timeout": "10s"
-}

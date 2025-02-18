@@ -1,12 +1,39 @@
 import json
+import argparse
 
 
 def main():
-    with open("./ShareGPT_V3_unfiltered_cleaned_split.json", "r") as f:
+    parser = argparse.ArgumentParser(description="A simple program with flags.")
+    parser.add_argument(
+        "-t", "--max-threads", type=int, default=100, help="Max number of threads"
+    )
+    parser.add_argument(
+        "-c",
+        "--min-content-length",
+        type=int,
+        default=1000,
+        help="Filter-out threads that contain less than this number of characters",
+    )
+    parser.add_argument(
+        "-m",
+        "--min-message-count",
+        type=int,
+        default=3,
+        help="Filter-out threads with fewer than this many user messages",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=str,
+        default="threads.json",
+        help="Output file",
+    )
+    args = parser.parse_args()
+    with open("./raw/ShareGPT_V3_unfiltered_cleaned_split.json", "r") as f:
         data = json.load(f)
 
-    # Select a subnet the first conversations that start with a human.
-    max = 2000
+    max = args.max_threads
+
     output = []
     for entry in data:
         conv = entry.get("conversations")
@@ -21,10 +48,10 @@ def main():
                     messages.append({"role": "user", "content": content})
                     totalContentLength += len(content)
 
-            if totalContentLength < 2500:
+            if totalContentLength < args.min_content_length:
                 continue
 
-            if len(messages) < 5:
+            if len(messages) < args.min_message_count:
                 continue
 
             # Delete the original conversation
@@ -35,7 +62,7 @@ def main():
             if len(output) >= max:
                 break
 
-    with open("./threads.json", "w") as f:
+    with open(args.output, "w") as f:
         data = json.dump(output, f, indent=4)
 
 
