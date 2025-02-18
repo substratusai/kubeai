@@ -107,13 +107,13 @@ type InputThread struct {
 
 func (c Config) Validate() error {
 	if c.MaxConcurrentThreads <= 0 {
-		return errors.New("max_concurrent_threads must be greater than 0")
+		return errors.New("max_concurrent_threads (--max-concurrent-threads) must be greater than 0")
 	}
 	if c.MaxCompletionTokens <= 0 {
-		return errors.New("max_completion_tokens must be greater than 0")
+		return errors.New("max_completion_tokens (--max-completion-tokens) must be greater than 0")
 	}
 	if c.RequestModel == "" {
-		return errors.New("model must be specified")
+		return errors.New("request_model (--request-model) must be specified")
 	}
 	return nil
 }
@@ -142,6 +142,7 @@ func (r *Runner) Run() (Result, error) {
 	sem := make(chan struct{}, r.cfg.MaxConcurrentThreads)
 
 	t0 := time.Now()
+	tLen := len(r.threads)
 	for i, t := range r.threads {
 		sem <- struct{}{}
 		wg.Add(1)
@@ -151,10 +152,10 @@ func (r *Runner) Run() (Result, error) {
 				wg.Done()
 			}()
 			if err := r.RunThread(t); err != nil {
-				log.Printf("Thread[%d] failed: %v\n", i, err)
+				log.Printf("Thread[%d/%d]: Failed: %v\n", i+1, tLen, err)
 				t.err = err
 			} else {
-				log.Printf("Thread[%d] finished", i)
+				log.Printf("Thread[%d/%d]: Finished", i+1, tLen)
 			}
 		}()
 	}
@@ -177,8 +178,9 @@ func (r *Runner) summarizeResults(duration time.Duration) (Result, error) {
 		Duration: Duration(duration),
 	}
 
+	tLen := len(r.threads)
 	for tIdx, t := range r.threads {
-		log.Printf("Summarizing thread %d/%d", tIdx+1, len(r.threads))
+		log.Printf("Thread[%d/%d]: Summarizing", tIdx+1, tLen)
 		result.Requests += t.requests
 		if t.err != nil {
 			// TODO: Should we gather the metrics from any successful chunks?
@@ -206,7 +208,7 @@ func (r *Runner) summarizeResults(duration time.Duration) (Result, error) {
 				}
 			}
 			if sumReqCompletionTokens != reqResult.CompletionTokens {
-				log.Printf("WARNING: Calculated completion token count (%d) does not match usage report (%d)",
+				log.Fatalf("FATAL: Calculated completion token count (%d) does not match usage report (%d) - tokenizer model likely does not match request model",
 					sumReqCompletionTokens, reqResult.CompletionTokens)
 			}
 			result.PromptTokens += reqResult.PromptTokens

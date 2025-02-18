@@ -2,6 +2,7 @@
     "request_model": "qwen2:0.5b",
     "tokenizer_model": "Qwen/Qwen2.5-VL-7B-Instruct",
     "max_concurrent_threads": 2,
+    "thread_count": 4,
     "max_completion_tokens": 10,
     "request_timeout": "30s"
 }

@@ -24,40 +24,48 @@ func main() {
 }
 
 func run() error {
-	var flags struct {
-		config  string
+	var (
 		threads string
 		format  string
-	}
-
-	flag.StringVar(&flags.config, "config", "", "Path to config file")
-	flag.StringVar(&flags.threads, "threads", "", "Path to threads file")
+		config  string
+	)
+	flag.StringVar(&threads, "threads", "", "Path to threads file")
 	const (
 		formatText = "text"
 		formatJSON = "json"
 	)
-	flag.StringVar(&flags.format, "format", formatText, "Format of results")
+	flag.StringVar(&format, "format", formatText, "Format of results")
+	flag.StringVar(&config, "config", "", "Path to config file (use '-' for stdin)")
+
+	// Config-field flags:
+	var cfg Config
+	flag.IntVar(&cfg.MaxConcurrentThreads, "max-concurrent-threads", 0, "Number of threads to run in parallel - i.e. number of virtual users")
+	flag.IntVar(&cfg.ThreadCount, "thread-count", 0, "Number of threads to process over the lifespan of the run")
+	flag.IntVar(&cfg.MaxCompletionTokens, "max-completion-tokens", 0, "Number of tokens to generate per request")
+	flag.StringVar(&cfg.RequestModel, "request-model", "", "Model field to send in requests")
+	var requestTimeout time.Duration
+	flag.DurationVar(&requestTimeout, "request-timeout", 0, "Timeout for each request")
+	flag.StringVar(&cfg.TokenizerModel, "tokenizer-model", "", "Huggingface Model to use for tokenization - should be the same tokenizer as will be used in the request model - test will panic at the end if not")
 
 	flag.Parse()
+	cfg.RequestTimeout = benchmark.Duration(requestTimeout)
 
-	if flags.config == "" {
-		return errors.New("missing required flag: --config")
-	}
-	if flags.threads == "" {
+	if threads == "" {
 		return errors.New("missing required flag: --threads")
 	}
 
-	switch flags.format {
+	switch format {
 	case "text", "json":
 	default:
 		return fmt.Errorf("invalid format: %q, must be %q or %q",
-			flags.format, formatText, formatJSON)
+			format, formatText, formatJSON)
 
 	}
 
-	var cfg Config
-	if err := readJSON(flags.config, &cfg); err != nil {
-		return fmt.Errorf("reading config: %w", err)
+	if config != "" {
+		if err := readJSON(config, &cfg); err != nil {
+			return fmt.Errorf("reading config: %w", err)
+		}
 	}
 
 	if err := cfg.Validate(); err != nil {
@@ -74,9 +82,16 @@ func run() error {
 	client := openai.NewClientWithConfig(openaiCfg)
 
 	var inputThreads []benchmark.InputThread
-	if err := readJSON(flags.threads, &inputThreads); err != nil {
+	if err := readJSON(threads, &inputThreads); err != nil {
 		return fmt.Errorf("reading input threads: %w", err)
 	}
+	if cfg.ThreadCount > len(inputThreads) {
+		return fmt.Errorf("specified thread count (%d) exceeds total number of threads in the dataset (%d)",
+			cfg.ThreadCount, len(inputThreads))
+	}
+	log.Printf("Trimming dataset threads (%d) to specified thread count (%d)",
+		len(inputThreads), cfg.ThreadCount)
+	inputThreads = inputThreads[:cfg.ThreadCount]
 
 	tkn := &tokenizer.Tokenizer{
 		Model: cfg.TokenizerModel,
@@ -94,11 +109,13 @@ func run() error {
 		}
 	}()
 
+	log.Println("Waiting for tokenizer to become ready...")
 	waitCtx, cancelWaitCtx := context.WithTimeout(context.TODO(), 30*time.Second)
 	defer cancelWaitCtx()
 	if err := tkn.WaitForHealthy(waitCtx); err != nil {
 		return fmt.Errorf("waiting for tokenizer to be healthy: %v", err)
 	}
+	log.Println("Tokenizer ready")
 
 	runner := benchmark.New(client, tkn, cfg.Config, inputThreads)
 	result, err := runner.Run()
@@ -106,7 +123,7 @@ func run() error {
 		return fmt.Errorf("run: %w", err)
 	}
 
-	switch flags.format {
+	switch format {
 	case formatText:
 		fmt.Println(result.String())
 	case formatJSON:
@@ -144,14 +161,18 @@ type Config struct {
 	benchmark.Config
 	RequestTimeout benchmark.Duration `json:"request_timeout"`
 	TokenizerModel string             `json:"tokenizer_model"`
+	ThreadCount    int                `json:"thread_count"`
 }
 
 func (c Config) Validate() error {
 	if c.RequestTimeout <= 0 {
-		return errors.New("request_timeout must be greater than 0")
+		return errors.New("request_timeout (--request-timeout) must be greater than 0")
 	}
 	if c.TokenizerModel == "" {
-		return errors.New("tokenizer_model must be specified")
+		return errors.New("tokenizer_model (--tokenizer-model) must be specified")
+	}
+	if c.ThreadCount <= 0 {
+		return errors.New("thread_count (--thread-count) is required and must be a positive value")
 	}
 	return c.Config.Validate()
 }
