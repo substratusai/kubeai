@@ -1,0 +1,12 @@
+catalog:
+  deepseek-r1-1.5b-cpu:
+    enabled: true
+    features: [TextGeneration]
+    url: 'ollama://deepseek-r1:1.5b'
+    engine: OLlama
+    minReplicas: 1
+    resourceProfile: 'cpu:1'
+  qwen2-500m-cpu:
+    enabled: true
+  nomic-embed-text-cpu:
+    enabled: true

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: bench
+spec:
+  restartPolicy: Never
+  containers:
+    - name: bench
+      image: us-central1-docker.pkg.dev/substratus-dev/default/benchmark-multi-turn-chat-go
+      args: ["--config=/config/config.json", "--threads=./data/tiny.json"]
+      volumeMounts:
+        - name: bench-config
+          mountPath: /config
+  volumes:
+    - name: bench-config
+      configMap:
+        name: bench-config

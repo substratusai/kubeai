@@ -48,6 +48,29 @@ Install KubeAI.
 helm repo add kubeai https://www.kubeai.org
 helm repo update
 helm install kubeai kubeai/kubeai --wait --timeout 10m
+cat <<EOF > kubeai-models.yaml
+catalog:
+  deepseek-r1-1.5b-cpu:
+    enabled: true
+    features: [TextGeneration]
+    url: 'ollama://deepseek-r1:1.5b'
+    engine: OLlama
+    minReplicas: 1
+    resourceProfile: 'cpu:1'
+  qwen2-500m-cpu:
+    enabled: true
+  nomic-embed-text-cpu:
+    enabled: true
+EOF
+
+helm install kubeai-models kubeai/models \
+    -f ./kubeai-models.yaml
+```
+
+```bash
+kubectl create secret generic bench-config --from-file=config.yaml=./example/kubeai-config.json
+kubectl wait --timeout 10m --for=jsonpath='{.status.replicas.ready}'=1 model/deepseek-r1-1.5b-cpu
+kubectl create -f ./example/pod.yaml
 ```
 
 
