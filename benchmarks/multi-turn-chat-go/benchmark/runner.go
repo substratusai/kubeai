@@ -135,6 +135,7 @@ func New(client *openai.Client, tokenizer *tokenizer.Tokenizer, cfg Config, inpu
 }
 
 func (r *Runner) Run() (Result, error) {
+	log.Println("Starting run...")
 	// Run up to cfg.Concurrency threads at a time, until all threads are ran.
 
 	var wg sync.WaitGroup
@@ -162,6 +163,7 @@ func (r *Runner) Run() (Result, error) {
 
 	duration := time.Since(t0)
 
+	log.Printf("Run completed after %s, starting summarization - it may take a while to calculate tokens...", duration)
 	return r.summarizeResults(duration)
 }
 
@@ -176,6 +178,7 @@ func (r *Runner) summarizeResults(duration time.Duration) (Result, error) {
 	}
 
 	for tIdx, t := range r.threads {
+		log.Printf("Summarizing thread %d/%d", tIdx+1, len(r.threads))
 		result.Requests += t.requests
 		if t.err != nil {
 			// TODO: Should we gather the metrics from any successful chunks?
