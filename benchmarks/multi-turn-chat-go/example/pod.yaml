@@ -8,6 +8,9 @@ spec:
     - name: bench
       image: us-central1-docker.pkg.dev/substratus-dev/default/benchmark-multi-turn-chat-go
       args: ["--config=/config/config.json", "--threads=./data/tiny.json"]
+      env:
+      - name: OPENAI_BASE_URL
+        value: http://kubeai/openai/v1
       volumeMounts:
         - name: bench-config
           mountPath: /config

@@ -47,7 +47,7 @@ Install KubeAI.
 ```bash
 helm repo add kubeai https://www.kubeai.org
 helm repo update
-helm install kubeai kubeai/kubeai --wait --timeout 10m
+helm install kubeai kubeai/kubeai --set open-webui.enabled=false
 cat <<EOF > kubeai-models.yaml
 catalog:
   deepseek-r1-1.5b-cpu:
@@ -56,7 +56,7 @@ catalog:
     url: 'ollama://deepseek-r1:1.5b'
     engine: OLlama
     minReplicas: 1
-    resourceProfile: 'cpu:1'
+    resourceProfile: 'cpu:4'
   qwen2-500m-cpu:
     enabled: true
   nomic-embed-text-cpu:
