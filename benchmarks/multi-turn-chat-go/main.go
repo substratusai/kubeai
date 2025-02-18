@@ -14,6 +14,8 @@ import (
 	"os"
 	"time"
 
+	"math/rand"
+
 	"github.com/sashabaranov/go-openai"
 )
 
@@ -46,6 +48,7 @@ func run() error {
 	var requestTimeout time.Duration
 	flag.DurationVar(&requestTimeout, "request-timeout", 0, "Timeout for each request")
 	flag.StringVar(&cfg.TokenizerModel, "tokenizer-model", "", "Huggingface Model to use for tokenization - should be the same tokenizer as will be used in the request model - test will panic at the end if not")
+	flag.BoolVar(&cfg.NoShuffle, "no-shuffle", false, "Do not shuffle the input dataset")
 
 	flag.Parse()
 	cfg.RequestTimeout = benchmark.Duration(requestTimeout)
@@ -85,6 +88,18 @@ func run() error {
 	if err := readJSON(threads, &inputThreads); err != nil {
 		return fmt.Errorf("reading input threads: %w", err)
 	}
+
+	// Randomize the input dataset (before trimming).
+	if cfg.NoShuffle {
+		log.Println("Not shuffling dataset threads")
+	} else {
+		log.Println("Shuffling dataset threads")
+		for i := range inputThreads {
+			j := rand.Intn(i + 1)
+			inputThreads[i], inputThreads[j] = inputThreads[j], inputThreads[i]
+		}
+	}
+
 	if cfg.ThreadCount > len(inputThreads) {
 		return fmt.Errorf("specified thread count (%d) exceeds total number of threads in the dataset (%d)",
 			cfg.ThreadCount, len(inputThreads))
@@ -162,6 +177,7 @@ type Config struct {
 	RequestTimeout benchmark.Duration `json:"request_timeout"`
 	TokenizerModel string             `json:"tokenizer_model"`
 	ThreadCount    int                `json:"thread_count"`
+	NoShuffle      bool               `json:"no_shuffle"`
 }
 
 func (c Config) Validate() error {
