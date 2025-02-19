@@ -164,7 +164,7 @@ func (r *Runner) Run() (Result, error) {
 
 	duration := time.Since(t0)
 
-	log.Printf("Run completed after %s, starting summarization - it may take a while to calculate tokens...", duration)
+	log.Printf("Run completed after %s, starting summarization...", duration)
 	return r.summarizeResults(duration)
 }
 
@@ -178,9 +178,7 @@ func (r *Runner) summarizeResults(duration time.Duration) (Result, error) {
 		Duration: Duration(duration),
 	}
 
-	tLen := len(r.threads)
-	for tIdx, t := range r.threads {
-		log.Printf("Thread[%d/%d]: Summarizing", tIdx+1, tLen)
+	for _, t := range r.threads {
 		result.Requests += t.requests
 		if t.err != nil {
 			// TODO: Should we gather the metrics from any successful chunks?
