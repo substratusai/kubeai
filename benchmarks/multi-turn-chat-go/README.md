@@ -45,9 +45,8 @@ make data
 Create a cluster.
 
 ```bash
-gcloud container clusters create cluster-1 \
-    --zone us-central1-a \
-    --node-locations us-central1-a --num-nodes 2 --machine-type e2-standard-16
+gcloud container clusters create-auto cluster-1 \
+    --location=us-central1
 ```
 
 Install KubeAI. 
@@ -55,21 +54,18 @@ Install KubeAI.
 ```bash
 helm repo add kubeai https://www.kubeai.org
 helm repo update
-helm upgrade --install kubeai kubeai/kubeai --set open-webui.enabled=false --set secrets.huggingface.token=$HUGGING_FACE_HUB_TOKEN
-cat <<EOF > kubeai-models.yaml
-catalog:
-  llama-3.1-8b-instruct-cpu:
-    enabled: true
-    minReplicas: 2
-    maxReplicas: 2
-EOF
+curl -L -O https://raw.githubusercontent.com/substratusai/kubeai/refs/heads/main/charts/kubeai/values-gke.yaml
+helm upgrade --install kubeai kubeai/kubeai \
+    -f values-gke.yaml \
+    --set secrets.huggingface.token=$HUGGING_FACE_HUB_TOKEN \
+    --set open-webui.enabled=false \
+    --wait
 
-helm upgrade --install kubeai-models kubeai/models \
-    -f ./kubeai-models.yaml
 ```
 
 ```bash
-kubectl wait --timeout 10m --for=jsonpath='{.status.replicas.ready}'=2 model/llama-3.1-8b-instruct-cpu
+kubectl apply -f ./example/llama-3.1-8b-instruct-fp8-l4.yaml
+kubectl wait --timeout 10m --for=jsonpath='{.status.replicas.ready}'=2 model/llama-3.1-8b-instruct-fp8-l4
 kubectl create -f ./example/pod.yaml
 ```
 

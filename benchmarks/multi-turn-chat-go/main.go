@@ -80,7 +80,11 @@ func run() error {
 	if openaiCfg.BaseURL == "" {
 		return fmt.Errorf("missing required environment variable: OPENAI_BASE_URL")
 	}
-	httpc := &http.Client{Timeout: time.Duration(cfg.RequestTimeout)}
+	httpt := http.DefaultTransport.(*http.Transport).Clone()
+	httpt.MaxIdleConns = cfg.MaxConcurrentThreads
+	httpc := &http.Client{
+		Timeout: time.Duration(cfg.RequestTimeout),
+	}
 	openaiCfg.HTTPClient = httpc
 	client := openai.NewClientWithConfig(openaiCfg)
 

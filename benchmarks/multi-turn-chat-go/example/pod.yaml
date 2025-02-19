@@ -9,12 +9,12 @@ spec:
       image: us-central1-docker.pkg.dev/substratus-dev/default/benchmark-multi-turn-chat-go
       args: 
         - --threads=./data/large.json
-        - --thread-count=3
-        - --max-concurrent-threads=3
-        - --request-model=llama-3.1-8b-instruct-cpu
-        - --max-completion-tokens=10
-        - --tokenizer-model=meta-llama/Meta-Llama-3.1-8B-Instruct
-        - --request-timeout=1m
+        - --thread-count=2000
+        - --max-concurrent-threads=400
+        - --request-model=llama-3.1-8b-instruct-fp8-l4
+        - --max-completion-tokens=40
+        - --tokenizer-model=neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8
+        - --request-timeout=2m
       env:
       - name: OPENAI_BASE_URL
         value: http://kubeai/openai/v1

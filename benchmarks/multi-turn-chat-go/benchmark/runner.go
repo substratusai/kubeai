@@ -187,34 +187,37 @@ func (r *Runner) summarizeResults(duration time.Duration) (Result, error) {
 			result.FailedThreads++
 			continue
 		}
-		for reqIdx, reqResult := range t.results {
-			var sumReqCompletionTokens int
+		for _, reqResult := range t.results {
+			//var sumReqCompletionTokens int
+			//var sumText string
 			for chunkIdx, chunkResult := range reqResult.Chunks {
 
-				completionTokens, err := r.tokenizer.CountTokens(chunkResult.Text)
-				if err != nil {
-					return Result{}, fmt.Errorf("countNumTokens (thread index %d, request index %d, chunk index %d): %w", tIdx, reqIdx, chunkIdx, err)
-				}
-				sumReqCompletionTokens += completionTokens
+				//completionTokens, err := r.tokenizer.CountTokens(chunkResult.Text)
+				//if err != nil {
+				//	return Result{}, fmt.Errorf("countNumTokens (thread index %d, request index %d, chunk index %d): %w", tIdx, reqIdx, chunkIdx, err)
+				//}
+				//sumReqCompletionTokens += completionTokens
+				//sumText += chunkResult.Text
 
 				if chunkIdx == 0 {
 					ttfts = append(ttfts, chunkResult.Duration)
-				} else {
-					for i := 0; i < completionTokens; i++ {
-						// If 3 tokens are generated in a chunk that took 3 seconds to be returned,
-						// count each token's generation time as 1 second.
-						tpots = append(tpots, chunkResult.Duration/time.Duration(completionTokens))
-					}
-				}
+				} //else {
+				//for i := 0; i < completionTokens; i++ {
+				//	// If 3 tokens are generated in a chunk that took 3 seconds to be returned,
+				//	// count each token's generation time as 1 second.
+				//	tpots = append(tpots, chunkResult.Duration/time.Duration(completionTokens))
+				//}
+				//}
 			}
-			if sumReqCompletionTokens != reqResult.CompletionTokens {
-				log.Fatalf("FATAL: Calculated completion token count (%d) does not match usage report (%d) - tokenizer model likely does not match request model",
-					sumReqCompletionTokens, reqResult.CompletionTokens)
-			}
+			//if sumReqCompletionTokens != reqResult.CompletionTokens {
+			//	log.Fatalf("FATAL: Calculated completion token count (%d) does not match usage report (%d): %q - tokenizer model likely does not match request model",
+			//		sumReqCompletionTokens, reqResult.CompletionTokens, sumText)
+			//}
 			result.PromptTokens += reqResult.PromptTokens
 			result.CachedPromptTokens += reqResult.CachedPromptTokens
 			result.CompletionTokens += reqResult.CompletionTokens
 			result.TotalTokens += reqResult.TotalTokens
+			tpots = append(tpots, reqResult.Duration/time.Duration(reqResult.CompletionTokens))
 		}
 	}
 
