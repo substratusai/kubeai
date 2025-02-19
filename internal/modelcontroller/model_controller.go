@@ -29,7 +29,9 @@ import (
 	"k8s.io/client-go/rest"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	corelisters "k8s.io/client-go/listers/core/v1"
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -52,6 +54,7 @@ type ModelReconciler struct {
 	client.Client
 	RESTConfig              *rest.Config
 	PodRESTClient           rest.Interface
+	PodLister               corelisters.PodLister
 	Scheme                  *runtime.Scheme
 	VLLMClient              *vllmclient.Client
 	Namespace               string
@@ -146,21 +149,21 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (res 
 		}
 	}
 
-	allPods := &corev1.PodList{}
-	if err := r.List(ctx, allPods, client.InNamespace(model.Namespace), client.MatchingLabels{
+	allPods, err := r.PodLister.Pods(model.Namespace).List(labels.SelectorFromSet(labels.Set{
 		kubeaiv1.PodModelLabel: model.Name,
-	}); err != nil {
-		return ctrl.Result{}, fmt.Errorf("listing all node pools: %w", err)
+	}))
+	if err != nil {
+		return ctrl.Result{}, fmt.Errorf("listing model pods: %w", err)
 	}
 
 	// Summarize all pods.
 	var readyPods int32
-	for _, pod := range allPods.Items {
-		if k8sutils.PodIsReady(&pod) {
+	for _, pod := range allPods {
+		if k8sutils.PodIsReady(pod) {
 			readyPods++
 		}
 	}
-	model.Status.Replicas.All = int32(len(allPods.Items))
+	model.Status.Replicas.All = int32(len(allPods))
 	model.Status.Replicas.Ready = readyPods
 
 	scaled := false

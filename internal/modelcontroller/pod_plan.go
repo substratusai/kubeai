@@ -25,7 +25,7 @@ import (
 // - Adds a surge Pod
 // - Recreates any out-of-date Pod that is not Ready immediately
 // - Waits for all Pods to be Ready before recreating any out-of-date Pods that are Ready
-func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubeaiv1.Model, modelConfig ModelConfig) *podPlan {
+func (r *ModelReconciler) calculatePodPlan(allPods []*corev1.Pod, model *kubeaiv1.Model, modelConfig ModelConfig) *podPlan {
 	var podForModel *corev1.Pod
 	switch model.Spec.Engine {
 	case kubeaiv1.OLlamaEngine:
@@ -43,22 +43,22 @@ func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubea
 
 	var (
 		readyAll  int
-		outOfDate []corev1.Pod
+		outOfDate []*corev1.Pod
 		remainder = make(map[string]*corev1.Pod)
 	)
 
-	podKey := func(p corev1.Pod) string {
+	podKey := func(p *corev1.Pod) string {
 		return p.Namespace + "/" + p.Name
 	}
 
-	sortPodsByDeletionOrder(allPods.Items, expectedHash)
+	sortPodsByDeletionOrder(allPods, expectedHash)
 
-	for _, p := range allPods.Items {
-		remainder[podKey(p)] = &p
+	for _, p := range allPods {
+		remainder[podKey(p)] = p
 
-		upToDate := k8sutils.GetLabel(&p, kubeaiv1.PodHashLabel) == expectedHash
+		upToDate := k8sutils.GetLabel(p, kubeaiv1.PodHashLabel) == expectedHash
 
-		if k8sutils.PodIsReady(&p) {
+		if k8sutils.PodIsReady(p) {
 			readyAll++
 		}
 
@@ -72,9 +72,9 @@ func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubea
 		toCreate []*corev1.Pod
 		toDelete []*corev1.Pod
 	)
-	appendToDelete := func(p corev1.Pod) {
+	appendToDelete := func(p *corev1.Pod) {
 		delete(remainder, podKey(p))
-		toDelete = append(toDelete, &p)
+		toDelete = append(toDelete, p)
 	}
 
 	var desiredReplicas int32
@@ -85,7 +85,7 @@ func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubea
 	if len(outOfDate) > 0 {
 		desiredReplicas += r.ModelRollouts.Surge
 	}
-	observedReplicas := int32(len(allPods.Items))
+	observedReplicas := int32(len(allPods))
 	replicaDiff := observedReplicas - desiredReplicas
 	replicaDiffAbs := int32(math.Abs(float64(replicaDiff)))
 
@@ -102,7 +102,7 @@ func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubea
 		// Delete Pods.
 		details = append(details, fmt.Sprintf("Deleting %d Pods", replicaDiffAbs))
 		toDeleteCount := replicaDiffAbs
-		for _, pod := range allPods.Items {
+		for _, pod := range allPods {
 			if toDeleteCount == 0 {
 				break
 			}
@@ -113,7 +113,7 @@ func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubea
 
 	var recreated int
 	for _, pod := range outOfDate {
-		if !k8sutils.PodIsReady(&pod) {
+		if !k8sutils.PodIsReady(pod) {
 			details = append(details, fmt.Sprintf("Out-of-date Pod %q is not ready, immediately recreating", pod.Name))
 			appendToDelete(pod)
 			// Avoid recreating the surge Pod when rollout is complete.
@@ -206,25 +206,25 @@ func (pp *podPlan) execute(ctx context.Context, client client.Client, scheme *ru
 
 // sortPodsByDeletionOrder ensures Pods that are to be deleted/recreated
 // first are lower index.
-func sortPodsByDeletionOrder(pods []corev1.Pod, expectedHash string) {
+func sortPodsByDeletionOrder(pods []*corev1.Pod, expectedHash string) {
 	sort.SliceStable(pods, func(i, j int) bool {
 		// Not ready Pods should be deleted first.
-		iReady := k8sutils.PodIsReady(&pods[i])
-		jReady := k8sutils.PodIsReady(&pods[j])
+		iReady := k8sutils.PodIsReady(pods[i])
+		jReady := k8sutils.PodIsReady(pods[j])
 		if iReady != jReady {
 			return !iReady
 		}
 
 		// Unscheduled Pods should be deleted first.
-		iScheduled := k8sutils.PodIsScheduled(&pods[i])
-		jScheduled := k8sutils.PodIsScheduled(&pods[j])
+		iScheduled := k8sutils.PodIsScheduled(pods[i])
+		jScheduled := k8sutils.PodIsScheduled(pods[j])
 		if iScheduled != jScheduled {
 			return !iScheduled
 		}
 
 		// Delete Pods that are from older hash first
-		iHash := k8sutils.GetLabel(&pods[i], kubeaiv1.PodHashLabel)
-		jHash := k8sutils.GetLabel(&pods[j], kubeaiv1.PodHashLabel)
+		iHash := k8sutils.GetLabel(pods[i], kubeaiv1.PodHashLabel)
+		jHash := k8sutils.GetLabel(pods[j], kubeaiv1.PodHashLabel)
 		if iHash != jHash {
 			return iHash != expectedHash
 		}

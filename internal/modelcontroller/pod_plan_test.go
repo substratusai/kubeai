@@ -65,8 +65,8 @@ func Test_calculatePodPlan(t *testing.T) {
 	const ready = readiness(true)
 	const unready = readiness(false)
 
-	testPod := func(name string, hash string, rdy readiness) corev1.Pod {
-		p := corev1.Pod{
+	testPod := func(name string, hash string, rdy readiness) *corev1.Pod {
+		p := &corev1.Pod{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: name,
 				Labels: map[string]string{
@@ -88,13 +88,13 @@ func Test_calculatePodPlan(t *testing.T) {
 	cases := []struct {
 		name           string
 		replicas       int32
-		pods           []corev1.Pod
+		pods           []*corev1.Pod
 		wantNCreations int
 		wantDeletions  []string
 	}{
 		{
 			name: "do nothing",
-			pods: []corev1.Pod{
+			pods: []*corev1.Pod{
 				testPod("up-to-date-ready-1", expectedHash, ready),
 				testPod("up-to-date-ready-2", expectedHash, ready),
 				testPod("up-to-date-unready-3", expectedHash, unready),
@@ -102,14 +102,14 @@ func Test_calculatePodPlan(t *testing.T) {
 		},
 		{
 			name: "scale up",
-			pods: []corev1.Pod{
+			pods: []*corev1.Pod{
 				testPod("up-to-date-1", expectedHash, ready),
 			},
 			wantNCreations: 2,
 		},
 		{
 			name: "scale down",
-			pods: []corev1.Pod{
+			pods: []*corev1.Pod{
 				testPod("ready-up-to-date-1", expectedHash, ready),
 				testPod("ready-up-to-date-2", expectedHash, ready),
 				testPod("unready-up-to-date", expectedHash, unready),
@@ -119,7 +119,7 @@ func Test_calculatePodPlan(t *testing.T) {
 		},
 		{
 			name: "rollout add surge and delete unreadies",
-			pods: []corev1.Pod{
+			pods: []*corev1.Pod{
 				testPod("unready-out-of-date-1", "old-hash", unready),
 				testPod("unready-out-of-date-2", "old-hash", unready),
 				testPod("ready-out-of-date-3", "old-hash", ready),
@@ -132,7 +132,7 @@ func Test_calculatePodPlan(t *testing.T) {
 		},
 		{
 			name: "rollout wait for readiness before deleting last out of date pod",
-			pods: []corev1.Pod{
+			pods: []*corev1.Pod{
 				testPod("surge-pod", expectedHash, ready),
 				testPod("unready-up-to-date-1", expectedHash, unready),
 				testPod("unready-up-to-date-2", expectedHash, unready),
@@ -141,7 +141,7 @@ func Test_calculatePodPlan(t *testing.T) {
 		},
 		{
 			name: "rollout delete ready out of date pod",
-			pods: []corev1.Pod{
+			pods: []*corev1.Pod{
 				testPod("surge-pod", expectedHash, ready),
 				testPod("unready-up-to-date-1", expectedHash, ready),
 				testPod("unready-up-to-date-2", expectedHash, ready),
@@ -154,7 +154,7 @@ func Test_calculatePodPlan(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			plan := r.calculatePodPlan(&corev1.PodList{Items: c.pods}, model, modelConfig)
+			plan := r.calculatePodPlan(c.pods, model, modelConfig)
 			detailsCSV := strings.Join(plan.details, ", ")
 			require.Lenf(t, plan.toCreate, c.wantNCreations, "Unexpected creation count, details: %v", detailsCSV)
 			var deletionNames []string
@@ -170,17 +170,17 @@ func Test_calculatePodPlan(t *testing.T) {
 func Test_sortPodsByDeletionOrder(t *testing.T) {
 	cases := []struct {
 		name string
-		pods []corev1.Pod
+		pods []*corev1.Pod
 		want []string
 	}{
 		{
 			name: "empty",
-			pods: []corev1.Pod{},
+			pods: []*corev1.Pod{},
 			want: nil,
 		},
 		{
 			name: "hash comparison",
-			pods: []corev1.Pod{
+			pods: []*corev1.Pod{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "expected-hash-pod",
@@ -205,7 +205,7 @@ func Test_sortPodsByDeletionOrder(t *testing.T) {
 		},
 		{
 			name: "ready comparison",
-			pods: []corev1.Pod{
+			pods: []*corev1.Pod{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "ready-pod",
@@ -232,7 +232,7 @@ func Test_sortPodsByDeletionOrder(t *testing.T) {
 		},
 		{
 			name: "scheduled comparison",
-			pods: []corev1.Pod{
+			pods: []*corev1.Pod{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "scheduled-pod",
@@ -254,7 +254,7 @@ func Test_sortPodsByDeletionOrder(t *testing.T) {
 		},
 		{
 			name: "creation time comparison",
-			pods: []corev1.Pod{
+			pods: []*corev1.Pod{
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Name:              "old-pod",
@@ -275,7 +275,7 @@ func Test_sortPodsByDeletionOrder(t *testing.T) {
 		},
 		{
 			name: "all",
-			pods: []corev1.Pod{
+			pods: []*corev1.Pod{
 				youngReadyScheduledOldHashPod(),
 				youngUnreadyScheduledNewHashPod(),
 				youngUnreadyUnscheduledOldHashPod(),
@@ -301,7 +301,7 @@ func Test_sortPodsByDeletionOrder(t *testing.T) {
 			// Run a lot of times with random input ordering.
 			for i := 0; i < 10000; i++ {
 				// Copy the slice to avoid modifying the original slice.
-				pods := append([]corev1.Pod(nil), c.pods...)
+				pods := append([]*corev1.Pod(nil), c.pods...)
 
 				randomizePodOrder(pods)
 
@@ -317,15 +317,15 @@ func Test_sortPodsByDeletionOrder(t *testing.T) {
 	}
 }
 
-func randomizePodOrder(pods []corev1.Pod) {
+func randomizePodOrder(pods []*corev1.Pod) {
 	for i := range pods {
 		j := rand.Intn(len(pods))
 		pods[i], pods[j] = pods[j], pods[i]
 	}
 }
 
-func youngReadyScheduledNewHashPod() corev1.Pod {
-	return corev1.Pod{
+func youngReadyScheduledNewHashPod() *corev1.Pod {
+	return &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "young-ready-scheduled-new-hash-pod",
 			Labels: map[string]string{
@@ -347,9 +347,9 @@ func youngReadyScheduledNewHashPod() corev1.Pod {
 	}
 }
 
-func youngReadyScheduledOldHashPod() corev1.Pod {
+func youngReadyScheduledOldHashPod() *corev1.Pod {
 
-	return corev1.Pod{
+	return &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "young-ready-scheduled-old-hash-pod",
 			Labels: map[string]string{
@@ -371,8 +371,8 @@ func youngReadyScheduledOldHashPod() corev1.Pod {
 	}
 }
 
-func youngUnreadyScheduledOldHashPod() corev1.Pod {
-	return corev1.Pod{
+func youngUnreadyScheduledOldHashPod() *corev1.Pod {
+	return &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "young-unready-scheduled-old-hash-pod",
 			Labels: map[string]string{
@@ -386,8 +386,8 @@ func youngUnreadyScheduledOldHashPod() corev1.Pod {
 	}
 }
 
-func oldUnreadyScheduledNewHashPod() corev1.Pod {
-	return corev1.Pod{
+func oldUnreadyScheduledNewHashPod() *corev1.Pod {
+	return &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "old-unready-scheduled-new-hash-pod",
 			Labels: map[string]string{
@@ -401,8 +401,8 @@ func oldUnreadyScheduledNewHashPod() corev1.Pod {
 	}
 }
 
-func youngUnreadyScheduledNewHashPod() corev1.Pod {
-	return corev1.Pod{
+func youngUnreadyScheduledNewHashPod() *corev1.Pod {
+	return &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "young-unready-scheduled-new-hash-pod",
 			Labels: map[string]string{
@@ -416,8 +416,8 @@ func youngUnreadyScheduledNewHashPod() corev1.Pod {
 	}
 }
 
-func youngUnreadyUnscheduledOldHashPod() corev1.Pod {
-	return corev1.Pod{
+func youngUnreadyUnscheduledOldHashPod() *corev1.Pod {
+	return &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "young-unready-unscheduled-old-hash-pod",
 			Labels: map[string]string{
@@ -428,8 +428,8 @@ func youngUnreadyUnscheduledOldHashPod() corev1.Pod {
 	}
 }
 
-func oldUnreadyUnscheduledOldHashPod() corev1.Pod {
-	return corev1.Pod{
+func oldUnreadyUnscheduledOldHashPod() *corev1.Pod {
+	return &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "old-unready-unscheduled-old-hash-pod",
 			Labels: map[string]string{

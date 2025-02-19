@@ -14,6 +14,7 @@ import (
 	"sigs.k8s.io/yaml"
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
+	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
@@ -209,10 +210,13 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 		return fmt.Errorf("unable to setup model resolver: %w", err)
 	}
 
+	informerFactory := informers.NewSharedInformerFactory(clientset, 0)
+	podLister := informerFactory.Core().V1().Pods().Lister()
 	modelReconciler := &modelcontroller.ModelReconciler{
 		Client:                  mgr.GetClient(),
 		RESTConfig:              mgr.GetConfig(),
 		PodRESTClient:           podRESTClient,
+		PodLister:               podLister,
 		Scheme:                  mgr.GetScheme(),
 		Namespace:               namespace,
 		AllowPodAddressOverride: cfg.AllowPodAddressOverride,
@@ -226,6 +230,12 @@ func Run(ctx context.Context, k8sCfg *rest.Config, cfg config.System) error {
 		VLLMClient: &vllmclient.Client{
 			HTTPClient: &http.Client{Timeout: 10 * time.Second},
 		},
+	}
+	informerFactory.Start(ctx.Done())
+	for informerType, ok := range informerFactory.WaitForCacheSync(ctx.Done()) {
+		if !ok {
+			return fmt.Errorf("informer %s failed to sync", informerType)
+		}
 	}
 	if err = modelReconciler.SetupWithManager(mgr); err != nil {
 		return fmt.Errorf("unable to create Model controller: %w", err)
