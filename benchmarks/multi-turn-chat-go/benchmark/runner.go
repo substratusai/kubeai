@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"multi-turn-chat-go/tokenizer"
 	"sync"
 	"time"
 
@@ -20,25 +19,34 @@ type Config struct {
 	RequestModel         string `json:"request_model"`
 }
 
+type InputThread struct {
+	ID       string                         `json:"id"`
+	Messages []openai.ChatCompletionMessage `json:"messages"`
+}
+
 type Runner struct {
-	client    *openai.Client
-	tokenizer *tokenizer.Tokenizer
-	cfg       Config
-	threads   []*Thread
+	client  *openai.Client
+	cfg     Config
+	threads []*thread
 }
 
 type Result struct {
+	InputThreadCount       int        `json:"input_thread_count"`
+	InputMessagesPerThread FloatGroup `json:"input_messages_per_thread"`
+
 	// Duration of the entire run, waits for all threads to finish (includes stragglers).
-	Duration      Duration `json:"duration"`
-	Requests      int      `json:"requests"`
-	FailedThreads int      `json:"failed_threads"`
+	Duration         Duration      `json:"duration"`
+	RequestCount     int           `json:"request_count"`
+	RequestDuration  DurationGroup `json:"request_duration"`
+	ChunksPerRequest FloatGroup    `json:"chunks_per_request"`
+	FailedThreads    int           `json:"failed_threads"`
 	// RunTotalThroughput of entire run, measured in requests per second.
 	// This includes ramp-up and ramp-down timeframes.
 	// TODO: Add another throughput measurement for steady-state.
 	RunOutputThroughput float64       `json:"run_output_throughput"`
 	RunTotalThroughput  float64       `json:"run_total_throughput"`
 	TTFT                DurationGroup `json:"ttft"`
-	TPOT                DurationGroup `json:"tpot"`
+	ITL                 DurationGroup `json:"itl"`
 	PromptTokens        int           `json:"prompt_tokens"`
 	CachedPromptTokens  int           `json:"cached_prompt_tokens"`
 	CompletionTokens    int           `json:"completion_tokens"`
@@ -46,29 +54,40 @@ type Result struct {
 }
 
 func (r Result) String() string {
-	return fmt.Sprintf(`====================== Results ======================
+	return fmt.Sprintf(`======================= Input =======================
+         Input thread count: %d
+   Input msgs/thread (mean): %.2f
+====================== Results ======================
                    Duration: %s
-        Failed Thread Count: %d
-                   Requests: %d
-              Prompt Tokens: %d (%d cached)
-          Completion Tokens: %d
-               Total Tokens: %d
-Output Throughput (e2e run): %f tok/sec
- Total Throughput (e2e run): %f tok/sec
+        Failed thread count: %d
+              Request count: %d
+    Request duration (mean): %s
+  Chunks per request (mean): %.2f
+              Prompt tokens: %d (%d cached)
+          Completion tokens: %d
+               Total tokens: %d
+Output throughput (e2e run): %.2f tok/sec
+ Total throughput (e2e run): %.2f tok/sec
                 TTFT (mean): %s
-                TPOT (mean): %s
+                 ITL (mean): %s
 =====================================================`,
-		time.Duration(r.Duration),
+		// Input //
+		r.InputThreadCount,
+		r.InputMessagesPerThread.Mean,
+		// Results //
+		time.Duration(r.Duration).Truncate(time.Second/10),
 		r.FailedThreads,
-		r.Requests,
+		r.RequestCount,
+		time.Duration(r.RequestDuration.Mean).Truncate(time.Millisecond/100),
+		r.ChunksPerRequest.Mean,
 		r.PromptTokens,
 		r.CachedPromptTokens,
 		r.CompletionTokens,
 		r.TotalTokens,
 		r.RunOutputThroughput,
 		r.RunTotalThroughput,
-		time.Duration(r.TTFT.Mean),
-		time.Duration(r.TPOT.Mean),
+		time.Duration(r.TTFT.Mean).Truncate(time.Millisecond/100),
+		time.Duration(r.ITL.Mean).Truncate(time.Millisecond/100),
 	)
 }
 
@@ -77,32 +96,27 @@ type DurationGroup struct {
 	// TODO: p95, etc.
 }
 
-type RequestResult struct {
-	Duration           time.Duration
-	Chunks             []ChunkResult
-	PromptTokens       int
-	CachedPromptTokens int
-	CompletionTokens   int
-	TotalTokens        int
+type FloatGroup struct {
+	Mean float64 `json:"mean"`
+	// TODO: p95, etc.
 }
 
-type ChunkResult struct {
-	Text     string
-	Duration time.Duration
+type requestResult struct {
+	duration           time.Duration
+	ttChunks           []time.Duration
+	promptTokens       int
+	cachedPromptTokens int
+	completionTokens   int
+	totalTokens        int
 }
 
-type Thread struct {
+type thread struct {
 	id          string
 	inputMsgs   []openai.ChatCompletionMessage
 	currentMsgs []openai.ChatCompletionMessage
 	requests    int
-	results     []RequestResult
+	results     []requestResult
 	err         error
-}
-
-type InputThread struct {
-	ID       string                         `json:"id"`
-	Messages []openai.ChatCompletionMessage `json:"messages"`
 }
 
 func (c Config) Validate() error {
@@ -118,19 +132,18 @@ func (c Config) Validate() error {
 	return nil
 }
 
-func New(client *openai.Client, tokenizer *tokenizer.Tokenizer, cfg Config, inputThreads []InputThread) *Runner {
-	threads := make([]*Thread, len(inputThreads))
+func New(client *openai.Client, cfg Config, inputThreads []InputThread) *Runner {
+	threads := make([]*thread, len(inputThreads))
 	for i := range inputThreads {
-		threads[i] = &Thread{
+		threads[i] = &thread{
 			id:        inputThreads[i].ID,
 			inputMsgs: inputThreads[i].Messages,
 		}
 	}
 	return &Runner{
-		client:    client,
-		tokenizer: tokenizer,
-		cfg:       cfg,
-		threads:   threads,
+		client:  client,
+		cfg:     cfg,
+		threads: threads,
 	}
 }
 
@@ -164,63 +177,66 @@ func (r *Runner) Run() (Result, error) {
 
 	duration := time.Since(t0)
 
-	log.Printf("Run completed after %s, starting summarization...", duration)
+	log.Println("Run completed, starting summarization...")
 	return r.summarizeResults(duration)
 }
 
 func (r *Runner) summarizeResults(duration time.Duration) (Result, error) {
 	var (
-		ttfts []time.Duration
-		tpots []time.Duration
+		ttfts        []time.Duration
+		reqDurations []time.Duration
 	)
 
 	result := Result{
 		Duration: Duration(duration),
 	}
 
+	var (
+		totalChunks              int
+		totalITLTime             time.Duration
+		totalITLCompletionTokens float64
+		totalInputMessageCount   int
+	)
 	for _, t := range r.threads {
-		result.Requests += t.requests
+		result.RequestCount += t.requests
+		totalInputMessageCount += len(t.inputMsgs)
 		if t.err != nil {
 			// TODO: Should we gather the metrics from any successful chunks?
 			result.FailedThreads++
 			continue
 		}
 		for _, reqResult := range t.results {
-			//var sumReqCompletionTokens int
-			//var sumText string
-			for chunkIdx, chunkResult := range reqResult.Chunks {
-
-				//completionTokens, err := r.tokenizer.CountTokens(chunkResult.Text)
-				//if err != nil {
-				//	return Result{}, fmt.Errorf("countNumTokens (thread index %d, request index %d, chunk index %d): %w", tIdx, reqIdx, chunkIdx, err)
-				//}
-				//sumReqCompletionTokens += completionTokens
-				//sumText += chunkResult.Text
-
+			var itlChunkCount int
+			for chunkIdx, ttChunk := range reqResult.ttChunks {
+				totalChunks++
 				if chunkIdx == 0 {
-					ttfts = append(ttfts, chunkResult.Duration)
-				} //else {
-				//for i := 0; i < completionTokens; i++ {
-				//	// If 3 tokens are generated in a chunk that took 3 seconds to be returned,
-				//	// count each token's generation time as 1 second.
-				//	tpots = append(tpots, chunkResult.Duration/time.Duration(completionTokens))
-				//}
-				//}
+					ttfts = append(ttfts, ttChunk)
+				} else {
+					totalITLTime += ttChunk
+					itlChunkCount++
+				}
 			}
-			//if sumReqCompletionTokens != reqResult.CompletionTokens {
-			//	log.Fatalf("FATAL: Calculated completion token count (%d) does not match usage report (%d): %q - tokenizer model likely does not match request model",
-			//		sumReqCompletionTokens, reqResult.CompletionTokens, sumText)
-			//}
-			result.PromptTokens += reqResult.PromptTokens
-			result.CachedPromptTokens += reqResult.CachedPromptTokens
-			result.CompletionTokens += reqResult.CompletionTokens
-			result.TotalTokens += reqResult.TotalTokens
-			tpots = append(tpots, reqResult.Duration/time.Duration(reqResult.CompletionTokens))
+			result.PromptTokens += reqResult.promptTokens
+			result.CachedPromptTokens += reqResult.cachedPromptTokens
+			result.CompletionTokens += reqResult.completionTokens
+			result.TotalTokens += reqResult.totalTokens
+			reqDurations = append(reqDurations, reqResult.duration)
+
+			// Distribution of tokens returned by the LLM in each chunk
+			// is assumed to be roughly equal. We compute a factor that represents
+			// the percentage of completion tokens that should be considered in
+			// the ITL calculation.
+			itlFactor := float64(itlChunkCount) / float64(itlChunkCount+1)
+			totalITLCompletionTokens += itlFactor * float64(reqResult.completionTokens)
 		}
 	}
 
 	result.TTFT = DurationGroup{Mean: Duration(mean(ttfts))}
-	result.TPOT = DurationGroup{Mean: Duration(mean(tpots))}
+	result.ITL = DurationGroup{Mean: Duration(float64(totalITLTime) / totalITLCompletionTokens)}
+	result.RequestDuration = DurationGroup{Mean: Duration(mean(reqDurations))}
+	result.ChunksPerRequest.Mean = float64(totalChunks) / float64(result.RequestCount)
+	result.InputThreadCount = len(r.threads)
+	result.InputMessagesPerThread.Mean = float64(totalInputMessageCount) / float64(result.InputThreadCount)
 
 	result.RunOutputThroughput = float64(result.CompletionTokens) / float64(time.Duration(result.Duration).Seconds())
 	result.RunTotalThroughput = float64(result.TotalTokens) / float64(time.Duration(result.Duration).Seconds())
@@ -239,7 +255,7 @@ func mean(durs []time.Duration) time.Duration {
 	return sum / time.Duration(len(durs))
 }
 
-func (r *Runner) RunThread(t *Thread) error {
+func (r *Runner) RunThread(t *thread) error {
 	// Load all messages up but not including the first user message.
 	// (Usually this is just a single system message).
 	for _, msg := range t.inputMsgs {
@@ -250,16 +266,13 @@ func (r *Runner) RunThread(t *Thread) error {
 	}
 
 	// Start the multi-turn conversation.
-	// Append the next user message.
+	// Append the next input message.
 	// Append the response from the LLM.
 	// Iterate until all user messages are processed.
 	for _, msg := range t.inputMsgs {
-		if msg.Role != openai.ChatMessageRoleUser {
-			continue
-		}
 		t.currentMsgs = append(t.currentMsgs, msg)
 
-		var result RequestResult
+		var result requestResult
 
 		t0 := time.Now()
 
@@ -292,23 +305,22 @@ func (r *Runner) RunThread(t *Thread) error {
 				return fmt.Errorf("stream: %v", err)
 			}
 
-			if len(response.Choices) > 0 {
-				chunkResult := ChunkResult{
-					Duration: time.Since(tChunk0),
-					Text:     response.Choices[0].Delta.Content,
-				}
-				result.Chunks = append(result.Chunks, chunkResult)
+			if len(response.Choices) > 0 &&
+				(response.Choices[0].FinishReason == openai.FinishReasonNull ||
+					response.Choices[0].FinishReason == "") {
+				//fmt.Printf("Response chunk[%d]: %q - %v\n", i, response.Choices[0].Delta.Content, response.Usage)
+				result.ttChunks = append(result.ttChunks, time.Since(tChunk0))
 			}
 
 			if response.Usage != nil {
-				if result.TotalTokens != 0 {
+				if result.totalTokens != 0 {
 					panic("observed multiple usage reports for a single request - expected one in the final server-sent-event")
 				}
-				result.PromptTokens = response.Usage.PromptTokens
-				result.CompletionTokens = response.Usage.CompletionTokens
-				result.TotalTokens = response.Usage.TotalTokens
+				result.promptTokens = response.Usage.PromptTokens
+				result.completionTokens = response.Usage.CompletionTokens
+				result.totalTokens = response.Usage.TotalTokens
 				if response.Usage.PromptTokensDetails != nil {
-					result.CachedPromptTokens = response.Usage.PromptTokensDetails.CachedTokens
+					result.cachedPromptTokens = response.Usage.PromptTokensDetails.CachedTokens
 				}
 			}
 
@@ -316,7 +328,7 @@ func (r *Runner) RunThread(t *Thread) error {
 			i++
 		}
 
-		result.Duration = time.Since(t0)
+		result.duration = time.Since(t0)
 		t.results = append(t.results, result)
 	}
 

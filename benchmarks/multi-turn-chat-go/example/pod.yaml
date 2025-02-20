@@ -13,7 +13,6 @@ spec:
         - --max-concurrent-threads=400
         - --request-model=llama-3.1-8b-instruct-fp8-l4
         - --max-completion-tokens=40
-        - --tokenizer-model=neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8
         - --request-timeout=2m
       env:
       - name: OPENAI_BASE_URL

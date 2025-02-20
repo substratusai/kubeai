@@ -15,10 +15,10 @@ make push-docker-image
 Make sure the Ollama server is running on your machine.
 
 ```bash
-docker run --network=host -e OPENAI_BASE_URL=http://host.docker.internal:11434/v1 us-central1-docker.pkg.dev/substratus-dev/default/benchmark-multi-turn-chat-go \  --threads ./data/tiny.json \
+docker run --network=host -e OPENAI_BASE_URL=http://host.docker.internal:11434/v1 us-central1-docker.pkg.dev/substratus-dev/default/benchmark-multi-turn-chat-go \
+  --threads ./data/tiny.json \
   --thread-count 4 \
   --request-model qwen2:0.5b \
-  --tokenizer-model Qwen/Qwen2.5-VL-7B-Instruct \
   --max-concurrent-threads 2 \
   --max-completion-tokens 10 \
   --request-timeout 30s

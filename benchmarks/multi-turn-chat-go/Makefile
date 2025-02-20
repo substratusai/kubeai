@@ -31,6 +31,10 @@ data-xlarge: data/raw/ShareGPT_V3_unfiltered_cleaned_split.json
 	cd data && python prepare-input-threads.py --output xlarge.json --max-threads 24000 --min-content-length 200 --min-message-count 3
 	cat data/xlarge.json | grep '"id":' | wc -l
 
+.PHONY: test
+test:
+	go test -v ./benchmark
+
 IMG ?= us-central1-docker.pkg.dev/substratus-dev/default/benchmark-multi-turn-chat-go
 
 .PHONY: build-docker-image

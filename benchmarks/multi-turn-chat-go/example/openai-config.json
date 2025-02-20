@@ -1,6 +1,5 @@
 {
     "request_model": "gpt-4o-mini",
-    "tokenizer_model": "Xenova/gpt-4o",
     "max_concurrent_threads": 2,
     "thread_count": 4,
     "max_completion_tokens": 10,

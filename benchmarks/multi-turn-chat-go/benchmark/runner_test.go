@@ -5,11 +5,8 @@ import (
 	"fmt"
 	"log"
 	"multi-turn-chat-go/benchmark"
-	"multi-turn-chat-go/tokenizer"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
-	"strings"
 	"testing"
 	"time"
 
@@ -19,7 +16,7 @@ import (
 
 func TestRunner(t *testing.T) {
 	// Sanity check...
-	require.Equal(t, 3, testInputThreadUserMessageCount())
+	require.Equal(t, 3, testInputThreadMessageCount())
 
 	runnerCfg := benchmark.Config{
 		RequestModel:         "test-model",
@@ -39,41 +36,28 @@ func TestRunner(t *testing.T) {
 	openaiCfg.HTTPClient = httpc
 	client := openai.NewClientWithConfig(openaiCfg)
 
-	testTokenizerServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var req struct {
-			Text string `json:"text"`
-		}
-		require.NoError(t, json.NewDecoder(r.Body).Decode(&req))
-		require.Equal(t, testChunkText, req.Text)
-		w.Write([]byte(fmt.Sprintf(`{"num_tokens": %d}`, testCompletionTokensPerChunk)))
-	}))
-	defer testTokenizerServer.Close()
-	tknPort, err := strconv.Atoi(strings.Split(testTokenizerServer.URL, ":")[2])
-	require.NoError(t, err)
-	tkn := &tokenizer.Tokenizer{
-		Model: "test-tokenizer-model",
-		HTTPC: httpc,
-		Port:  tknPort,
-	}
-
-	runner := benchmark.New(client, tkn, runnerCfg, inputThreads)
+	runner := benchmark.New(client, runnerCfg, inputThreads)
 	result, err := runner.Run()
 	require.NoError(t, err)
 
 	fmt.Println(result.String())
 
-	require.Equal(t, testInputThreadUserMessageCount(), result.Requests)
+	require.Equal(t, testInputThreadMessageCount(), result.RequestCount)
 	require.Equal(t, 0, result.FailedThreads)
 
-	require.Equal(t, testInputThreadUserMessageCount()*testPromptTokensPerRequest, result.PromptTokens)
-	require.Equal(t, testInputThreadUserMessageCount()*testCachedPromptTokensPerRequest, result.CachedPromptTokens)
-	require.Equal(t, testInputThreadUserMessageCount()*testNumOfChunksPerRequest*testCompletionTokensPerChunk, result.CompletionTokens)
-	require.Equal(t, testInputThreadUserMessageCount()*((testNumOfChunksPerRequest*testCompletionTokensPerChunk)+testPromptTokensPerRequest), result.TotalTokens)
+	require.Equal(t, len(inputThreads), result.InputThreadCount)
+	require.Equal(t, float64(testInputThreadMessageCount())/float64(len(inputThreads)), result.InputMessagesPerThread.Mean)
 
-	requireRoughlyEqualTo(t, testTimeBetweenChunks/time.Duration(testCompletionTokensPerChunk), time.Duration(result.TPOT.Mean), 1*time.Millisecond)
+	require.Equal(t, testInputThreadMessageCount()*testPromptTokensPerRequest, result.PromptTokens)
+	require.Equal(t, testInputThreadMessageCount()*testCachedPromptTokensPerRequest, result.CachedPromptTokens)
+	require.Equal(t, testInputThreadMessageCount()*testNumOfChunksPerRequest*testCompletionTokensPerChunk, result.CompletionTokens)
+	require.Equal(t, testInputThreadMessageCount()*((testNumOfChunksPerRequest*testCompletionTokensPerChunk)+testPromptTokensPerRequest), result.TotalTokens)
+	require.EqualValues(t, testNumOfChunksPerRequest, result.ChunksPerRequest.Mean)
+
+	requireRoughlyEqualTo(t, testTimeBetweenChunks/time.Duration(testCompletionTokensPerChunk), time.Duration(result.ITL.Mean), 10*time.Millisecond)
 	requireRoughlyEqualTo(t, testTimeBeforeChunk0, time.Duration(result.TTFT.Mean), 10*time.Millisecond)
 	requireRoughlyEqualTo(t,
-		time.Duration(testInputThreadUserMessageCount())*(testTimeBeforeChunk0+((testNumOfChunksPerRequest-1)*testTimeBetweenChunks)),
+		time.Duration(testInputThreadMessageCount())*(testTimeBeforeChunk0+((testNumOfChunksPerRequest-1)*testTimeBetweenChunks)),
 		time.Duration(result.Duration), 100*time.Millisecond)
 
 }
@@ -83,14 +67,10 @@ func requireRoughlyEqualTo(t *testing.T, want, actual, threshold time.Duration) 
 	require.Less(t, actual, want+threshold)
 }
 
-func testInputThreadUserMessageCount() int {
+func testInputThreadMessageCount() int {
 	var n int
 	for _, thread := range inputThreads {
-		for _, message := range thread.Messages {
-			if message.Role == openai.ChatMessageRoleUser {
-				n++
-			}
-		}
+		n += len(thread.Messages)
 	}
 	return n
 }
@@ -103,14 +83,6 @@ var inputThreads = []benchmark.InputThread{
 				Role:    openai.ChatMessageRoleUser,
 				Content: "Hello, how are you?",
 			},
-			{
-				Role:    openai.ChatMessageRoleAssistant,
-				Content: "I'm just a computer program, so I don't have feelings, but I'm here to help!",
-			},
-			{
-				Role:    openai.ChatMessageRoleUser,
-				Content: "Come again?",
-			},
 		},
 	},
 	{
@@ -121,7 +93,7 @@ var inputThreads = []benchmark.InputThread{
 				Content: "What's your favorite color?",
 			},
 			{
-				Role:    openai.ChatMessageRoleAssistant,
+				Role:    openai.ChatMessageRoleUser,
 				Content: "My favorite color is blue!",
 			},
 		},
@@ -130,8 +102,8 @@ var inputThreads = []benchmark.InputThread{
 
 const (
 	testChunkText                    = "test chunk text"
-	testTimeBeforeChunk0             = 3 * time.Second
-	testTimeBetweenChunks            = time.Second
+	testTimeBeforeChunk0             = 1 * time.Second
+	testTimeBetweenChunks            = time.Second / 10
 	testPromptTokensPerRequest       = 5
 	testCachedPromptTokensPerRequest = 2
 
@@ -173,7 +145,7 @@ func mockChatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 
 	time.Sleep(testTimeBeforeChunk0)
 
-	for i := 0; i <= testNumOfChunksPerRequest; i++ {
+	for i := 0; i < testNumOfChunksPerRequest+1; i++ {
 		if i != 0 && i != testNumOfChunksPerRequest {
 			// Avoid adding the extra delay on the first and last (usage) chunk.
 			time.Sleep(testTimeBetweenChunks)

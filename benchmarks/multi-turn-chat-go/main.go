@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -9,7 +8,6 @@ import (
 	"io"
 	"log"
 	"multi-turn-chat-go/benchmark"
-	"multi-turn-chat-go/tokenizer"
 	"net/http"
 	"os"
 	"time"
@@ -47,7 +45,6 @@ func run() error {
 	flag.StringVar(&cfg.RequestModel, "request-model", "", "Model field to send in requests")
 	var requestTimeout time.Duration
 	flag.DurationVar(&requestTimeout, "request-timeout", 0, "Timeout for each request")
-	flag.StringVar(&cfg.TokenizerModel, "tokenizer-model", "", "Huggingface Model to use for tokenization - should be the same tokenizer as will be used in the request model - test will panic at the end if not")
 	flag.BoolVar(&cfg.NoShuffle, "no-shuffle", false, "Do not shuffle the input dataset")
 
 	flag.Parse()
@@ -112,31 +109,7 @@ func run() error {
 		len(inputThreads), cfg.ThreadCount)
 	inputThreads = inputThreads[:cfg.ThreadCount]
 
-	tkn := &tokenizer.Tokenizer{
-		Model: cfg.TokenizerModel,
-		HTTPC: httpc,
-		Port:  7000,
-	}
-	go func() {
-		if err := tkn.Start(); err != nil {
-			log.Fatalf("starting tokenizer: %v", err)
-		}
-	}()
-	defer func() {
-		if err := tkn.Stop(); err != nil {
-			log.Printf("stopping tokenizer: %v", err)
-		}
-	}()
-
-	log.Println("Waiting for tokenizer to become ready...")
-	waitCtx, cancelWaitCtx := context.WithTimeout(context.TODO(), 30*time.Second)
-	defer cancelWaitCtx()
-	if err := tkn.WaitForHealthy(waitCtx); err != nil {
-		return fmt.Errorf("waiting for tokenizer to be healthy: %v", err)
-	}
-	log.Println("Tokenizer ready")
-
-	runner := benchmark.New(client, tkn, cfg.Config, inputThreads)
+	runner := benchmark.New(client, cfg.Config, inputThreads)
 	result, err := runner.Run()
 	if err != nil {
 		return fmt.Errorf("run: %w", err)
@@ -179,7 +152,6 @@ func readJSON(path string, x interface{}) error {
 type Config struct {
 	benchmark.Config
 	RequestTimeout benchmark.Duration `json:"request_timeout"`
-	TokenizerModel string             `json:"tokenizer_model"`
 	ThreadCount    int                `json:"thread_count"`
 	NoShuffle      bool               `json:"no_shuffle"`
 }
@@ -187,9 +159,6 @@ type Config struct {
 func (c Config) Validate() error {
 	if c.RequestTimeout <= 0 {
 		return errors.New("request_timeout (--request-timeout) must be greater than 0")
-	}
-	if c.TokenizerModel == "" {
-		return errors.New("tokenizer_model (--tokenizer-model) must be specified")
 	}
 	if c.ThreadCount <= 0 {
 		return errors.New("thread_count (--thread-count) is required and must be a positive value")
