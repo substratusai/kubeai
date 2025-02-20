@@ -5,12 +5,12 @@ metadata:
 spec:
   storageClassName: manual
   capacity:
-    storage: 10Gi
+    storage: 25Gi
   accessModes:
     - ReadWriteMany
     - ReadOnlyMany
     - ReadWriteOnce
   hostPath:
-    path: /tmp/model
+    path: /usr/share/ollama/.ollama/models/
     type: DirectoryOrCreate
   persistentVolumeReclaimPolicy: Retain

@@ -4,27 +4,24 @@ source $REPO_DIR/test/e2e/common.sh
 
 models_release="kubeai-models"
 
-PV_HOST_PATH=/tmp/model
+PV_HOST_PATH=/usr/share/ollama/.ollama/models/
 
 mkdir -p ${PV_HOST_PATH}
 
-# Execute into the kind container
+# Execute into the kind container - ollama pull
 kind_container=$(docker ps --filter "name=kind-control-plane" --format "{{.ID}}")
 docker exec -i $kind_container bash -c "
-  apt update -y && apt install -y python3-pip
-  pip install -U "huggingface_hub[cli]" --break-system-packages
   mkdir -p ${PV_HOST_PATH}
-  huggingface-cli download facebook/opt-125m --local-dir ${PV_HOST_PATH} \
-    --exclude 'tf_model.h5' 'flax_model.msgpack'"
-
-# huggingface-cli download facebook/opt-125m --local-dir /tmp/model --exclude 'tf_model.h5' 'flax_model.msgpack'"
-#    
+  curl -L https://ollama.com/download/ollama-linux-amd64.tgz -o ollama-linux-amd64.tgz
+  sudo tar -C /usr -xzf ollama-linux-amd64.tgz
+  ollama pull nomic-embed-text
+  ls -la /usr/share/ollama/.ollama/models/manifests/registry.ollama.ai/library"
 kubectl apply -f $REPO_DIR/test/e2e/engine-ollama-pvc/pv.yaml
 kubectl apply -f $REPO_DIR/test/e2e/engine-ollama-pvc/pvc.yaml
-#"ollama://qwen2:0.5b" 
+
 helm install $models_release $REPO_DIR/charts/models -f - <<EOF
 catalog:
-  opt-125m-cpu:
+  nomic-embed-text:
     enabled: true
     url: pvc://model-pvc
     minReplicas: 2
@@ -45,3 +42,5 @@ done
 sleep 300
 
 helm uninstall kubeai-models # cleans up above model helm chart on success
+kubectl delete -f $REPO_DIR/test/e2e/engine-ollama-pvc/pv.yaml
+kubectl delete -f $REPO_DIR/test/e2e/engine-ollama-pvc/pvc.yaml
