@@ -296,6 +296,8 @@ func (r *Runner) RunThread(t *thread) error {
 
 		var i int
 		tChunk0 := t0
+		var responseText string
+		var responseRole string
 		for {
 			response, err := stream.Recv()
 			if errors.Is(err, io.EOF) {
@@ -310,6 +312,10 @@ func (r *Runner) RunThread(t *thread) error {
 					response.Choices[0].FinishReason == "") {
 				//fmt.Printf("Response chunk[%d]: %q - %v\n", i, response.Choices[0].Delta.Content, response.Usage)
 				result.ttChunks = append(result.ttChunks, time.Since(tChunk0))
+				responseText += response.Choices[0].Delta.Content
+				if responseRole == "" {
+					responseRole = response.Choices[0].Delta.Role
+				}
 			}
 
 			if response.Usage != nil {
@@ -327,6 +333,10 @@ func (r *Runner) RunThread(t *thread) error {
 			tChunk0 = time.Now()
 			i++
 		}
+		t.currentMsgs = append(t.currentMsgs, openai.ChatCompletionMessage{
+			Role:    responseRole,
+			Content: responseText,
+		})
 
 		result.duration = time.Since(t0)
 		t.results = append(t.results, result)

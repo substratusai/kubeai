@@ -7,6 +7,7 @@ import (
 	"multi-turn-chat-go/benchmark"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
@@ -94,7 +95,7 @@ var inputThreads = []benchmark.InputThread{
 			},
 			{
 				Role:    openai.ChatMessageRoleUser,
-				Content: "My favorite color is blue!",
+				Content: "Are you sure?",
 			},
 		},
 	},
@@ -123,6 +124,7 @@ func mockChatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to parse request", http.StatusBadRequest)
 		return
 	}
+	json.NewEncoder(os.Stdout).Encode(req)
 
 	// Ensure streaming is enabled in the request (for demonstration purposes)
 	if !req.Stream {
@@ -168,6 +170,7 @@ func mockChatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 				Choices: []openai.ChatCompletionStreamChoice{
 					{
 						Delta: openai.ChatCompletionStreamChoiceDelta{
+							Role:    openai.ChatMessageRoleAssistant,
 							Content: testChunkText,
 						},
 					},
