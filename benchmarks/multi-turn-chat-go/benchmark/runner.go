@@ -319,9 +319,6 @@ func (r *Runner) RunThread(t *thread) error {
 			}
 
 			if response.Usage != nil {
-				if result.totalTokens != 0 {
-					panic("observed multiple usage reports for a single request - expected one in the final server-sent-event")
-				}
 				result.promptTokens = response.Usage.PromptTokens
 				result.completionTokens = response.Usage.CompletionTokens
 				result.totalTokens = response.Usage.TotalTokens

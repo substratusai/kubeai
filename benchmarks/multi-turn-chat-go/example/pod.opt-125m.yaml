@@ -10,20 +10,15 @@ spec:
       imagePullPolicy: Always
       args: 
         - --threads=./data/small.json
-        - --thread-count=30
-        - --max-concurrent-threads=15
-        - --request-model=qwen2.5-coder-1.5b-cpu
-        - --max-completion-tokens=4
+        - --thread-count=40
+        - --max-concurrent-threads=10
+        - --request-model=opt-125m-cpu
+        - --max-completion-tokens=10
         - --request-timeout=6m
         - --no-shuffle
       env:
       - name: OPENAI_BASE_URL
         value: http://kubeai/openai/v1
-      - name: HUGGING_FACE_HUB_TOKEN
-        valueFrom:
-          secretKeyRef:
-            name: kubeai-huggingface
-            key: token
       resources:
         requests:
           cpu: 4
