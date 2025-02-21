@@ -33,7 +33,7 @@ catalog:
     url: "hf://intfloat/e5-mistral-7b-instruct"
     engine: VLLM
     # TODO: Adjust - the memory associated with this request is too low.
-    resourceProfile: cpu:1
+    resourceProfile: cpu:5
     args:
     - --gpu-memory-utilization=0.9
   mistral-small-24b-instruct-h100:
@@ -90,9 +90,9 @@ catalog:
     features: ["TextGeneration"]
     url: "hf://meta-llama/Meta-Llama-3.1-8B-Instruct"
     engine: VLLM
-    resourceProfile: cpu:6
+    resourceProfile: cpu:7
     env:
-      VLLM_CPU_KVCACHE_SPACE: "4"
+      VLLM_CPU_KVCACHE_SPACE: "6"
     args:
     - --max-model-len=32768
     - --max-num-batched-token=32768
@@ -520,8 +520,9 @@ catalog:
     enabled: false
     features: ["TextGeneration"]
     url: "hf://facebook/opt-125m"
+    env:
+      VLLM_CPU_KVCACHE_SPACE: "2"
     engine: VLLM
-    # TODO: Adjust - the memory associated with this request is too low.
     resourceProfile: cpu:1
   opt-125m-l4:
     enabled: false
@@ -548,14 +549,13 @@ catalog:
     - --max-num-seqs=16
     - --quantization=fp8
     - --kv-cache-dtype=fp8
-    minReplicas: 1
     resourceProfile: nvidia-gpu-rtx4070-8gb:1
   qwen2.5-7b-cpu:
     enabled: false
     features: ["TextGeneration"]
     url: "ollama://qwen2.5:7b"
     engine: OLlama
-    resourceProfile: cpu:2
+    resourceProfile: cpu:3
   qwen2-500m-cpu:
     enabled: false
     features: ["TextGeneration"]
