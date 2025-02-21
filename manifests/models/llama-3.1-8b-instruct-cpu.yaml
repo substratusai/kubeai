@@ -11,5 +11,5 @@ spec:
     - --max-model-len=32768
     - --max-num-batched-token=32768
   env:
-    VLLM_CPU_KVCACHE_SPACE: "4"
-  resourceProfile: cpu:6
+    VLLM_CPU_KVCACHE_SPACE: "6"
+  resourceProfile: cpu:7
