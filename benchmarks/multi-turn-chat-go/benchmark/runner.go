@@ -14,9 +14,10 @@ import (
 )
 
 type Config struct {
-	MaxConcurrentThreads int    `json:"max_concurrent_threads"`
-	MaxCompletionTokens  int    `json:"max_completion_tokens"`
-	RequestModel         string `json:"request_model"`
+	MaxConcurrentThreads int     `json:"max_concurrent_threads"`
+	MaxCompletionTokens  int     `json:"max_completion_tokens"`
+	Temperature          float32 `json:"temperature"`
+	RequestModel         string  `json:"request_model"`
 }
 
 type InputThread struct {
@@ -280,10 +281,11 @@ func (r *Runner) RunThread(t *thread) error {
 		stream, err := r.client.CreateChatCompletionStream(
 			context.Background(),
 			openai.ChatCompletionRequest{
-				Model:     r.cfg.RequestModel,
-				MaxTokens: r.cfg.MaxCompletionTokens,
-				Stream:    true,
-				Messages:  t.currentMsgs,
+				Model:       r.cfg.RequestModel,
+				MaxTokens:   r.cfg.MaxCompletionTokens,
+				Stream:      true,
+				Messages:    t.currentMsgs,
+				Temperature: r.cfg.Temperature,
 				StreamOptions: &openai.StreamOptions{
 					IncludeUsage: true,
 				},

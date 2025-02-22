@@ -15,6 +15,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const testTemp = 1.1
+
 func TestRunner(t *testing.T) {
 	// Sanity check...
 	require.Equal(t, 3, testInputThreadMessageCount())
@@ -23,6 +25,7 @@ func TestRunner(t *testing.T) {
 		RequestModel:         "test-model",
 		MaxConcurrentThreads: 1,
 		MaxCompletionTokens:  1024,
+		Temperature:          testTemp,
 	}
 
 	require.NoError(t, runnerCfg.Validate())
@@ -125,6 +128,9 @@ func mockChatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	json.NewEncoder(os.Stdout).Encode(req)
+	if req.Temperature != testTemp {
+		log.Fatalf("Temperature mismatch: %v (expected %v)", req.Temperature, testTemp)
+	}
 
 	// Ensure streaming is enabled in the request (for demonstration purposes)
 	if !req.Stream {

@@ -39,6 +39,8 @@ func run() error {
 
 	// Config-field flags:
 	var cfg Config
+	var temp float64
+	flag.Float64Var(&temp, "temperature", 0, "Temperature to be sent in request")
 	flag.IntVar(&cfg.MaxConcurrentThreads, "max-concurrent-threads", 0, "Number of threads to run in parallel - i.e. number of virtual users")
 	flag.IntVar(&cfg.ThreadCount, "thread-count", 0, "Number of threads to process over the lifespan of the run")
 	flag.IntVar(&cfg.MaxCompletionTokens, "max-completion-tokens", 0, "Number of tokens to generate per request")
@@ -48,6 +50,7 @@ func run() error {
 	flag.BoolVar(&cfg.NoShuffle, "no-shuffle", false, "Do not shuffle the input dataset")
 
 	flag.Parse()
+	cfg.Temperature = float32(temp)
 	cfg.RequestTimeout = benchmark.Duration(requestTimeout)
 
 	if threads == "" {
