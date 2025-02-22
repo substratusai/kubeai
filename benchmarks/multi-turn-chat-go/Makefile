@@ -31,6 +31,12 @@ data-xlarge: data/raw/ShareGPT_V3_unfiltered_cleaned_split.json
 	cd data && python prepare-input-threads.py --output xlarge.json --max-threads 24000 --min-content-length 200 --min-message-count 3
 	cat data/xlarge.json | grep '"id":' | wc -l
 
+.PHONY: data-large-exact
+data-large-exact: data/raw/ShareGPT_V3_unfiltered_cleaned_split.json
+	# NOTE: 32000 threads is close to the max that these filters amount to.
+	cd data && python prepare-input-threads.py --output large-exact.json --max-threads 1000000 --min-content-length 500 --max-content-length 3000 --min-message-count 5 --max-message-count 30
+	cat data/large-exact.json | grep '"id":' | wc -l
+
 .PHONY: test
 test:
 	go test -v ./benchmark

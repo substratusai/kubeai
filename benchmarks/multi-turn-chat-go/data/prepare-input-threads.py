@@ -5,24 +5,33 @@ import argparse
 def main():
     parser = argparse.ArgumentParser(description="A simple program with flags.")
     parser.add_argument(
-        "-t", "--max-threads", type=int, default=100, help="Max number of threads"
+        "--max-threads", type=int, default=100, help="Max number of threads"
     )
     parser.add_argument(
-        "-c",
         "--min-content-length",
         type=int,
         default=1000,
         help="Filter-out threads that contain less than this number of characters",
     )
     parser.add_argument(
-        "-m",
+        "--max-content-length",
+        type=int,
+        default=1000000,
+        help="Filter-out threads that contain more than this number of characters",
+    )
+    parser.add_argument(
         "--min-message-count",
         type=int,
         default=3,
         help="Filter-out threads with fewer than this many user messages",
     )
     parser.add_argument(
-        "-o",
+        "--max-message-count",
+        type=int,
+        default=1000000,
+        help="Filter-out threads with more than this many user messages",
+    )
+    parser.add_argument(
         "--output",
         type=str,
         default="threads.json",
@@ -32,7 +41,7 @@ def main():
     with open("./raw/ShareGPT_V3_unfiltered_cleaned_split.json", "r") as f:
         data = json.load(f)
 
-    max = args.max_threads
+    max_threads = args.max_threads
 
     output = []
     for entry in data:
@@ -50,8 +59,12 @@ def main():
 
             if totalContentLength < args.min_content_length:
                 continue
+            if totalContentLength > args.max_content_length:
+                continue
 
             if len(messages) < args.min_message_count:
+                continue
+            if len(messages) > args.max_message_count:
                 continue
 
             # Delete the original conversation
@@ -59,7 +72,7 @@ def main():
             del entry["conversations"]
             output.append(entry)
 
-            if len(output) >= max:
+            if len(output) >= max_threads:
                 break
 
     with open(args.output, "w") as f:
