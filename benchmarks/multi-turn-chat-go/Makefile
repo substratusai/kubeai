@@ -41,7 +41,7 @@ data-large-exact: data/raw/ShareGPT_V3_unfiltered_cleaned_split.json
 test:
 	go test -v ./benchmark
 
-IMG ?= us-central1-docker.pkg.dev/substratus-dev/default/benchmark-multi-turn-chat-go
+IMG ?= substratusai/multi-turn-chat-go:v0.0.1
 
 .PHONY: build-docker-image
 build-docker-image:

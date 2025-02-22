@@ -6,8 +6,8 @@ spec:
   restartPolicy: Never
   containers:
     - name: bench
-      image: us-central1-docker.pkg.dev/substratus-dev/default/benchmark-multi-turn-chat-go
-      args: 
+      image: substratusai/multi-turn-chat-go:v0.0.1
+      args:
         - --threads=./data/large.json
         - --thread-count=2000
         - --max-concurrent-threads=400

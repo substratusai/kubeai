@@ -6,7 +6,7 @@ spec:
   restartPolicy: Never
   containers:
     - name: bench
-      image: us-central1-docker.pkg.dev/substratus-dev/default/benchmark-multi-turn-chat-go
+      image: substratusai/multi-turn-chat-go:v0.0.1
       imagePullPolicy: Always
       args: 
         - --threads=./data/small.json
