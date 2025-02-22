@@ -48,6 +48,7 @@ func run() error {
 	var requestTimeout time.Duration
 	flag.DurationVar(&requestTimeout, "request-timeout", 0, "Timeout for each request")
 	flag.BoolVar(&cfg.NoShuffle, "no-shuffle", false, "Do not shuffle the input dataset")
+	flag.Int64Var(&cfg.Seed, "seed", 0, "Random shuffle seed")
 
 	flag.Parse()
 	cfg.Temperature = float32(temp)
@@ -94,12 +95,13 @@ func run() error {
 	}
 
 	// Randomize the input dataset (before trimming).
+	rnd := rand.New(rand.NewSource(cfg.Seed))
 	if cfg.NoShuffle {
 		log.Println("Not shuffling dataset threads")
 	} else {
 		log.Println("Shuffling dataset threads")
 		for i := range inputThreads {
-			j := rand.Intn(i + 1)
+			j := rnd.Intn(i + 1)
 			inputThreads[i], inputThreads[j] = inputThreads[j], inputThreads[i]
 		}
 	}
@@ -157,6 +159,7 @@ type Config struct {
 	RequestTimeout benchmark.Duration `json:"request_timeout"`
 	ThreadCount    int                `json:"thread_count"`
 	NoShuffle      bool               `json:"no_shuffle"`
+	Seed           int64              `json:"seed"`
 }
 
 func (c Config) Validate() error {
