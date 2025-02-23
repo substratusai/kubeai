@@ -2,6 +2,7 @@ package modelcontroller
 
 import (
 	"fmt"
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -223,6 +224,20 @@ func parseModelURL(urlStr string) (modelURL, error) {
 	}
 	scheme, ref := matches[1], matches[2]
 	name, path, _ := strings.Cut(ref, "/")
+
+	// check to see if the pvc model has a query string, set model to query string, path to host
+	if scheme == "pvc" {
+		// utilizing url parser for query paramters
+		urlParser, err := url.Parse("http://" + ref)
+		if err == nil {
+			urlModel := urlParser.Query().Get("model")
+			if urlModel != "" {
+				ref = urlModel
+				path = urlParser.Path
+				name = urlParser.Host
+			}
+		}
+	}
 	return modelURL{
 		original: urlStr,
 		scheme:   scheme,
@@ -234,7 +249,7 @@ func parseModelURL(urlStr string) (modelURL, error) {
 
 type modelURL struct {
 	original string // e.g. "hf://username/model"
-	scheme   string // e.g. "hf", "s3", "gs", "oss"
+	scheme   string // e.g. "hf", "s3", "gs", "oss", "pvc"
 	ref      string // e.g. "username/model"
 	name     string // e.g. username or bucket-name
 	path     string // e.g. model or path/to/model
