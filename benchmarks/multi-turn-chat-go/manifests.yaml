@@ -14,8 +14,8 @@ spec:
         value: http://kubeai/openai/v1
       resources:
         requests:
-          cpu: 4
-          memory: 4G
+          cpu: 2
+          memory: 2G
         limits:
-          cpu: 4
-          memory: 4G
+          cpu: 2
+          memory: 2G
