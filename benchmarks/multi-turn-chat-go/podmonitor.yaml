@@ -8,4 +8,4 @@ spec:
       app.kubernetes.io/name: vllm
   podMetricsEndpoints:
   - port: http
-  - interval: 2s
+    interval: 2s
