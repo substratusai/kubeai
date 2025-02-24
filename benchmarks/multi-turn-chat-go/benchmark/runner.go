@@ -159,7 +159,7 @@ func (r *Runner) Run() (Result, error) {
 
 	t0 := time.Now()
 	tLen := len(r.threads)
-	for i, t := range r.threads {
+	for i := range r.threads {
 		sem <- struct{}{}
 		wg.Add(1)
 		go func() {
@@ -167,9 +167,9 @@ func (r *Runner) Run() (Result, error) {
 				<-sem
 				wg.Done()
 			}()
-			if err := r.RunThread(t); err != nil {
+			if err := r.RunThread(r.threads[i]); err != nil {
 				log.Printf("Thread[%d/%d]: Failed: %v\n", i+1, tLen, err)
-				t.err = err
+				r.threads[i].err = err
 			} else {
 				if r.cfg.Verbose {
 					log.Printf("Thread[%d/%d]: Finished", i+1, tLen)
