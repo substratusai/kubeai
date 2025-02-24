@@ -14,7 +14,7 @@ kind_container=$(docker ps --filter "name=kind-control-plane" --format "{{.ID}}"
 docker exec -i $kind_container bash -c "
   mkdir -p ${PV_HOST_PATH}
   curl -L https://ollama.com/download/ollama-linux-amd64.tgz -o ollama-linux-amd64.tgz
-  sudo tar -C /usr -xzf ollama-linux-amd64.tgz
+  tar -C /usr -xzf ollama-linux-amd64.tgz
   ollama pull qwen:0.5b"
 
 kubectl apply -f $REPO_DIR/test/e2e/engine-ollama-pvc/pv.yaml
@@ -22,7 +22,7 @@ kubectl apply -f $REPO_DIR/test/e2e/engine-ollama-pvc/pvc.yaml
 
 helm install $models_release $REPO_DIR/charts/models -f - <<EOF
 catalog:
-  qwen5b:
+  qwen-500m:
     enabled: true
     url: pvc://model-pvc?model=qwen:0.5b
     minReplicas: 2
