@@ -10,20 +10,21 @@ mkdir -p ${PV_HOST_PATH}
 
 # Execute into the kind container - ollama pull
 kind_container=$(docker ps --filter "name=kind-control-plane" --format "{{.ID}}")
+# pull qwen:0.5b model into /usr/share/ollama/.ollama/models/
 docker exec -i $kind_container bash -c "
   mkdir -p ${PV_HOST_PATH}
   curl -L https://ollama.com/download/ollama-linux-amd64.tgz -o ollama-linux-amd64.tgz
   sudo tar -C /usr -xzf ollama-linux-amd64.tgz
-  ollama pull nomic-embed-text
-  ls -la /usr/share/ollama/.ollama/models/manifests/registry.ollama.ai/library"
+  ollama pull qwen:0.5b"
+
 kubectl apply -f $REPO_DIR/test/e2e/engine-ollama-pvc/pv.yaml
 kubectl apply -f $REPO_DIR/test/e2e/engine-ollama-pvc/pvc.yaml
 
 helm install $models_release $REPO_DIR/charts/models -f - <<EOF
 catalog:
-  nomic-embed-text:
+  qwen5b:
     enabled: true
-    url: pvc://model-pvc
+    url: pvc://model-pvc?model=qwen:0.5b
     minReplicas: 2
     engine: OLlama
 EOF
