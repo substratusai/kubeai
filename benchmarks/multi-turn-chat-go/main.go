@@ -49,6 +49,7 @@ func run() error {
 	flag.DurationVar(&requestTimeout, "request-timeout", 0, "Timeout for each request")
 	flag.BoolVar(&cfg.NoShuffle, "no-shuffle", false, "Do not shuffle the input dataset")
 	flag.Int64Var(&cfg.Seed, "seed", 0, "Random shuffle seed")
+	flag.BoolVar(&cfg.Verbose, "verbose", false, "Log a lot")
 
 	flag.Parse()
 	cfg.Temperature = float32(temp)

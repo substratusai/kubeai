@@ -6,7 +6,7 @@ spec:
   restartPolicy: Never
   containers:
     - name: bench
-      image: substratusai/multi-turn-chat-go:v0.0.2
+      image: us-central1-docker.pkg.dev/substratus-dev/default/benchmark-multi-turn-chat-go
       imagePullPolicy: Always
       command: ["sleep", "infinity"]
       env:

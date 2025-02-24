@@ -10,11 +10,11 @@ import (
 	"github.com/substratusai/kubeai/internal/apiutils"
 )
 
-func newEndpointGroup() *group {
+func newEndpointGroup(lb v1.LoadBalancing) *group {
 	g := &group{
 		endpoints:         make(map[string]endpoint),
 		totalInFlight:     &atomic.Int64{},
-		chwblReplication:  100,
+		chwblReplication:  lb.PrefixHash.Replication,
 		chwblHashes:       map[uint64]string{},
 		chwblSortedHashes: []uint64{},
 		bcast:             make(chan struct{}),

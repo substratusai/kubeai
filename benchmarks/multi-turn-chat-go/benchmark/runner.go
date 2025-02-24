@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os"
 	"sync"
 	"time"
 
@@ -18,6 +19,7 @@ type Config struct {
 	MaxCompletionTokens  int     `json:"max_completion_tokens"`
 	Temperature          float32 `json:"temperature"`
 	RequestModel         string  `json:"request_model"`
+	Verbose              bool    `json:"verbose"`
 }
 
 type InputThread struct {
@@ -169,7 +171,9 @@ func (r *Runner) Run() (Result, error) {
 				log.Printf("Thread[%d/%d]: Failed: %v\n", i+1, tLen, err)
 				t.err = err
 			} else {
-				log.Printf("Thread[%d/%d]: Finished", i+1, tLen)
+				if r.cfg.Verbose {
+					log.Printf("Thread[%d/%d]: Finished", i+1, tLen)
+				}
 			}
 		}()
 	}
@@ -278,6 +282,9 @@ func (r *Runner) RunThread(t *thread) error {
 		t0 := time.Now()
 
 		t.requests++
+		if r.cfg.Verbose {
+			json.NewEncoder(os.Stderr).Encode(t.currentMsgs)
+		}
 		stream, err := r.client.CreateChatCompletionStream(
 			context.Background(),
 			openai.ChatCompletionRequest{
