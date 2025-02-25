@@ -14,6 +14,7 @@ import (
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -127,6 +128,10 @@ func (r *LoadBalancer) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Re
 
 	var model v1.Model
 	if err := r.Client.Get(ctx, client.ObjectKey{Name: modelName, Namespace: pod.Namespace}, &model); err != nil {
+		if apierrors.IsNotFound(err) {
+			// Model must have been deleted.
+			return ctrl.Result{}, nil
+		}
 		return ctrl.Result{}, fmt.Errorf("getting model %s: %w", modelName, err)
 	}
 	r.getOrCreateEndpointGroup(modelName, model.Spec.LoadBalancing).reconcileEndpoints(observedEndpoints)
