@@ -129,7 +129,7 @@ spec:
                           to count when building the prefix to hash.
                         type: integer
                       replication:
-                        default: 20
+                        default: 256
                         description: |-
                           Replication is the number of replicas of each endpoint on the hash ring.
                           Higher values will result in a more even distribution of load but will
