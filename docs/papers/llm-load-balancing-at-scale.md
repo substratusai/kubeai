@@ -4,15 +4,31 @@
 
 ## Introduction
 
+This paper explores the effect of load balancing strategies across multiple LLM serving instances under production load patterns driven by use cases such as human chat or AI agents. These concepts are relevant no matter what platform you are using, however special attention will be given to vLLM on Kubernetes for practical purposes (being the defacto solution today).
+
+### Background
+
 Before an inference engine such as vLLM can start producing output tokens, it needs to first process the input text (this is called the "prefill phase"). The result of this phase is stored in a KV cache for future reference (this is called "prefix caching").
 
-The impact of prefix caching can be significant, especially in multi-turn use-cases such as chat, whether the client is a human or an "agent". This is because multi-turn use-cases operate in a generate-append-generate loop, where the last response ends up being incorporated into the prefix for the next request.
+The impact of prefix caching can be significant in real-world shared-prefix scenarios such as multi-turn conversations and multi-threaded requests with shared context.
+
+### 1. Multi-turn conversations
+
+Common multi-turn usecases involve human clients (such as ChatGPT). Increasingly, AI clients ("Agents") are starting to account for an increasing share of inference requests. These multi-turn use-cases operate in a generate-append-generate loop, where the last response ends up being incorporated into the prefix for the next request. The result is an ever-growing shared prefix.
 
 <img src="../diagrams/multi-turn-clients.excalidraw.png" style="max-width:500px"></img>
 
-When operating at scale (multiple replicas of vLLM) and under load (at the threshold of KV cache-space), choosing a load balancing strategy that can maximize cache-hits and minimize cache-evictions becomes critical.
+### 2. Multi-threaded requests with shared context
 
-The default random strategy built into Kubernetes leaves a lot of performance on the table. Some sort of consistent routing strategy would be better to keep a relevant cache on each replica.
+Use cases such as running multiple queries against the same long document are especially sensitive to prefix caching. End-to-end request time tends to be dominated by the time it takes to process the large input context and less influenced by the short answer that is expected from the LLM. This is true when requests are run in sequence but is even more pronounced when requests are run in parallel.
+
+<img src="../diagrams/multi-threaded-shared-context.excalidraw.png" style="max-width:500px"></img>
+
+### Why it matters
+
+When operating at scale (multiple replicas of vLLM) and under load (at the threshold of KV cache-space), the right load balancing strategy can maximize cache-hits while the wrong strategy will result in frequent misses (cache-evictions).
+
+The default random strategy built into Kubernetes leaves a lot of performance on the table. A more consistent routing strategy would be better to keep a relevant cache on each replica.
 
 <img src="../diagrams/random-vs-consistent-hash.excalidraw.png" style="max-width:600px"></img>
 
@@ -43,11 +59,9 @@ spec:
 When using this strategy, KubeAI will:
 
 1. Inspect the incoming request body.
-2. Extract a prefix of up to a configured length. 
-    * NOTE: For chat completion requests - the first user message is used.
+2. Extract a prefix of up to a configured length (for chat completion requests the first user message is used).
 3. Hash the extracted prefix.
-4. Lookup the vLLM replica that has a hash value closest to the hash value of the request (unidirectional).
-    * NOTE: The next closest replica is considered if the current replica is serving too many requests.
+4. Lookup the vLLM replica according to the CHWBL algorithm.
 
 ## Performance results
 
@@ -63,7 +77,18 @@ Three load balancing scenarios were tested:
     * Proxied through KubeAI load balancer.
     * Routes traffic to replicas according the CHWBL strategy described above.
 
-The benchmark was conducted using 8 replicas of vLLM each serving LLama 3.1 8B on a single L4 GPU per replica.
+### Methodology
+
+The benchmark was conducted with:
+
+* Hardware: 8x L4 GPUs
+* Software: 8x vLLM instances
+* Model: Llama 3.1 8B
+* Dataset: Messsage threads from ShareGPT
+
+A new benchmark load generator was created to simulate an agentic workload. Multiple distinct chat completion threads were ran in parallel. The load generator maintained thread state: LLM response messages were captured and appended in a loop until all input messages were processed.
+
+### Results
 
 Several key performance numbers were considered:
 
@@ -77,7 +102,7 @@ Improvements to ITL and TPS were seen across the board when using the PrefixHash
 
 Summary of Time To First Token (TTFT):
 
-When concurrency was increased **10x** (`800` -> `8000`), mean TTFT (Time To First Token) with a standard Kubernetes Service (Random) increased over **36x** (`1300 ms` -> `48500 ms`) while mean TTFT remained relatively **constant** for the PrefixHash strategy (`2XX ms` range). While operating at `8000` concurrent requests, the KubeAI PrefixHash strategy resulted in a mean TTFT that was 99.5% lower than using a standard Kubernetes Service (Random load balancing).
+TODO
 
 Summary of Inter-Token Latency (ITL):
 
