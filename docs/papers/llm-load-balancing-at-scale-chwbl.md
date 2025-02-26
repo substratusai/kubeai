@@ -65,7 +65,7 @@ When using this strategy, KubeAI will:
 3. Hash the extracted prefix.
 4. Lookup the vLLM replica according to the CHWBL algorithm.
 
-## Performance results
+## Performance Benchmark
 
 Three load balancing scenarios were tested:
 
