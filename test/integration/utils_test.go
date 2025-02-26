@@ -29,7 +29,7 @@ func modelLabelSelectorForTest(t *testing.T) string {
 }
 
 func modelForTest(t *testing.T) *v1.Model {
-	return &v1.Model{
+	m := &v1.Model{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      strings.ToLower(t.Name()),
 			Namespace: testNS,
@@ -53,6 +53,13 @@ func modelForTest(t *testing.T) *v1.Model {
 			Env:  map[string]string{"TEST_ENV": "test"},
 		},
 	}
+	t.Cleanup(func() {
+		err := testK8sClient.Delete(testCtx, m)
+		if err != nil {
+			t.Logf("Cleanup: deleting Model: %v", err)
+		}
+	})
+	return m
 }
 
 func updateModel(t *testing.T, m *v1.Model, modify func(), msg string) {
