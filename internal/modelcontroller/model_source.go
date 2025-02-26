@@ -215,42 +215,46 @@ func (r *ModelReconciler) pvcPodAdditions(url modelURL) *modelSourcePodAdditions
 	}
 }
 
-var modelURLRegex = regexp.MustCompile(`^([a-z]+):\/\/(\S+)$`)
+var modelURLRegex = regexp.MustCompile(`^([a-z]+):\/\/([^?]+)(\?.*)?$`)
 
 func parseModelURL(urlStr string) (modelURL, error) {
 	matches := modelURLRegex.FindStringSubmatch(urlStr)
-	if len(matches) != 3 {
+	if len(matches) != 3 && len(matches) != 4 {
 		return modelURL{}, fmt.Errorf("invalid model URL: %s", urlStr)
 	}
 	scheme, ref := matches[1], matches[2]
 	name, path, _ := strings.Cut(ref, "/")
+	modelParam := ""
 
 	// check to see if the pvc model has a query string, set model to query string, path to host
+
 	if scheme == "pvc" {
-		// utilizing url parser for query paramters
-		urlParser, err := url.Parse("http://" + ref)
-		if err == nil {
-			urlModel := urlParser.Query().Get("model")
-			if urlModel != "" {
-				ref = urlModel
-				path = urlParser.Path
-				name = urlParser.Host
+		if len(matches) == 4 {
+			urlParser, err := url.ParseQuery(strings.TrimPrefix(matches[3], "?"))
+			if err == nil {
+				modelname := urlParser.Get("model")
+				if modelname != "" {
+					modelParam = modelname
+				}
 			}
 		}
 	}
+
 	return modelURL{
-		original: urlStr,
-		scheme:   scheme,
-		ref:      ref,
-		name:     name,
-		path:     path,
+		original:   urlStr,
+		scheme:     scheme,
+		ref:        ref,
+		name:       name,
+		path:       path,
+		modelParam: modelParam,
 	}, nil
 }
 
 type modelURL struct {
-	original string // e.g. "hf://username/model"
-	scheme   string // e.g. "hf", "s3", "gs", "oss", "pvc"
-	ref      string // e.g. "username/model"
-	name     string // e.g. username or bucket-name
-	path     string // e.g. model or path/to/model
+	original   string // e.g. "hf://username/model"
+	scheme     string // e.g. "hf", "s3", "gs", "oss", "pvc"
+	ref        string // e.g. "username/model"
+	name       string // e.g. username or bucket-name
+	path       string // e.g. model or path/to/model
+	modelParam string // e.g. the ?model=example_model at the end of the string
 }

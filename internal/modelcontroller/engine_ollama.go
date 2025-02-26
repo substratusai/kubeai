@@ -33,9 +33,8 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, c ModelConfig) *c
 			Value: "999999h",
 		},
 	}
-	modelScheme := c.Source.url.scheme
 	// Adding an override variable for model location
-	if modelScheme == "pvc" {
+	if c.Source.url.scheme == "pvc" {
 		env = append(env, corev1.EnvVar{
 			Name:  "OLLAMA_MODELS",
 			Value: "/models",
