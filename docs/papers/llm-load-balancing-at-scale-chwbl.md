@@ -1,6 +1,8 @@
 # LLM Load Balancing at Scale
 
-**TLDR:** Applying the Consistent Hashing with Bounded Loads (CHWBL) algorithm to LLM Load Balancing results in dramatic performance improvements over the default random strategy built into Kubernetes (99.5% reduction in TTFT).
+*Using Consistent Hashing with Bounded Loads*
+
+**TLDR:** Applying the Consistent Hashing with Bounded Loads (CHWBL) algorithm to LLM Load Balancing results in dramatic performance improvements over the default random strategy built into Kubernetes (`TODO`% reduction in TTFT).
 
 ## Introduction
 
