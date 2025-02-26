@@ -8,31 +8,38 @@ import (
 	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
 )
 
-func Test_startupProbeScriptConstructer(t *testing.T) {
+func Test_ollamaStartupProbeScript(t *testing.T) {
 	t.Parallel()
 
 	cases := map[string]struct {
-		modelName   string
-		modelRef    string
-		modelScheme string
+		model       kubeaiv1.Model
+		modelURL    modelURL
 		featuresMap map[kubeaiv1.ModelFeature]struct{}
 		want        string
 	}{
 		"basic-model-no-pvc": {
-			modelName:   "abc",
-			modelRef:    "def",
-			modelScheme: "hf",
-			featuresMap: map[kubeaiv1.ModelFeature]struct{}{
-				kubeaiv1.ModelFeatureTextGeneration: {},
+			model: kubeaiv1.Model{
+				Spec: kubeaiv1.ModelSpec{
+					Features: []kubeaiv1.ModelFeature{kubeaiv1.ModelFeatureTextGeneration},
+				},
+			},
+			modelURL: modelURL{
+				scheme: "ollama",
+				ref:    "def",
+				name:   "abc",
 			},
 			want: "/bin/ollama pull def && /bin/ollama cp def abc && /bin/ollama run abc hi",
 		},
 		"basic-model-with-pvc": {
-			modelName:   "abc",
-			modelRef:    "def",
-			modelScheme: "pvc",
-			featuresMap: map[kubeaiv1.ModelFeature]struct{}{
-				kubeaiv1.ModelFeatureTextGeneration: {},
+			model: kubeaiv1.Model{
+				Spec: kubeaiv1.ModelSpec{
+					Features: []kubeaiv1.ModelFeature{kubeaiv1.ModelFeatureTextGeneration},
+				},
+			},
+			modelURL: modelURL{
+				scheme: "pvc",
+				ref:    "def",
+				name:   "abc",
 			},
 			want: "/bin/ollama cp def abc && /bin/ollama run abc hi",
 		},
@@ -41,7 +48,7 @@ func Test_startupProbeScriptConstructer(t *testing.T) {
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			got := startupProbeScriptConstructer(c.modelName, c.modelRef, c.modelScheme, c.featuresMap)
+			got := ollamaStartupProbeScript(&c.model, c.modelURL)
 			require.Equal(t, c.want, got)
 		})
 	}

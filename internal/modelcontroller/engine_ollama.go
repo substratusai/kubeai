@@ -54,13 +54,12 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, c ModelConfig) *c
 		})
 	}
 
-	ollamaModelRef := c.Source.url.ref
 	featuresMap := map[kubeaiv1.ModelFeature]struct{}{}
 	for _, f := range m.Spec.Features {
 		featuresMap[f] = struct{}{}
 	}
 
-	startupProbeScript := startupProbeScriptConstructer(m.Name, ollamaModelRef, modelScheme, featuresMap)
+	startupProbeScript := ollamaStartupProbeScript(m, c.Source.url)
 
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -168,7 +167,7 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, c ModelConfig) *c
 
 }
 
-func startupProbeScriptConstructer(modelName string, ollamaModelRef string, modelScheme string, featuresMap map[kubeaiv1.ModelFeature]struct{}) string {
+func ollamaStartupProbeScript(m *kubeaiv1.Model, u modelURL) string {
 	// Pull model and copy to rename it to Model.metadata.name.
 	// See Ollama issue for rename/copy workaround: https://github.com/ollama/ollama/issues/5914
 	// NOTE: The cp command should just create a pointer to the old model, not copy data
@@ -176,21 +175,26 @@ func startupProbeScriptConstructer(modelName string, ollamaModelRef string, mode
 	// Use `ollama run` to send a single prompt to ollama to load the model into memory
 	// before the Pod becomes Ready. (by default it will load on the first prompt request).
 	startupScript := ""
-	// Only pull the model from ollama if modelScheme is not pvc
-	if modelScheme != "pvc" {
+	// If the model is using a pvc, we don't want to try to connect/pull a model
+	if u.scheme != "pvc" {
 
-		startupScript += fmt.Sprintf("/bin/ollama pull %s && ", ollamaModelRef)
+		startupScript = fmt.Sprintf("/bin/ollama pull %s && ", u.ref)
 	}
 	startupScript += fmt.Sprintf("/bin/ollama cp %s %s",
-		ollamaModelRef, modelName)
+		u.ref, u.name)
 
+	// Only run the model if the model has features
+	featuresMap := map[kubeaiv1.ModelFeature]struct{}{}
+	for _, f := range m.Spec.Features {
+		featuresMap[f] = struct{}{}
+	}
 	if _, ok := featuresMap[kubeaiv1.ModelFeatureTextGeneration]; ok {
 		// NOTE: Embedding text models do not support "ollama run":
 		//
 		// ollama run nomic-embed-text hey
 		// Error: "nomic-embed-text" does not support generate
 		//
-		startupScript += fmt.Sprintf(" && /bin/ollama run %s hi", modelName)
+		startupScript += fmt.Sprintf(" && /bin/ollama run %s hi", u.name)
 	}
 
 	return startupScript
