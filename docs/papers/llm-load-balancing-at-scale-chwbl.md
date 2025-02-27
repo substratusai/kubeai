@@ -1,5 +1,9 @@
 # LLM Load Balancing at Scale: Consistent Hashing with Bounded Loads
 
+*Date:* Feb 26, 2025
+
+*Author:* [Nick Stogner](https://www.linkedin.com/in/nstogner/)
+
 ## Abstract:
 
 When deploying large language models (LLMs) at scale efficient load balancing is crucial for minimizing latency and maximizing throughput. We explore the application of the Consistent Hashing with Bounded Loads (CHWBL) algorithm in the domain of LLM serving. Our approach dramatically reduces Time To First Token (TTFT) while improving overall Tokens Per Second (TPS) compared to the baseline strategies.
