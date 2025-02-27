@@ -10,11 +10,11 @@ import (
 	"github.com/substratusai/kubeai/internal/apiutils"
 )
 
-func newEndpointGroup() *group {
+func newEndpointGroup(lb v1.LoadBalancing) *group {
 	g := &group{
 		endpoints:         make(map[string]endpoint),
 		totalInFlight:     &atomic.Int64{},
-		chwblReplication:  100,
+		chwblReplication:  lb.PrefixHash.Replication,
 		chwblHashes:       map[uint64]string{},
 		chwblSortedHashes: []uint64{},
 		bcast:             make(chan struct{}),
@@ -120,9 +120,10 @@ func (g *group) reconcileEndpoints(observed map[string]endpoint) {
 			g.chwblAddEndpoint(name)
 		}
 	}
-	for name, ep := range g.endpoints {
+	for name := range g.endpoints {
 		if _, ok := observed[name]; !ok {
-			g.totalInFlight.Add(-ep.inFlight.Load())
+			// NOTE: No need to decrement in-flight counts, that will happen
+			// when requests complete or fail.
 			g.chwblRemoveEndpoint(name)
 			delete(g.endpoints, name)
 		}

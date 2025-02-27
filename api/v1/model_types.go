@@ -180,7 +180,7 @@ type PrefixHash struct {
 	// Higher values will result in a more even distribution of load but will
 	// decrease lookup performance.
 	// +kubebuilder:validation:XValidation:rule="self == oldSelf", message="replication is immutable."
-	// +kubebuilder:default=20
+	// +kubebuilder:default=256
 	// +kubebuilder:validation:Optional
 	Replication int `json:"replication,omitempty"`
 	// PrefixCharLength is the number of characters to count when building the prefix to hash.

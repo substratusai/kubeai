@@ -14,6 +14,7 @@ import (
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -125,7 +126,15 @@ func (r *LoadBalancer) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Re
 		}
 	}
 
-	r.getEndpoints(modelName).reconcileEndpoints(observedEndpoints)
+	var model v1.Model
+	if err := r.Client.Get(ctx, client.ObjectKey{Name: modelName, Namespace: pod.Namespace}, &model); err != nil {
+		if apierrors.IsNotFound(err) {
+			// Model must have been deleted.
+			return ctrl.Result{}, nil
+		}
+		return ctrl.Result{}, fmt.Errorf("getting model %s: %w", modelName, err)
+	}
+	r.getOrCreateEndpointGroup(modelName, model.Spec.LoadBalancing).reconcileEndpoints(observedEndpoints)
 
 	return ctrl.Result{}, nil
 }
@@ -149,18 +158,25 @@ func getPodAnnotation(pod corev1.Pod, key string) string {
 	return ""
 }
 
-// getEndpoints returns the endpoint group for the given model.
+// getOrCreateEndpointGroup returns the endpoint group for the given model.
 // If the group does not exist, it is created.
 // This assumes that the existance of the model is already checked.
-func (r *LoadBalancer) getEndpoints(model string) *group {
+func (r *LoadBalancer) getOrCreateEndpointGroup(modelName string, lb v1.LoadBalancing) *group {
 	r.endpointsMtx.Lock()
-	g, ok := r.groups[model]
+	g, ok := r.groups[modelName]
 	if !ok {
-		g = newEndpointGroup()
-		r.groups[model] = g
+		g = newEndpointGroup(lb)
+		r.groups[modelName] = g
 	}
 	r.endpointsMtx.Unlock()
 	return g
+}
+
+func (r *LoadBalancer) getEndpointGroup(modelName string) (*group, bool) {
+	r.endpointsMtx.Lock()
+	defer r.endpointsMtx.Unlock()
+	g, ok := r.groups[modelName]
+	return g, ok
 }
 
 func (r *LoadBalancer) GetSelfIPs() []string {
@@ -173,10 +189,14 @@ func (r *LoadBalancer) GetSelfIPs() []string {
 // becomes available or the context times out. It returns a function that should be called when the
 // request is complete to decrement the in-flight count.
 func (r *LoadBalancer) AwaitBestAddress(ctx context.Context, req *apiutils.Request) (string, func(), error) {
-	return r.getEndpoints(req.Model).getBestAddr(ctx, req, false)
+	return r.getOrCreateEndpointGroup(req.Model, req.LoadBalancing).getBestAddr(ctx, req, false)
 }
 
 // GetAllHosts retrieves the list of all hosts for a given model.
 func (r *LoadBalancer) GetAllAddresses(model string) []string {
-	return r.getEndpoints(model).getAllAddrs()
+	grp, ok := r.getEndpointGroup(model)
+	if !ok {
+		return nil
+	}
+	return grp.getAllAddrs()
 }

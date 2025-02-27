@@ -18,12 +18,19 @@ var (
 	InferenceRequestsActive                         metric.Int64UpDownCounter
 	InferenceRequestsHashLookupIterationsMetricName = "kubeai.inference.requests.hash.lookup.iterations"
 	InferenceRequestsHashLookupIterations           metric.Int64Histogram
+	InferenceRequestsHashLookupInitialMetricName    = "kubeai.inference.requests.hash.lookup.initial"
+	InferenceRequestsHashLookupInitial              metric.Int64Counter
+	InferenceRequestsHashLookupFinalMetricName      = "kubeai.inference.requests.hash.lookup.final"
+	InferenceRequestsHashLookupFinal                metric.Int64Counter
+	InferenceRequestsHashLookupDefaultMetricName    = "kubeai.inference.requests.hash.lookup.default"
+	InferenceRequestsHashLookupDefault              metric.Int64Counter
 )
 
 // Attributes:
 var (
 	AttrRequestModel = attribute.Key("request.model")
 	AttrRequestType  = attribute.Key("request.type")
+	AttrEndpoint     = attribute.Key("endpoint")
 )
 
 // Attribute values:
@@ -47,6 +54,25 @@ func Init(meter metric.Meter) error {
 	)
 	if err != nil {
 		return fmt.Errorf("%s: %w", InferenceRequestsHashLookupIterationsMetricName, err)
+	}
+
+	InferenceRequestsHashLookupInitial, err = meter.Int64Counter(InferenceRequestsHashLookupInitialMetricName,
+		metric.WithDescription("The number of times an endpoint was the initial preference of the load balancer"),
+	)
+	if err != nil {
+		return fmt.Errorf("%s: %w", InferenceRequestsHashLookupInitialMetricName, err)
+	}
+	InferenceRequestsHashLookupFinal, err = meter.Int64Counter(InferenceRequestsHashLookupFinalMetricName,
+		metric.WithDescription("The number of times an endpoint was the final choice of the load balancer"),
+	)
+	if err != nil {
+		return fmt.Errorf("%s: %w", InferenceRequestsHashLookupFinalMetricName, err)
+	}
+	InferenceRequestsHashLookupDefault, err = meter.Int64Counter(InferenceRequestsHashLookupDefaultMetricName,
+		metric.WithDescription("The number of times an endpoint was the default choice of the load balancer"),
+	)
+	if err != nil {
+		return fmt.Errorf("%s: %w", InferenceRequestsHashLookupDefaultMetricName, err)
 	}
 
 	return nil
