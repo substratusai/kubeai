@@ -6,16 +6,16 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-      
-      
-        <link rel="canonical" href="https://www.kubeai.org/papers/llm-load-balancing-at-scale-chwbl/">
-      
-      
-        <link rel="prev" href="../../benchmarks/prefix-aware-load-balancing/">
+        <meta name="description" content="Using the CHWBL algorithm results in a 95% reduction in TTFT, 127% increase in throughput.">
       
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+        <link rel="canonical" href="https://www.kubeai.org/blog/2025/02/26/llm-load-balancing-at-scale-chwbl/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.5">
     
     
@@ -24,10 +24,10 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.8608ea7d.min.css">
+      <link rel="stylesheet" href="../../../../../assets/stylesheets/main.8608ea7d.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../../../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -46,11 +46,37 @@
       
     
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
     
+    
+      
+        <meta  property="og:type"  content="website" >
+      
+        <meta  property="og:title"  content="LLM Load Balancing at Scale: Consistent Hashing with Bounded Loads - KubeAI" >
+      
+        <meta  property="og:description"  content="Using the CHWBL algorithm results in a 95% reduction in TTFT, 127% increase in throughput." >
+      
+        <meta  property="og:image"  content="https://www.kubeai.org/assets/images/social/blog/posts/llm-load-balancing-at-scale-chwbl.png" >
+      
+        <meta  property="og:image:type"  content="image/png" >
+      
+        <meta  property="og:image:width"  content="1200" >
+      
+        <meta  property="og:image:height"  content="630" >
+      
+        <meta  property="og:url"  content="https://www.kubeai.org/blog/2025/02/26/llm-load-balancing-at-scale-chwbl/" >
+      
+        <meta  name="twitter:card"  content="summary_large_image" >
+      
+        <meta  name="twitter:title"  content="LLM Load Balancing at Scale: Consistent Hashing with Bounded Loads - KubeAI" >
+      
+        <meta  name="twitter:description"  content="Using the CHWBL algorithm results in a 95% reduction in TTFT, 127% increase in throughput." >
+      
+        <meta  name="twitter:image"  content="https://www.kubeai.org/assets/images/social/blog/posts/llm-load-balancing-at-scale-chwbl.png" >
+      
     
     
   </head>
@@ -86,7 +112,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="KubeAI" class="md-header__button md-logo" aria-label="KubeAI" data-md-component="logo">
+    <a href="../../../../.." title="KubeAI" class="md-header__button md-logo" aria-label="KubeAI" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -184,7 +210,9 @@
           
             
               
-              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" hidden>
                 <div class="md-sidebar__scrollwrap">
                   <div class="md-sidebar__inner">
                     
@@ -193,7 +221,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="KubeAI" class="md-nav__button md-logo" aria-label="KubeAI" data-md-component="logo">
+    <a href="../../../../.." title="KubeAI" class="md-nav__button md-logo" aria-label="KubeAI" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -223,7 +251,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href="../../../../.." class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -280,7 +308,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../installation/any/" class="md-nav__link">
+      <a href="../../../../../installation/any/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -302,7 +330,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../installation/eks/" class="md-nav__link">
+      <a href="../../../../../installation/eks/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -324,7 +352,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../installation/gke/" class="md-nav__link">
+      <a href="../../../../../installation/gke/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -389,7 +417,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/architect-for-multitenancy/" class="md-nav__link">
+      <a href="../../../../../how-to/architect-for-multitenancy/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -411,7 +439,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/authenticate-to-model-repos/" class="md-nav__link">
+      <a href="../../../../../how-to/authenticate-to-model-repos/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -433,7 +461,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/build-models-into-containers/" class="md-nav__link">
+      <a href="../../../../../how-to/build-models-into-containers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -455,7 +483,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/cache-models-with-aws-efs/" class="md-nav__link">
+      <a href="../../../../../how-to/cache-models-with-aws-efs/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -477,7 +505,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/cache-models-with-gcp-filestore/" class="md-nav__link">
+      <a href="../../../../../how-to/cache-models-with-gcp-filestore/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -499,7 +527,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/configure-autoscaling/" class="md-nav__link">
+      <a href="../../../../../how-to/configure-autoscaling/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -521,7 +549,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/configure-embedding-models/" class="md-nav__link">
+      <a href="../../../../../how-to/configure-embedding-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -543,7 +571,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/configure-resource-profiles/" class="md-nav__link">
+      <a href="../../../../../how-to/configure-resource-profiles/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -565,7 +593,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/configure-speech-to-text/" class="md-nav__link">
+      <a href="../../../../../how-to/configure-speech-to-text/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -587,7 +615,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/configure-text-generation-models/" class="md-nav__link">
+      <a href="../../../../../how-to/configure-text-generation-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -609,7 +637,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/install-models/" class="md-nav__link">
+      <a href="../../../../../how-to/install-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -631,7 +659,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/observability-with-prometheus-stack/" class="md-nav__link">
+      <a href="../../../../../how-to/observability-with-prometheus-stack/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -653,7 +681,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/serve-lora-adapters/" class="md-nav__link">
+      <a href="../../../../../how-to/serve-lora-adapters/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -718,7 +746,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/autoscaling/" class="md-nav__link">
+      <a href="../../../../../concepts/autoscaling/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -740,7 +768,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/backend-servers/" class="md-nav__link">
+      <a href="../../../../../concepts/backend-servers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -762,7 +790,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/load-balancing/" class="md-nav__link">
+      <a href="../../../../../concepts/load-balancing/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -784,7 +812,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/lora-adapters/" class="md-nav__link">
+      <a href="../../../../../concepts/lora-adapters/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -806,7 +834,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/resource-profiles/" class="md-nav__link">
+      <a href="../../../../../concepts/resource-profiles/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -828,7 +856,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../concepts/storage-caching/" class="md-nav__link">
+      <a href="../../../../../concepts/storage-caching/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -893,7 +921,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorials/langchain/" class="md-nav__link">
+      <a href="../../../../../tutorials/langchain/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -915,7 +943,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorials/langtrace/" class="md-nav__link">
+      <a href="../../../../../tutorials/langtrace/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -937,7 +965,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorials/private-deep-chat/" class="md-nav__link">
+      <a href="../../../../../tutorials/private-deep-chat/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -959,7 +987,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tutorials/weaviate/" class="md-nav__link">
+      <a href="../../../../../tutorials/weaviate/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1024,7 +1052,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contributing/development-environment/" class="md-nav__link">
+      <a href="../../../../../contributing/development-environment/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1046,7 +1074,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contributing/documentation/" class="md-nav__link">
+      <a href="../../../../../contributing/documentation/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1068,7 +1096,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contributing/release-process/" class="md-nav__link">
+      <a href="../../../../../contributing/release-process/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1133,7 +1161,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/kubernetes-api/" class="md-nav__link">
+      <a href="../../../../../reference/kubernetes-api/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1155,7 +1183,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../reference/openai-api-compatibility/" class="md-nav__link">
+      <a href="../../../../../reference/openai-api-compatibility/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1220,7 +1248,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../benchmarks/llama-3.2-11b-vision/" class="md-nav__link">
+      <a href="../../../../../benchmarks/llama-3.2-11b-vision/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1242,7 +1270,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../benchmarks/prefix-aware-load-balancing/" class="md-nav__link">
+      <a href="../../../../../benchmarks/prefix-aware-load-balancing/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1287,7 +1315,7 @@
             
   
   <span class="md-ellipsis">
-    Papers
+    Blog
     
   </span>
   
@@ -1298,7 +1326,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_9">
             <span class="md-nav__icon md-icon"></span>
-            Papers
+            Blog
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -1309,170 +1337,155 @@
     
   
   
+    
+  
   
     <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    LLM Load Balancing at Scale: Consistent Hashing with Bounded Loads
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+      <a href="../../../../" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    LLM Load Balancing at Scale: Consistent Hashing with Bounded Loads
+    Recent
     
   </span>
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_9_2" id="__nav_9_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Archive
+    
+  </span>
+  
 
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_2">
+            <span class="md-nav__icon md-icon"></span>
+            Archive
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
   
   
   
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#abstract" class="md-nav__link">
-    <span class="md-ellipsis">
-      Abstract:
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#1-introduction" class="md-nav__link">
-    <span class="md-ellipsis">
-      1. Introduction
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-problem-statement" class="md-nav__link">
-    <span class="md-ellipsis">
-      2. Problem Statement
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-proposed-approach-chwbl" class="md-nav__link">
-    <span class="md-ellipsis">
-      3. Proposed Approach: CHWBL
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-implementation" class="md-nav__link">
-    <span class="md-ellipsis">
-      4. Implementation
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-evaluation" class="md-nav__link">
-    <span class="md-ellipsis">
-      5. Evaluation
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. Evaluation">
-      <ul class="md-nav__list">
+    <li class="md-nav__item">
+      <a href="../../../../archive/2025/" class="md-nav__link">
         
-          <li class="md-nav__item">
-  <a href="#51-scenarios" class="md-nav__link">
-    <span class="md-ellipsis">
-      5.1. Scenarios
-    </span>
-  </a>
   
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#52-setup" class="md-nav__link">
-    <span class="md-ellipsis">
-      5.2. Setup
-    </span>
-  </a>
+  <span class="md-ellipsis">
+    2025
+    
+  </span>
   
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#53-metrics" class="md-nav__link">
-    <span class="md-ellipsis">
-      5.3. Metrics
-    </span>
-  </a>
+
+      </a>
+    </li>
   
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#54-results" class="md-nav__link">
-    <span class="md-ellipsis">
-      5.4. Results
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
+
+              
+            
+          </ul>
+        </nav>
       
-        <li class="md-nav__item">
-  <a href="#6-conclusion" class="md-nav__link">
-    <span class="md-ellipsis">
-      6. Conclusion
-    </span>
-  </a>
+    </li>
   
-</li>
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
       
-        <li class="md-nav__item">
-  <a href="#references" class="md-nav__link">
-    <span class="md-ellipsis">
-      References
-    </span>
-  </a>
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_9_3" id="__nav_9_3_label" tabindex="0">
+            
   
-</li>
-      
-    </ul>
+  <span class="md-ellipsis">
+    Categories
+    
+  </span>
   
-</nav>
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_9_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9_3">
+            <span class="md-nav__icon md-icon"></span>
+            Categories
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../category/performance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Performance
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
       
     </li>
   
@@ -1493,6 +1506,8 @@
               </div>
             
             
+              
+                
               
               <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
                 <div class="md-sidebar__scrollwrap">
@@ -1635,10 +1650,96 @@
             
           
           
-            <div class="md-content" data-md-component="content">
-              <article class="md-content__inner md-typeset">
+  <div class="md-content md-content--post" data-md-component="content">
+    <div class="md-sidebar md-sidebar--post" data-md-component="sidebar" data-md-type="navigation">
+      <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner md-post">
+          <nav class="md-nav md-nav--primary">
+            <div class="md-post__back">
+              <div class="md-nav__title md-nav__container">
+                <a href="../../../../" class="md-nav__link">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+                  <span class="md-ellipsis">
+                    Back to index
+                  </span>
+                </a>
+              </div>
+            </div>
+            
+              <div class="md-post__authors md-typeset">
                 
-                  
+                  <div class="md-profile md-post__profile">
+                    <span class="md-author md-author--long">
+                      <img src="https://avatars.githubusercontent.com/u/10274189" alt="Nick Stogner">
+                    </span>
+                    <span class="md-profile__description">
+                      <strong>
+                        
+                          <a href="https://www.linkedin.com/in/nstogner/">Nick Stogner</a>
+                        
+                      </strong>
+                      <br>
+                      Creator
+                    </span>
+                  </div>
+                
+              </div>
+            
+            <ul class="md-post__meta md-nav__list">
+              <li class="md-nav__item md-nav__item--section">
+                <div class="md-post__title">
+                  <span class="md-ellipsis">
+                    Metadata
+                  </span>
+                </div>
+                <nav class="md-nav">
+                  <ul class="md-nav__list">
+                    <li class="md-nav__item">
+                      <div class="md-nav__link">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 19H5V8h14m-3-7v2H8V1H6v2H5c-1.11 0-2 .89-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-1V1m-1 11h-5v5h5z"/></svg>
+                        <time datetime="2025-02-26 00:00:00+00:00" class="md-ellipsis">February 26, 2025</time>
+                      </div>
+                    </li>
+                    
+                    
+                      <li class="md-nav__item">
+                        <div class="md-nav__link">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 3v15h3V3zm3 2 4 13 3-1-4-13zM5 5v13h3V5zM3 19v2h18v-2z"/></svg>
+                          <span class="md-ellipsis">
+                            in
+                            
+                              <a href="../../../../category/performance/">Performance</a></span>
+                        </div>
+                      </li>
+                    
+                    
+                      
+                      <li class="md-nav__item">
+                        <div class="md-nav__link">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 20a8 8 0 0 0 8-8 8 8 0 0 0-8-8 8 8 0 0 0-8 8 8 8 0 0 0 8 8m0-18a10 10 0 0 1 10 10 10 10 0 0 1-10 10C6.47 22 2 17.5 2 12A10 10 0 0 1 12 2m.5 5v5.25l4.5 2.67-.75 1.23L11 13V7z"/></svg>
+                          <span class="md-ellipsis">
+                            
+                              5 min read
+                            
+                          </span>
+                        </div>
+                      </li>
+                    
+                  </ul>
+                </nav>
+              </li>
+            </ul>
+            
+          </nav>
+          
+        </div>
+      </div>
+    </div>
+    <article class="md-content__inner md-typeset">
+      
+        
+  
+
 
 
   
@@ -1646,19 +1747,18 @@
 
 
 <h1 id="llm-load-balancing-at-scale-consistent-hashing-with-bounded-loads">LLM Load Balancing at Scale: Consistent Hashing with Bounded Loads<a class="headerlink" href="#llm-load-balancing-at-scale-consistent-hashing-with-bounded-loads" title="Permanent link">&para;</a></h1>
-<p>Feb 26, 2025</p>
-<p>Posted by <a href="https://www.linkedin.com/in/nstogner/">Nick Stogner</a>, Co-Founder of <a href="https://www.substratus.ai/">Substratus.AI</a></p>
+<p>Conducted by <a href="https://www.substratus.ai/">Substratus.AI</a>, the creators of KubeAI.</p>
 <h2 id="abstract">Abstract:<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
 <p>Operating large language models (LLMs) at scale in real-world scenarios necessitates multiple backend replicas. The inter-replica load balancing algorithm greatly influences overall system performance by impacting the caching dynamics inherent in modern inference engines. In this study, we explore the application of the Consistent Hashing with Bounded Loads (CHWBL) algorithm in the domain of LLM inference. We simulate real-world load patterns on Kubernetes, the industry's most widely adopted deployment platform.  Our results demonstrate a <u>95% reduction</u> in Time To First Token (TTFT) and a <u>127% increase</u> in overall throughput compared to the baseline strategy.</p>
 <h2 id="1-introduction">1. Introduction<a class="headerlink" href="#1-introduction" title="Permanent link">&para;</a></h2>
 <p>Before an inference engine such as vLLM can begin generating output tokens, it must first process the input prompt during the “prefill phase”. The resulting intermediate representation is stored in a key-value (KV) cache. This cache can be reused across multiple requests that share the same prefix - a feature known as "prefix caching". The impact of prefix caching can be significant in several real world scenarios:</p>
 <p><strong>Multi-turn Conversations:</strong> In applications like chatbots (e.g., ChatGPT) or autonomous AI agents, every new turn appends to an evolving shared context.</p>
-<p><img alt="Multi-turn conversation diagram" src="../../diagrams/multi-turn-clients.excalidraw.png" /></p>
+<p><img alt="Multi-turn conversation diagram" src="../../../../../diagrams/multi-turn-clients.excalidraw.png" /></p>
 <p><strong>Multi-threaded Requests with Shared Context:</strong>
 Scenarios that involve multiple queries against a single long document are particularly sensitive to the efficiency of prefix caching. When requests are executed concurrently, even slight improvements in cache hit rates can lead to substantial reductions in end-to-end latency.</p>
-<p><img alt="Multi-threaded shared context diagram" src="../../diagrams/multi-threaded-shared-context.excalidraw.png" /></p>
+<p><img alt="Multi-threaded shared context diagram" src="../../../../../diagrams/multi-threaded-shared-context.excalidraw.png" /></p>
 <p>The conventional random routing strategy provided by Kubernetes often results in suboptimal cache utilization, leading to frequent cache evictions and degraded performance.</p>
-<p><img alt="Random vs consistent routing" src="../../diagrams/random-vs-consistent-hash.excalidraw.png" /></p>
+<p><img alt="Random vs consistent routing" src="../../../../../diagrams/random-vs-consistent-hash.excalidraw.png" /></p>
 <h2 id="2-problem-statement">2. Problem Statement<a class="headerlink" href="#2-problem-statement" title="Permanent link">&para;</a></h2>
 <p>An effective load balancing strategy for LLM serving should satisfy the following criteria:</p>
 <p><strong>Maximize Cache Utilization:</strong> Route requests with common prefixes to vLLM replicas with hot caches.</p>
@@ -1667,7 +1767,7 @@ Scenarios that involve multiple queries against a single long document are parti
 <p>The Consistent Hashing with Bounded Loads (CHWBL) algorithm inherently addresses these challenges, making it a compelling choice for LLM load balancing.</p>
 <h2 id="3-proposed-approach-chwbl">3. Proposed Approach: CHWBL<a class="headerlink" href="#3-proposed-approach-chwbl" title="Permanent link">&para;</a></h2>
 <p>The CHWBL algorithm extends traditional consistent hashing by incorporating load bounds, ensuring that no individual replica receives more than its fair share of requests. This approach not only preserves cache affinity but also prevents the overloading of any single server, thereby optimizing overall system performance.</p>
-<p><img alt="CHWBL algorithm diagram" src="../../diagrams/chwbl.excalidraw.png" /></p>
+<p><img alt="CHWBL algorithm diagram" src="../../../../../diagrams/chwbl.excalidraw.png" /></p>
 <h2 id="4-implementation">4. Implementation<a class="headerlink" href="#4-implementation" title="Permanent link">&para;</a></h2>
 <p>We integrated the CHWBL routing strategy into the <a href="https://github.com/substratusai/kubeai" target="_blank">KubeAI project</a> under the PrefixHash configuration. This strategy functions as follows:</p>
 <ol>
@@ -1724,9 +1824,9 @@ The configuration is specified on a per-model basis via the following YAML snipp
 <h3 id="54-results">5.4. Results<a class="headerlink" href="#54-results" title="Permanent link">&para;</a></h3>
 <p>The benchmark showed that the PrefixHash strategy resulted in significant improvements in TTFT and throughput compared to both the default Kubernetes Service and the LeastLoad strategy.</p>
 <p><strong>TTFT:</strong> The PrefixHash strategy resulted in a <u>95% reduction in Time to First Token</u> compared to the built-in Kubernetes strategy when the system was operating at 1200 concurrent threads (150 threads per replica).</p>
-<p><img alt="Mean TTFT Barchart" src="../../graphs/ttft-benchmark.png" /></p>
+<p><img alt="Mean TTFT Barchart" src="../../../../../graphs/ttft-benchmark.png" /></p>
 <p><strong>Throughput:</strong> The PrefixHash strategy resulted in a <u>127% increase in throughput</u> compared to the built-in Kubernetes strategy when the system was operating at 1200 concurrent threads (150 threads per replica).</p>
-<p><img alt="Mean TPS barchart" src="../../graphs/throughput-benchmark.png" /></p>
+<p><img alt="Mean TPS barchart" src="../../../../../graphs/throughput-benchmark.png" /></p>
 <h2 id="6-conclusion">6. Conclusion<a class="headerlink" href="#6-conclusion" title="Permanent link">&para;</a></h2>
 <p>In this work, we demonstrated that incorporating the CHWBL algorithm into LLM load balancing through the PrefixHash strategy in KubeAI can significantly enhance performance in real-world scenarios. Notably, improvements in cache hit rates yielded lower latency and increased throughput. Moving forward, we plan to expand our benchmarks to cover a broader range of workloads. We plan to incorporate benchmarks for emerging strategies as they come out, with the ultimate aim of ensuring that KubeAI features the most effective load balancing techniques.</p>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
@@ -1742,15 +1842,20 @@ The configuration is specified on a per-model basis via the following YAML snipp
 
 
 
+  
+  
 
 
 
 
+  
 
-                
-              </article>
-            </div>
-          
+
+
+      
+    </article>
+  </div>
+
           
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
@@ -1781,10 +1886,10 @@ The configuration is specified on a per-model basis via the following YAML snipp
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../../../../..", "features": [], "search": "../../../../../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.f1b6f286.min.js"></script>
+      <script src="../../../../../assets/javascripts/bundle.f1b6f286.min.js"></script>
       
     
   </body>

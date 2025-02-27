@@ -13,6 +13,14 @@
          <lastmod>2025-02-27</lastmod>
     </url>
     <url>
+         <loc>https://www.kubeai.org/blog/</loc>
+         <lastmod>2025-02-27</lastmod>
+    </url>
+    <url>
+         <loc>https://www.kubeai.org/blog/2025/02/26/llm-load-balancing-at-scale-chwbl/</loc>
+         <lastmod>2025-02-27</lastmod>
+    </url>
+    <url>
          <loc>https://www.kubeai.org/concepts/autoscaling/</loc>
          <lastmod>2025-02-27</lastmod>
     </url>
@@ -113,10 +121,6 @@
          <lastmod>2025-02-27</lastmod>
     </url>
     <url>
-         <loc>https://www.kubeai.org/papers/llm-load-balancing-at-scale-chwbl/</loc>
-         <lastmod>2025-02-27</lastmod>
-    </url>
-    <url>
          <loc>https://www.kubeai.org/reference/kubernetes-api/</loc>
          <lastmod>2025-02-27</lastmod>
     </url>
@@ -138,6 +142,14 @@
     </url>
     <url>
          <loc>https://www.kubeai.org/tutorials/weaviate/</loc>
+         <lastmod>2025-02-27</lastmod>
+    </url>
+    <url>
+         <loc>https://www.kubeai.org/blog/archive/2025/</loc>
+         <lastmod>2025-02-27</lastmod>
+    </url>
+    <url>
+         <loc>https://www.kubeai.org/blog/category/performance/</loc>
          <lastmod>2025-02-27</lastmod>
     </url>
 </urlset>
