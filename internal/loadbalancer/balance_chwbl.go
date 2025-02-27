@@ -18,7 +18,6 @@ func (g *group) chwblGetAddr(key string, loadFactor float64, adapter string) (en
 
 	h := chwblHash(key)
 	hash0, i0 := g.chwblSearch(h)
-	//log.Printf("hash: %v, i0: %v", h, i0)
 
 	{
 		name0 := g.chwblHashes[hash0]
