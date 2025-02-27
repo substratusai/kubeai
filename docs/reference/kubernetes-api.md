@@ -194,7 +194,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `meanLoadFactor` _integer_ | MeanLoadPercentage is the percentage that any given endpoint's load must not exceed<br />over the mean load of all endpoints in the hash ring. Defaults to 125% which is<br />a widely accepted value for the Consistent Hashing with Bounded Loads algorithm. | 125 | Minimum: 100 <br />Optional: \{\} <br /> |
-| `replication` _integer_ | Replication is the number of replicas of each endpoint on the hash ring.<br />Higher values will result in a more even distribution of load but will<br />decrease lookup performance. | 20 | Optional: \{\} <br /> |
+| `replication` _integer_ | Replication is the number of replicas of each endpoint on the hash ring.<br />Higher values will result in a more even distribution of load but will<br />decrease lookup performance. | 256 | Optional: \{\} <br /> |
 | `prefixCharLength` _integer_ | PrefixCharLength is the number of characters to count when building the prefix to hash. | 100 | Optional: \{\} <br /> |
 
 
