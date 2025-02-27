@@ -6,7 +6,7 @@ Posted by [Nick Stogner](https://www.linkedin.com/in/nstogner/), Co-Founder of [
 
 ## Abstract:
 
-When deploying large language models (LLMs) at scale efficient load balancing is crucial for minimizing latency and maximizing throughput. We explore the application of the Consistent Hashing with Bounded Loads (CHWBL) algorithm in the domain of LLM serving. Our approach dramatically reduces Time To First Token (TTFT) while improving overall Tokens Per Second (TPS) compared to the baseline strategies.
+Operating large language models (LLMs) at scale in real-world scenarios necessitates multiple backend replicas. The inter-replica load balancing algorithm greatly influences overall system performance by impacting the caching dynamics inherent in modern inference engines. In this study, we explore the application of the Consistent Hashing with Bounded Loads (CHWBL) algorithm in the domain of LLM inference. We simulate real-world load patterns on Kubernetes, the industry's most widely adopted deployment platform.  Our results demonstrate a <u>95% reduction</u> in Time To First Token (TTFT) and a <u>127% increase</u> in overall throughput compared to the baseline strategy.
 
 ## 1. Introduction
 
@@ -21,7 +21,7 @@ Scenarios that involve multiple queries against a single long document are parti
 
 ![Multi-threaded shared context diagram](../diagrams/multi-threaded-shared-context.excalidraw.png)
 
-The conventional random routing strategy provided by Kubernetes often results in suboptimal cache utilization, leading to frequent cache evictions and degraded performance. A more consistent routing methodology is would be beneficial to keep a relevant cache on each replica.
+The conventional random routing strategy provided by Kubernetes often results in suboptimal cache utilization, leading to frequent cache evictions and degraded performance.
 
 ![Random vs consistent routing](../diagrams/random-vs-consistent-hash.excalidraw.png)
 
