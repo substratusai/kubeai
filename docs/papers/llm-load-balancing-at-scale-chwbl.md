@@ -10,16 +10,16 @@ Before an inference engine such as vLLM can begin generating output tokens, it m
 
 **Multi-turn Conversations:** In applications like chatbots (e.g., ChatGPT) or autonomous AI agents, every new turn appends to an evolving shared context.
 
-<img src="/diagrams/multi-turn-clients.excalidraw.png" style="max-width:600px" alt="Multi-turn conversation diagram">
+<img src="/diagrams/multi-turn-clients.excalidraw.png" style="max-height:700px" alt="Multi-turn conversation diagram">
 
 **Multi-threaded Requests with Shared Context:**
 Scenarios that involve multiple queries against a single long document are particularly sensitive to the efficiency of prefix caching. When requests are executed concurrently, even slight improvements in cache hit rates can lead to substantial reductions in end-to-end latency.
 
-<img src="/diagrams/multi-threaded-shared-context.excalidraw.png" style="max-width:600px" alt="Multi-threaded shared context diagram">
+<img src="/diagrams/multi-threaded-shared-context.excalidraw.png" style="max-height:700px" alt="Multi-threaded shared context diagram">
 
 The conventional random routing strategy provided by Kubernetes often results in suboptimal cache utilization, leading to frequent cache evictions and degraded performance. A more consistent routing methodology is would be beneficial to keep a relevant cache on each replica.
 
-<img src="/diagrams/random-vs-consistent-hash.excalidraw.png" style="max-width:800px"></img>
+<img src="/diagrams/random-vs-consistent-hash.excalidraw.png"></img>
 
 ## 2. Problem Statement
 
@@ -37,7 +37,7 @@ The Consistent Hashing with Bounded Loads (CHWBL) algorithm inherently addresses
 
 The CHWBL algorithm extends traditional consistent hashing by incorporating load bounds, ensuring that no individual replica receives more than its fair share of requests. This approach not only preserves cache affinity but also prevents the overloading of any single server, thereby optimizing overall system performance.
 
-<img src="/diagrams/chwbl.excalidraw.png" style="max-width:600px" alt="CHWBL algorithm diagram">
+<img src="/diagrams/chwbl.excalidraw.png" alt="CHWBL algorithm diagram">
 
 ## 4. Implementation
 
@@ -99,11 +99,11 @@ The benchmark showed that the PrefixHash strategy resulted in significant improv
 
 **TTFT:** The PrefixHash strategy resulted in a <u>95% reduction in Time to First Token</u> compared to the built-in Kubernetes strategy when the system was operating at 1200 concurrent threads (150 threads per replica).
 
-<img src="/graphs/ttft-benchmark.png" style="max-width:600px" alt="Mean TTFT barchart"></img>
+<img src="/graphs/ttft-benchmark.png" alt="Mean TTFT barchart"></img>
 
 **Throughput:** The PrefixHash strategy resulted in a <u>127% increase in throughput</u> compared to the built-in Kubernetes strategy when the system was operating at 1200 concurrent threads (150 threads per replica).
 
-<img src="/graphs/throughput-benchmark.png" style="max-width:600px"></img>
+<img src="/graphs/throughput-benchmark.png" alt="Mean TPS barchart"></img>
 
 ## 6. Conclusion
 
