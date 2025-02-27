@@ -1,8 +1,8 @@
 # LLM Load Balancing at Scale: Consistent Hashing with Bounded Loads
 
-*Date:* Feb 26, 2025
+Feb 26, 2025
 
-*Author:* [Nick Stogner](https://www.linkedin.com/in/nstogner/)
+Posted by [Nick Stogner](https://www.linkedin.com/in/nstogner/), cofounder of [Substratus.AI](https://www.substratus.ai/)
 
 ## Abstract:
 
