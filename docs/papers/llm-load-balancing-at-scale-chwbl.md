@@ -66,7 +66,7 @@ spec:
 
 ### 5.1. Scenarios
 
-To evaluate the efficacy of the PrefixHash strategy, we conducted experiments using three distinct load balancing scenarios:
+We conducted experiments using three distinct load balancing strategies:
 
 1. **Kubernetes Service (Random)**
     * Utilized the default Kubernetes Service, bypassing the KubeAI proxy.
