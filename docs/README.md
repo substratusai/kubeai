@@ -23,7 +23,7 @@ Quotes from the community:
 ## Why KubeAI?
 
 ### Better performance at scale
-When running multiple replicas of a serving engine such as vLLM, performance under production traffic is heavily influence by the load balancing strategy.
+When running multiple replicas of a serving engine such as vLLM, performance under production traffic is heavily influenced by the load balancing strategy.
 
 KubeAI supports Least Load and Prefix Hash load balancing. Prefix Hash
 load balancing with the KubeAI proxy provides a significant performance boost.
