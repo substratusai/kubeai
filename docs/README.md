@@ -28,9 +28,9 @@ When running multiple replicas of a serving engine such as vLLM, performance und
 KubeAI supports Least Load and Prefix Hash load balancing. Prefix Hash
 load balancing with the KubeAI proxy provides a significant performance boost.
 
-<img src="./benchmarks/prefix-aware-load-balancing-mean-ttft.png" width="80%"/>
+<img src="./graphs/ttft-benchmark.png" width="80%"/>
 
-See the [full benchmark](./benchmarks/prefix-aware-load-balancing.md) for more details.
+See the [full paper](./papers/llm-load-balancing-at-scale-chwbl.md) for more details.
 
 ### Simplicity and ease of use
 KubeAI does not have other dependencies which makes it possible to deploy
