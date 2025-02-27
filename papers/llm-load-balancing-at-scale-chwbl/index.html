@@ -8,13 +8,11 @@
       
       
       
-        <link rel="canonical" href="https://www.kubeai.org/how-to/configure-text-generation-models/">
+        <link rel="canonical" href="https://www.kubeai.org/papers/llm-load-balancing-at-scale-chwbl/">
       
       
-        <link rel="prev" href="../configure-speech-to-text/">
+        <link rel="prev" href="../../benchmarks/prefix-aware-load-balancing/">
       
-      
-        <link rel="next" href="../install-models/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +20,7 @@
     
     
       
-        <title>Configure Text Generation Models - KubeAI</title>
+        <title>LLM Load Balancing at Scale: Consistent Hashing with Bounded Loads - KubeAI</title>
       
     
     
@@ -72,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#configure-text-generation-models" class="md-skip">
+        <a href="#llm-load-balancing-at-scale-consistent-hashing-with-bounded-loads" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +106,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Configure Text Generation Models
+              LLM Load Balancing at Scale: Consistent Hashing with Bounded Loads
             
           </span>
         </div>
@@ -352,19 +350,17 @@
       
   
   
-    
   
   
-  
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -379,7 +375,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             How to
@@ -393,7 +389,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architect-for-multitenancy/" class="md-nav__link">
+      <a href="../../how-to/architect-for-multitenancy/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -415,7 +411,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../authenticate-to-model-repos/" class="md-nav__link">
+      <a href="../../how-to/authenticate-to-model-repos/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -437,7 +433,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../build-models-into-containers/" class="md-nav__link">
+      <a href="../../how-to/build-models-into-containers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -459,7 +455,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cache-models-with-aws-efs/" class="md-nav__link">
+      <a href="../../how-to/cache-models-with-aws-efs/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -481,7 +477,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cache-models-with-gcp-filestore/" class="md-nav__link">
+      <a href="../../how-to/cache-models-with-gcp-filestore/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -503,7 +499,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configure-autoscaling/" class="md-nav__link">
+      <a href="../../how-to/configure-autoscaling/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -525,7 +521,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configure-embedding-models/" class="md-nav__link">
+      <a href="../../how-to/configure-embedding-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -547,7 +543,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configure-resource-profiles/" class="md-nav__link">
+      <a href="../../how-to/configure-resource-profiles/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -569,7 +565,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configure-speech-to-text/" class="md-nav__link">
+      <a href="../../how-to/configure-speech-to-text/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -588,31 +584,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Configure Text Generation Models
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../how-to/configure-text-generation-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -622,107 +597,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#install-a-text-generation-model-using-helm" class="md-nav__link">
-    <span class="md-ellipsis">
-      Install a Text Generation Model using Helm
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Install a Text Generation Model using Helm">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#install-text-generation-model-using-l4-gpu" class="md-nav__link">
-    <span class="md-ellipsis">
-      Install Text Generation Model using L4 GPU
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#install-a-text-generation-model-using-kubectl" class="md-nav__link">
-    <span class="md-ellipsis">
-      Install a Text Generation Model using kubectl
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Install a Text Generation Model using kubectl">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#install-text-generation-model-using-l4-gpu_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      Install Text Generation Model using L4 GPU
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#interact-with-the-text-generation-model" class="md-nav__link">
-    <span class="md-ellipsis">
-      Interact with the Text Generation Model
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Interact with the Text Generation Model">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#using-curl-to-interact-with-the-model" class="md-nav__link">
-    <span class="md-ellipsis">
-      Using curl to interact with the model
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#using-the-openai-python-sdk-to-interact-with-the-model" class="md-nav__link">
-    <span class="md-ellipsis">
-      Using the OpenAI Python SDK to interact with the model
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -735,7 +609,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../install-models/" class="md-nav__link">
+      <a href="../../how-to/install-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -757,7 +631,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../observability-with-prometheus-stack/" class="md-nav__link">
+      <a href="../../how-to/observability-with-prometheus-stack/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -779,7 +653,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../serve-lora-adapters/" class="md-nav__link">
+      <a href="../../how-to/serve-lora-adapters/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1394,17 +1268,19 @@
       
   
   
+    
   
   
+  
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
         
           
           <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
@@ -1419,7 +1295,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_9">
             <span class="md-nav__icon md-icon"></span>
             Papers
@@ -1430,10 +1306,31 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../papers/llm-load-balancing-at-scale-chwbl/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    LLM Load Balancing at Scale: Consistent Hashing with Bounded Loads
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -1443,6 +1340,140 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract:
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Introduction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-problem-statement" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Problem Statement
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-proposed-approach-chwbl" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Proposed Approach: CHWBL
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Implementation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Evaluation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Evaluation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-scenarios" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.1. Scenarios
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.2. Setup
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.3. Metrics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.4. Results
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Conclusion
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1482,19 +1513,91 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#install-a-text-generation-model-using-helm" class="md-nav__link">
+  <a href="#abstract" class="md-nav__link">
     <span class="md-ellipsis">
-      Install a Text Generation Model using Helm
+      Abstract:
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Install a Text Generation Model using Helm">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Introduction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-problem-statement" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Problem Statement
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-proposed-approach-chwbl" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Proposed Approach: CHWBL
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Implementation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Evaluation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Evaluation">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#install-text-generation-model-using-l4-gpu" class="md-nav__link">
+  <a href="#51-scenarios" class="md-nav__link">
     <span class="md-ellipsis">
-      Install Text Generation Model using L4 GPU
+      5.1. Scenarios
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.2. Setup
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.3. Metrics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.4. Results
     </span>
   </a>
   
@@ -1506,59 +1609,20 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#install-a-text-generation-model-using-kubectl" class="md-nav__link">
+  <a href="#6-conclusion" class="md-nav__link">
     <span class="md-ellipsis">
-      Install a Text Generation Model using kubectl
+      6. Conclusion
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Install a Text Generation Model using kubectl">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#install-text-generation-model-using-l4-gpu_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      Install Text Generation Model using L4 GPU
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#interact-with-the-text-generation-model" class="md-nav__link">
+  <a href="#references" class="md-nav__link">
     <span class="md-ellipsis">
-      Interact with the Text Generation Model
+      References
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Interact with the Text Generation Model">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#using-curl-to-interact-with-the-model" class="md-nav__link">
-    <span class="md-ellipsis">
-      Using curl to interact with the model
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#using-the-openai-python-sdk-to-interact-with-the-model" class="md-nav__link">
-    <span class="md-ellipsis">
-      Using the OpenAI Python SDK to interact with the model
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1581,109 +1645,96 @@
   
 
 
-<h1 id="configure-text-generation-models">Configure Text Generation Models<a class="headerlink" href="#configure-text-generation-models" title="Permanent link">&para;</a></h1>
-<p>KubeAI supports the following engines for text generation models (LLMs, VLMs, ..):</p>
-<ul>
-<li>vLLM (Recommended for GPU)</li>
-<li>Ollama (Recommended for CPU)</li>
-<li>Need something else? Please file an issue on <a href="https://github.com/substratusai/kubeai">GitHub</a>.</li>
-</ul>
-<p>There are 2 ways to install a text generation model in KubeAI:
-- Use Helm with the <code>kubeai/models</code> chart.
-- Use <code>kubectl apply -f model.yaml</code> to install a Model Custom Resource.</p>
-<p>KubeAI comes with pre-validated and optimized Model configurations for popular text generation models. These models are available in the
-<a href="https://github.com/substratusai/kubeai/tree/main/charts/models">kubeai/models Helm chart</a>
-and are also published as raw manifests in the
-<a href="https://github.com/substratusai/kubeai/tree/main/manifests/models">manifests/model directory</a>.</p>
-<p>You can also easily define your own models using the Model Custom Resource directly or by using the <code>kubeai/models</code> Helm chart.</p>
-<h2 id="install-a-text-generation-model-using-helm">Install a Text Generation Model using Helm<a class="headerlink" href="#install-a-text-generation-model-using-helm" title="Permanent link">&para;</a></h2>
-<p>You can take a look at all the pre-configured models in the chart's <a href="https://github.com/substratusai/kubeai/blob/main/charts/models/values.yaml">default values file</a>.</p>
-<p>You can get the default values for the models chart using the following command:
-<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>show<span class="w"> </span>values<span class="w"> </span>kubeai/models
-</code></pre></div></p>
-<h3 id="install-text-generation-model-using-l4-gpu">Install Text Generation Model using L4 GPU<a class="headerlink" href="#install-text-generation-model-using-l4-gpu" title="Permanent link">&para;</a></h3>
-<p>Enable the Llama 3.1 8B model using the Helm chart:</p>
-<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>--reuse-values<span class="w"> </span>kubeai-models<span class="w"> </span>kubeai/models<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;EOF</span>
-<span class="s">catalog:</span>
-<span class="s">  llama-3.1-8b-instruct-fp8-l4:</span>
-<span class="s">    enabled: true</span>
-<span class="s">    engine: VLLM</span>
-<span class="s">    resourceProfile: nvidia-gpu-l4:1</span>
-<span class="s">    minReplicas: 1 # by default this is 0</span>
-<span class="s">EOF</span>
-</code></pre></div>
-<h2 id="install-a-text-generation-model-using-kubectl">Install a Text Generation Model using kubectl<a class="headerlink" href="#install-a-text-generation-model-using-kubectl" title="Permanent link">&para;</a></h2>
-<p>You can use the Model Custom Resource directly to install a model using <code>kubectl apply -f model.yaml</code>.</p>
-<h3 id="install-text-generation-model-using-l4-gpu_1">Install Text Generation Model using L4 GPU<a class="headerlink" href="#install-text-generation-model-using-l4-gpu_1" title="Permanent link">&para;</a></h3>
-<p>Apply the following Model Custom Resource to install the Llama 3.1 8B model using vLLM on L4 GPU:
-<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubeai.org/v1</span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Model</span>
-<span class="nt">metadata</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">llama-3.1-8b-instruct-fp8-l4</span>
+<h1 id="llm-load-balancing-at-scale-consistent-hashing-with-bounded-loads">LLM Load Balancing at Scale: Consistent Hashing with Bounded Loads<a class="headerlink" href="#llm-load-balancing-at-scale-consistent-hashing-with-bounded-loads" title="Permanent link">&para;</a></h1>
+<p>Feb 26, 2025</p>
+<p>Posted by <a href="https://www.linkedin.com/in/nstogner/">Nick Stogner</a>, Co-Founder of <a href="https://www.substratus.ai/">Substratus.AI</a></p>
+<h2 id="abstract">Abstract:<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
+<p>Operating large language models (LLMs) at scale in real-world scenarios necessitates multiple backend replicas. The inter-replica load balancing algorithm greatly influences overall system performance by impacting the caching dynamics inherent in modern inference engines. In this study, we explore the application of the Consistent Hashing with Bounded Loads (CHWBL) algorithm in the domain of LLM inference. We simulate real-world load patterns on Kubernetes, the industry's most widely adopted deployment platform.  Our results demonstrate a <u>95% reduction</u> in Time To First Token (TTFT) and a <u>127% increase</u> in overall throughput compared to the baseline strategy.</p>
+<h2 id="1-introduction">1. Introduction<a class="headerlink" href="#1-introduction" title="Permanent link">&para;</a></h2>
+<p>Before an inference engine such as vLLM can begin generating output tokens, it must first process the input prompt during the “prefill phase”. The resulting intermediate representation is stored in a key-value (KV) cache. This cache can be reused across multiple requests that share the same prefix - a feature known as "prefix caching". The impact of prefix caching can be significant in several real world scenarios:</p>
+<p><strong>Multi-turn Conversations:</strong> In applications like chatbots (e.g., ChatGPT) or autonomous AI agents, every new turn appends to an evolving shared context.</p>
+<p><img alt="Multi-turn conversation diagram" src="../../diagrams/multi-turn-clients.excalidraw.png" /></p>
+<p><strong>Multi-threaded Requests with Shared Context:</strong>
+Scenarios that involve multiple queries against a single long document are particularly sensitive to the efficiency of prefix caching. When requests are executed concurrently, even slight improvements in cache hit rates can lead to substantial reductions in end-to-end latency.</p>
+<p><img alt="Multi-threaded shared context diagram" src="../../diagrams/multi-threaded-shared-context.excalidraw.png" /></p>
+<p>The conventional random routing strategy provided by Kubernetes often results in suboptimal cache utilization, leading to frequent cache evictions and degraded performance.</p>
+<p><img alt="Random vs consistent routing" src="../../diagrams/random-vs-consistent-hash.excalidraw.png" /></p>
+<h2 id="2-problem-statement">2. Problem Statement<a class="headerlink" href="#2-problem-statement" title="Permanent link">&para;</a></h2>
+<p>An effective load balancing strategy for LLM serving should satisfy the following criteria:</p>
+<p><strong>Maximize Cache Utilization:</strong> Route requests with common prefixes to vLLM replicas with hot caches.</p>
+<p><strong>Adapt to Replica Changes:</strong> Minimize cache shuffling as replicas come and go.</p>
+<p><strong>Avoid Uneven Load Distribution:</strong> Prevent any single replica from becoming overloaded.</p>
+<p>The Consistent Hashing with Bounded Loads (CHWBL) algorithm inherently addresses these challenges, making it a compelling choice for LLM load balancing.</p>
+<h2 id="3-proposed-approach-chwbl">3. Proposed Approach: CHWBL<a class="headerlink" href="#3-proposed-approach-chwbl" title="Permanent link">&para;</a></h2>
+<p>The CHWBL algorithm extends traditional consistent hashing by incorporating load bounds, ensuring that no individual replica receives more than its fair share of requests. This approach not only preserves cache affinity but also prevents the overloading of any single server, thereby optimizing overall system performance.</p>
+<p><img alt="CHWBL algorithm diagram" src="../../diagrams/chwbl.excalidraw.png" /></p>
+<h2 id="4-implementation">4. Implementation<a class="headerlink" href="#4-implementation" title="Permanent link">&para;</a></h2>
+<p>We integrated the CHWBL routing strategy into the <a href="https://github.com/substratusai/kubeai" target="_blank">KubeAI project</a> under the PrefixHash configuration. This strategy functions as follows:</p>
+<ol>
+<li><strong>Request Inspection:</strong> The incoming HTTP body is analyzed (OpenAI-formatted API request).</li>
+<li><strong>Prefix Extraction:</strong> A configurable prefix is extracted from the request (for example, using the first user message in chat completions).</li>
+<li><strong>Hashing:</strong> The extracted prefix is hashed using the <code>xxHash</code> algorithm.</li>
+<li><strong>Replica Lookup:</strong> The hash value is used to select the appropriate vLLM replica using the CHWBL algorithm.
+The configuration is specified on a per-model basis via the following YAML snippet:</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Model</span>
 <span class="nt">spec</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">features</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">TextGeneration</span><span class="p p-Indicator">]</span>
-<span class="w">  </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hf://neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8</span>
-<span class="w">  </span><span class="nt">engine</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">VLLM</span>
-<span class="w">  </span><span class="nt">args</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--max-model-len=16384</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--max-num-batched-token=16384</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--gpu-memory-utilization=0.9</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--disable-log-requests</span>
-<span class="w">  </span><span class="nt">resourceProfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nvidia-gpu-l4:1</span>
-</code></pre></div></p>
-<h2 id="interact-with-the-text-generation-model">Interact with the Text Generation Model<a class="headerlink" href="#interact-with-the-text-generation-model" title="Permanent link">&para;</a></h2>
-<p>The KubeAI service exposes an OpenAI compatible API that you can use to query the available models and interact with them.</p>
-<p>The KubeAI service is available at <code>http://kubeai/openai/v1</code> within the Kubernetes cluster.</p>
-<p>You can also port-forward the KubeAI service to your local machine to interact with the models:</p>
-<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>port-forward<span class="w"> </span>svc/kubeai<span class="w"> </span><span class="m">8000</span>:80
+<span class="w">  </span><span class="c1"># ...</span>
+<span class="w">  </span><span class="nt">loadBalancing</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PrefixHash</span>
+<span class="w">    </span><span class="c1"># Optional parameters:</span>
+<span class="w">    </span><span class="nt">prefixHash</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">meanLoadFactor</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">125</span>
+<span class="w">      </span><span class="nt">prefixCharLength</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span>
+<span class="w">      </span><span class="nt">replication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">256</span>
 </code></pre></div>
-<p>You can now query the available models using curl:</p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:8000/openai/v1/models
-</code></pre></div>
-<h3 id="using-curl-to-interact-with-the-model">Using curl to interact with the model<a class="headerlink" href="#using-curl-to-interact-with-the-model" title="Permanent link">&para;</a></h3>
-<p>Run the following curl command to interact with the model named <code>llama-3.1-8b-instruct-fp8-l4</code>:
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span><span class="s2">&quot;http://localhost:8000/openai/v1/chat/completions&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>-d<span class="w"> </span><span class="s1">&#39;{</span>
-<span class="s1">        &quot;model&quot;: &quot;llama-3.1-8b-instruct-fp8-l4&quot;,</span>
-<span class="s1">        &quot;messages&quot;: [</span>
-<span class="s1">            {</span>
-<span class="s1">                &quot;role&quot;: &quot;system&quot;,</span>
-<span class="s1">                &quot;content&quot;: &quot;You are a helpful assistant.&quot;</span>
-<span class="s1">            },</span>
-<span class="s1">            {</span>
-<span class="s1">                &quot;role&quot;: &quot;user&quot;,</span>
-<span class="s1">                &quot;content&quot;: &quot;Write a haiku about recursion in programming.&quot;</span>
-<span class="s1">            }</span>
-<span class="s1">        ]</span>
-<span class="s1">    }&#39;</span>
-</code></pre></div></p>
-<h3 id="using-the-openai-python-sdk-to-interact-with-the-model">Using the OpenAI Python SDK to interact with the model<a class="headerlink" href="#using-the-openai-python-sdk-to-interact-with-the-model" title="Permanent link">&para;</a></h3>
-<p>Once the pod is ready, you can use the OpenAI Python SDK to interact with the model:
-All OpenAI SDKs work with KubeAI since the KubeAI service is OpenAI API compatible.</p>
-<p>See the below example code to interact with the model using the OpenAI Python SDK:
-<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">openai</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenAI</span>
-<span class="c1"># Assumes port-forward of kubeai service to localhost:8000.</span>
-<span class="n">kubeai_endpoint</span> <span class="o">=</span> <span class="s2">&quot;http://localhost:8000/openai/v1&quot;</span>
-<span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;llama-3.1-8b-instruct-fp8-l4&quot;</span>
-
-<span class="c1"># If you are running in a Kubernetes cluster, you can use the kubeai service endpoint.</span>
-<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;KUBERNETES_SERVICE_HOST&quot;</span><span class="p">):</span>
-    <span class="n">kubeai_endpoint</span> <span class="o">=</span> <span class="s2">&quot;http://kubeai/openai/v1&quot;</span>
-
-<span class="n">client</span> <span class="o">=</span> <span class="n">OpenAI</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span><span class="p">,</span> <span class="n">base_url</span><span class="o">=</span><span class="n">kubeai_endpoint</span><span class="p">)</span>
-
-<span class="n">chat_completion</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
-    <span class="n">messages</span><span class="o">=</span><span class="p">[</span>
-        <span class="p">{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;Say this is a test&quot;</span><span class="p">,</span>
-        <span class="p">}</span>
-    <span class="p">],</span>
-    <span class="n">model</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span>
-<span class="p">)</span>
-</code></pre></div></p>
+<h2 id="5-evaluation">5. Evaluation<a class="headerlink" href="#5-evaluation" title="Permanent link">&para;</a></h2>
+<h3 id="51-scenarios">5.1. Scenarios<a class="headerlink" href="#51-scenarios" title="Permanent link">&para;</a></h3>
+<p>We conducted experiments using three distinct load balancing strategies:</p>
+<ol>
+<li><strong>Kubernetes Service (Random)</strong><ul>
+<li>Utilized the default Kubernetes Service, bypassing the KubeAI proxy.</li>
+<li>Relied on <code>iptables</code> for proxying via kube-proxy.</li>
+</ul>
+</li>
+<li><strong>KubeAI (LeastLoad)</strong><ul>
+<li>Employed the KubeAI load balancer to route traffic to the replica with the fewest active requests.</li>
+</ul>
+</li>
+<li><strong>KubeAI (PrefixHash)</strong><ul>
+<li>Applied a CHWBL-driven strategy to route requests via the KubeAI proxy.</li>
+</ul>
+</li>
+</ol>
+<h3 id="52-setup">5.2. Setup<a class="headerlink" href="#52-setup" title="Permanent link">&para;</a></h3>
+<p>A Kubernetes cluster running KubeAI was setup with the following specifications:</p>
+<ul>
+<li><strong>Hardware:</strong> 8x L4 GPUs</li>
+<li><strong>Software:</strong> 8x vLLM instances</li>
+<li><strong>Model:</strong> Llama 3.1 8B</li>
+<li><strong>Dataset:</strong> Message threads derived from ShareGPT</li>
+<li><strong>Workload:</strong> A custom load generator simulating parallel chat completion threads, preserving conversation state by appending LLM responses in a loop.</li>
+</ul>
+<h3 id="53-metrics">5.3. Metrics<a class="headerlink" href="#53-metrics" title="Permanent link">&para;</a></h3>
+<p>Our evaluation focused on two key performance metrics:</p>
+<ul>
+<li><strong>Time To First Token (TTFT):</strong> The latency before the first token is generated.</li>
+<li><strong>Tokens Per Second (TPS):</strong> The overall throughput of token generation.</li>
+</ul>
+<h3 id="54-results">5.4. Results<a class="headerlink" href="#54-results" title="Permanent link">&para;</a></h3>
+<p>The benchmark showed that the PrefixHash strategy resulted in significant improvements in TTFT and throughput compared to both the default Kubernetes Service and the LeastLoad strategy.</p>
+<p><strong>TTFT:</strong> The PrefixHash strategy resulted in a <u>95% reduction in Time to First Token</u> compared to the built-in Kubernetes strategy when the system was operating at 1200 concurrent threads (150 threads per replica).</p>
+<p><img alt="Mean TTFT Barchart" src="../../graphs/ttft-benchmark.png" /></p>
+<p><strong>Throughput:</strong> The PrefixHash strategy resulted in a <u>127% increase in throughput</u> compared to the built-in Kubernetes strategy when the system was operating at 1200 concurrent threads (150 threads per replica).</p>
+<p><img alt="Mean TPS barchart" src="../../graphs/throughput-benchmark.png" /></p>
+<h2 id="6-conclusion">6. Conclusion<a class="headerlink" href="#6-conclusion" title="Permanent link">&para;</a></h2>
+<p>In this work, we demonstrated that incorporating the CHWBL algorithm into LLM load balancing through the PrefixHash strategy in KubeAI can significantly enhance performance in real-world scenarios. Notably, improvements in cache hit rates yielded lower latency and increased throughput. Moving forward, we plan to expand our benchmarks to cover a broader range of workloads. We plan to incorporate benchmarks for emerging strategies as they come out, with the ultimate aim of ensuring that KubeAI features the most effective load balancing techniques.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="https://docs.vllm.ai/en/latest/features/automatic_prefix_caching.html">vLLM Documentation on Automatic Prefix Caching</a></li>
+<li><a href="https://research.google/blog/consistent-hashing-with-bounded-loads/">Google Research: Consistent Hashing with Bounded Loads.</a></li>
+<li><a href="https://www.kubeai.org/concepts/load-balancing/">KubeAI Load Balancing Concepts</a></li>
+</ul>
 
 
 
