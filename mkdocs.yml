@@ -20,6 +20,8 @@ nav:
 plugins:
     - search
     - awesome-pages
+    - blog
+    - social
 markdown_extensions:
   # Python Markdown
   - abbr

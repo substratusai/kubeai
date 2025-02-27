@@ -30,7 +30,7 @@ load balancing with the KubeAI proxy provides a significant performance boost.
 
 <img src="./graphs/ttft-benchmark.png" width="80%"/>
 
-See the [full paper](./papers/llm-load-balancing-at-scale-chwbl.md) for more details.
+See the [full paper](./blog/posts/llm-load-balancing-at-scale-chwbl.md) for more details.
 
 ### Simplicity and ease of use
 KubeAI does not have other dependencies which makes it possible to deploy
