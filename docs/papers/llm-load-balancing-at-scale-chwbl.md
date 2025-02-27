@@ -2,7 +2,7 @@
 
 Feb 26, 2025
 
-Posted by [Nick Stogner](https://www.linkedin.com/in/nstogner/), cofounder of [Substratus.AI](https://www.substratus.ai/)
+Posted by [Nick Stogner](https://www.linkedin.com/in/nstogner/), Co-Founder of [Substratus.AI](https://www.substratus.ai/)
 
 ## Abstract:
 
