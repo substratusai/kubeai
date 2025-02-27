@@ -57,6 +57,7 @@ List of known adopters:
 | Lambda | You can try KubeAI on the Lambda AI Developer Cloud. See Lambda's [tutorial](https://docs.lambdalabs.com/education/large-language-models/kubeai-hermes-3/) and [video](https://youtu.be/HEtPO2Wuiac). | [Lambda](https://lambdalabs.com/) |
 | Vultr | KubeAI can be deployed on Vultr Managed Kubernetes using the application marketplace. | [Vultr](https://www.vultr.com) |
 | Arcee | Arcee uses KubeAI for multi-region, multi-tenant SLM inference. | [Arcee](https://www.arcee.ai/) |
+| Seeweb | Seeweb leverages KubeAI for direct and client-facing GPU inference workloads. KubeAI can be deployed on any GPU server and SKS | [Seeweb](https://www.seeweb.it/en) |
 
 If you are using KubeAI and would like to be listed as an adopter, please make a PR.
 
