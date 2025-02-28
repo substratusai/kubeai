@@ -36,6 +36,20 @@ catalog:
     resourceProfile: cpu:1
     args:
     - --gpu-memory-utilization=0.9
+  mistral-small-24b-instruct-h100:
+    enabled: false
+    features: [TextGeneration]
+    url: hf://mistralai/Mistral-Small-24B-Instruct-2501
+    engine: VLLM
+    env:
+      VLLM_ATTENTION_BACKEND: FLASHINFER
+    args:
+      - --kv-cache-dtype=fp8
+      - --max-num-batched-token=65536
+      - --gpu-memory-utilization=0.9
+      - --enable-prefix-caching
+      - --disable-log-requests
+    resourceProfile: nvidia-gpu-h100:1
   # Gemma #
   gemma2-2b-cpu:
     enabled: false
