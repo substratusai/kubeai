@@ -28,32 +28,55 @@ curl http://localhost:8000/openai/v1/completions \
 
 
 DEEPSEEK_POD=$(kubectl get pod -l model=deepseek-r1-1.5b-cpu -o jsonpath='{.items[0].metadata.name}')
+OLD_MODEL_URL="ollama://deepseek-r1:1.5b"
+NEW_MODEL_URL="ollama://qwen2.5:0.5b"
+
+# Extract the model names without the protocol prefix for container arg checks
+OLD_MODEL_NAME=${OLD_MODEL_URL#ollama://}
+NEW_MODEL_NAME=${NEW_MODEL_URL#ollama://}
 
 # Test to ensure that model url can be updated without requests failing
-kubectl patch model deepseek-r1-1.5b-cpu --type=merge -p '{"spec": {"url": "ollama://qwen2.5:0.5b"}}'
+kubectl patch model deepseek-r1-1.5b-cpu --type=merge -p "{\"spec\": {\"url\": \"$NEW_MODEL_URL\"}}"
 
-# Set maximum number of retries
-MAX_RETRIES=120
-retry_count=0
+# Define a function to check if the old pod is gone
+check_pod_gone() {
+  ! kubectl get pod $DEEPSEEK_POD | grep -q "Running"
+}
 
-# Continiously run curl requests to the model until the new pod is ready
-while true; do
+# Make a request to the model
+make_request() {
   curl http://localhost:8000/openai/v1/completions \
     --max-time 900 \
     -H "Content-Type: application/json" \
     -d '{"model": "deepseek-r1-1.5b-cpu", "prompt": "Who was the first president of the United States?", "max_tokens": 40}'
 
-  # Exit once old pod is gone
-  if ! kubectl get pod $DEEPSEEK_POD | grep -q "Running"; then
-    break
-  fi
+  # Check if the old pod is gone
+  check_pod_gone
+}
 
-  # Increment retry counter and check if max retries reached
-  retry_count=$((retry_count + 1))
-  if [ $retry_count -ge $MAX_RETRIES ]; then
-    echo "Maximum retries ($MAX_RETRIES) reached. Exiting loop."
-    exit 1
-  fi
+retry 120 make_request
 
-  sleep 1
-done
+# Verify that the rollout was successful
+echo "Verifying successful rollout..."
+
+# List the new pods for the model
+echo "Current pods for the model:"
+kubectl get pods -l model=deepseek-r1-1.5b-cpu
+
+# Check that the container args contain the new model URL
+NEW_POD=$(kubectl get pod -l model=deepseek-r1-1.5b-cpu -o jsonpath='{.items[0].metadata.name}')
+CONTAINER_ARGS=$(kubectl get pod $NEW_POD -o jsonpath='{.spec.containers[0].args}')
+echo "Container args for the new pod:"
+echo "$CONTAINER_ARGS"
+
+# Verify that the new model URL is in the container args
+if ! echo "$CONTAINER_ARGS" | grep -q "$NEW_MODEL_NAME"; then
+  echo "❌ Rollout verification failed: New model name '$NEW_MODEL_NAME' not found in container args"
+  exit 1
+fi
+
+# Additional verification: Check that the old URL is no longer in use
+if echo "$CONTAINER_ARGS" | grep -q "$OLD_MODEL_NAME"; then
+  echo "❌ Rollout verification failed: Old model name '$OLD_MODEL_NAME' still found in container args"
+  exit 1
+fi
