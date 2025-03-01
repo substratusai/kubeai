@@ -33,6 +33,8 @@ DEEPSEEK_POD=$(kubectl get pod -l model=deepseek-r1-1.5b-cpu -o jsonpath='{.item
 kubectl patch model deepseek-r1-1.5b-cpu --type=merge -p '{"spec": {"url": "ollama://qwen2.5:0.5b"}}'
 
 # Continiously run curl requests to the model until the new pod is ready
+max_retries=120
+retries=0
 while true; do
   curl http://localhost:8000/openai/v1/completions \
     --max-time 900 \
@@ -43,4 +45,9 @@ while true; do
   if ! kubectl get pod $DEEPSEEK_POD | grep -q "Running"; then
     break
   fi
+  if [ $retries -ge $max_retries ]; then
+    echo "New pod is not ready after $max_retries retries"
+    exit 1
+  fi
+  retries=$((retries + 1))
 done
