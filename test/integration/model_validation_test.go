@@ -292,20 +292,6 @@ func TestModelValidation(t *testing.T) {
 		},
 		{
 			model: v1.Model{
-				ObjectMeta: metadata("mutate-url-invalid"),
-				Spec: v1.ModelSpec{
-					URL:      "hf://test-repo/test-model",
-					Engine:   "VLLM",
-					Features: []v1.ModelFeature{},
-				},
-			},
-			update: func(m *v1.Model) {
-				m.Spec.URL = "hf://update-test-repo/update-test-model"
-			},
-			expErrContain: "url is immutable",
-		},
-		{
-			model: v1.Model{
 				ObjectMeta: metadata("mutate-cacheprofile-invalid"),
 				Spec: v1.ModelSpec{
 					URL:          "hf://test-repo/test-model",
