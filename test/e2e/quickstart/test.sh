@@ -60,20 +60,27 @@ echo "Verifying successful rollout..."
 echo "Current pods for the model:"
 kubectl get pods -l model=deepseek-r1-1.5b-cpu
 
-# Check that the container args contain the new model URL
+# For Ollama models, the model URL is in the startup probe command, not in container args
 NEW_POD=$(kubectl get pod -l model=deepseek-r1-1.5b-cpu -o jsonpath='{.items[0].metadata.name}')
-CONTAINER_ARGS=$(kubectl get pod $NEW_POD -o jsonpath='{.spec.containers[0].args}')
-echo "Container args for the new pod:"
-echo "$CONTAINER_ARGS"
+STARTUP_PROBE_CMD=$(kubectl get pod $NEW_POD -o jsonpath='{.spec.containers[0].startupProbe.exec.command[2]}')
+echo "Startup probe command for the new pod:"
+echo "$STARTUP_PROBE_CMD"
 
-# Verify that the new model URL is in the container args
-if ! echo "$CONTAINER_ARGS" | grep -q "$NEW_MODEL_NAME"; then
-  echo "❌ Rollout verification failed: New model name '$NEW_MODEL_NAME' not found in container args"
+# Verify that the new model URL is in the startup probe command
+if ! echo "$STARTUP_PROBE_CMD" | grep -q "$NEW_MODEL_NAME"; then
+  echo "❌ Rollout verification failed: New model name '$NEW_MODEL_NAME' not found in startup probe command"
   exit 1
 fi
 
 # Check that the old URL is no longer in use
-if echo "$CONTAINER_ARGS" | grep -q "$OLD_MODEL_NAME"; then
-  echo "❌ Rollout verification failed: Old model name '$OLD_MODEL_NAME' still found in container args"
+if echo "$STARTUP_PROBE_CMD" | grep -q "$OLD_MODEL_NAME"; then
+  echo "❌ Rollout verification failed: Old model name '$OLD_MODEL_NAME' still found in startup probe command"
   exit 1
 fi
+
+# Also check that the model is actually available by making a request
+echo "Making a request to verify the model is available..."
+curl http://localhost:8000/openai/v1/completions \
+  --max-time 900 \
+  -H "Content-Type: application/json" \
+  -d '{"model": "deepseek-r1-1.5b-cpu", "prompt": "Who was the first president of the United States?", "max_tokens": 40}'
