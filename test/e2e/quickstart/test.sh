@@ -30,7 +30,7 @@ curl http://localhost:8000/openai/v1/completions \
 DEEPSEEK_POD=$(kubectl get pod -l model=deepseek-r1-1.5b-cpu -o jsonpath='{.items[0].metadata.name}')
 
 # Test to ensure that model url can be updated without requests failing
-kubectl patch model deepseek-r1-1.5b-cpu -p '{"spec": {"url": "ollama://qwen2.5:0.5b"}}'
+kubectl patch model deepseek-r1-1.5b-cpu --type=merge -p '{"spec": {"url": "ollama://qwen2.5:0.5b"}}'
 
 # Continiously run curl requests to the model until the new pod is ready
 while true; do
