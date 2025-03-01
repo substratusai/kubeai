@@ -27,18 +27,15 @@ curl http://localhost:8000/openai/v1/completions \
   -d '{"model": "deepseek-r1-1.5b-cpu", "prompt": "Who was the first president of the United States?", "max_tokens": 40}'
 
 
+# Verify that the Model URL can be updated without requests failing.
 DEEPSEEK_POD=$(kubectl get pod -l model=deepseek-r1-1.5b-cpu -o jsonpath='{.items[0].metadata.name}')
 OLD_MODEL_URL="ollama://deepseek-r1:1.5b"
 NEW_MODEL_URL="ollama://qwen2.5:0.5b"
-
-# Extract the model names without the protocol prefix for container arg checks
 OLD_MODEL_NAME=${OLD_MODEL_URL#ollama://}
 NEW_MODEL_NAME=${NEW_MODEL_URL#ollama://}
 
-# Test to ensure that model url can be updated without requests failing
 kubectl patch model deepseek-r1-1.5b-cpu --type=merge -p "{\"spec\": {\"url\": \"$NEW_MODEL_URL\"}}"
 
-# Define a function to check if the old pod is gone
 check_pod_gone() {
   ! kubectl get pod $DEEPSEEK_POD | grep -q "Running"
 }
@@ -75,7 +72,7 @@ if ! echo "$CONTAINER_ARGS" | grep -q "$NEW_MODEL_NAME"; then
   exit 1
 fi
 
-# Additional verification: Check that the old URL is no longer in use
+# Check that the old URL is no longer in use
 if echo "$CONTAINER_ARGS" | grep -q "$OLD_MODEL_NAME"; then
   echo "❌ Rollout verification failed: Old model name '$OLD_MODEL_NAME' still found in container args"
   exit 1
