@@ -319,6 +319,35 @@ func TestModelValidation(t *testing.T) {
 			},
 			expErrContain: "cacheProfile is immutable",
 		},
+		{
+			model: v1.Model{
+				ObjectMeta: metadata("url-mutable-without-cache-profile-valid"),
+				Spec: v1.ModelSpec{
+					URL:      "hf://test-repo/test-model",
+					Engine:   "VLLM",
+					Features: []v1.ModelFeature{},
+				},
+			},
+			update: func(m *v1.Model) {
+				m.Spec.URL = "hf://test-repo/updated-model"
+			},
+			expValid: true,
+		},
+		{
+			model: v1.Model{
+				ObjectMeta: metadata("url-immutable-with-cache-profile-invalid"),
+				Spec: v1.ModelSpec{
+					URL:          "hf://test-repo/test-model",
+					Engine:       "VLLM",
+					Features:     []v1.ModelFeature{},
+					CacheProfile: "some-cache-profile",
+				},
+			},
+			update: func(m *v1.Model) {
+				m.Spec.URL = "hf://test-repo/updated-model"
+			},
+			expErrContain: "url is immutable when using cacheProfile",
+		},
 	}
 	for _, c := range cases {
 		t.Run(c.model.Name, func(t *testing.T) {

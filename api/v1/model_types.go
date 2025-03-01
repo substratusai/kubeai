@@ -45,7 +45,7 @@ type ModelSpec struct {
 	// "ollama://<model>"
 	//
 	// +kubebuilder:validation:Required
-	// +kubebuilder:validation:XValidation:rule="self == oldSelf", message="url is immutable."
+	// +kubebuilder:validation:XValidation:rule="!has(oldSelf.cacheProfile) || self == oldSelf", message="url is immutable when using cacheProfile."
 	// +kubebuilder:validation:XValidation:rule="self.startsWith(\"hf://\") || self.startsWith(\"pvc://\") || self.startsWith(\"ollama://\") || self.startsWith(\"s3://\") || self.startsWith(\"gs://\") || self.startsWith(\"oss://\")", message="url must start with \"hf://\", \"pvc://\", \"ollama://\", \"s3://\", \"gs://\", or \"oss://\" and not be empty."
 	URL string `json:"url"`
 
