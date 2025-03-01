@@ -27,7 +27,6 @@ import (
 // +kubebuilder:validation:XValidation:rule="!self.url.startsWith(\"oss://\") || has(self.cacheProfile)", message="urls of format \"oss://...\" only supported when using a cacheProfile"
 // +kubebuilder:validation:XValidation:rule="!has(self.maxReplicas) || self.minReplicas <= self.maxReplicas", message="minReplicas should be less than or equal to maxReplicas."
 // +kubebuilder:validation:XValidation:rule="!has(self.adapters) || self.engine == \"VLLM\"", message="adapters only supported with VLLM engine."
-// +kubebuilder:validation:XValidation:rule="!has(oldSelf.cacheProfile) || self.url == oldSelf.url", message="url is immutable when using cacheProfile."
 type ModelSpec struct {
 	// URL of the model to be served.
 	// Currently the following formats are supported:

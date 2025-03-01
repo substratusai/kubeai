@@ -244,8 +244,6 @@ spec:
               rule: '!has(self.maxReplicas) || self.minReplicas <= self.maxReplicas'
             - message: adapters only supported with VLLM engine.
               rule: '!has(self.adapters) || self.engine == "VLLM"'
-            - message: url is immutable when using cacheProfile.
-              rule: '!has(oldSelf.cacheProfile) || self.url == oldSelf.url'
           status:
             description: ModelStatus defines the observed state of Model.
             properties:
