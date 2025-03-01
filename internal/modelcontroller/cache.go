@@ -70,10 +70,67 @@ func (r *ModelReconciler) reconcileCache(ctx context.Context, model *kubeaiv1.Mo
 				return ctrl.Result{}, fmt.Errorf("adding cache deletion finalizer: %w", err)
 			}
 		}
-
 	}
-	// NOTE: .Spec.CacheProfile and .Spec.URL are immutable, so we don't need to check if they
-	// have changed in order to evict a stale cache.
+
+	// Check if URL has changed by comparing with the URL stored in the PVC annotation
+	pvcModelAnn, err := parsePVCModelAnnotation(pvc, model.Name)
+	if err != nil {
+		return ctrl.Result{}, fmt.Errorf("parsing pvc model annotation: %w", err)
+	}
+
+	// Get the stored model URL from annotations if it exists
+	var storedURL string
+	if pvc.Annotations != nil {
+		storedURLKey := fmt.Sprintf("%s/url", kubeaiv1.PVCModelAnnotation(model.Name))
+		storedURL = pvc.Annotations[storedURLKey]
+	}
+
+	// If URL has changed and we have a previous URL, we need to evict the cache first
+	urlChanged := storedURL != "" && storedURL != model.Spec.URL
+
+	// If URL has changed, we need to evict the cache first
+	if urlChanged && pvcModelAnn.UID == string(model.UID) {
+		// Create eviction job if it doesn't exist
+		evictJob := &batchv1.Job{}
+		var evictJobExists bool
+		if err := r.Client.Get(ctx, types.NamespacedName{
+			Namespace: model.Namespace,
+			Name:      evictCacheJobName(model),
+		}, evictJob); err != nil {
+			if apierrors.IsNotFound(err) {
+				evictJobExists = false
+			} else {
+				return ctrl.Result{}, fmt.Errorf("getting cache eviction job: %w", err)
+			}
+		} else {
+			evictJobExists = true
+		}
+
+		if !evictJobExists {
+			job := r.evictCacheJobForModel(model, cfg)
+			if err := ctrl.SetControllerReference(model, job, r.Scheme); err != nil {
+				return ctrl.Result{}, fmt.Errorf("setting controller reference on cache eviction job: %w", err)
+			}
+			if err := r.Create(ctx, job); err != nil {
+				return ctrl.Result{}, fmt.Errorf("creating cache eviction job: %w", err)
+			}
+			return ctrl.Result{}, errReturnEarly
+		}
+
+		// Wait for the eviction job to complete
+		if !k8sutils.IsJobCompleted(evictJob) {
+			return ctrl.Result{}, errReturnEarly
+		}
+
+		// Delete the eviction job
+		if err := r.Delete(ctx, evictJob, client.PropagationPolicy(metav1.DeletePropagationForeground)); err != nil {
+			return ctrl.Result{}, fmt.Errorf("deleting eviction job: %w", err)
+		}
+
+		// Reset the cache status
+		model.Status.Cache.Loaded = false
+		pvcModelAnn.UID = ""
+	}
 
 	loadJob := &batchv1.Job{}
 	var jobExists bool
@@ -90,13 +147,8 @@ func (r *ModelReconciler) reconcileCache(ctx context.Context, model *kubeaiv1.Mo
 		jobExists = true
 	}
 
-	pvcModelAnn, err := parsePVCModelAnnotation(pvc, model.Name)
-	if err != nil {
-		return ctrl.Result{}, fmt.Errorf("parsing pvc model annotation: %w", err)
-	}
-
-	// Run Job to populate PVC if not already downloaded.
-	if pvcModelAnn.UID != string(model.UID) {
+	// Run Job to populate PVC if not already downloaded or if URL has changed
+	if pvcModelAnn.UID != string(model.UID) || urlChanged {
 		// Ensure the download job exists.
 		if !jobExists {
 			loadJob = r.loadCacheJobForModel(model, cfg)
@@ -117,6 +169,16 @@ func (r *ModelReconciler) reconcileCache(ctx context.Context, model *kubeaiv1.Mo
 			Timestamp: time.Now(),
 		}); err != nil {
 			return ctrl.Result{}, fmt.Errorf("setting pvc model annotation: %w", err)
+		}
+
+		// Store the current URL in the PVC annotation
+		if pvc.Annotations == nil {
+			pvc.Annotations = make(map[string]string)
+		}
+		urlKey := fmt.Sprintf("%s/url", kubeaiv1.PVCModelAnnotation(model.Name))
+		pvc.Annotations[urlKey] = model.Spec.URL
+		if err := r.Client.Update(ctx, pvc); err != nil {
+			return ctrl.Result{}, fmt.Errorf("updating pvc with url annotation: %w", err)
 		}
 	}
 	model.Status.Cache.Loaded = pvcModelAnn.UID == string(model.UID)

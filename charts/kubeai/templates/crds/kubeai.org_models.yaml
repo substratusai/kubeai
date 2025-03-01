@@ -218,8 +218,6 @@ spec:
                   "ollama://<model>"
                 type: string
                 x-kubernetes-validations:
-                - message: url is immutable.
-                  rule: self == oldSelf
                 - message: url must start with "hf://", "pvc://", "ollama://", "s3://",
                     "gs://", or "oss://" and not be empty.
                   rule: self.startsWith("hf://") || self.startsWith("pvc://") || self.startsWith("ollama://")
