@@ -8,5 +8,5 @@ spec:
   url: hf://intfloat/e5-mistral-7b-instruct
   engine: VLLM
   args:
-    - --gpu-memory-utilization=0.9
-  resourceProfile: cpu:1
+    - --disable-log-requests
+  resourceProfile: cpu:5
