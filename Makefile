@@ -68,12 +68,12 @@ vet: ## Run go vet against code.
 	go vet ./...
 
 .PHONY: test-unit
-test-unit: fmt vet
+test-unit: fmt vet ## Run unit tests.
 	go test -v ./internal/... -coverprofile cover.unit.out
 
 .PHONY: test-integration
-test-integration: fmt vet envtest
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test -v ./test/integration -coverprofile cover.integration.out
+test-integration: fmt vet envtest ## Run integration tests. Use RUN=TestName to run specific tests.
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test -v ./test/integration $(if $(RUN),-run $(RUN),) -coverprofile cover.integration.out
 
 .PHONY: helm-dependency-build
 helm-dependency-build:
