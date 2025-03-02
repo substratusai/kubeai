@@ -7,4 +7,6 @@ spec:
   features: [TextEmbedding]
   url: hf://intfloat/e5-mistral-7b-instruct
   engine: VLLM
+  args:
+    - --disable-log-requests
   resourceProfile: cpu:5

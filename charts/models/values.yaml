@@ -35,7 +35,7 @@ catalog:
     # TODO: Adjust - the memory associated with this request is too low.
     resourceProfile: cpu:5
     args:
-    - --gpu-memory-utilization=0.9
+      - --disable-log-requests
   mistral-small-24b-instruct-h100:
     enabled: false
     features: [TextGeneration]
