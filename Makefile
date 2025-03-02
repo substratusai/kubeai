@@ -112,6 +112,10 @@ test-e2e-engine-vllm-pvc: skaffold helm-dependency-build
 test-e2e-engine: skaffold helm-dependency-build
 	CACHE_PROFILE=$(CACHE_PROFILE) ./test/e2e/run.sh engine-$(ENGINE) --profile e2e-test-default
 
+.PHONY: test-e2e-model-files
+test-e2e-model-files: skaffold helm-dependency-build
+	./test/e2e/run.sh model-files --profile e2e-test-default
+
 .PHONY: lint
 lint: golangci-lint ## Run golangci-lint linter
 	$(GOLANGCI_LINT) run
