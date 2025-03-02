@@ -30,6 +30,23 @@ _Appears in:_
 | `url` _string_ |  |  |  |
 
 
+#### File
+
+
+
+File represents a file to be mounted in the model pod.
+
+
+
+_Appears in:_
+- [ModelSpec](#modelspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `path` _string_ | Path where the file should be mounted in the pod. |  | Required: \{\} <br /> |
+| `content` _string_ | Content of the file to be mounted. |  | Required: \{\} <br /> |
+
+
 #### LoadBalancing
 
 
@@ -128,6 +145,7 @@ _Appears in:_
 | `scaleDownDelaySeconds` _integer_ | ScaleDownDelay is the minimum time before a deployment is scaled down after<br />the autoscaling algorithm determines that it should be scaled down. | 30 |  |
 | `owner` _string_ | Owner of the model. Used solely to populate the owner field in the<br />OpenAI /v1/models endpoint.<br />DEPRECATED. |  | Optional: \{\} <br /> |
 | `loadBalancing` _[LoadBalancing](#loadbalancing)_ | LoadBalancing configuration for the model.<br />If not specified, a default is used based on the engine and request. | \{  \} |  |
+| `files` _[File](#file) array_ | Files to be mounted in the model pods.<br />These files will be created as a ConfigMap and mounted at the specified path. |  |  |
 
 
 #### ModelStatus

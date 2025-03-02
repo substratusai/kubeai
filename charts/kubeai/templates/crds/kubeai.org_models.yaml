@@ -101,6 +101,24 @@ spec:
                   - SpeechToText
                   type: string
                 type: array
+              files:
+                description: |-
+                  Files to be mounted in the model pods.
+                  These files will be created as a ConfigMap and mounted at the specified path.
+                items:
+                  description: File represents a file to be mounted in the model pod.
+                  properties:
+                    content:
+                      description: Content of the file to be mounted.
+                      type: string
+                    path:
+                      description: Path where the file should be mounted in the pod.
+                      type: string
+                  required:
+                  - content
+                  - path
+                  type: object
+                type: array
               image:
                 description: |-
                   Image to be used for the server process.

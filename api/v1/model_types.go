@@ -122,6 +122,10 @@ type ModelSpec struct {
 	// If not specified, a default is used based on the engine and request.
 	// +kubebuilder:default={}
 	LoadBalancing LoadBalancing `json:"loadBalancing,omitempty"`
+
+	// Files to be mounted in the model pods.
+	// These files will be created as a ConfigMap and mounted at the specified path.
+	Files []File `json:"files,omitempty"`
 }
 
 // +kubebuilder:validation:Enum=TextGeneration;TextEmbedding;SpeechToText
@@ -187,6 +191,17 @@ type PrefixHash struct {
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:default=100
 	PrefixCharLength int `json:"prefixCharLength,omitempty"`
+}
+
+// File represents a file to be mounted in the model pod.
+type File struct {
+	// Path where the file should be mounted in the pod.
+	// +kubebuilder:validation:Required
+	Path string `json:"path"`
+
+	// Content of the file to be mounted.
+	// +kubebuilder:validation:Required
+	Content string `json:"content"`
 }
 
 // ModelStatus defines the observed state of Model.

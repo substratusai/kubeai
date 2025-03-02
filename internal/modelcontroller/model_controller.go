@@ -29,6 +29,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -45,6 +46,8 @@ import (
 const (
 	modelReconcilerName = "kubeai-model-controller"
 	serverContainerName = "server"
+	// Model files ConfigMap volume name
+	modelFilesVolumeName = "model-files"
 )
 
 // ModelReconciler reconciles a Model object
@@ -73,6 +76,71 @@ type ModelReconciler struct {
 //+kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups="",resources=pods/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups="",resources=pods/finalizers,verbs=update
+//+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
+
+// getModelFilesConfigMapName returns the name of the ConfigMap for a model
+func getModelFilesConfigMapName(model *kubeaiv1.Model) string {
+	return fmt.Sprintf("model-%s-files", model.Name)
+}
+
+// ensureModelFilesConfigMap ensures that the ConfigMap for model files exists and is up to date
+func (r *ModelReconciler) ensureModelFilesConfigMap(ctx context.Context, model *kubeaiv1.Model) error {
+	if len(model.Spec.Files) == 0 {
+		return nil
+	}
+
+	log := log.FromContext(ctx)
+	configMapName := getModelFilesConfigMapName(model)
+
+	// Build the expected data map with sanitized keys
+	expectedData := make(map[string]string)
+	for _, file := range model.Spec.Files {
+		sanitizedKey := fileConfigMapKey(file.Path)
+		expectedData[sanitizedKey] = file.Content
+	}
+
+	// Check if ConfigMap exists
+	existingConfigMap := &corev1.ConfigMap{}
+	err := r.Get(ctx, client.ObjectKey{Namespace: model.Namespace, Name: configMapName}, existingConfigMap)
+
+	if err != nil {
+		if !apierrors.IsNotFound(err) {
+			return fmt.Errorf("getting model files configmap: %w", err)
+		}
+
+		// ConfigMap doesn't exist, create it
+		configMap := &corev1.ConfigMap{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      configMapName,
+				Namespace: model.Namespace,
+			},
+			Data: expectedData,
+		}
+
+		// Set owner reference
+		if err := ctrl.SetControllerReference(model, configMap, r.Scheme); err != nil {
+			return fmt.Errorf("setting controller reference on model files configmap: %w", err)
+		}
+
+		if err := r.Create(ctx, configMap); err != nil {
+			return fmt.Errorf("creating model files configmap: %w", err)
+		}
+
+		log.Info("Created model files ConfigMap", "configMapName", configMapName)
+		return nil
+	}
+
+	// ConfigMap exists, check if update is needed
+	if !reflect.DeepEqual(existingConfigMap.Data, expectedData) {
+		existingConfigMap.Data = expectedData
+		if err := r.Update(ctx, existingConfigMap); err != nil {
+			return fmt.Errorf("updating model files configmap: %w", err)
+		}
+		log.Info("Updated model files ConfigMap", "configMapName", configMapName)
+	}
+
+	return nil
+}
 
 func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (res ctrl.Result, resErr error) {
 	log := log.FromContext(ctx)
@@ -92,6 +160,12 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (res 
 			}
 		}
 	}()
+
+	// Ensure ConfigMap for model files exists and is up to date
+	if err := r.ensureModelFilesConfigMap(ctx, model); err != nil {
+		log.Error(err, "Failed to ensure model files ConfigMap")
+		return ctrl.Result{}, err
+	}
 
 	// Apply self labels based on features so that we can easily filter models.
 	shouldUpdate := r.applySelfLabels(model)
