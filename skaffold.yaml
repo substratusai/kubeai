@@ -17,6 +17,8 @@ build:
     # docker:
     #   noCache: true
     #
+  - image: substratusai/kubeai-model-loader
+    context: ./components/model-loader
   local:
     push: false
 deploy:
@@ -70,6 +72,7 @@ profiles:
         - ./test/e2e/common-values.yaml
         setValueTemplates:
           open-webui.enabled: false
+          modelLoading.image: "{{.IMAGE_FULLY_QUALIFIED_substratusai_kubeai_model_loader}}"
         skipBuildDependencies: true
 - name: e2e-test-autoscaler-restart
   deploy:
@@ -83,6 +86,7 @@ profiles:
           open-webui.enabled: false
           modelAutoscaling.interval: 1s
           modelAutoscaling.timeWindow: 30s
+          modelLoading.image: "{{.IMAGE_FULLY_QUALIFIED_substratusai_kubeai_model_loader}}"
         skipBuildDependencies: true
 - name: e2e-test-engine
   deploy:
@@ -94,4 +98,5 @@ profiles:
         - ./test/e2e/common-values.yaml
         setValueTemplates:
           open-webui.enabled: false
+          modelLoading.image: "{{.IMAGE_FULLY_QUALIFIED_substratusai_kubeai_model_loader}}"
         skipBuildDependencies: true

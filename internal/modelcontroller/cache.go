@@ -81,7 +81,7 @@ func (r *ModelReconciler) reconcileCache(ctx context.Context, model *kubeaiv1.Mo
 	// Get the stored model URL from annotations if it exists
 	var storedURL string
 	if pvc.Annotations != nil {
-		storedURLKey := fmt.Sprintf("%s/url", kubeaiv1.PVCModelAnnotation(model.Name))
+		storedURLKey := fmt.Sprintf("%s.url", kubeaiv1.PVCModelAnnotation(model.Name))
 		storedURL = pvc.Annotations[storedURLKey]
 	}
 
@@ -175,7 +175,7 @@ func (r *ModelReconciler) reconcileCache(ctx context.Context, model *kubeaiv1.Mo
 		if pvc.Annotations == nil {
 			pvc.Annotations = make(map[string]string)
 		}
-		urlKey := fmt.Sprintf("%s/url", kubeaiv1.PVCModelAnnotation(model.Name))
+		urlKey := fmt.Sprintf("%s.url", kubeaiv1.PVCModelAnnotation(model.Name))
 		pvc.Annotations[urlKey] = model.Spec.URL
 		if err := r.Client.Update(ctx, pvc); err != nil {
 			return ctrl.Result{}, fmt.Errorf("updating pvc with url annotation: %w", err)

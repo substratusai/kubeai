@@ -85,3 +85,4 @@ kubectl apply -f $REPO_DIR/test/e2e/common-manifests.yaml
 $REPO_DIR/test/e2e/$testcase/test.sh
 
 echo "!!! PASS !!!"
+helm uninstall kubeai-models

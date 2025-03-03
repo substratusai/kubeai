@@ -28,7 +28,7 @@ echo "Initial pytorch_model.bin size: $initial_size bytes"
 kubectl patch model opt-125m-cpu --type=merge \
   -p '{"spec":{"url":"hf://facebook/opt-350m"}}'
 
-sleep 5
+sleep 20
 kubectl wait --timeout=300s --for=jsonpath='{.status.cache.loaded}'=true \
   model/opt-125m-cpu
 

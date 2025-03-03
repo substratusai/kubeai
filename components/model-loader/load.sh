@@ -23,7 +23,7 @@ case $src in
         repo=${src#hf://}
         huggingface-cli download --local-dir $dir $repo
         rm -rf $dir/.cache
-        ;;
+        fi;;
     "s3://"*)
         aws s3 sync $src $dir
         ;;
