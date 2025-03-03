@@ -242,4 +242,7 @@ type ModelServerPods struct {
 
 	// Security Context for the model pod containers
 	ModelContainerSecurityContext *corev1.SecurityContext `json:"securityContext,omitempty"`
+
+	// ImagePullSecrets is a list of references to secrets in the same namespace to use for pulling any of the images
+	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
 }

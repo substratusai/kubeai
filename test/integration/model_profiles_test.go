@@ -52,7 +52,12 @@ func TestModelProfiles(t *testing.T) {
 		assert.Contains(t, pod.Spec.Tolerations, sysCfg.ResourceProfiles[resourceProfileCPU].Tolerations[0])
 		assert.Equal(t, sysCfg.ResourceProfiles[resourceProfileCPU].Affinity, pod.Spec.Affinity)
 		assert.Equal(t, sysCfg.ResourceProfiles[resourceProfileCPU].NodeSelector, pod.Spec.NodeSelector)
-	}, 5*time.Second, time.Second/10, "Resource profile should be applied to the model Pod object")
+		// Verify all ModelServerPods settings are correctly propagated
+		assert.Equal(t, sysCfg.ModelServerPods.ImagePullSecrets, pod.Spec.ImagePullSecrets)
+		assert.Equal(t, sysCfg.ModelServerPods.ModelServiceAccountName, pod.Spec.ServiceAccountName)
+		assert.Equal(t, sysCfg.ModelServerPods.ModelPodSecurityContext, pod.Spec.SecurityContext)
+		assert.Equal(t, sysCfg.ModelServerPods.ModelContainerSecurityContext, container.SecurityContext)
+	}, 5*time.Second, time.Second/10, "Resource profile and ModelServerPods settings should be applied to the model Pod object")
 
 	const userImage = "my-repo.com/my-repo/my-image:latest"
 	require.EventuallyWithT(t, func(t *assert.CollectT) {
