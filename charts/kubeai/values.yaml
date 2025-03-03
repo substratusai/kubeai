@@ -252,6 +252,7 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
+# The imagePullSecrets will be used to pull both the kubeai controller image and the model images.
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: "kubeai"
