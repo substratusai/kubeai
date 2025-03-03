@@ -26,7 +26,7 @@ EOF
 
 # Wait for the model pod to be ready
 echo "Waiting for model pod to be ready..."
-kubectl wait --timeout=120s --for=condition=Ready "pods/$(kubectl get pods -l "model=${model_name}" -o jsonpath='{.items[0].metadata.name}')"
+kubectl wait --timeout 15m --for=jsonpath='.status.replicas.ready'=1 model/${model_name}
 
 # Get the model pod name
 model_pod=$(kubectl get pods -l "model=${model_name}" -o jsonpath='{.items[0].metadata.name}')
