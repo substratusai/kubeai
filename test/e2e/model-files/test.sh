@@ -11,12 +11,11 @@ kind: Model
 metadata:
   name: ${model_name}
 spec:
-  url: "hf://huggingface/opt-125m"
-  engine: VLLM
-  minReplicas: 1
-  features:
-    - TextGeneration
+  features: [TextGeneration]
+  url: ollama://qwen2:0.5b
+  engine: OLlama
   resourceProfile: "cpu:1"
+  minReplicas: 1
   files:
     - path: "/config/test-file.txt"
       content: "test content"

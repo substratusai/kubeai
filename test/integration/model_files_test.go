@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -156,4 +157,22 @@ func TestModelFiles(t *testing.T) {
 
 		assert.True(t, newFileMountFound, "Server container should mount new file")
 	}, 15*time.Second, time.Second/10, "New Pod should be created with updated volume mounts")
+
+	// Test updating files to empty
+	require.EventuallyWithT(t, func(t *assert.CollectT) {
+		if !assert.NoError(t, testK8sClient.Get(testCtx, client.ObjectKeyFromObject(m), m)) {
+			return
+		}
+
+		// Set files to empty
+		m.Spec.Files = []kubeaiv1.File{}
+
+		assert.NoError(t, testK8sClient.Update(testCtx, m))
+	}, 2*time.Second, time.Second/10, "Update model with empty files")
+
+	// Verify ConfigMap is deleted
+	require.EventuallyWithT(t, func(t *assert.CollectT) {
+		err := testK8sClient.Get(testCtx, client.ObjectKey{Namespace: testNS, Name: configMapName}, configMap)
+		assert.True(t, apierrors.IsNotFound(err), "ConfigMap should be deleted when files is empty")
+	}, 5*time.Second, time.Second/10, "ConfigMap should be deleted when files is empty")
 }
