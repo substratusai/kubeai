@@ -1,5 +1,7 @@
 ---
-date: 2025-02-26
+date:
+  created: 2025-02-26
+  updated: 2025-03-04
 authors: [nstogner]
 description: Using the CHWBL algorithm results in a 95% reduction in TTFT, 127% increase in throughput.
 categories:
@@ -35,21 +37,29 @@ The conventional random routing strategy provided by Kubernetes often results in
 
 An effective load balancing strategy for LLM serving should satisfy the following criteria:
 
-**Maximize Cache Utilization:** Route requests with common prefixes to vLLM replicas with hot caches.
+**Maximize cache utilization:** Route requests with common prefixes to vLLM replicas with hot caches.
 
-**Adapt to Replica Changes:** Minimize cache shuffling as replicas come and go.
+**Adapt to replica changes:** Minimize cache shuffling as replicas come and go.
 
-**Avoid Uneven Load Distribution:** Prevent any single replica from becoming overloaded.
+**Avoid hotspots:** Prevent any single replica from becoming overloaded.
 
-The Consistent Hashing with Bounded Loads (CHWBL) algorithm inherently addresses these challenges, making it a compelling choice for LLM load balancing.
+**Account for LoRA adapters:** Prefix caches for different adapters should be considered distinct.
 
-## 3. Proposed Approach: CHWBL
+**Avoid client-side requirements:** Common client libraries should be usable out of the box.
+
+## 3. Sticky Sessions?
+
+Load balancing across stateful backends is not a new problem. We considered sticky sessions, the go-to for stateful load balancing. In a ChatGPT-like scenario, cookies could be used to reliably map users to active threads. However many agentic systems are not browser based, leaving client IP as the primary out-of-the-box source for client identification. Client-IP is typically unreliable for determining the end-client (NAT, dynamic IPs). To make matters worse, a single agentic program typically simulates N logical agents - i.e. multiple concurrent multi-turn conversations.
+
+## 4. The Algorithm
+
+The Consistent Hashing with Bounded Loads (CHWBL) algorithm inherently addresses the above challenges, making it a compelling choice for LLM load balancing. It has a proven track record being employed at-scale in cache-sensitive use cases such as video serving.
 
 The CHWBL algorithm extends traditional consistent hashing by incorporating load bounds, ensuring that no individual replica receives more than its fair share of requests. This approach not only preserves cache affinity but also prevents the overloading of any single server, thereby optimizing overall system performance.
 
 ![CHWBL algorithm diagram](../../diagrams/chwbl.excalidraw.png)
 
-## 4. Implementation
+## 5. Implementation
 
 We integrated the CHWBL routing strategy into the <a href="https://github.com/substratusai/kubeai" target="_blank">KubeAI project</a> under the PrefixHash configuration. This strategy functions as follows:
 
@@ -72,9 +82,9 @@ spec:
       replication: 256
 ```
 
-## 5. Evaluation
+## 6. Evaluation
 
-### 5.1. Scenarios
+### 6.1. Scenarios
 
 We conducted experiments using three distinct load balancing strategies:
 
@@ -86,7 +96,7 @@ We conducted experiments using three distinct load balancing strategies:
 3. **KubeAI (PrefixHash)**
     * Applied a CHWBL-driven strategy to route requests via the KubeAI proxy.
 
-### 5.2. Setup
+### 6.2. Setup
 
 A Kubernetes cluster running KubeAI was setup with the following specifications:
 
@@ -96,14 +106,14 @@ A Kubernetes cluster running KubeAI was setup with the following specifications:
 * **Dataset:** Message threads derived from ShareGPT
 * **Workload:** A custom load generator simulating parallel chat completion threads, preserving conversation state by appending LLM responses in a loop.
 
-### 5.3. Metrics
+### 6.3. Metrics
 
 Our evaluation focused on two key performance metrics:
 
 * **Time To First Token (TTFT):** The latency before the first token is generated.
 * **Tokens Per Second (TPS):** The overall throughput of token generation.
 
-### 5.4. Results
+### 6.4. Results
 
 The benchmark showed that the PrefixHash strategy resulted in significant improvements in TTFT and throughput compared to both the default Kubernetes Service and the LeastLoad strategy.
 
@@ -115,7 +125,7 @@ The benchmark showed that the PrefixHash strategy resulted in significant improv
 
 ![Mean TPS barchart](../../graphs/throughput-benchmark.png)
 
-## 6. Conclusion
+## 7. Conclusion
 
 In this work, we demonstrated that incorporating the CHWBL algorithm into LLM load balancing through the PrefixHash strategy in KubeAI can significantly enhance performance in real-world scenarios. Notably, improvements in cache hit rates yielded lower latency and increased throughput. Moving forward, we plan to expand our benchmarks to cover a broader range of workloads. We plan to incorporate benchmarks for emerging strategies as they come out, with the ultimate aim of ensuring that KubeAI features the most effective load balancing techniques.
 
