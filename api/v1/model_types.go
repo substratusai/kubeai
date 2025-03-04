@@ -29,7 +29,6 @@ import (
 // +kubebuilder:validation:XValidation:rule="!self.url.startsWith(\"oss://\") || has(self.cacheProfile)", message="urls of format \"oss://...\" only supported when using a cacheProfile"
 // +kubebuilder:validation:XValidation:rule="!has(self.maxReplicas) || self.minReplicas <= self.maxReplicas", message="minReplicas should be less than or equal to maxReplicas."
 // +kubebuilder:validation:XValidation:rule="!has(self.adapters) || self.engine == \"VLLM\"", message="adapters only supported with VLLM engine."
-// +kubebuilder:validation:XValidation:rule="!has(oldSelf.cacheProfile) || self.url == oldSelf.url", message="url is immutable when using cacheProfile."
 // +NOTE: The self.files.all() check is considered "costly" by the Kubernetes API server and will be rejected if the number of files (and length of .path) are not restricted. These restrictions are applied in field-based validations below.
 // +kubebuilder:validation:XValidation:rule="!has(self.files) || self.files.size() <= 1 || !self.files.exists(f, self.files.filter(other, other.path == f.path).size() > 1)", message="All file paths must be unique."
 // +TODO: Limits on total file size should be less than limit of total ConfigMap (1MiB) data, this fails in version 1.29 (for exceeding "cost"): "!has(self.files) || self.files.map(f, size(f.content)).sum() <= 500000"
@@ -226,7 +225,8 @@ type ModelStatusReplicas struct {
 }
 
 type ModelStatusCache struct {
-	Loaded bool `json:"loaded"`
+	Loaded bool   `json:"loaded"`
+	URL    string `json:"url,omitempty"`
 }
 
 // NOTE: Model name length should be limited to allow for the model name to be used in
