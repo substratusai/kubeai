@@ -7,4 +7,6 @@ spec:
   features: [TextGeneration]
   url: hf://facebook/opt-125m
   engine: VLLM
+  args:
+    - --chat-template=/config/chat-template.jinja
   resourceProfile: cpu:1

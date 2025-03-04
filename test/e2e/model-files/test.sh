@@ -19,6 +19,7 @@ spec:
   args:
     # This revision does not contain its own chat template.
     - --revision=27dcfa74d334bc871f3234de431e71c6eeba5dd6
+    - --chat-template=/config/chat-template.jinja
   env:
     VLLM_CPU_KVCACHE_SPACE: "1"
   files:
@@ -41,6 +42,7 @@ kubectl exec ${model_pod} -- cat /config/prompt.txt | grep "prompt content"
 
 # Check that chat completion works.
 curl http://localhost:8000/openai/v1/completions \
+    --fail-with-body \
     -H "Content-Type: application/json" \
     -d '{
         "model": "files-test-model",
