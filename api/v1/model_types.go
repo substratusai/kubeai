@@ -28,6 +28,8 @@ import (
 // +kubebuilder:validation:XValidation:rule="!has(self.maxReplicas) || self.minReplicas <= self.maxReplicas", message="minReplicas should be less than or equal to maxReplicas."
 // +kubebuilder:validation:XValidation:rule="!has(self.adapters) || self.engine == \"VLLM\"", message="adapters only supported with VLLM engine."
 // +kubebuilder:validation:XValidation:rule="!has(oldSelf.cacheProfile) || self.url == oldSelf.url", message="url is immutable when using cacheProfile."
+// +kubebuilder:validation:XValidation:rule="!has(self.files) || self.files.size() <= 1 || self.files.all(file, self.files.filter(other, other.path == file.path).size() == 1)", message="All file paths must be unique."
+// +kubebuilder:validation:XValidation:rule="!has(self.files) || self.files.map(f, size(f.content)).sum() <= 500000", message="A maximum of 500,000 characters are allowed across all files."
 type ModelSpec struct {
 	// URL of the model to be served.
 	// Currently the following formats are supported:
@@ -123,8 +125,8 @@ type ModelSpec struct {
 	// +kubebuilder:default={}
 	LoadBalancing LoadBalancing `json:"loadBalancing,omitempty"`
 
-	// Files to be mounted in the model pods.
-	// These files will be created as a ConfigMap and mounted at the specified path.
+	// Files to be mounted in the model Pods.
+	// +kubebuilder:validation:MaxItems=100
 	Files []File `json:"files,omitempty"`
 }
 
@@ -196,11 +198,16 @@ type PrefixHash struct {
 // File represents a file to be mounted in the model pod.
 type File struct {
 	// Path where the file should be mounted in the pod.
+	// Must be an absolute path.
 	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:XValidation:rule="self.startsWith('/') && !self.contains(':')", message="Path must be an absolute path, starting with /, and must not contain a ':' character."
+	// +kubebuilder:validation:MaxLength=1024
 	Path string `json:"path"`
 
 	// Content of the file to be mounted.
+	// Will be injected into a ConfigMap and mounted in the model Pods.
 	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:MaxLength=500000
 	Content string `json:"content"`
 }
 

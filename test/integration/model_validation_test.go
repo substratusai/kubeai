@@ -1,7 +1,10 @@
 package integration
 
 import (
+	"context"
 	"testing"
+
+	"log"
 
 	"github.com/stretchr/testify/require"
 	v1 "github.com/substratusai/kubeai/api/v1"
@@ -334,6 +337,141 @@ func TestModelValidation(t *testing.T) {
 			},
 			expErrContain: "url is immutable when using cacheProfile",
 		},
+		{
+			model: v1.Model{
+				ObjectMeta: metadata("root-file-path-valid"),
+				Spec: v1.ModelSpec{
+					URL:      "hf://test-repo/test-model",
+					Engine:   "VLLM",
+					Features: []v1.ModelFeature{},
+					Files: []v1.File{
+						{
+							Path:    "/file.txt",
+							Content: "file content",
+						},
+					},
+				},
+			},
+			expValid: true,
+		},
+		{
+			model: v1.Model{
+				ObjectMeta: metadata("absolute-file-path-valid"),
+				Spec: v1.ModelSpec{
+					URL:      "hf://test-repo/test-model",
+					Engine:   "VLLM",
+					Features: []v1.ModelFeature{},
+					Files: []v1.File{
+						{
+							Path:    "/absolute/path/to/file.txt",
+							Content: "file content",
+						},
+					},
+				},
+			},
+			expValid: true,
+		},
+		{
+			model: v1.Model{
+				ObjectMeta: metadata("relative-file-path-invalid"),
+				Spec: v1.ModelSpec{
+					URL:      "hf://test-repo/test-model",
+					Engine:   "VLLM",
+					Features: []v1.ModelFeature{},
+					Files: []v1.File{
+						{
+							Path:    "relative/path/to/file.txt",
+							Content: "file content",
+						},
+					},
+				},
+			},
+			expErrContain: "Path must be an absolute path",
+		},
+		{
+			model: v1.Model{
+				ObjectMeta: metadata("invalid-file-path-character"),
+				Spec: v1.ModelSpec{
+					URL:      "hf://test-repo/test-model",
+					Engine:   "VLLM",
+					Features: []v1.ModelFeature{},
+					Files: []v1.File{
+						{
+							Path:    "c://path/to/file.txt",
+							Content: "file content",
+						},
+					},
+				},
+			},
+			expErrContain: "must not contain a ':' character",
+		},
+		{
+			model: v1.Model{
+				ObjectMeta: metadata("duplicate-file-paths-invalid"),
+				Spec: v1.ModelSpec{
+					URL:      "hf://test-repo/test-model",
+					Engine:   "VLLM",
+					Features: []v1.ModelFeature{},
+					Files: []v1.File{
+						{
+							Path:    "/path/to/file1.txt",
+							Content: "file 1 content",
+						},
+						{
+							Path:    "/path/to/file2.txt",
+							Content: "file 2 content",
+						},
+						{
+							Path:    "/path/to/file1.txt", // Duplicate path
+							Content: "duplicated path content",
+						},
+					},
+				},
+			},
+			expErrContain: "All file paths must be unique",
+		},
+		{
+			model: v1.Model{
+				ObjectMeta: metadata("large-files-valid"),
+				Spec: v1.ModelSpec{
+					URL:      "hf://test-repo/test-model",
+					Engine:   "VLLM",
+					Features: []v1.ModelFeature{},
+					Files: []v1.File{
+						{
+							Path:    "/path/to/file1.txt",
+							Content: nCharacters(200_000),
+						},
+						{
+							Path:    "/path/to/file2.txt",
+							Content: nCharacters(300_000),
+						},
+					},
+				},
+			},
+			expValid: true,
+		},
+		{
+			model: v1.Model{
+				ObjectMeta: metadata("large-files-invalid"),
+				Spec: v1.ModelSpec{
+					URL:      "hf://test-repo/test-model",
+					Engine:   "VLLM",
+					Features: []v1.ModelFeature{},
+					Files: []v1.File{
+						{
+							Path:    "/path/to/file1.txt",
+							Content: nCharacters(200_000),
+						},
+						{
+							Path:    "/path/to/file2.txt",
+							Content: nCharacters(300_001),
+						},
+					},
+				},
+			},
+			expErrContain: "A maximum of 500,000 characters",
+		},
 	}
 	for _, c := range cases {
 		t.Run(c.model.Name, func(t *testing.T) {
@@ -353,6 +491,13 @@ func TestModelValidation(t *testing.T) {
 				}
 			}
 
+			if c.expValid {
+				t.Cleanup(func() {
+					if err := testK8sClient.Delete(context.Background(), &c.model); err != nil {
+						log.Printf("Failed to delete model: %v", err)
+					}
+				})
+			}
 			if c.update == nil {
 				validateErr(testK8sClient.Create(testCtx, &c.model))
 			} else {
@@ -362,4 +507,12 @@ func TestModelValidation(t *testing.T) {
 			}
 		})
 	}
+}
+
+func nCharacters(n int) string {
+	s := make([]byte, n)
+	for i := range s {
+		s[i] = 'a'
+	}
+	return string(s)
 }

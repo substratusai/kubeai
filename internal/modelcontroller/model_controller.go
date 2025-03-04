@@ -67,16 +67,6 @@ type ModelReconciler struct {
 	ModelRollouts           config.ModelRollouts
 }
 
-// +kubebuilder:rbac:groups=kubeai.org,resources=models,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=kubeai.org,resources=models/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=kubeai.org,resources=models/scale,verbs=get;update;patch
-// +kubebuilder:rbac:groups=kubeai.org,resources=models/finalizers,verbs=update
-
-//+kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups="",resources=pods/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups="",resources=pods/finalizers,verbs=update
-//+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
-
 func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (res ctrl.Result, resErr error) {
 	log := log.FromContext(ctx)
 	log.Info("Reconciling Model")
