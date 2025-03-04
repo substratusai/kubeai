@@ -29,6 +29,7 @@ jobs:
       matrix:
         testcase:
         - "quickstart"
+        - "rollouts"
         - "openai-python-client"
         - "autoscaler-restart-under-load"
         - "autoscaler-restart-no-load"

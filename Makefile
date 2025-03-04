@@ -84,6 +84,10 @@ helm-dependency-build:
 test-e2e-quickstart: skaffold helm-dependency-build
 	./test/e2e/run.sh quickstart
 
+.PHONY: test-e2e-rollouts
+test-e2e-rollouts: skaffold helm-dependency-build
+	./test/e2e/run.sh rollouts
+
 .PHONY: test-e2e-openai-python-client
 test-e2e-openai-python-client: skaffold helm-dependency-build
 	./test/e2e/run.sh openai-python-client --profile e2e-test-default
