@@ -93,9 +93,9 @@ resourceProfiles:
     imageName: "cpu"
     requests:
       cpu: 1
-      # TODO: Consider making this a ratio that is more common on cloud machines
-      # such as 1:4 CPU:Mem. NOTE: This might need to be adjusted for local clusters.
-      memory: "2Gi"
+      # A 1 CPU to 4Gi ratio is the most common on cloud machines.
+      # NOTE: This might need to be adjusted for local clusters.
+      memory: "4Gi"
       # TODO: Consider adding eph storage requests/limits.
       # Perhaps this is just needed for GKE Autopilot which defaults
       # to 1Gi for CPU-only.

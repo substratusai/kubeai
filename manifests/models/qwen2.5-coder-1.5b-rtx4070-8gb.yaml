@@ -14,5 +14,4 @@ spec:
     - --kv-cache-dtype=fp8
   env:
     VLLM_ATTENTION_BACKEND: FLASHINFER
-  minReplicas: 1
   resourceProfile: nvidia-gpu-rtx4070-8gb:1

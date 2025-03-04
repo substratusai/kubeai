@@ -7,4 +7,6 @@ spec:
   features: [TextGeneration]
   url: hf://facebook/opt-125m
   engine: VLLM
+  env:
+    VLLM_CPU_KVCACHE_SPACE: "2"
   resourceProfile: cpu:1
