@@ -15,6 +15,18 @@ spec:
   resourceProfile: cpu:1
   minReplicas: 1
   maxReplicas: 3
+  args:
+    # This revision does not contain its own chat template.
+    - --revision=27dcfa74d334bc871f3234de431e71c6eeba5dd6
+    - --chat-template=/config/chat-template.jinja
+    - --swap-space=1
+  env:
+    VLLM_CPU_KVCACHE_SPACE: "2"
+  files:
+    - path: "/config/chat-template.jinja"
+      content: "{% for message in messages %}\n{% if message['role'] == 'user' %}\n{{ 'Question:\n' + message['content'] + '\n\n' }}{% elif message['role'] == 'system' %}\n{{ 'System:\n' + message['content'] + '\n\n' }}{% elif message['role'] == 'assistant' %}{{ 'Answer:\n'  + message['content'] + '\n\n' }}{% endif %}\n{% if loop.last and add_generation_prompt %}\n{{ 'Answer:\n' }}{% endif %}{% endfor %}"
+    - path: "/config/prompt.txt"
+      content: "prompt content"
 ---
 # Service for port-fowarding to the model:
 #

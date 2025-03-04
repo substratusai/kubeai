@@ -20,6 +20,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// Use "+NOTE: ..." comments to add notes to the code that wont show up in public API reference or Custom Resource Definition.
+
 // ModelSpec defines the desired state of Model.
 // +kubebuilder:validation:XValidation:rule="!has(self.cacheProfile) || self.url.startsWith(\"hf://\") || self.url.startsWith(\"s3://\") || self.url.startsWith(\"gs://\") || self.url.startsWith(\"oss://\")", message="cacheProfile is only supported with urls of format \"hf://...\", \"s3://...\", \"gs://...\", or \"oss://...\" at the moment."
 // +kubebuilder:validation:XValidation:rule="!self.url.startsWith(\"s3://\") || has(self.cacheProfile)", message="urls of format \"s3://...\" only supported when using a cacheProfile"
@@ -28,6 +30,9 @@ import (
 // +kubebuilder:validation:XValidation:rule="!has(self.maxReplicas) || self.minReplicas <= self.maxReplicas", message="minReplicas should be less than or equal to maxReplicas."
 // +kubebuilder:validation:XValidation:rule="!has(self.adapters) || self.engine == \"VLLM\"", message="adapters only supported with VLLM engine."
 // +kubebuilder:validation:XValidation:rule="!has(oldSelf.cacheProfile) || self.url == oldSelf.url", message="url is immutable when using cacheProfile."
+// +NOTE: The self.files.all() check is considered "costly" by the Kubernetes API server and will be rejected if the number of files (and length of .path) are not restricted. These restrictions are applied in field-based validations below.
+// +kubebuilder:validation:XValidation:rule="!has(self.files) || self.files.size() <= 1 || !self.files.exists(f, self.files.filter(other, other.path == f.path).size() > 1)", message="All file paths must be unique."
+// +TODO: Limits on total file size should be less than limit of total ConfigMap (1MiB) data, this fails in version 1.29 (for exceeding "cost"): "!has(self.files) || self.files.map(f, size(f.content)).sum() <= 500000"
 type ModelSpec struct {
 	// URL of the model to be served.
 	// Currently the following formats are supported:
@@ -122,6 +127,10 @@ type ModelSpec struct {
 	// If not specified, a default is used based on the engine and request.
 	// +kubebuilder:default={}
 	LoadBalancing LoadBalancing `json:"loadBalancing,omitempty"`
+
+	// Files to be mounted in the model Pods.
+	// +kubebuilder:validation:MaxItems=10
+	Files []File `json:"files,omitempty"`
 }
 
 // +kubebuilder:validation:Enum=TextGeneration;TextEmbedding;SpeechToText
@@ -187,6 +196,22 @@ type PrefixHash struct {
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:default=100
 	PrefixCharLength int `json:"prefixCharLength,omitempty"`
+}
+
+// File represents a file to be mounted in the model pod.
+type File struct {
+	// Path where the file should be mounted in the pod.
+	// Must be an absolute path.
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:XValidation:rule="self.startsWith('/') && !self.contains(':')", message="Path must be an absolute path, starting with /, and must not contain a ':' character."
+	// +kubebuilder:validation:MaxLength=1024
+	Path string `json:"path"`
+
+	// Content of the file to be mounted.
+	// Will be injected into a ConfigMap and mounted in the model Pods.
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:MaxLength=100000
+	Content string `json:"content"`
 }
 
 // ModelStatus defines the observed state of Model.
