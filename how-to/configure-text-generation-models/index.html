@@ -713,6 +713,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#configure-a-chat-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configure a Chat Template
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#interact-with-the-text-generation-model" class="md-nav__link">
     <span class="md-ellipsis">
       Interact with the Text Generation Model
@@ -1694,6 +1703,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#configure-a-chat-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configure a Chat Template
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#interact-with-the-text-generation-model" class="md-nav__link">
     <span class="md-ellipsis">
       Interact with the Text Generation Model
@@ -1795,6 +1813,20 @@ and are also published as raw manifests in the
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--disable-log-requests</span>
 <span class="w">  </span><span class="nt">resourceProfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nvidia-gpu-l4:1</span>
 </code></pre></div></p>
+<h2 id="configure-a-chat-template">Configure a Chat Template<a class="headerlink" href="#configure-a-chat-template" title="Permanent link">&para;</a></h2>
+<p>Some models do not ship will chat templates and some engines such as vLLM do not provide a default one. In these cases, you can use <code>.spec.files</code> to inject a template at Pod runtime.</p>
+<div class="highlight"><pre><span></span><code><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Model</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># ...</span>
+<span class="w">  </span><span class="nt">engine</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">VLLM</span>
+<span class="w">  </span><span class="nt">args</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">--chat-template=/config/chat-template.jinja</span>
+<span class="w">  </span><span class="nt">files</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/config/chat-template.jinja</span>
+<span class="w">    </span><span class="nt">content</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">      </span><span class="no">{% for message in messages %}{{&#39;&lt;|im_start|&gt;&#39; + message[&#39;role&#39;] + &#39;\n&#39; + message[&#39;content&#39;]}}{% if (loop.last and add_generation_prompt) or not loop.last %}{{ &#39;&lt;|im_end|&gt;&#39; + &#39;\n&#39;}}{% endif %}{% endfor %}</span>
+<span class="w">      </span><span class="no">{% if add_generation_prompt and messages[-1][&#39;role&#39;] != &#39;assistant&#39; %}{{ &#39;&lt;|im_start|&gt;assistant\n&#39; }}{% endif %}</span>
+</code></pre></div>
 <h2 id="interact-with-the-text-generation-model">Interact with the Text Generation Model<a class="headerlink" href="#interact-with-the-text-generation-model" title="Permanent link">&para;</a></h2>
 <p>The KubeAI service exposes an OpenAI compatible API that you can use to query the available models and interact with them.</p>
 <p>The KubeAI service is available at <code>http://kubeai/openai/v1</code> within the Kubernetes cluster.</p>

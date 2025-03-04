@@ -1249,6 +1249,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#file" class="md-nav__link">
+    <span class="md-ellipsis">
+      File
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#loadbalancing" class="md-nav__link">
     <span class="md-ellipsis">
       LoadBalancing
@@ -1732,6 +1741,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#file" class="md-nav__link">
+    <span class="md-ellipsis">
+      File
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#loadbalancing" class="md-nav__link">
     <span class="md-ellipsis">
       LoadBalancing
@@ -1876,6 +1894,34 @@
 <td></td>
 <td></td>
 <td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="file">File<a class="headerlink" href="#file" title="Permanent link">&para;</a></h4>
+<p>File represents a file to be mounted in the model pod.</p>
+<p><em>Appears in:</em>
+- <a href="#modelspec">ModelSpec</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>path</code> <em>string</em></td>
+<td>Path where the file should be mounted in the pod.<br />Must be an absolute path.</td>
+<td></td>
+<td>MaxLength: 1024 <br />Required: {} <br /></td>
+</tr>
+<tr>
+<td><code>content</code> <em>string</em></td>
+<td>Content of the file to be mounted.<br />Will be injected into a ConfigMap and mounted in the model Pods.</td>
+<td></td>
+<td>MaxLength: 100000 <br />Required: {} <br /></td>
 </tr>
 </tbody>
 </table>
@@ -2095,6 +2141,12 @@
 <td>LoadBalancing configuration for the model.<br />If not specified, a default is used based on the engine and request.</td>
 <td>{  }</td>
 <td></td>
+</tr>
+<tr>
+<td><code>files</code> <em><a href="#file">File</a> array</em></td>
+<td>Files to be mounted in the model Pods.</td>
+<td></td>
+<td>MaxItems: 10 <br /></td>
 </tr>
 </tbody>
 </table>
