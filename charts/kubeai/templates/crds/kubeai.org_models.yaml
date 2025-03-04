@@ -110,7 +110,7 @@ spec:
                       description: |-
                         Content of the file to be mounted.
                         Will be injected into a ConfigMap and mounted in the model Pods.
-                      maxLength: 500000
+                      maxLength: 100000
                       type: string
                     path:
                       description: |-
@@ -126,7 +126,7 @@ spec:
                   - content
                   - path
                   type: object
-                maxItems: 100
+                maxItems: 10
                 type: array
               image:
                 description: |-
@@ -274,11 +274,8 @@ spec:
             - message: url is immutable when using cacheProfile.
               rule: '!has(oldSelf.cacheProfile) || self.url == oldSelf.url'
             - message: All file paths must be unique.
-              rule: '!has(self.files) || self.files.size() <= 1 || self.files.all(file,
-                self.files.filter(other, other.path == file.path).size() == 1)'
-            - message: A maximum of 500,000 characters are allowed across all files.
-              rule: '!has(self.files) || self.files.map(f, size(f.content)).sum()
-                <= 500000'
+              rule: '!has(self.files) || self.files.size() <= 1 || !self.files.exists(f,
+                self.files.filter(other, other.path == f.path).size() > 1)'
           status:
             description: ModelStatus defines the observed state of Model.
             properties:

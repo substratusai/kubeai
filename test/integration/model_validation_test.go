@@ -440,11 +440,7 @@ func TestModelValidation(t *testing.T) {
 					Files: []v1.File{
 						{
 							Path:    "/path/to/file1.txt",
-							Content: nCharacters(200_000),
-						},
-						{
-							Path:    "/path/to/file2.txt",
-							Content: nCharacters(300_000),
+							Content: nCharacters(100_000),
 						},
 					},
 				},
@@ -453,7 +449,7 @@ func TestModelValidation(t *testing.T) {
 		},
 		{
 			model: v1.Model{
-				ObjectMeta: metadata("large-files-invalid"),
+				ObjectMeta: metadata("xlarge-files-invalid"),
 				Spec: v1.ModelSpec{
 					URL:      "hf://test-repo/test-model",
 					Engine:   "VLLM",
@@ -461,16 +457,12 @@ func TestModelValidation(t *testing.T) {
 					Files: []v1.File{
 						{
 							Path:    "/path/to/file1.txt",
-							Content: nCharacters(200_000),
-						},
-						{
-							Path:    "/path/to/file2.txt",
-							Content: nCharacters(300_001),
+							Content: nCharacters(100_001),
 						},
 					},
 				},
 			},
-			expErrContain: "A maximum of 500,000 characters",
+			expErrContain: "may not be longer than 100000",
 		},
 	}
 	for _, c := range cases {

@@ -41,7 +41,7 @@ echo "Checking files are mounted in the model pod..."
 kubectl exec ${model_pod} -- cat /config/prompt.txt | grep "prompt content"
 
 # Check that chat completion works.
-curl http://localhost:8000/openai/v1/completions \
+curl http://localhost:8000/openai/v1/chat/completions \
     --fail-with-body \
     -H "Content-Type: application/json" \
     -d '{
