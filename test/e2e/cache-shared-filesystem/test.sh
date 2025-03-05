@@ -17,4 +17,9 @@ kubectl apply -f $TEST_DIR/cache-mount-pod.yaml
 kubectl wait pods --for=condition=Ready cache-mount-pod
 
 model_uid=$(kubectl get models.kubeai.org opt-125m-cpu -o jsonpath='{.metadata.uid}')
-kubectl exec cache-mount-pod -- bash -c "stat /test-mount/models/opt-125m-cpu-$model_uid/pytorch_model.bin"
+model_url=$(kubectl get models.kubeai.org opt-125m-cpu -o jsonpath='{.spec.url}')
+# Calculate URL hash the same way as in modelCacheDir function
+url_hash=$(echo -n $model_url | md5sum | cut -c1-8)
+
+# Check if the file exists in the new cache directory structure
+kubectl exec cache-mount-pod -- bash -c "stat /test-mount/models/opt-125m-cpu-$model_uid-$url_hash/pytorch_model.bin"
