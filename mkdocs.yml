@@ -4,6 +4,7 @@ repo_url: https://github.com/substratusai/kubeai
 
 theme:
   name: material
+  custom_dir: docs/overrides
   palette:
     primary: white # Defaults to indigo.
     accent: blue # Defaults to indigo.
@@ -54,3 +55,8 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.tilde
+
+# Analytics tracking with GoatCounter
+extra:
+  analytics:
+    provider: custom
