@@ -1601,14 +1601,18 @@ Scenarios that involve multiple queries against a single long document are parti
 <p><img alt="Random vs consistent routing" src="../../../diagrams/random-vs-consistent-hash.excalidraw.png" /></p>
 <h3 id="2-problem-statement"><a class="toclink" href="../../2025/02/26/llm-load-balancing-at-scale-chwbl/#2-problem-statement">2. Problem Statement</a></h3>
 <p>An effective load balancing strategy for LLM serving should satisfy the following criteria:</p>
-<p><strong>Maximize Cache Utilization:</strong> Route requests with common prefixes to vLLM replicas with hot caches.</p>
-<p><strong>Adapt to Replica Changes:</strong> Minimize cache shuffling as replicas come and go.</p>
-<p><strong>Avoid Uneven Load Distribution:</strong> Prevent any single replica from becoming overloaded.</p>
-<p>The Consistent Hashing with Bounded Loads (CHWBL) algorithm inherently addresses these challenges, making it a compelling choice for LLM load balancing.</p>
-<h3 id="3-proposed-approach-chwbl"><a class="toclink" href="../../2025/02/26/llm-load-balancing-at-scale-chwbl/#3-proposed-approach-chwbl">3. Proposed Approach: CHWBL</a></h3>
+<p><strong>Maximize cache utilization:</strong> Route requests with common prefixes to vLLM replicas with hot caches.</p>
+<p><strong>Adapt to replica changes:</strong> Minimize cache shuffling as replicas come and go.</p>
+<p><strong>Avoid hotspots:</strong> Prevent any single replica from becoming overloaded.</p>
+<p><strong>Account for LoRA adapters:</strong> Prefix caches for different adapters should be considered distinct.</p>
+<p><strong>Avoid client-side requirements:</strong> Common client libraries should be usable out of the box.</p>
+<h3 id="3-sticky-sessions"><a class="toclink" href="../../2025/02/26/llm-load-balancing-at-scale-chwbl/#3-sticky-sessions">3. Sticky Sessions?</a></h3>
+<p>Load balancing across stateful backends is not a new problem. We considered sticky sessions, the go-to for stateful load balancing. In a ChatGPT-like scenario, cookies could be used to reliably map users to active threads. However many agentic systems are not browser based, leaving client IP as the primary out-of-the-box source for client identification. Client-IP is typically unreliable for determining the end-client (NAT, dynamic IPs). To make matters worse, a single agentic program typically simulates N logical agents - i.e. multiple concurrent multi-turn conversations.</p>
+<h3 id="4-the-algorithm"><a class="toclink" href="../../2025/02/26/llm-load-balancing-at-scale-chwbl/#4-the-algorithm">4. The Algorithm</a></h3>
+<p>The Consistent Hashing with Bounded Loads (CHWBL) algorithm inherently addresses the above challenges, making it a compelling choice for LLM load balancing. It has a proven track record being employed at-scale in cache-sensitive use cases such as video serving.</p>
 <p>The CHWBL algorithm extends traditional consistent hashing by incorporating load bounds, ensuring that no individual replica receives more than its fair share of requests. This approach not only preserves cache affinity but also prevents the overloading of any single server, thereby optimizing overall system performance.</p>
 <p><img alt="CHWBL algorithm diagram" src="../../../diagrams/chwbl.excalidraw.png" /></p>
-<h3 id="4-implementation"><a class="toclink" href="../../2025/02/26/llm-load-balancing-at-scale-chwbl/#4-implementation">4. Implementation</a></h3>
+<h3 id="5-implementation"><a class="toclink" href="../../2025/02/26/llm-load-balancing-at-scale-chwbl/#5-implementation">5. Implementation</a></h3>
 <p>We integrated the CHWBL routing strategy into the <a href="https://github.com/substratusai/kubeai" target="_blank">KubeAI project</a> under the PrefixHash configuration. This strategy functions as follows:</p>
 <ol>
 <li><strong>Request Inspection:</strong> The incoming HTTP body is analyzed (OpenAI-formatted API request).</li>
@@ -1628,8 +1632,8 @@ The configuration is specified on a per-model basis via the following YAML snipp
 <span class="w">      </span><span class="nt">prefixCharLength</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span>
 <span class="w">      </span><span class="nt">replication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">256</span>
 </code></pre></div>
-<h3 id="5-evaluation"><a class="toclink" href="../../2025/02/26/llm-load-balancing-at-scale-chwbl/#5-evaluation">5. Evaluation</a></h3>
-<h4 id="51-scenarios"><a class="toclink" href="../../2025/02/26/llm-load-balancing-at-scale-chwbl/#51-scenarios">5.1. Scenarios</a></h4>
+<h3 id="6-evaluation"><a class="toclink" href="../../2025/02/26/llm-load-balancing-at-scale-chwbl/#6-evaluation">6. Evaluation</a></h3>
+<h4 id="61-scenarios"><a class="toclink" href="../../2025/02/26/llm-load-balancing-at-scale-chwbl/#61-scenarios">6.1. Scenarios</a></h4>
 <p>We conducted experiments using three distinct load balancing strategies:</p>
 <ol>
 <li><strong>Kubernetes Service (Random)</strong><ul>
@@ -1646,7 +1650,7 @@ The configuration is specified on a per-model basis via the following YAML snipp
 </ul>
 </li>
 </ol>
-<h4 id="52-setup"><a class="toclink" href="../../2025/02/26/llm-load-balancing-at-scale-chwbl/#52-setup">5.2. Setup</a></h4>
+<h4 id="62-setup"><a class="toclink" href="../../2025/02/26/llm-load-balancing-at-scale-chwbl/#62-setup">6.2. Setup</a></h4>
 <p>A Kubernetes cluster running KubeAI was setup with the following specifications:</p>
 <ul>
 <li><strong>Hardware:</strong> 8x L4 GPUs</li>
@@ -1655,19 +1659,19 @@ The configuration is specified on a per-model basis via the following YAML snipp
 <li><strong>Dataset:</strong> Message threads derived from ShareGPT</li>
 <li><strong>Workload:</strong> A custom load generator simulating parallel chat completion threads, preserving conversation state by appending LLM responses in a loop.</li>
 </ul>
-<h4 id="53-metrics"><a class="toclink" href="../../2025/02/26/llm-load-balancing-at-scale-chwbl/#53-metrics">5.3. Metrics</a></h4>
+<h4 id="63-metrics"><a class="toclink" href="../../2025/02/26/llm-load-balancing-at-scale-chwbl/#63-metrics">6.3. Metrics</a></h4>
 <p>Our evaluation focused on two key performance metrics:</p>
 <ul>
 <li><strong>Time To First Token (TTFT):</strong> The latency before the first token is generated.</li>
 <li><strong>Tokens Per Second (TPS):</strong> The overall throughput of token generation.</li>
 </ul>
-<h4 id="54-results"><a class="toclink" href="../../2025/02/26/llm-load-balancing-at-scale-chwbl/#54-results">5.4. Results</a></h4>
+<h4 id="64-results"><a class="toclink" href="../../2025/02/26/llm-load-balancing-at-scale-chwbl/#64-results">6.4. Results</a></h4>
 <p>The benchmark showed that the PrefixHash strategy resulted in significant improvements in TTFT and throughput compared to both the default Kubernetes Service and the LeastLoad strategy.</p>
 <p><strong>TTFT:</strong> The PrefixHash strategy resulted in a <u>95% reduction in Time to First Token</u> compared to the built-in Kubernetes strategy when the system was operating at 1200 concurrent threads (150 threads per replica).</p>
 <p><img alt="Mean TTFT Barchart" src="../../../graphs/ttft-benchmark.png" /></p>
 <p><strong>Throughput:</strong> The PrefixHash strategy resulted in a <u>127% increase in throughput</u> compared to the built-in Kubernetes strategy when the system was operating at 1200 concurrent threads (150 threads per replica).</p>
 <p><img alt="Mean TPS barchart" src="../../../graphs/throughput-benchmark.png" /></p>
-<h3 id="6-conclusion"><a class="toclink" href="../../2025/02/26/llm-load-balancing-at-scale-chwbl/#6-conclusion">6. Conclusion</a></h3>
+<h3 id="7-conclusion"><a class="toclink" href="../../2025/02/26/llm-load-balancing-at-scale-chwbl/#7-conclusion">7. Conclusion</a></h3>
 <p>In this work, we demonstrated that incorporating the CHWBL algorithm into LLM load balancing through the PrefixHash strategy in KubeAI can significantly enhance performance in real-world scenarios. Notably, improvements in cache hit rates yielded lower latency and increased throughput. Moving forward, we plan to expand our benchmarks to cover a broader range of workloads. We plan to incorporate benchmarks for emerging strategies as they come out, with the ultimate aim of ensuring that KubeAI features the most effective load balancing techniques.</p>
 <h3 id="references"><a class="toclink" href="../../2025/02/26/llm-load-balancing-at-scale-chwbl/#references">References</a></h3>
 <ul>

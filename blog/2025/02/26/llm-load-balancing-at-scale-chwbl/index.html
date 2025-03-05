@@ -1563,64 +1563,73 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-proposed-approach-chwbl" class="md-nav__link">
+  <a href="#3-sticky-sessions" class="md-nav__link">
     <span class="md-ellipsis">
-      3. Proposed Approach: CHWBL
+      3. Sticky Sessions?
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-implementation" class="md-nav__link">
+  <a href="#4-the-algorithm" class="md-nav__link">
     <span class="md-ellipsis">
-      4. Implementation
+      4. The Algorithm
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-evaluation" class="md-nav__link">
+  <a href="#5-implementation" class="md-nav__link">
     <span class="md-ellipsis">
-      5. Evaluation
+      5. Implementation
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="5. Evaluation">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Evaluation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Evaluation">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#51-scenarios" class="md-nav__link">
+  <a href="#61-scenarios" class="md-nav__link">
     <span class="md-ellipsis">
-      5.1. Scenarios
+      6.1. Scenarios
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#52-setup" class="md-nav__link">
+  <a href="#62-setup" class="md-nav__link">
     <span class="md-ellipsis">
-      5.2. Setup
+      6.2. Setup
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#53-metrics" class="md-nav__link">
+  <a href="#63-metrics" class="md-nav__link">
     <span class="md-ellipsis">
-      5.3. Metrics
+      6.3. Metrics
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#54-results" class="md-nav__link">
+  <a href="#64-results" class="md-nav__link">
     <span class="md-ellipsis">
-      5.4. Results
+      6.4. Results
     </span>
   </a>
   
@@ -1632,9 +1641,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-conclusion" class="md-nav__link">
+  <a href="#7-conclusion" class="md-nav__link">
     <span class="md-ellipsis">
-      6. Conclusion
+      7. Conclusion
     </span>
   </a>
   
@@ -1709,6 +1718,13 @@
                       </div>
                     </li>
                     
+                      <li class="md-nav__item">
+                        <div class="md-nav__link">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15 13h1.5v2.82l2.44 1.41-.75 1.3L15 16.69zm4-5H5v11h4.67c-.43-.91-.67-1.93-.67-3a7 7 0 0 1 7-7c1.07 0 2.09.24 3 .67zM5 21a2 2 0 0 1-2-2V5c0-1.11.89-2 2-2h1V1h2v2h8V1h2v2h1a2 2 0 0 1 2 2v6.1c1.24 1.26 2 2.99 2 4.9a7 7 0 0 1-7 7c-1.91 0-3.64-.76-4.9-2zm11-9.85A4.85 4.85 0 0 0 11.15 16c0 2.68 2.17 4.85 4.85 4.85A4.85 4.85 0 0 0 20.85 16c0-2.68-2.17-4.85-4.85-4.85"/></svg>
+                          <time datetime="2025-03-04 00:00:00+00:00" class="md-ellipsis">March 4, 2025</time>
+                        </div>
+                      </li>
+                    
                     
                       <li class="md-nav__item">
                         <div class="md-nav__link">
@@ -1769,14 +1785,18 @@ Scenarios that involve multiple queries against a single long document are parti
 <p><img alt="Random vs consistent routing" src="../../../../../diagrams/random-vs-consistent-hash.excalidraw.png" /></p>
 <h2 id="2-problem-statement">2. Problem Statement<a class="headerlink" href="#2-problem-statement" title="Permanent link">&para;</a></h2>
 <p>An effective load balancing strategy for LLM serving should satisfy the following criteria:</p>
-<p><strong>Maximize Cache Utilization:</strong> Route requests with common prefixes to vLLM replicas with hot caches.</p>
-<p><strong>Adapt to Replica Changes:</strong> Minimize cache shuffling as replicas come and go.</p>
-<p><strong>Avoid Uneven Load Distribution:</strong> Prevent any single replica from becoming overloaded.</p>
-<p>The Consistent Hashing with Bounded Loads (CHWBL) algorithm inherently addresses these challenges, making it a compelling choice for LLM load balancing.</p>
-<h2 id="3-proposed-approach-chwbl">3. Proposed Approach: CHWBL<a class="headerlink" href="#3-proposed-approach-chwbl" title="Permanent link">&para;</a></h2>
+<p><strong>Maximize cache utilization:</strong> Route requests with common prefixes to vLLM replicas with hot caches.</p>
+<p><strong>Adapt to replica changes:</strong> Minimize cache shuffling as replicas come and go.</p>
+<p><strong>Avoid hotspots:</strong> Prevent any single replica from becoming overloaded.</p>
+<p><strong>Account for LoRA adapters:</strong> Prefix caches for different adapters should be considered distinct.</p>
+<p><strong>Avoid client-side requirements:</strong> Common client libraries should be usable out of the box.</p>
+<h2 id="3-sticky-sessions">3. Sticky Sessions?<a class="headerlink" href="#3-sticky-sessions" title="Permanent link">&para;</a></h2>
+<p>Load balancing across stateful backends is not a new problem. We considered sticky sessions, the go-to for stateful load balancing. In a ChatGPT-like scenario, cookies could be used to reliably map users to active threads. However many agentic systems are not browser based, leaving client IP as the primary out-of-the-box source for client identification. Client-IP is typically unreliable for determining the end-client (NAT, dynamic IPs). To make matters worse, a single agentic program typically simulates N logical agents - i.e. multiple concurrent multi-turn conversations.</p>
+<h2 id="4-the-algorithm">4. The Algorithm<a class="headerlink" href="#4-the-algorithm" title="Permanent link">&para;</a></h2>
+<p>The Consistent Hashing with Bounded Loads (CHWBL) algorithm inherently addresses the above challenges, making it a compelling choice for LLM load balancing. It has a proven track record being employed at-scale in cache-sensitive use cases such as video serving.</p>
 <p>The CHWBL algorithm extends traditional consistent hashing by incorporating load bounds, ensuring that no individual replica receives more than its fair share of requests. This approach not only preserves cache affinity but also prevents the overloading of any single server, thereby optimizing overall system performance.</p>
 <p><img alt="CHWBL algorithm diagram" src="../../../../../diagrams/chwbl.excalidraw.png" /></p>
-<h2 id="4-implementation">4. Implementation<a class="headerlink" href="#4-implementation" title="Permanent link">&para;</a></h2>
+<h2 id="5-implementation">5. Implementation<a class="headerlink" href="#5-implementation" title="Permanent link">&para;</a></h2>
 <p>We integrated the CHWBL routing strategy into the <a href="https://github.com/substratusai/kubeai" target="_blank">KubeAI project</a> under the PrefixHash configuration. This strategy functions as follows:</p>
 <ol>
 <li><strong>Request Inspection:</strong> The incoming HTTP body is analyzed (OpenAI-formatted API request).</li>
@@ -1796,8 +1816,8 @@ The configuration is specified on a per-model basis via the following YAML snipp
 <span class="w">      </span><span class="nt">prefixCharLength</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span>
 <span class="w">      </span><span class="nt">replication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">256</span>
 </code></pre></div>
-<h2 id="5-evaluation">5. Evaluation<a class="headerlink" href="#5-evaluation" title="Permanent link">&para;</a></h2>
-<h3 id="51-scenarios">5.1. Scenarios<a class="headerlink" href="#51-scenarios" title="Permanent link">&para;</a></h3>
+<h2 id="6-evaluation">6. Evaluation<a class="headerlink" href="#6-evaluation" title="Permanent link">&para;</a></h2>
+<h3 id="61-scenarios">6.1. Scenarios<a class="headerlink" href="#61-scenarios" title="Permanent link">&para;</a></h3>
 <p>We conducted experiments using three distinct load balancing strategies:</p>
 <ol>
 <li><strong>Kubernetes Service (Random)</strong><ul>
@@ -1814,7 +1834,7 @@ The configuration is specified on a per-model basis via the following YAML snipp
 </ul>
 </li>
 </ol>
-<h3 id="52-setup">5.2. Setup<a class="headerlink" href="#52-setup" title="Permanent link">&para;</a></h3>
+<h3 id="62-setup">6.2. Setup<a class="headerlink" href="#62-setup" title="Permanent link">&para;</a></h3>
 <p>A Kubernetes cluster running KubeAI was setup with the following specifications:</p>
 <ul>
 <li><strong>Hardware:</strong> 8x L4 GPUs</li>
@@ -1823,19 +1843,19 @@ The configuration is specified on a per-model basis via the following YAML snipp
 <li><strong>Dataset:</strong> Message threads derived from ShareGPT</li>
 <li><strong>Workload:</strong> A custom load generator simulating parallel chat completion threads, preserving conversation state by appending LLM responses in a loop.</li>
 </ul>
-<h3 id="53-metrics">5.3. Metrics<a class="headerlink" href="#53-metrics" title="Permanent link">&para;</a></h3>
+<h3 id="63-metrics">6.3. Metrics<a class="headerlink" href="#63-metrics" title="Permanent link">&para;</a></h3>
 <p>Our evaluation focused on two key performance metrics:</p>
 <ul>
 <li><strong>Time To First Token (TTFT):</strong> The latency before the first token is generated.</li>
 <li><strong>Tokens Per Second (TPS):</strong> The overall throughput of token generation.</li>
 </ul>
-<h3 id="54-results">5.4. Results<a class="headerlink" href="#54-results" title="Permanent link">&para;</a></h3>
+<h3 id="64-results">6.4. Results<a class="headerlink" href="#64-results" title="Permanent link">&para;</a></h3>
 <p>The benchmark showed that the PrefixHash strategy resulted in significant improvements in TTFT and throughput compared to both the default Kubernetes Service and the LeastLoad strategy.</p>
 <p><strong>TTFT:</strong> The PrefixHash strategy resulted in a <u>95% reduction in Time to First Token</u> compared to the built-in Kubernetes strategy when the system was operating at 1200 concurrent threads (150 threads per replica).</p>
 <p><img alt="Mean TTFT Barchart" src="../../../../../graphs/ttft-benchmark.png" /></p>
 <p><strong>Throughput:</strong> The PrefixHash strategy resulted in a <u>127% increase in throughput</u> compared to the built-in Kubernetes strategy when the system was operating at 1200 concurrent threads (150 threads per replica).</p>
 <p><img alt="Mean TPS barchart" src="../../../../../graphs/throughput-benchmark.png" /></p>
-<h2 id="6-conclusion">6. Conclusion<a class="headerlink" href="#6-conclusion" title="Permanent link">&para;</a></h2>
+<h2 id="7-conclusion">7. Conclusion<a class="headerlink" href="#7-conclusion" title="Permanent link">&para;</a></h2>
 <p>In this work, we demonstrated that incorporating the CHWBL algorithm into LLM load balancing through the PrefixHash strategy in KubeAI can significantly enhance performance in real-world scenarios. Notably, improvements in cache hit rates yielded lower latency and increased throughput. Moving forward, we plan to expand our benchmarks to cover a broader range of workloads. We plan to incorporate benchmarks for emerging strategies as they come out, with the ultimate aim of ensuring that KubeAI features the most effective load balancing techniques.</p>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <ul>
