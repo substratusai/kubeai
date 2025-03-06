@@ -15,6 +15,6 @@ resources:
   domain: substratus.ai
   group: kubeai
   kind: Model
-  path: github.com/substratusai/kubeai/api/v1
+  path: github.com/substratusai/kubeai/api/k8s/v1
   version: v1
 version: "3"

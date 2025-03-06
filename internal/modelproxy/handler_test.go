@@ -13,7 +13,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	v1 "github.com/substratusai/kubeai/api/v1"
+	v1 "github.com/substratusai/kubeai/api/k8s/v1"
 	"github.com/substratusai/kubeai/internal/apiutils"
 	"github.com/substratusai/kubeai/internal/metrics/metricstest"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -70,7 +70,7 @@ func TestHandler(t *testing.T) {
 			expBackendRequestCount: 0,
 		},
 		"happy 200 model in body": {
-			reqBody:     fmt.Sprintf(`{"model":%q}`, model1),
+			reqBody:     fmt.Sprintf(`{"model":%q,"messages":[]}`, model1),
 			backendCode: http.StatusOK,
 			backendBody: `{"result":"ok"}`,
 			expCode:     http.StatusOK,
@@ -81,8 +81,8 @@ func TestHandler(t *testing.T) {
 			expBackendRequestCount: 1,
 		},
 		"happy 200 model+adapter in body": {
-			reqBody:             fmt.Sprintf(`{"model":%q}`, apiutils.MergeModelAdapter(model3, adapter3)),
-			expRewrittenReqBody: fmt.Sprintf(`{"model":%q}`, adapter3),
+			reqBody:             fmt.Sprintf(`{"model":%q,"messages":[]}`, apiutils.MergeModelAdapter(model3, adapter3)),
+			expRewrittenReqBody: fmt.Sprintf(`{"model":%q,"messages":[]}`, adapter3),
 			backendCode:         http.StatusOK,
 			backendBody:         `{"result":"ok"}`,
 			expCode:             http.StatusOK,
@@ -93,7 +93,7 @@ func TestHandler(t *testing.T) {
 			expBackendRequestCount: 1,
 		},
 		"404 model+adapter in body but missing adapter": {
-			reqBody: fmt.Sprintf(`{"model":%q}`, apiutils.MergeModelAdapter(model1, "no-such-adapter")),
+			reqBody: fmt.Sprintf(`{"model":%q,"messages":[]}`, apiutils.MergeModelAdapter(model1, "no-such-adapter")),
 			expCode: http.StatusNotFound,
 			expBody: fmt.Sprintf(`{"error":%q}`, `model not found: "`+apiutils.MergeModelAdapter(model1, "no-such-adapter")+`"`) + "\n",
 		},
@@ -135,7 +135,7 @@ func TestHandler(t *testing.T) {
 			expBackendRequestCount: 1,
 		},
 		"retryable 500": {
-			reqBody:     fmt.Sprintf(`{"model":%q}`, model1),
+			reqBody:     fmt.Sprintf(`{"model":%q,"messages":[]}`, model1),
 			backendCode: http.StatusInternalServerError,
 			backendBody: `{"err":"oh no!"}`,
 			expCode:     http.StatusInternalServerError,
@@ -146,7 +146,7 @@ func TestHandler(t *testing.T) {
 			expBackendRequestCount: 1 + maxRetries,
 		},
 		"not retryable 400": {
-			reqBody:     fmt.Sprintf(`{"model":%q}`, model1),
+			reqBody:     fmt.Sprintf(`{"model":%q,"messages":[]}`, model1),
 			backendCode: http.StatusBadRequest,
 			backendBody: `{"err":"bad request"}`,
 			expCode:     http.StatusBadRequest,
@@ -157,7 +157,7 @@ func TestHandler(t *testing.T) {
 			expBackendRequestCount: 1,
 		},
 		"good request but dropped connection": {
-			reqBody:      fmt.Sprintf(`{"model":%q}`, model1),
+			reqBody:      fmt.Sprintf(`{"model":%q,"messages":[]}`, model1),
 			backendPanic: true,
 			expCode:      http.StatusBadGateway,
 			expBody:      `{"error":"Bad Gateway"}` + "\n",
@@ -215,7 +215,7 @@ func TestHandler(t *testing.T) {
 
 			// Issue request.
 			client := &http.Client{}
-			req, err := http.NewRequest(http.MethodPost, server.URL, strings.NewReader(spec.reqBody))
+			req, err := http.NewRequest(http.MethodPost, server.URL+"/v1/chat/completions", strings.NewReader(spec.reqBody))
 			require.NoError(t, err)
 			for k, v := range spec.reqHeaders {
 				req.Header.Add(k, v)

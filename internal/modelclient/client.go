@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
+	kubeaiv1 "github.com/substratusai/kubeai/api/k8s/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"

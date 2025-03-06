@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
+	kubeaiv1 "github.com/substratusai/kubeai/api/k8s/v1"
 	"github.com/substratusai/kubeai/internal/k8sutils"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
