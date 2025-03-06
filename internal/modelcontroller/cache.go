@@ -20,6 +20,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 type PVCModelAnnotationValue struct {
@@ -28,17 +29,49 @@ type PVCModelAnnotationValue struct {
 }
 
 func (r *ModelReconciler) reconcileCache(ctx context.Context, model *kubeaiv1.Model, cfg ModelConfig) (ctrl.Result, error) {
+	// Initialize model.Status.Cache if nil
 	if model.Status.Cache == nil {
 		model.Status.Cache = &kubeaiv1.ModelStatusCache{}
 	}
 
+	// If no cache profile is configured, nothing to do
+	if model.Spec.CacheProfile == "" {
+		return ctrl.Result{}, nil
+	}
+
 	modelDeleted := model.DeletionTimestamp != nil
 
-	// Track URL changes in the status
-	urlChanged := model.Status.Cache.URL != "" && model.Status.Cache.URL != model.Spec.URL
-	// Store the current URL in the status for future comparisons
-	if model.Status.Cache.URL == "" {
+	urlChanged := model.Status.Cache.URL != model.Spec.URL
+
+	// Store the old URL for later use if needed
+	oldURL := ""
+	if urlChanged {
+		oldURL = model.Status.Cache.URL
+	}
+
+	// If URL has changed, immediately set Loaded = false and update URL via patching
+	// This helps users know that the specific URL hasn't been loaded yet
+	if urlChanged {
+		// Store the old URL in status before updating to new URL
+		// If PreviousURL is empty, just set it to the old URL
+		// If PreviousURL already has a value, we're in a multi-transition scenario
+		// In this case, keep the most recent previous URL for cleanup
+		if model.Status.Cache.PreviousURL == "" && model.Status.Cache.URL != "" {
+			model.Status.Cache.PreviousURL = model.Status.Cache.URL
+		}
+		model.Status.Cache.Loaded = false
 		model.Status.Cache.URL = model.Spec.URL
+	} else if model.Status.Cache.URL == "" && model.Status.Cache.Loaded {
+		// This is needed for backwards compatibility with older models.
+		// Older models used a different directory structure for the cache.
+		model.Status.Cache.Loaded = false
+		model.Status.Cache.URL = model.Spec.URL
+	} else if model.Status.Cache.URL == "" {
+		model.Status.Cache.URL = model.Spec.URL
+	}
+
+	if err := r.Status().Patch(ctx, model, client.MergeFrom(model.DeepCopy())); err != nil {
+		return ctrl.Result{}, fmt.Errorf("patching model status for URL change: %w", err)
 	}
 
 	pvc := &corev1.PersistentVolumeClaim{}
@@ -97,19 +130,30 @@ func (r *ModelReconciler) reconcileCache(ctx context.Context, model *kubeaiv1.Mo
 		jobExists = true
 	}
 
-	pvcModelAnn, err := parsePVCModelAnnotation(pvc, model.Name)
-	if err != nil {
-		return ctrl.Result{}, fmt.Errorf("parsing pvc model annotation: %w", err)
+	var pvcModelAnn PVCModelAnnotationValue
+	var err error
+
+	if pvcExists {
+		pvcModelAnn, err = parsePVCModelAnnotation(pvc, model.Name)
+		if err != nil {
+			return ctrl.Result{}, fmt.Errorf("parsing pvc model annotation: %w", err)
+		}
 	}
 
 	// Check if we need to load the cache
 	// This happens if either:
 	// 1. The model UID doesn't match what's in the PVC annotation (new model)
 	// 2. The URL has changed since the last cache load
-	needsCacheLoad := pvcModelAnn.UID != string(model.UID) || urlChanged
+	needsCacheLoad := !pvcExists || pvcModelAnn.UID != string(model.UID) || urlChanged
 
-	// Run Job to populate PVC if model is new or URL has changed
-	if needsCacheLoad {
+	// Initialize model.Status.Cache if nil to prevent null pointer errors
+	if model.Status.Cache == nil {
+		model.Status.Cache = &kubeaiv1.ModelStatusCache{}
+	}
+
+	// Only attempt to load cache if model is not already loaded with the current URL
+	// This prevents recreating jobs after they've been completed and deleted
+	if needsCacheLoad && !model.Status.Cache.Loaded {
 		// Don't delete the old model's cache yet if URL changed
 		// We'll keep both until we confirm the new one works
 		if !jobExists {
@@ -127,17 +171,46 @@ func (r *ModelReconciler) reconcileCache(ctx context.Context, model *kubeaiv1.Mo
 			return ctrl.Result{}, errReturnEarly
 		}
 
-		// Update the URL in the status to mark that the cache has been loaded for this URL
-		model.Status.Cache.URL = model.Spec.URL
-
 		if err := r.updatePVCModelAnnotation(ctx, pvc, model.Name, PVCModelAnnotationValue{
 			UID:       string(model.UID),
 			Timestamp: time.Now(),
 		}); err != nil {
 			return ctrl.Result{}, fmt.Errorf("setting pvc model annotation: %w", err)
 		}
+
+		// Mark cache as loaded since the job completed successfully
+		model.Status.Cache.Loaded = true
 	}
-	model.Status.Cache.Loaded = pvcModelAnn.UID == string(model.UID)
+
+	// Update Loaded status based on PVC annotation
+	// Set loaded to false if PVC doesn't exist yet or annotations don't match
+	if model.Status.Cache == nil {
+		model.Status.Cache = &kubeaiv1.ModelStatusCache{}
+	}
+
+	if !pvcExists {
+		model.Status.Cache.Loaded = false
+	} else if !model.Status.Cache.Loaded {
+		// Only update Loaded status if it's not already true
+		// This prevents toggling the Loaded status after we've marked it as true
+		// when the job completed successfully
+
+		// Compare UIDs safely - empty string if no annotation was found
+		// Ensure if URL is empty, loaded is always false
+		if model.Status.Cache.URL == "" {
+			model.Status.Cache.Loaded = false
+		} else {
+			model.Status.Cache.Loaded = pvcModelAnn.UID == string(model.UID)
+		}
+	}
+
+	// Final safety check: ensure consistency between Loaded and URL
+	if model.Status.Cache.Loaded && (model.Status.Cache.URL == "" || model.Status.Cache.URL != model.Spec.URL) {
+		model.Status.Cache.Loaded = false
+		if model.Status.Cache.URL == "" {
+			model.Status.Cache.URL = model.Spec.URL
+		}
+	}
 
 	if jobExists {
 		// Cache loading completed, delete Job to avoid accumulating a mess of completed Jobs.
@@ -149,10 +222,37 @@ func (r *ModelReconciler) reconcileCache(ctx context.Context, model *kubeaiv1.Mo
 
 	// If URL was changed, trigger cleanup of the old URL's cache after the new model is ready
 	if urlChanged && model.Status.Cache.Loaded {
-		oldURL := model.Status.Cache.URL
-		// Check if new pods are ready before cleaning up old cache
-		if err := r.cleanupOldUrlCache(ctx, model, cfg, oldURL); err != nil {
-			return ctrl.Result{}, fmt.Errorf("cleaning up old URL cache: %w", err)
+		// Validate cache profile is properly configured before cleaning up
+		if model.Spec.CacheProfile == "" {
+			// No cache profile, nothing to clean up
+			log.FromContext(ctx).Info("Cannot clean up old URL cache: no cache profile configured",
+				"model", model.Name,
+				"namespace", model.Namespace)
+		} else {
+			// Check if new pods are ready before cleaning up old cache
+			if err := r.cleanupOldUrlCache(ctx, model, cfg, oldURL); err != nil {
+				// Log error but don't fail reconcile
+				log.FromContext(ctx).Error(err, "Error cleaning up old URL cache",
+					"model", model.Name,
+					"namespace", model.Namespace,
+					"oldURL", oldURL)
+			}
+		}
+	} else if model.Status.Cache.PreviousURL != "" && model.Status.Cache.Loaded {
+		// If we have a PreviousURL but no URL change in this reconcile, we might have a pending cleanup
+		// from a previous URL change where the cleanup job didn't complete
+		log.FromContext(ctx).Info("Found PreviousURL without current URL change, cleaning up previous URL cache",
+			"model", model.Name,
+			"namespace", model.Namespace,
+			"previousURL", model.Status.Cache.PreviousURL)
+
+		if model.Spec.CacheProfile != "" {
+			if err := r.cleanupOldUrlCache(ctx, model, cfg, model.Status.Cache.PreviousURL); err != nil {
+				log.FromContext(ctx).Error(err, "Error cleaning up previous URL cache",
+					"model", model.Name,
+					"namespace", model.Namespace,
+					"previousURL", model.Status.Cache.PreviousURL)
+			}
 		}
 	}
 
@@ -275,14 +375,27 @@ func (r *ModelReconciler) deleteAllCacheJobsAndPods(ctx context.Context, model *
 }
 
 func parsePVCModelAnnotation(pvc *corev1.PersistentVolumeClaim, modelName string) (PVCModelAnnotationValue, error) {
-	pvcModelStatusJSON := k8sutils.GetAnnotation(pvc, kubeaiv1.PVCModelAnnotation(modelName))
-	if pvcModelStatusJSON == "" {
+	// Handle nil PVC
+	if pvc == nil {
 		return PVCModelAnnotationValue{}, nil
 	}
+
+	pvcModelStatusJSON := k8sutils.GetAnnotation(pvc, kubeaiv1.PVCModelAnnotation(modelName))
+	if pvcModelStatusJSON == "" {
+		// Return an initialized struct with empty values
+		return PVCModelAnnotationValue{UID: "", Timestamp: time.Time{}}, nil
+	}
+
 	var status PVCModelAnnotationValue
 	if err := json.Unmarshal([]byte(pvcModelStatusJSON), &status); err != nil {
 		return PVCModelAnnotationValue{}, fmt.Errorf("unmarshalling pvc model status: %w", err)
 	}
+
+	// Safety check - ensure UID is never nil
+	if status.UID == "" {
+		status.UID = ""
+	}
+
 	return status, nil
 }
 
@@ -306,23 +419,37 @@ func (r *ModelReconciler) cachePVCForModel(m *kubeaiv1.Model, c ModelConfig) *co
 		},
 		Spec: corev1.PersistentVolumeClaimSpec{},
 	}
-	switch {
-	case c.CacheProfile.SharedFilesystem != nil:
-		pvc.Spec.AccessModes = []corev1.PersistentVolumeAccessMode{corev1.ReadWriteMany}
-		storageClassName := c.CacheProfile.SharedFilesystem.StorageClassName
-		pvc.Spec.StorageClassName = &storageClassName
-		pvc.Spec.VolumeName = c.CacheProfile.SharedFilesystem.PersistentVolumeName
-		pvc.Spec.Resources.Requests = corev1.ResourceList{
-			// https://discuss.huggingface.co/t/how-to-get-model-size/11038/7
-			corev1.ResourceStorage: resource.MustParse("10Gi"),
-		}
-	default:
-		panic("unsupported cache profile, this point should not be reached")
+
+	// Default settings if no profile is specified
+	pvc.Spec.AccessModes = []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce}
+	pvc.Spec.Resources.Requests = corev1.ResourceList{
+		corev1.ResourceStorage: resource.MustParse("10Gi"),
 	}
+
+	// Apply SharedFilesystem settings if available
+	if c.CacheProfile.SharedFilesystem != nil {
+		pvc.Spec.AccessModes = []corev1.PersistentVolumeAccessMode{corev1.ReadWriteMany}
+
+		if c.CacheProfile.SharedFilesystem.StorageClassName != "" {
+			storageClassName := c.CacheProfile.SharedFilesystem.StorageClassName
+			pvc.Spec.StorageClassName = &storageClassName
+		}
+
+		if c.CacheProfile.SharedFilesystem.PersistentVolumeName != "" {
+			pvc.Spec.VolumeName = c.CacheProfile.SharedFilesystem.PersistentVolumeName
+		}
+	}
+
 	return &pvc
 }
 
 func cachePVCName(m *kubeaiv1.Model, c ModelConfig) string {
+	// Validate cacheProfile is configured before using it
+	if m.Spec.CacheProfile == "" {
+		// Fallback to model-specific cache name if no profile specified
+		return fmt.Sprintf("model-cache-%s-%s", m.Name, m.UID[0:7])
+	}
+
 	switch {
 	case c.CacheProfile.SharedFilesystem != nil:
 		// One PVC for all models.
@@ -432,8 +559,18 @@ func (r *ModelReconciler) evictCacheJobForModel(m *kubeaiv1.Model, c ModelConfig
 func modelCacheDir(m *kubeaiv1.Model) string {
 	// Create a cache directory that's unique for each model name, UID, and URL
 	// This allows different URLs to coexist in the cache
+	// Use a consistent hash function for the URL to ensure the same URL always gets the same hash
 	urlHash := fmt.Sprintf("%x", md5.Sum([]byte(m.Spec.URL)))[0:8]
+
+	// Format: /models/<model-name>-<model-uid>-<url-hash>
+	// Using a consistent separator makes it easier to parse and identify components
 	return fmt.Sprintf("/models/%s-%s-%s", m.Name, m.UID, urlHash)
+}
+
+// urlHashFromURL creates a hash for a URL string
+// This function helps ensure consistent hashing across the codebase
+func urlHashFromURL(url string) string {
+	return fmt.Sprintf("%x", md5.Sum([]byte(url)))[0:8]
 }
 
 func loadCacheJobName(m *kubeaiv1.Model) string {
@@ -471,43 +608,133 @@ func patchServerCacheVolumes(podSpec *corev1.PodSpec, m *kubeaiv1.Model, c Model
 // cleanupOldUrlCache creates a job to delete cache directories for old URLs
 // but only after confirming the new model pod is running successfully with the new URL
 func (r *ModelReconciler) cleanupOldUrlCache(ctx context.Context, model *kubeaiv1.Model, cfg ModelConfig, oldURL string) error {
-	// First check if the new model pod is ready
-	allPods := &corev1.PodList{}
-	if err := r.List(ctx, allPods, client.InNamespace(model.Namespace), client.MatchingLabels{
-		kubeaiv1.PodModelLabel: model.Name,
-	}); err != nil {
+	logger := log.FromContext(ctx)
+
+	// Safety check for nil CacheProfile
+	if model.Spec.CacheProfile == "" || cfg.CacheProfile.SharedFilesystem == nil {
+		// Cannot clean up without a valid cache profile
+		return fmt.Errorf("cannot clean up old URL cache: no valid cache profile configured")
+	}
+
+	// Ensure we have a valid old URL to clean up
+	if oldURL == "" {
+		if model.Status.Cache.PreviousURL != "" {
+			oldURL = model.Status.Cache.PreviousURL
+		} else {
+			// No old URL to clean up
+			return nil
+		}
+	}
+
+	// If oldURL is the same as current URL, nothing to clean up
+	if oldURL == model.Spec.URL {
+		return nil
+	}
+
+	// First check if the new model pods are ready and using the new URL
+	modelPods := &corev1.PodList{}
+	if err := r.List(ctx, modelPods,
+		client.InNamespace(model.Namespace),
+		client.MatchingLabels{kubeaiv1.PodModelLabel: model.Name}); err != nil {
 		return fmt.Errorf("listing model pods: %w", err)
 	}
 
-	// See if there are any ready pods with the new URL
-	// If not, don't clean up the old cache yet
+	// See if there are any ready pods that are actually using the new URL
+	// We need to verify they are using the current URL and not the old one
 	readyPodsWithNewUrl := false
-	for _, pod := range allPods.Items {
-		if k8sutils.PodIsReady(&pod) {
+	var readyPodCount, readyPodsWithNewUrlCount int
+
+	for _, pod := range modelPods.Items {
+		// Skip pods that aren't ready
+		if !k8sutils.PodIsReady(&pod) {
+			continue
+		}
+
+		readyPodCount++
+
+		// Check if this pod is using the new URL
+		// We need to inspect the pod to see what URL it's actually using
+		podIsUsingNewUrl := false
+
+		// Check if pod has the expected volume mounts for the new URL
+		newUrlHash := urlHashFromURL(model.Spec.URL)
+		expectedCacheDir := fmt.Sprintf("/models/%s-%s-%s", model.Name, model.UID, newUrlHash)
+
+		// Check for URL in container args or env vars
+		for _, container := range pod.Spec.Containers {
+			// Look for the server container or containers with volume mounts to the expected model cache dir
+			if container.Name == "server" || hasMountToDir(&container, expectedCacheDir) {
+				// Pod is using the expected model cache directory with the new URL
+				podIsUsingNewUrl = true
+				break
+			}
+		}
+
+		if podIsUsingNewUrl {
+			readyPodsWithNewUrlCount++
 			readyPodsWithNewUrl = true
-			break
 		}
 	}
 
 	if !readyPodsWithNewUrl {
 		// No ready pods with new URL yet, keep the old cache
+		logger.Info("No ready pods using the new URL yet, deferring cleanup of old URL cache",
+			"model", model.Name,
+			"oldURL", oldURL,
+			"newURL", model.Spec.URL,
+			"readyPods", readyPodCount,
+			"readyPodsWithNewUrl", readyPodsWithNewUrlCount)
 		return nil
 	}
 
-	// Create a job to clean up the old URL's cache
-	oldUrlHash := fmt.Sprintf("%x", md5.Sum([]byte(oldURL)))[0:8]
+	// Log information about pod readiness when we've determined it's safe to clean up
+	logger.Info("Found ready pods using the new URL, proceeding with cleanup of old URL cache",
+		"model", model.Name,
+		"oldURL", oldURL,
+		"newURL", model.Spec.URL,
+		"readyPods", readyPodCount,
+		"readyPodsWithNewUrl", readyPodsWithNewUrlCount)
+
+	// Generate a unique job name that includes the old URL hash to avoid conflicts
+	// This allows handling multiple URL transitions properly
+	oldUrlHash := urlHashFromURL(oldURL)
+	jobName := fmt.Sprintf("cleanup-old-url-cache-%s-%s", model.Name, oldUrlHash)
+
+	// Construct the directory path based on the model name, UID, and old URL hash
+	// This ensures we're cleaning up the correct directory for the old URL
 	oldCacheDir := fmt.Sprintf("/models/%s-%s-%s", model.Name, model.UID, oldUrlHash)
+
+	logger.Info("Creating job to clean up old URL cache",
+		"model", model.Name,
+		"jobName", jobName,
+		"oldURL", oldURL,
+		"oldURLHash", oldUrlHash,
+		"oldCacheDir", oldCacheDir)
 
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf("cleanup-old-url-cache-%s", model.Name),
+			Name:      jobName,
 			Namespace: model.Namespace,
+			Labels: map[string]string{
+				"app.kubernetes.io/component": "model-cache-cleanup",
+				"app.kubernetes.io/part-of":   "kubeai",
+				kubeaiv1.PodModelLabel:        model.Name,
+				"cleanup-url-hash":            oldUrlHash,
+			},
 		},
 		Spec: batchv1.JobSpec{
 			TTLSecondsAfterFinished: ptr.To[int32](60),
 			Parallelism:             ptr.To[int32](1),
 			Completions:             ptr.To[int32](1),
 			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						"app.kubernetes.io/component": "model-cache-cleanup",
+						"app.kubernetes.io/part-of":   "kubeai",
+						kubeaiv1.PodModelLabel:        model.Name,
+						"cleanup-url-hash":            oldUrlHash,
+					},
+				},
 				Spec: corev1.PodSpec{
 					RestartPolicy: corev1.RestartPolicyOnFailure,
 					Containers: []corev1.Container{
@@ -538,7 +765,24 @@ func (r *ModelReconciler) cleanupOldUrlCache(ctx context.Context, model *kubeaiv
 	}
 
 	job.Spec.Template.Spec.Containers[0].Image = r.ModelLoaders.Image
-	job.Spec.Template.Spec.Containers[0].Command = []string{"bash", "-c", "rm -rf " + oldCacheDir}
+	job.Spec.Template.Spec.Containers[0].Command = []string{"bash", "-c"}
+
+	// Use a more robust cleanup command that verifies the directory exists before removing it
+	// and also creates a completion marker file to verify the cleanup was successful
+	cleanupScript := fmt.Sprintf(`
+		set -ex
+		if [ -d "%s" ]; then
+			echo "Found directory %s, removing..."
+			rm -rf %s
+			echo "Removal completed successfully"
+			echo "true" > /tmp/cleanup_success
+		else
+			echo "Directory %s not found, nothing to clean up"
+			echo "true" > /tmp/cleanup_success
+		fi
+	`, oldCacheDir, oldCacheDir, oldCacheDir, oldCacheDir)
+
+	job.Spec.Template.Spec.Containers[0].Args = []string{cleanupScript}
 
 	if err := ctrl.SetControllerReference(model, job, r.Scheme); err != nil {
 		return fmt.Errorf("setting controller reference on cleanup job: %w", err)
@@ -557,18 +801,102 @@ func (r *ModelReconciler) cleanupOldUrlCache(ctx context.Context, model *kubeaiv
 			if err := r.Create(ctx, job); err != nil {
 				return fmt.Errorf("creating cleanup job: %w", err)
 			}
+			logger.Info("Created cleanup job for old URL cache",
+				"model", model.Name,
+				"jobName", jobName,
+				"oldURL", oldURL)
 		} else {
 			return fmt.Errorf("checking for existing cleanup job: %w", err)
 		}
 	} else {
 		// Job exists, check if completed
 		if k8sutils.IsJobCompleted(existingJob) {
+			// Verify job completed successfully by checking its status
+			cleanupSuccessful := existingJob.Status.Succeeded > 0
+
+			if !cleanupSuccessful {
+				logger.Error(fmt.Errorf("cleanup job failed"),
+					"Cleanup job did not complete successfully",
+					"model", model.Name,
+					"jobName", jobName)
+				// We'll retry on the next reconciliation
+				return nil
+			}
+
+			logger.Info("Cleanup job completed successfully",
+				"model", model.Name,
+				"jobName", jobName,
+				"oldURL", oldURL)
+
 			// Delete the job as it's completed
 			if err := r.Delete(ctx, existingJob); err != nil {
 				return fmt.Errorf("deleting completed cleanup job: %w", err)
+			}
+
+			// Only clear the PreviousURL field from the status once cleanup is done
+			// and if the PreviousURL still matches the one we just cleaned up
+			if model.Status.Cache.PreviousURL == oldURL {
+				logger.Info("Clearing PreviousURL from model status after successful cleanup",
+					"model", model.Name,
+					"previousURL", model.Status.Cache.PreviousURL)
+
+				// Take a snapshot of the model before modification for patching
+				originalModel := model.DeepCopy()
+
+				// Clear the PreviousURL field
+				model.Status.Cache.PreviousURL = ""
+
+				// Patch the model status
+				if err := r.Status().Patch(ctx, model, client.MergeFrom(originalModel)); err != nil {
+					return fmt.Errorf("patching model status to clear PreviousURL: %w", err)
+				}
+
+				logger.Info("Successfully cleared PreviousURL field",
+					"model", model.Name,
+					"currentStatus", fmt.Sprintf("Loaded: %v, URL: %s, PreviousURL: %s",
+						model.Status.Cache.Loaded,
+						model.Status.Cache.URL,
+						model.Status.Cache.PreviousURL))
+			} else if model.Status.Cache.PreviousURL != "" {
+				// If PreviousURL is different, we might have had multiple URL changes
+				// Check if we need to clean up more old URLs
+				logger.Info("Found different PreviousURL than the one just cleaned up",
+					"model", model.Name,
+					"cleanedURL", oldURL,
+					"currentPreviousURL", model.Status.Cache.PreviousURL)
+
+				// We'll handle this in the next reconciliation
+			}
+		} else if jobFailed(existingJob) {
+			// If the job failed, log the error and delete the job to retry
+			logger.Error(fmt.Errorf("cleanup job failed"),
+				"Cleanup job failed, will delete and retry",
+				"model", model.Name,
+				"jobName", jobName)
+
+			// Delete the failed job so we can retry
+			if err := r.Delete(ctx, existingJob); err != nil {
+				if !apierrors.IsNotFound(err) {
+					return fmt.Errorf("deleting failed cleanup job: %w", err)
+				}
 			}
 		}
 	}
 
 	return nil
+}
+
+// hasMountToDir checks if a container has a volume mount to the specified directory
+func hasMountToDir(container *corev1.Container, dir string) bool {
+	for _, mount := range container.VolumeMounts {
+		if mount.MountPath == dir {
+			return true
+		}
+	}
+	return false
+}
+
+// jobFailed checks if a job has failed
+func jobFailed(job *batchv1.Job) bool {
+	return job.Status.Failed > 0
 }
