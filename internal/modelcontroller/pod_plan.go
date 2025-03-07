@@ -113,25 +113,23 @@ func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubea
 
 	var recreated int
 	for _, pod := range outOfDate {
-		if !k8sutils.PodIsReady(&pod) {
-			details = append(details, fmt.Sprintf("Out-of-date Pod %q is not ready, immediately recreating", pod.Name))
+		shouldRecreate := !k8sutils.PodIsReady(&pod) || // Recreate if not ready
+			readyAll == int(desiredReplicas-r.ModelRollouts.Surge) // Or if we have enough ready pods
+
+		if shouldRecreate {
+			details = append(details, fmt.Sprintf("Recreating out-of-date Pod %q", pod.Name))
 			appendToDelete(pod)
-			// Avoid recreating the surge Pod when rollout is complete.
+
+			// Only create a new pod if we haven't hit the surge limit
 			if recreated < len(outOfDate)-int(r.ModelRollouts.Surge) {
 				toCreate = append(toCreate, podForModel.DeepCopy())
 				recreated++
 			}
-			continue
-		}
-		if readyAll == int(desiredReplicas) {
-			details = append(details, fmt.Sprintf("All Pods ready, recreating out-of-date Pod %q", pod.Name))
-			appendToDelete(pod)
-			// Avoid recreating the surge Pod when rollout is complete.
-			if recreated < len(outOfDate)-int(r.ModelRollouts.Surge) {
-				toCreate = append(toCreate, podForModel.DeepCopy())
-				recreated++
+
+			// If we're recreating due to having enough ready pods, only do one at a time
+			if readyAll == int(desiredReplicas-r.ModelRollouts.Surge) {
+				break
 			}
-			break
 		}
 	}
 
