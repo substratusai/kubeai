@@ -25,16 +25,9 @@ func PodIsReady(pod *corev1.Pod) bool {
 
 // PodHash returns a hash value calculated from Pod spec.
 // Inspired by k8s.io/kubernetes/pkg/controller.ComputeHash()
-func PodHash(podSpec corev1.PodSpec, extraData ...string) string {
+func PodHash(podSpec corev1.PodSpec) string {
 	podTemplateSpecHasher := fnv.New32a()
 	DeepHashObject(podTemplateSpecHasher, podSpec)
-
-	// Add any extra data to the hash calculation
-	for _, data := range extraData {
-		if data != "" {
-			podTemplateSpecHasher.Write([]byte(data))
-		}
-	}
 
 	// TODO: Implement collision detection if needed.
 	//// Add collisionCount in the hash if it exists.
