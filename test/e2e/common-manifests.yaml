@@ -3,6 +3,7 @@ kind: PersistentVolume
 metadata:
   name: kind-hostpath
 spec:
+  storageClassName: standard
   capacity:
     storage: 10Gi
   accessModes:

@@ -150,11 +150,36 @@ func Test_calculatePodPlan(t *testing.T) {
 			wantNCreations: 0,
 			wantDeletions:  []string{"ready-out-of-date-3"},
 		},
+		{
+			name:     "single replica with surge pod during rollout",
+			replicas: 1,
+			pods: []corev1.Pod{
+				testPod("ready-surge-pod", expectedHash, ready),  // New hash surge pod
+				testPod("ready-old-hash-pod", "old-hash", ready), // Old hash pod
+			},
+			wantNCreations: 0,
+			wantDeletions:  []string{"ready-old-hash-pod"},
+		},
+		{
+			name:     "single replica with surge pod and 2 old pods",
+			replicas: 1,
+			pods: []corev1.Pod{
+				testPod("ready-surge-pod", expectedHash, ready),    // New hash surge pod
+				testPod("ready-old-hash-pod-1", "old-hash", ready), // First old hash pod
+				testPod("ready-old-hash-pod-2", "old-hash", ready), // Second old hash pod
+			},
+			wantNCreations: 0,
+			wantDeletions:  []string{"ready-old-hash-pod-1", "ready-old-hash-pod-2"},
+		},
 	}
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			plan := r.calculatePodPlan(&corev1.PodList{Items: c.pods}, model, modelConfig)
+			caseModel := model.DeepCopy()
+			if c.replicas != 0 {
+				caseModel.Spec.Replicas = ptr.To[int32](c.replicas)
+			}
+			plan := r.calculatePodPlan(&corev1.PodList{Items: c.pods}, caseModel, modelConfig)
 			detailsCSV := strings.Join(plan.details, ", ")
 			require.Lenf(t, plan.toCreate, c.wantNCreations, "Unexpected creation count, details: %v", detailsCSV)
 			var deletionNames []string
