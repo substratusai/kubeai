@@ -37,7 +37,8 @@ func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubea
 	default:
 		podForModel = r.vLLMPodForModel(model, modelConfig)
 	}
-	expectedHash := k8sutils.PodHash(podForModel.Spec)
+	// Include model URL in the hash calculation to ensure URL changes result in new pod hash
+	expectedHash := k8sutils.PodHash(podForModel.Spec, model.Spec.URL)
 	podForModel.GenerateName = fmt.Sprintf("model-%s-%s-", model.Name, expectedHash)
 	k8sutils.SetLabel(podForModel, kubeaiv1.PodHashLabel, expectedHash)
 
