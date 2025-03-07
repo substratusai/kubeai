@@ -3,7 +3,6 @@ package modelcontroller
 import (
 	"context"
 	"fmt"
-	"math"
 	"sort"
 	"strings"
 
@@ -42,9 +41,11 @@ func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubea
 	k8sutils.SetLabel(podForModel, kubeaiv1.PodHashLabel, expectedHash)
 
 	var (
-		readyAll  int
-		outOfDate []corev1.Pod
-		remainder = make(map[string]*corev1.Pod)
+		readyAll      int
+		readyUpToDate int
+		outOfDate     []corev1.Pod
+		remainder     = make(map[string]*corev1.Pod)
+		upToDate      []corev1.Pod
 	)
 
 	podKey := func(p corev1.Pod) string {
@@ -56,14 +57,19 @@ func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubea
 	for _, p := range allPods.Items {
 		remainder[podKey(p)] = &p
 
-		upToDate := k8sutils.GetLabel(&p, kubeaiv1.PodHashLabel) == expectedHash
+		upToDatePod := k8sutils.GetLabel(&p, kubeaiv1.PodHashLabel) == expectedHash
 
 		if k8sutils.PodIsReady(&p) {
 			readyAll++
+			if upToDatePod {
+				readyUpToDate++
+			}
 		}
 
-		if !upToDate {
+		if !upToDatePod {
 			outOfDate = append(outOfDate, p)
+		} else {
+			upToDate = append(upToDate, p)
 		}
 	}
 
@@ -82,42 +88,35 @@ func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubea
 	if model.Spec.Replicas != nil {
 		desiredReplicas = *model.Spec.Replicas
 	}
+	baseDesiredReplicas := desiredReplicas
 	if len(outOfDate) > 0 {
 		desiredReplicas += r.ModelRollouts.Surge
 	}
-	observedReplicas := int32(len(allPods.Items))
-	replicaDiff := observedReplicas - desiredReplicas
-	replicaDiffAbs := int32(math.Abs(float64(replicaDiff)))
 
-	switch {
-	case replicaDiff == 0:
-		// At correct scale.
-	case replicaDiff < 0:
-		// Create Pods.
-		details = append(details, fmt.Sprintf("Creating %d Pods", replicaDiffAbs))
-		for i := int32(0); i < replicaDiffAbs; i++ {
+	// First ensure we have enough pods (including surge if needed)
+	remainingToCreate := int(desiredReplicas) - len(allPods.Items)
+	if remainingToCreate > 0 {
+		details = append(details, fmt.Sprintf("Creating %d Pods to meet desired replicas", remainingToCreate))
+		for i := 0; i < remainingToCreate; i++ {
 			toCreate = append(toCreate, podForModel.DeepCopy())
-		}
-	case replicaDiff > 0:
-		// Delete Pods.
-		details = append(details, fmt.Sprintf("Deleting %d Pods", replicaDiffAbs))
-		toDeleteCount := replicaDiffAbs
-		for _, pod := range allPods.Items {
-			if toDeleteCount == 0 {
-				break
-			}
-			appendToDelete(pod)
-			toDeleteCount--
 		}
 	}
 
+	// Handle out-of-date pods only if:
+	// 1. We have enough ready pods overall (including out-of-date ones)
+	// 2. We have at least one ready up-to-date pod (surge pod is ready)
 	var recreated int
 	for _, pod := range outOfDate {
-		shouldRecreate := !k8sutils.PodIsReady(&pod) || // Recreate if not ready
-			readyAll == int(desiredReplicas-r.ModelRollouts.Surge) // Or if we have enough ready pods
+		shouldRecreate := !k8sutils.PodIsReady(&pod) || // Always recreate unready pods
+			(readyAll >= int(baseDesiredReplicas) && // Have enough ready pods total
+				readyUpToDate >= int(baseDesiredReplicas)) // Have enough ready up-to-date pods to maintain availability
 
 		if shouldRecreate {
-			details = append(details, fmt.Sprintf("Recreating out-of-date Pod %q", pod.Name))
+			reason := "not ready"
+			if k8sutils.PodIsReady(&pod) {
+				reason = fmt.Sprintf("have %d/%d ready up-to-date pods", readyUpToDate, baseDesiredReplicas)
+			}
+			details = append(details, fmt.Sprintf("Recreating out-of-date Pod %q (%s)", pod.Name, reason))
 			appendToDelete(pod)
 
 			// Only create a new pod if we haven't hit the surge limit
@@ -126,9 +125,55 @@ func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubea
 				recreated++
 			}
 
-			// If we're recreating due to having enough ready pods, only do one at a time
-			if readyAll == int(desiredReplicas-r.ModelRollouts.Surge) {
+			// Only delete one ready pod at a time to maintain availability
+			if k8sutils.PodIsReady(&pod) {
 				break
+			}
+		}
+	}
+
+	// If we have more pods than desired (accounting for surge), delete excess
+	// but maintain the desired number of ready pods
+	excessPods := len(allPods.Items) - len(toDelete) + len(toCreate) - int(desiredReplicas)
+	if excessPods > 0 {
+		details = append(details, fmt.Sprintf("Removing %d excess Pods", excessPods))
+		toDeleteCount := excessPods
+
+		// First delete unready pods
+		for _, pod := range allPods.Items {
+			if toDeleteCount == 0 {
+				break
+			}
+			if !k8sutils.PodIsReady(&pod) && !sliceContainsPod(toDelete, &pod) {
+				// Don't delete if it would put us below desired ready count
+				readyAfterDelete := readyAll
+				if k8sutils.PodIsReady(&pod) {
+					readyAfterDelete--
+				}
+				if readyAfterDelete >= int(baseDesiredReplicas) {
+					appendToDelete(pod)
+					toDeleteCount--
+				}
+			}
+		}
+
+		// Then delete ready pods if we must, but maintain minimum ready count
+		if toDeleteCount > 0 {
+			for _, pod := range allPods.Items {
+				if toDeleteCount == 0 {
+					break
+				}
+				if !sliceContainsPod(toDelete, &pod) {
+					// Don't delete if it would put us below desired ready count
+					readyAfterDelete := readyAll
+					if k8sutils.PodIsReady(&pod) {
+						readyAfterDelete--
+					}
+					if readyAfterDelete >= int(baseDesiredReplicas) {
+						appendToDelete(pod)
+						toDeleteCount--
+					}
+				}
 			}
 		}
 	}
@@ -232,4 +277,13 @@ func sortPodsByDeletionOrder(pods []corev1.Pod, expectedHash string) {
 		jCreationTime := pods[j].CreationTimestamp.Time
 		return iCreationTime.After(jCreationTime)
 	})
+}
+
+func sliceContainsPod(pods []*corev1.Pod, pod *corev1.Pod) bool {
+	for _, p := range pods {
+		if p.Name == pod.Name && p.Namespace == pod.Namespace {
+			return true
+		}
+	}
+	return false
 }
