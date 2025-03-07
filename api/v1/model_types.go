@@ -227,7 +227,6 @@ type ModelStatusReplicas struct {
 type ModelStatusCache struct {
 	Loaded             bool     `json:"loaded"`
 	URL                string   `json:"url,omitempty"`
-	PreviousURL        string   `json:"previousUrl,omitempty"`
 	PendingCleanupURLs []string `json:"pendingCleanupUrls,omitempty"`
 }
 
