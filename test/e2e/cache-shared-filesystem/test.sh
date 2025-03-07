@@ -31,6 +31,8 @@ curl http://localhost:8000/openai/v1/completions \
   -H "Content-Type: application/json" \
   -d '{"model": "opt-125m-cpu", "prompt": "Who was the first president of the United States?", "max_tokens": 40}'
 
+old_pod=$(kubectl get pod -l model=opt-125m-cpu -o jsonpath='{.items[0].metadata.name}')
+
 # Verify that updating the model URL will create a new cache directory
 new_model_url="hf://facebook/opt-350m"
 new_model_url_hash=$(echo -n $new_model_url | md5sum | cut -c1-8)
@@ -50,3 +52,20 @@ curl http://localhost:8000/openai/v1/completions \
   --max-time 900 \
   -H "Content-Type: application/json" \
   -d '{"model": "opt-125m-cpu", "prompt": "Who was the first president of the United States?", "max_tokens": 40}'
+
+
+check_old_pod_gone() {
+  ! kubectl get pod $old_pod | grep -q "Running"
+}
+
+# Make a request to the model
+make_request() {
+  curl http://localhost:8000/openai/v1/completions \
+    --max-time 900 \
+    -H "Content-Type: application/json" \
+    -d '{"model": "opt-125m-cpu", "prompt": "Who was the first president of the United States?", "max_tokens": 40}'
+
+  check_old_pod_gone
+}
+
+retry 120 make_request
