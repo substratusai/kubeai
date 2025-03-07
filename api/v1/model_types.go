@@ -225,9 +225,9 @@ type ModelStatusReplicas struct {
 }
 
 type ModelStatusCache struct {
-	Loaded      bool   `json:"loaded"`
-	URL         string `json:"url,omitempty"`
-	PreviousURL string `json:"previousUrl,omitempty"`
+	Loaded             bool     `json:"loaded"`
+	URL                string   `json:"url,omitempty"`
+	PendingCleanupURLs []string `json:"pendingCleanupUrls,omitempty"`
 }
 
 // NOTE: Model name length should be limited to allow for the model name to be used in
