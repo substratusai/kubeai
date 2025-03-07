@@ -22,15 +22,21 @@ var (
 	ErrModelNotFound = fmt.Errorf("model not found")
 )
 
-type inferenceRequestBody interface {
+// modelRequest represents a request that will be made to a given model.
+type modelRequest interface {
 	GetModel() string
 	SetModel(string)
+}
+
+// inferenceRequest should be implemented by inference requests so that
+// prefixes can be examined to make routing decisions.
+type inferenceRequest interface {
 	Prefix(int) string
 }
 
 type Request struct {
 	Body         []byte
-	inferenceReq inferenceRequestBody
+	modelRequest modelRequest
 
 	Selectors []string
 
@@ -160,30 +166,32 @@ func (r *Request) readyMultiPartBody(body io.Reader, mediaParams map[string]stri
 func (r *Request) readJSONBody(body io.Reader, path string) error {
 	switch path {
 	case "/v1/completions":
-		r.inferenceReq = &openaiv1.CompletionRequest{}
+		r.modelRequest = &openaiv1.CompletionRequest{}
 	case "/v1/chat/completions":
-		r.inferenceReq = &openaiv1.ChatCompletionRequest{}
+		r.modelRequest = &openaiv1.ChatCompletionRequest{}
+	case "/v1/embeddings":
+		r.modelRequest = &openaiv1.EmbeddingRequest{}
 	default:
 		return fmt.Errorf("unknown path: %q", path)
 	}
 
-	if err := json.NewDecoder(body).Decode(r.inferenceReq); err != nil {
+	if err := json.NewDecoder(body).Decode(r.modelRequest); err != nil {
 		return fmt.Errorf("decoding: %w", err)
 	}
 
-	if r.inferenceReq.GetModel() == "" {
+	if r.modelRequest.GetModel() == "" {
 		return errors.New("missing 'model' field")
 	}
 
-	r.RequestedModel = r.inferenceReq.GetModel()
+	r.RequestedModel = r.modelRequest.GetModel()
 	r.Model, r.Adapter = SplitModelAdapter(r.RequestedModel)
 
 	if r.Adapter != "" {
 		// vLLM expects the adapter to be in the model field.
-		r.inferenceReq.SetModel(r.Adapter)
+		r.modelRequest.SetModel(r.Adapter)
 	}
 
-	rewritten, err := json.Marshal(r.inferenceReq)
+	rewritten, err := json.Marshal(r.modelRequest)
 	if err != nil {
 		return fmt.Errorf("remarshalling: %w", err)
 	}
@@ -204,8 +212,10 @@ func (r *Request) lookupModel(ctx context.Context, client ModelClient, path stri
 
 	r.LoadBalancing = model.Spec.LoadBalancing
 
-	if r.LoadBalancing.Strategy == k8sv1.PrefixHashStrategy && r.inferenceReq != nil {
-		r.Prefix = r.inferenceReq.Prefix(r.LoadBalancing.PrefixHash.PrefixCharLength)
+	if infReq, ok := r.modelRequest.(inferenceRequest); ok {
+		if r.LoadBalancing.Strategy == k8sv1.PrefixHashStrategy && r.modelRequest != nil {
+			r.Prefix = infReq.Prefix(r.LoadBalancing.PrefixHash.PrefixCharLength)
+		}
 	}
 
 	return nil

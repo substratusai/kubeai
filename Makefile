@@ -4,6 +4,7 @@ IMG ?= controller:latest
 ENVTEST_K8S_VERSION = 1.30.0
 CRD_REF_DOCS_VERSION = v0.1.0
 SKAFFOLD_VERSION = v2.13.2
+EASYJSON_VERSION = v0.9.0
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -56,8 +57,12 @@ manifests: controller-gen yq
 	$(YQ) -s '"./manifests/models/" + .metadata.name + ".yaml"' --no-doc
 
 .PHONY: generate
-generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
+generate: controller-gen easyjson ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
+	$(EASYJSON) -all ./api/openai/v1/usage.go
+	$(EASYJSON) -all ./api/openai/v1/completion.go
+	$(EASYJSON) -all ./api/openai/v1/chat_completion.go
+	$(EASYJSON) -all ./api/openai/v1/embedding.go
 
 .PHONY: fmt
 fmt: ## Run go fmt against code.
@@ -67,9 +72,10 @@ fmt: ## Run go fmt against code.
 vet: ## Run go vet against code.
 	go vet ./...
 
+# Use RUN=TestName to run specific integration tests.
 .PHONY: test-unit
 test-unit: fmt vet
-	go test -v ./internal/... -coverprofile cover.unit.out
+	go test -v ./internal/... $(if $(RUN),-run $(RUN),) -coverprofile cover.unit.out
 
 # Use RUN=TestName to run specific integration tests.
 .PHONY: test-integration
@@ -161,6 +167,7 @@ GOLANGCI_LINT = $(LOCALBIN)/golangci-lint
 CRD_REF_DOCS ?= $(LOCALBIN)/crd-ref-docs
 SKAFFOLD ?= $(LOCALBIN)/skaffold
 YQ ?= $(LOCALBIN)/yq
+EASYJSON ?= $(LOCALBIN)/easyjson
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v5.4.2
@@ -193,6 +200,11 @@ $(GOLANGCI_LINT): $(LOCALBIN)
 yq: $(YQ) ## Download yq locally if necessary.
 $(YQ): $(LOCALBIN)
 	$(call go-install-tool,$(YQ),github.com/mikefarah/yq/v4,$(YQ_VERSION))
+
+.PHONY: easyjson
+easyjson: $(EASYJSON) ## Download yq locally if necessary.
+$(EASYJSON): $(LOCALBIN)
+	$(call go-install-tool,$(EASYJSON),github.com/mailru/easyjson/...,$(EASYJSON_VERSION))
 
 .PHONY: docs
 docs: generate-kubernetes-api-reference
