@@ -628,30 +628,26 @@ func evictCacheJobName(m *kubeaiv1.Model) string {
 }
 
 func patchServerCacheVolumes(podSpec *corev1.PodSpec, m *kubeaiv1.Model, c ModelConfig) {
-	// Calculate the cache directory path
-	cacheDir := modelCacheDir(m)
-
-	// Create a volume for the cache directory
-	cacheDirVolume := corev1.Volume{
-		Name: "model-cache",
+	if m.Spec.CacheProfile == "" {
+		return
+	}
+	podSpec.Volumes = append(podSpec.Volumes, corev1.Volume{
+		Name: "models",
 		VolumeSource: corev1.VolumeSource{
 			PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
 				ClaimName: cachePVCName(m, c),
 			},
 		},
-	}
-
-	// Add to volumes
-	podSpec.Volumes = append(podSpec.Volumes, cacheDirVolume)
-
-	// Mount volumes for all containers
+	})
 	for i := range podSpec.Containers {
-		cacheMount := corev1.VolumeMount{
-			Name:      "model-cache",
-			MountPath: cacheDir,
-			// No SubPath, we want the full volume mounted at the cache directory path
+		if podSpec.Containers[i].Name == "server" {
+			podSpec.Containers[i].VolumeMounts = append(podSpec.Containers[i].VolumeMounts, corev1.VolumeMount{
+				Name:      "models",
+				MountPath: modelCacheDir(m),
+				SubPath:   strings.TrimPrefix(modelCacheDir(m), "/"),
+				ReadOnly:  true,
+			})
 		}
-		podSpec.Containers[i].VolumeMounts = append(podSpec.Containers[i].VolumeMounts, cacheMount)
 	}
 }
 
