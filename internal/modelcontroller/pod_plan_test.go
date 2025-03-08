@@ -1,6 +1,7 @@
 package modelcontroller
 
 import (
+	"sort"
 	"strings"
 	"testing"
 	"time"
@@ -24,6 +25,47 @@ var (
 	testYoungTS = metav1.NewTime(time.Now())
 	testOldTS   = metav1.NewTime(testYoungTS.Add(-time.Hour))
 )
+
+type WantDeletion struct {
+	Ready        bool
+	ExpectedHash bool
+}
+
+func isPodReady(pod *corev1.Pod) bool {
+	for _, cond := range pod.Status.Conditions {
+		if cond.Type == corev1.PodReady && cond.Status == corev1.ConditionTrue {
+			return true
+		}
+	}
+	return false
+}
+
+func podToWantDeletion(pod corev1.Pod, expectedHash string) WantDeletion {
+	return WantDeletion{
+		Ready:        isPodReady(&pod),
+		ExpectedHash: pod.Labels[v1.PodHashLabel] == expectedHash,
+	}
+}
+
+func podsToWantDeletions(pods []*corev1.Pod, expectedHash string) []WantDeletion {
+	result := make([]WantDeletion, len(pods))
+	for i, pod := range pods {
+		result[i] = WantDeletion{
+			Ready:        isPodReady(pod),
+			ExpectedHash: pod.Labels[v1.PodHashLabel] == expectedHash,
+		}
+	}
+	return result
+}
+
+func sortWantDeletions(deletions []WantDeletion) {
+	sort.Slice(deletions, func(i, j int) bool {
+		if deletions[i].Ready != deletions[j].Ready {
+			return deletions[i].Ready
+		}
+		return deletions[i].ExpectedHash
+	})
+}
 
 func Test_calculatePodPlan(t *testing.T) {
 	r := &ModelReconciler{
@@ -90,7 +132,7 @@ func Test_calculatePodPlan(t *testing.T) {
 		replicas       int32
 		pods           []corev1.Pod
 		wantNCreations int
-		wantDeletions  []string
+		wantDeletions  []WantDeletion
 	}{
 		{
 			name: "do nothing",
@@ -115,7 +157,9 @@ func Test_calculatePodPlan(t *testing.T) {
 				testPod("unready-up-to-date", expectedHash, unready),
 				testPod("ready-up-to-date-3", expectedHash, ready),
 			},
-			wantDeletions: []string{"unready-up-to-date"},
+			wantDeletions: []WantDeletion{
+				{Ready: false, ExpectedHash: true}, // unready up-to-date pod
+			},
 		},
 		{
 			name: "rollout add surge and delete unreadies",
@@ -125,9 +169,9 @@ func Test_calculatePodPlan(t *testing.T) {
 				testPod("ready-out-of-date-3", "old-hash", ready),
 			},
 			wantNCreations: 1 + 2, // Expect surge Pod + 2 recreations.
-			wantDeletions: []string{
-				// Expect unready Pods to be deleted immediately even though all Pods are not ready.
-				"unready-out-of-date-1", "unready-out-of-date-2",
+			wantDeletions: []WantDeletion{
+				{Ready: false, ExpectedHash: false}, // unready old hash
+				{Ready: false, ExpectedHash: false}, // unready old hash
 			},
 		},
 		{
@@ -148,7 +192,9 @@ func Test_calculatePodPlan(t *testing.T) {
 				testPod("ready-out-of-date-3", "old-hash", ready),
 			},
 			wantNCreations: 0,
-			wantDeletions:  []string{"ready-out-of-date-3"},
+			wantDeletions: []WantDeletion{
+				{Ready: true, ExpectedHash: false}, // ready old hash
+			},
 		},
 		{
 			name:     "single replica with surge pod during rollout",
@@ -158,7 +204,9 @@ func Test_calculatePodPlan(t *testing.T) {
 				testPod("ready-old-hash-pod", "old-hash", ready), // Old hash pod
 			},
 			wantNCreations: 0,
-			wantDeletions:  []string{"ready-old-hash-pod"},
+			wantDeletions: []WantDeletion{
+				{Ready: true, ExpectedHash: false}, // ready old hash
+			},
 		},
 		{
 			name:     "single replica with surge pod and 2 old pods",
@@ -169,7 +217,10 @@ func Test_calculatePodPlan(t *testing.T) {
 				testPod("ready-old-hash-pod-2", "old-hash", ready), // Second old hash pod
 			},
 			wantNCreations: 0,
-			wantDeletions:  []string{"ready-old-hash-pod-1", "ready-old-hash-pod-2"},
+			wantDeletions: []WantDeletion{
+				{Ready: true, ExpectedHash: false}, // ready old hash
+				{Ready: true, ExpectedHash: false}, // ready old hash
+			},
 		},
 		{
 			name:     "scale down to zero replicas",
@@ -179,7 +230,10 @@ func Test_calculatePodPlan(t *testing.T) {
 				testPod("ready-pod-2", expectedHash, ready),
 			},
 			wantNCreations: 0,
-			wantDeletions:  []string{"ready-pod-1", "ready-pod-2"},
+			wantDeletions: []WantDeletion{
+				{Ready: true, ExpectedHash: true}, // ready new hash
+				{Ready: true, ExpectedHash: true}, // ready new hash
+			},
 		},
 		// TODO verify the below cases make sense
 		// {
@@ -251,12 +305,23 @@ func Test_calculatePodPlan(t *testing.T) {
 			plan := r.calculatePodPlan(&corev1.PodList{Items: c.pods}, caseModel, modelConfig)
 			detailsCSV := strings.Join(plan.details, ", ")
 			require.Lenf(t, plan.toCreate, c.wantNCreations, "Unexpected creation count, details: %v", detailsCSV)
-			var deletionNames []string
-			for _, p := range plan.toDelete {
-				deletionNames = append(deletionNames, p.Name)
+
+			actualDeletions := podsToWantDeletions(plan.toDelete, expectedHash)
+
+			// Handle nil vs empty slice consistently
+			if len(c.wantDeletions) == 0 {
+				require.Empty(t, actualDeletions, "Expected no deletions, details: %v", detailsCSV)
+				return
 			}
-			require.Lenf(t, deletionNames, len(c.wantDeletions), "Unexpected deletion count, details: %v", detailsCSV)
-			require.Equalf(t, c.wantDeletions, deletionNames, "Unexpected deleteion names, details: %v", detailsCSV)
+
+			require.Lenf(t, actualDeletions, len(c.wantDeletions), "Unexpected deletion count, details: %v", detailsCSV)
+
+			// Sort both slices to make comparison deterministic
+			sortWantDeletions(actualDeletions)
+			expectedDeletions := append([]WantDeletion(nil), c.wantDeletions...)
+			sortWantDeletions(expectedDeletions)
+
+			require.Equalf(t, expectedDeletions, actualDeletions, "Unexpected deletion characteristics, details: %v", detailsCSV)
 		})
 	}
 }
