@@ -171,6 +171,75 @@ func Test_calculatePodPlan(t *testing.T) {
 			wantNCreations: 0,
 			wantDeletions:  []string{"ready-old-hash-pod-1", "ready-old-hash-pod-2"},
 		},
+		{
+			name:     "scale down to zero replicas",
+			replicas: 0,
+			pods: []corev1.Pod{
+				testPod("ready-pod-1", expectedHash, ready),
+				testPod("ready-pod-2", expectedHash, ready),
+			},
+			wantNCreations: 0,
+			wantDeletions:  []string{"ready-pod-1", "ready-pod-2"},
+		},
+		// TODO verify the below cases make sense
+		// {
+		// 	name:     "scale down with mixed hash states",
+		// 	replicas: 1,
+		// 	pods: []corev1.Pod{
+		// 		testPod("ready-new-1", expectedHash, ready),
+		// 		testPod("ready-new-2", expectedHash, ready),
+		// 		testPod("ready-old-1", "old-hash", ready),
+		// 	},
+		// 	wantNCreations: 0,
+		// 	wantDeletions:  []string{"ready-new-2", "ready-old-1"},
+		// },
+		// {
+		// 	name:     "multiple unready pods with different hashes",
+		// 	replicas: 3,
+		// 	pods: []corev1.Pod{
+		// 		testPod("unready-new-1", expectedHash, unready),
+		// 		testPod("unready-new-2", expectedHash, unready),
+		// 		testPod("unready-old-1", "old-hash", unready),
+		// 		testPod("unready-old-2", "old-hash-2", unready),
+		// 	},
+		// 	wantNCreations: 1, // All are unready so only need 1 more pod after deleting 2
+		// 	wantDeletions:  []string{"unready-old-1", "unready-old-2"},
+		// },
+		// {
+		// 	name:     "multiple different old hashes",
+		// 	replicas: 3,
+		// 	pods: []corev1.Pod{
+		// 		testPod("ready-new", expectedHash, ready),
+		// 		testPod("ready-old-1", "old-hash-1", ready),
+		// 		testPod("ready-old-2", "old-hash-2", ready),
+		// 		testPod("ready-old-3", "old-hash-3", ready),
+		// 	},
+		// 	wantNCreations: 1,                       // Surge pod only to keep 3 ready pods
+		// 	wantDeletions:  []string{"ready-old-1"}, // Only delete one pod at a time to maintain availability
+		// },
+		// {
+		// 	name:     "scale up during rollout",
+		// 	replicas: 5,
+		// 	pods: []corev1.Pod{
+		// 		testPod("ready-new-1", expectedHash, ready),
+		// 		testPod("ready-old-1", "old-hash", ready),
+		// 		testPod("ready-old-2", "old-hash", ready),
+		// 	},
+		// 	wantNCreations: 3,          // Need 2 more for scale up + 1 surge
+		// 	wantDeletions:  []string{}, // Don't delete until we have enough ready new pods
+		// },
+		// {
+		// 	name:     "scale down during rollout",
+		// 	replicas: 2,
+		// 	pods: []corev1.Pod{
+		// 		testPod("ready-new-1", expectedHash, ready),
+		// 		testPod("ready-old-1", "old-hash", ready),
+		// 		testPod("ready-old-2", "old-hash", ready),
+		// 		testPod("ready-old-3", "old-hash", ready),
+		// 	},
+		// 	wantNCreations: 1, // Surge pod only to keep 2 ready pods
+		// 	wantDeletions:  []string{"ready-old-3", "ready-old-2"},
+		// },
 	}
 
 	for _, c := range cases {
