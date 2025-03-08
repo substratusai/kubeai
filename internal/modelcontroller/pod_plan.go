@@ -3,6 +3,7 @@ package modelcontroller
 import (
 	"context"
 	"fmt"
+	"math"
 	"sort"
 	"strings"
 
@@ -41,85 +42,102 @@ func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubea
 	k8sutils.SetLabel(podForModel, kubeaiv1.PodHashLabel, expectedHash)
 
 	var (
-		toCreate      []*corev1.Pod
-		toDelete      []*corev1.Pod
-		toRemain      []*corev1.Pod
-		details       []string
-		upToDate      []corev1.Pod // pods with new hash
-		outOfDate     []corev1.Pod // pods with old hash
-		readyUpToDate int          // count of ready pods with new hash
+		readyAll  int
+		outOfDate []corev1.Pod
+		remainder = make(map[string]*corev1.Pod)
 	)
 
-	// Categorize pods
-	for _, pod := range allPods.Items {
-		if k8sutils.GetLabel(&pod, kubeaiv1.PodHashLabel) == expectedHash {
-			upToDate = append(upToDate, pod)
-			if k8sutils.PodIsReady(&pod) {
-				readyUpToDate++
-			}
-		} else {
-			outOfDate = append(outOfDate, pod)
+	podKey := func(p corev1.Pod) string {
+		return p.Namespace + "/" + p.Name
+	}
+
+	sortPodsByDeletionOrder(allPods.Items, expectedHash)
+
+	for _, p := range allPods.Items {
+		remainder[podKey(p)] = &p
+
+		upToDate := k8sutils.GetLabel(&p, kubeaiv1.PodHashLabel) == expectedHash
+
+		if k8sutils.PodIsReady(&p) {
+			readyAll++
+		}
+
+		if !upToDate {
+			outOfDate = append(outOfDate, p)
 		}
 	}
 
-	// Calculate base desired replicas
-	var baseDesiredReplicas int32
-	if model.Spec.Replicas != nil {
-		baseDesiredReplicas = *model.Spec.Replicas
+	var (
+		details  []string
+		toCreate []*corev1.Pod
+		toDelete []*corev1.Pod
+	)
+	appendToDelete := func(p corev1.Pod) {
+		delete(remainder, podKey(p))
+		toDelete = append(toDelete, &p)
 	}
 
-	// Create pods if needed
-	neededPods := int(baseDesiredReplicas) - len(upToDate)
-	if neededPods > 0 {
-		details = append(details, fmt.Sprintf("Creating %d pods to meet desired replicas", neededPods))
-		for i := 0; i < neededPods; i++ {
+	var desiredReplicas int32
+	// NOTE: Replicas could be nil if autoscaling is disabled.
+	if model.Spec.Replicas != nil {
+		desiredReplicas = *model.Spec.Replicas
+	}
+	if len(outOfDate) > 0 {
+		desiredReplicas += r.ModelRollouts.Surge
+	}
+	observedReplicas := int32(len(allPods.Items))
+	replicaDiff := observedReplicas - desiredReplicas
+	replicaDiffAbs := int32(math.Abs(float64(replicaDiff)))
+
+	switch {
+	case replicaDiff == 0:
+		// At correct scale.
+	case replicaDiff < 0:
+		// Create Pods.
+		details = append(details, fmt.Sprintf("Creating %d Pods", replicaDiffAbs))
+		for i := int32(0); i < replicaDiffAbs; i++ {
 			toCreate = append(toCreate, podForModel.DeepCopy())
 		}
-	}
-
-	// Handle pod deletion in three cases:
-	// 1. Delete excess pods (for scale down)
-	// 2. Delete unready out-of-date pods immediately
-	// 3. Delete ready out-of-date pods when we have enough ready up-to-date pods
-
-	// First, handle scale down by marking excess up-to-date pods for deletion
-	if len(upToDate) > int(baseDesiredReplicas) {
-		// Sort pods so we delete unready ones first
-		sortPodsByDeletionOrder(upToDate, expectedHash)
-		excess := len(upToDate) - int(baseDesiredReplicas)
-		for i := 0; i < excess; i++ {
-			pod := &upToDate[i]
-			details = append(details, fmt.Sprintf("Deleting excess pod %q", pod.Name))
-			toDelete = append(toDelete, pod)
-		}
-	}
-
-	// Then, delete unready out-of-date pods immediately
-	for i := range outOfDate {
-		pod := &outOfDate[i]
-		if !k8sutils.PodIsReady(pod) {
-			details = append(details, fmt.Sprintf("Deleting unready out-of-date pod %q", pod.Name))
-			toDelete = append(toDelete, pod)
-		}
-	}
-
-	// Finally, delete ready out-of-date pods if we have enough ready up-to-date pods
-	if readyUpToDate >= int(baseDesiredReplicas) {
-		for i := range outOfDate {
-			pod := &outOfDate[i]
-			if k8sutils.PodIsReady(pod) && !sliceContainsPod(toDelete, pod) {
-				details = append(details, fmt.Sprintf("Deleting ready out-of-date pod %q", pod.Name))
-				toDelete = append(toDelete, pod)
+	case replicaDiff > 0:
+		// Delete Pods.
+		details = append(details, fmt.Sprintf("Deleting %d Pods", replicaDiffAbs))
+		toDeleteCount := replicaDiffAbs
+		for _, pod := range allPods.Items {
+			if toDeleteCount == 0 {
+				break
 			}
+			appendToDelete(pod)
+			toDeleteCount--
 		}
 	}
 
-	// Calculate which pods will remain
-	for i := range upToDate {
-		pod := &upToDate[i]
-		if !sliceContainsPod(toDelete, pod) {
-			toRemain = append(toRemain, pod)
+	var recreated int
+	for _, pod := range outOfDate {
+		if !k8sutils.PodIsReady(&pod) {
+			details = append(details, fmt.Sprintf("Out-of-date Pod %q is not ready, immediately recreating", pod.Name))
+			appendToDelete(pod)
+			// Avoid recreating the surge Pod when rollout is complete.
+			if recreated < len(outOfDate)-int(r.ModelRollouts.Surge) {
+				toCreate = append(toCreate, podForModel.DeepCopy())
+				recreated++
+			}
+			continue
 		}
+		if readyAll == int(desiredReplicas) {
+			details = append(details, fmt.Sprintf("All Pods ready, recreating out-of-date Pod %q", pod.Name))
+			appendToDelete(pod)
+			// Avoid recreating the surge Pod when rollout is complete.
+			if recreated < len(outOfDate)-int(r.ModelRollouts.Surge) {
+				toCreate = append(toCreate, podForModel.DeepCopy())
+				recreated++
+			}
+			break
+		}
+	}
+
+	toRemain := make([]*corev1.Pod, 0, len(remainder))
+	for _, pod := range remainder {
+		toRemain = append(toRemain, pod)
 	}
 
 	return &podPlan{
@@ -216,13 +234,4 @@ func sortPodsByDeletionOrder(pods []corev1.Pod, expectedHash string) {
 		jCreationTime := pods[j].CreationTimestamp.Time
 		return iCreationTime.After(jCreationTime)
 	})
-}
-
-func sliceContainsPod(pods []*corev1.Pod, pod *corev1.Pod) bool {
-	for _, p := range pods {
-		if p.Name == pod.Name && p.Namespace == pod.Namespace {
-			return true
-		}
-	}
-	return false
 }
