@@ -67,7 +67,7 @@ func TestChatCompletionRequest_JSON(t *testing.T) {
 				Messages: []v1.ChatCompletionMessage{
 					{
 						Role:    "user",
-						Content: v1.ChatMessageContent{String: "test-prefix"},
+						Content: &v1.ChatMessageContent{String: "test-prefix"},
 					},
 				},
 			},
@@ -97,7 +97,7 @@ func TestChatCompletionRequest_JSON(t *testing.T) {
 				Messages: []v1.ChatCompletionMessage{
 					{
 						Role: "user",
-						Content: v1.ChatMessageContent{
+						Content: &v1.ChatMessageContent{
 							Array: []v1.ChatMessageContentPart{
 								{Type: "text", Text: "What's in this image?"},
 								{
@@ -208,16 +208,16 @@ func TestChatCompletionRequest_JSON(t *testing.T) {
 				Messages: []v1.ChatCompletionMessage{
 					{
 						Role:    "system",
-						Content: v1.ChatMessageContent{String: "You are a helpful assistant."},
+						Content: &v1.ChatMessageContent{String: "You are a helpful assistant."},
 					},
 					{
 						Role:    "user",
 						Name:    "John",
-						Content: v1.ChatMessageContent{String: "Hello!"},
+						Content: &v1.ChatMessageContent{String: "Hello!"},
 					},
 					{
 						Role:    "assistant",
-						Content: v1.ChatMessageContent{String: "Hi there!"},
+						Content: &v1.ChatMessageContent{String: "Hi there!"},
 						ToolCalls: []v1.ToolCall{
 							{
 								ID:   "call_123",
@@ -232,7 +232,7 @@ func TestChatCompletionRequest_JSON(t *testing.T) {
 					{
 						Role:       "tool",
 						ToolCallID: "call_123",
-						Content:    v1.ChatMessageContent{String: "{\"temperature\":18,\"unit\":\"celsius\",\"description\":\"Partly cloudy\"}"},
+						Content:    &v1.ChatMessageContent{String: "{\"temperature\":18,\"unit\":\"celsius\",\"description\":\"Partly cloudy\"}"},
 					},
 				},
 				MaxTokens:           100,
@@ -292,6 +292,257 @@ func TestChatCompletionRequest_JSON(t *testing.T) {
 					"conversation_id": "conv_456",
 				},
 			},
+		},
+		{
+			name: "auto tool choice",
+			json: `{
+		"model": "gpt-4",
+		"messages": [
+			{
+				"role": "user",
+				"content": "What's the weather like in San Francisco?"
+			}
+		],
+		"tool_choice": "auto",
+		"tools": [
+			{
+				"type": "function",
+				"function": {
+					"name": "get_weather",
+					"description": "Get the current weather in a location",
+					"parameters": {
+						"type": "object",
+						"properties": {
+							"location": {
+								"type": "string",
+								"description": "The city and state, e.g. San Francisco, CA"
+							}
+						},
+						"required": ["location"]
+					}
+				}
+			}
+		]
+	}`,
+			req: nil,
+		},
+		{
+			name: "none tool choice",
+			json: `{
+		"model": "gpt-4",
+		"messages": [
+			{
+				"role": "user",
+				"content": "Just respond normally without using any tools."
+			}
+		],
+		"tool_choice": "none",
+		"tools": [
+			{
+				"type": "function",
+				"function": {
+					"name": "get_weather",
+					"description": "Get the current weather in a location",
+					"parameters": {
+						"type": "object",
+						"properties": {
+							"location": {
+								"type": "string",
+								"description": "The city and state, e.g. San Francisco, CA"
+							}
+						},
+						"required": ["location"]
+					}
+				}
+			}
+		]
+	}`,
+		},
+		{
+			name: "multiple tool calls",
+			json: `{
+		"model": "gpt-4",
+		"messages": [
+			{
+				"role": "user",
+				"content": "What's the weather like in San Francisco and New York?"
+			},
+			{
+				"role": "assistant",
+				"tool_calls": [
+					{
+						"id": "call_sf123",
+						"type": "function",
+						"function": {
+							"name": "get_weather",
+							"arguments": "{\"location\":\"San Francisco\"}"
+						}
+					},
+					{
+						"id": "call_ny456",
+						"type": "function",
+						"function": {
+							"name": "get_weather",
+							"arguments": "{\"location\":\"New York\"}"
+						}
+					}
+				]
+			},
+			{
+				"role": "tool",
+				"tool_call_id": "call_sf123",
+				"content": "{\"temperature\":18,\"unit\":\"celsius\",\"description\":\"Sunny\"}"
+			},
+			{
+				"role": "tool",
+				"tool_call_id": "call_ny456",
+				"content": "{\"temperature\":12,\"unit\":\"celsius\",\"description\":\"Cloudy\"}"
+			}
+		]
+	}`,
+		},
+		{
+			name: "request with vision model",
+			json: `{
+		"model": "gpt-4-vision",
+		"messages": [
+			{
+				"role": "user",
+				"content": [
+					{
+						"type": "text",
+						"text": "What's in this image?"
+					},
+					{
+						"type": "image_url",
+						"image_url": {
+							"url": "https://example.com/image.jpg",
+							"detail": "high"
+						}
+					},
+					{
+						"type": "image_url",
+						"image_url": {
+							"url": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD...",
+							"detail": "low"
+						}
+					}
+				]
+			}
+		],
+		"max_tokens": 300
+	}`,
+		},
+		{
+			name: "request with image captions",
+			json: `{
+		"model": "gpt-4-vision",
+		"messages": [
+			{
+				"role": "user",
+				"content": [
+					{
+						"type": "text",
+						"text": "Describe these images"
+					},
+					{
+						"type": "image_url",
+						"image_url": {
+							"url": "https://example.com/image1.jpg",
+							"detail": "high"
+						}
+					},
+					{
+						"type": "image_url",
+						"image_url": {
+							"url": "https://example.com/image2.jpg"
+						}
+					}
+				]
+			}
+		],
+		"response_format": {"type": "text"}
+	}`,
+		},
+		{
+			name: "function calling request",
+			json: `{
+		"model": "gpt-4",
+		"messages": [
+			{
+				"role": "user",
+				"content": "What's the weather in Boston and San Francisco?"
+			}
+		],
+		"functions": [
+			{
+				"name": "get_weather",
+				"description": "Get the current weather in a location",
+				"parameters": {
+					"type": "object",
+					"properties": {
+						"location": {
+							"type": "string",
+							"description": "The city and state, e.g. San Francisco, CA"
+						}
+					},
+					"required": ["location"]
+				}
+			}
+		]
+	}`,
+		},
+		{
+			name: "logprobs with top_logprobs",
+			json: `{
+		"model": "gpt-4",
+		"messages": [
+			{
+				"role": "user",
+				"content": "Generate a random sentence."
+			}
+		],
+		"logprobs": true,
+		"top_logprobs": 5
+	}`,
+		},
+		{
+			name: "request with system_fingerprint",
+			json: `{
+		"model": "gpt-4-0125-preview",
+		"messages": [
+			{
+				"role": "user", 
+				"content": "Hello"
+			}
+		],
+		"system_fingerprint": "fp_44709d6fcb"
+	}`,
+		},
+		{
+			name: "request with dimensions in response format",
+			json: `{
+		"model": "gpt-4",
+		"messages": [
+			{
+				"role": "user", 
+				"content": "Generate something"
+			}
+		],
+		"response_format": {
+			"type": "json_object",
+			"json_schema": {
+				"name": "something",
+				"schema": {
+					"abc": {
+						"type": "array",
+						"items": {"type": "number"},
+						"dimensions": 1536
+					}
+				}
+			}
+		}
+	}`,
 		},
 	}
 	for _, c := range cases {
@@ -384,7 +635,7 @@ func TestChatCompletionResponse_JSON(t *testing.T) {
 						Index: 0,
 						Message: v1.ChatCompletionMessage{
 							Role:    "assistant",
-							Content: v1.ChatMessageContent{String: "This is a test response."},
+							Content: &v1.ChatMessageContent{String: "This is a test response."},
 						},
 						FinishReason: func() *v1.FinishReason { r := v1.FinishReasonStop; return &r }(),
 					},
@@ -434,7 +685,8 @@ func TestChatCompletionResponse_JSON(t *testing.T) {
 					{
 						Index: 0,
 						Message: v1.ChatCompletionMessage{
-							Role: "assistant",
+							Role:    "assistant",
+							Content: &v1.ChatMessageContent{String: ""},
 							ToolCalls: []v1.ToolCall{
 								{
 									ID:   "call_abc123",
@@ -515,7 +767,7 @@ func TestChatCompletionResponse_JSON(t *testing.T) {
 						Index: 0,
 						Message: v1.ChatCompletionMessage{
 							Role:    "assistant",
-							Content: v1.ChatMessageContent{String: "I cannot provide information about that topic."},
+							Content: &v1.ChatMessageContent{String: "I cannot provide information about that topic."},
 						},
 						FinishReason: func() *v1.FinishReason { r := v1.FinishReasonStop; return &r }(),
 						ContentFilterResults: &v1.ContentFilterResults{
@@ -551,6 +803,239 @@ func TestChatCompletionResponse_JSON(t *testing.T) {
 					},
 				},
 			},
+		},
+		{
+			name: "response with logprobs",
+			json: `{
+				"id": "chatcmpl-logprobs123",
+				"object": "chat.completion",
+				"created": 1700000000,
+				"model": "gpt-4",
+				"choices": [
+					{
+						"index": 0,
+						"message": {
+							"role": "assistant",
+							"content": "Hello world"
+						},
+						"logprobs": {
+							"content": [
+								{
+									"token": "Hello",
+									"logprob": -0.5,
+									"top_logprobs": [
+										{
+											"token": "Hello",
+											"logprob": -0.5
+										},
+										{
+											"token": "Hi",
+											"logprob": -1.2
+										}
+									]
+								},
+								{
+									"token": " world",
+									"logprob": -0.8,
+									"top_logprobs": [
+										{
+											"token": " world",
+											"logprob": -0.8
+										},
+										{
+											"token": " there",
+											"logprob": -1.5
+										}
+									]
+								}
+							]
+						},
+						"finish_reason": "stop"
+					}
+				]
+			}`,
+		},
+		{
+			name: "multiple choices response",
+			json: `{
+				"id": "chatcmpl-multiplechoices",
+				"object": "chat.completion",
+				"created": 1700010000,
+				"model": "gpt-4",
+				"choices": [
+					{
+						"index": 0,
+						"message": {
+							"role": "assistant",
+							"content": "First response option"
+						},
+						"finish_reason": "stop"
+					},
+					{
+						"index": 1,
+						"message": {
+							"role": "assistant",
+							"content": "Second response option"
+						},
+						"finish_reason": "stop"
+					},
+					{
+						"index": 2,
+						"message": {
+							"role": "assistant",
+							"content": "Third response option"
+						},
+						"finish_reason": "stop"
+					}
+				],
+				"usage": {
+					"prompt_tokens": 15,
+					"completion_tokens": 30,
+					"total_tokens": 45
+				}
+			}`,
+		},
+		{
+			name: "response with length finish reason",
+			json: `{
+				"id": "chatcmpl-length123",
+				"object": "chat.completion",
+				"created": 1700020000,
+				"model": "gpt-4",
+				"choices": [
+					{
+						"index": 0,
+						"message": {
+							"role": "assistant",
+							"content": "This is a response that reached the maximum token limit..."
+						},
+						"finish_reason": "length"
+					}
+				],
+				"usage": {
+					"prompt_tokens": 10,
+					"completion_tokens": 100,
+					"total_tokens": 110
+				}
+			}`,
+		},
+		{
+			name: "response with content moderation",
+			json: `{
+				"id": "chatcmpl-moderation123",
+				"object": "chat.completion",
+				"created": 1700030000,
+				"model": "gpt-4",
+				"choices": [
+					{
+						"index": 0,
+						"message": {
+							"role": "assistant",
+							"content": ""
+						},
+						"finish_reason": "content_filter",
+						"content_filter_results": {
+							"hate": {
+								"filtered": true,
+								"severity": "high"
+							},
+							"self_harm": {
+								"filtered": false,
+								"severity": "low"
+							},
+							"sexual": {
+								"filtered": false,
+								"severity": "low"
+							},
+							"violence": {
+								"filtered": true,
+								"severity": "medium"
+							}
+						}
+					}
+				],
+				"usage": {
+					"prompt_tokens": 25,
+					"completion_tokens": 0,
+					"total_tokens": 25
+				}
+			}`,
+		},
+		{
+			name: "response with JSON format",
+			json: `{
+				"id": "chatcmpl-json123",
+				"object": "chat.completion",
+				"created": 1700040000,
+				"model": "gpt-4",
+				"choices": [
+					{
+						"index": 0,
+						"message": {
+							"role": "assistant",
+							"content": "{\"name\":\"John Doe\",\"age\":30,\"city\":\"New York\",\"skills\":[\"programming\",\"design\",\"writing\"]}"
+						},
+						"finish_reason": "stop"
+					}
+				],
+				"usage": {
+					"prompt_tokens": 20,
+					"completion_tokens": 25,
+					"total_tokens": 45
+				}
+			}`,
+		},
+		{
+			name: "response with function call (deprecated format)",
+			json: `{
+				"id": "chatcmpl-function123",
+				"object": "chat.completion",
+				"created": 1700050000,
+				"model": "gpt-4",
+				"choices": [
+					{
+						"index": 0,
+						"message": {
+							"role": "assistant",
+							"content": "",
+							"function_call": {
+								"name": "get_weather",
+								"arguments": "{\"location\":\"Paris\",\"unit\":\"celsius\"}"
+							}
+						},
+						"finish_reason": "function_call"
+					}
+				],
+				"usage": {
+					"prompt_tokens": 30,
+					"completion_tokens": 20,
+					"total_tokens": 50
+				}
+			}`,
+		},
+		{
+			name: "response with vision content",
+			json: `{
+				"id": "chatcmpl-vision123",
+				"object": "chat.completion",
+				"created": 1700060000,
+				"model": "gpt-4-vision",
+				"choices": [
+					{
+						"index": 0,
+						"message": {
+							"role": "assistant",
+							"content": "The image shows a scenic landscape with mountains and a lake."
+						},
+						"finish_reason": "stop"
+					}
+				],
+				"usage": {
+					"prompt_tokens": 150,
+					"completion_tokens": 15,
+					"total_tokens": 165
+				}
+			}`,
 		},
 	}
 	for _, c := range cases {
