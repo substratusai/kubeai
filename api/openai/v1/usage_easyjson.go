@@ -147,9 +147,25 @@ func easyjsonEea1550fDecodeGithubComSubstratusaiKubeaiApiOpenaiV11(in *jlexer.Le
 		}
 		switch key {
 		case "audio_tokens":
-			out.AudioTokens = int(in.Int())
+			if in.IsNull() {
+				in.Skip()
+				out.AudioTokens = nil
+			} else {
+				if out.AudioTokens == nil {
+					out.AudioTokens = new(int)
+				}
+				*out.AudioTokens = int(in.Int())
+			}
 		case "cached_tokens":
-			out.CachedTokens = int(in.Int())
+			if in.IsNull() {
+				in.Skip()
+				out.CachedTokens = nil
+			} else {
+				if out.CachedTokens == nil {
+					out.CachedTokens = new(int)
+				}
+				*out.CachedTokens = int(in.Int())
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -167,12 +183,20 @@ func easyjsonEea1550fEncodeGithubComSubstratusaiKubeaiApiOpenaiV11(out *jwriter.
 	{
 		const prefix string = ",\"audio_tokens\":"
 		out.RawString(prefix[1:])
-		out.Int(int(in.AudioTokens))
+		if in.AudioTokens == nil {
+			out.RawString("null")
+		} else {
+			out.Int(int(*in.AudioTokens))
+		}
 	}
 	{
 		const prefix string = ",\"cached_tokens\":"
 		out.RawString(prefix)
-		out.Int(int(in.CachedTokens))
+		if in.CachedTokens == nil {
+			out.RawString("null")
+		} else {
+			out.Int(int(*in.CachedTokens))
+		}
 	}
 	out.RawByte('}')
 }
@@ -220,9 +244,45 @@ func easyjsonEea1550fDecodeGithubComSubstratusaiKubeaiApiOpenaiV12(in *jlexer.Le
 		}
 		switch key {
 		case "audio_tokens":
-			out.AudioTokens = int(in.Int())
+			if in.IsNull() {
+				in.Skip()
+				out.AudioTokens = nil
+			} else {
+				if out.AudioTokens == nil {
+					out.AudioTokens = new(int)
+				}
+				*out.AudioTokens = int(in.Int())
+			}
 		case "reasoning_tokens":
-			out.ReasoningTokens = int(in.Int())
+			if in.IsNull() {
+				in.Skip()
+				out.ReasoningTokens = nil
+			} else {
+				if out.ReasoningTokens == nil {
+					out.ReasoningTokens = new(int)
+				}
+				*out.ReasoningTokens = int(in.Int())
+			}
+		case "accepted_prediction_tokens":
+			if in.IsNull() {
+				in.Skip()
+				out.AcceptedPredictionTokens = nil
+			} else {
+				if out.AcceptedPredictionTokens == nil {
+					out.AcceptedPredictionTokens = new(int)
+				}
+				*out.AcceptedPredictionTokens = int(in.Int())
+			}
+		case "rejected_prediction_tokens":
+			if in.IsNull() {
+				in.Skip()
+				out.RejectedPredictionTokens = nil
+			} else {
+				if out.RejectedPredictionTokens == nil {
+					out.RejectedPredictionTokens = new(int)
+				}
+				*out.RejectedPredictionTokens = int(in.Int())
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -237,15 +297,41 @@ func easyjsonEea1550fEncodeGithubComSubstratusaiKubeaiApiOpenaiV12(out *jwriter.
 	out.RawByte('{')
 	first := true
 	_ = first
-	{
+	if in.AudioTokens != nil {
 		const prefix string = ",\"audio_tokens\":"
+		first = false
 		out.RawString(prefix[1:])
-		out.Int(int(in.AudioTokens))
+		out.Int(int(*in.AudioTokens))
 	}
-	{
+	if in.ReasoningTokens != nil {
 		const prefix string = ",\"reasoning_tokens\":"
-		out.RawString(prefix)
-		out.Int(int(in.ReasoningTokens))
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Int(int(*in.ReasoningTokens))
+	}
+	if in.AcceptedPredictionTokens != nil {
+		const prefix string = ",\"accepted_prediction_tokens\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Int(int(*in.AcceptedPredictionTokens))
+	}
+	if in.RejectedPredictionTokens != nil {
+		const prefix string = ",\"rejected_prediction_tokens\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Int(int(*in.RejectedPredictionTokens))
 	}
 	out.RawByte('}')
 }
