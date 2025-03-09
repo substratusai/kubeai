@@ -60,9 +60,9 @@ manifests: controller-gen yq
 generate: controller-gen easyjson ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
 	$(EASYJSON) -all ./api/openai/v1/usage.go
-	$(EASYJSON) -all ./api/openai/v1/completion.go
-	$(EASYJSON) -all ./api/openai/v1/chat_completion.go
-	$(EASYJSON) -all ./api/openai/v1/embedding.go
+	$(EASYJSON) -all ./api/openai/v1/completions.go
+	$(EASYJSON) -all ./api/openai/v1/chat_completions.go
+	$(EASYJSON) -all ./api/openai/v1/embeddings.go
 
 .PHONY: fmt
 fmt: ## Run go fmt against code.
