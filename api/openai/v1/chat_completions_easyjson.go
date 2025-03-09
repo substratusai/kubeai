@@ -17,7 +17,7 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV1(in *jlexer.Lexer, out *Violence) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV1(in *jlexer.Lexer, out *Violence) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -50,7 +50,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV1(in *jlexer.Lex
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV1(out *jwriter.Writer, in Violence) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV1(out *jwriter.Writer, in Violence) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -70,27 +70,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV1(out *jwriter.W
 // MarshalJSON supports json.Marshaler interface
 func (v Violence) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV1(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV1(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Violence) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV1(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV1(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Violence) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV1(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV1(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Violence) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV1(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV1(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV11(in *jlexer.Lexer, out *TopLogProbs) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV11(in *jlexer.Lexer, out *TopLogProbs) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -146,7 +146,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV11(in *jlexer.Le
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV11(out *jwriter.Writer, in TopLogProbs) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV11(out *jwriter.Writer, in TopLogProbs) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -182,27 +182,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV11(out *jwriter.
 // MarshalJSON supports json.Marshaler interface
 func (v TopLogProbs) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV11(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV11(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v TopLogProbs) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV11(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV11(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *TopLogProbs) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV11(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV11(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *TopLogProbs) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV11(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV11(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV12(in *jlexer.Lexer, out *ToolFunction) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV12(in *jlexer.Lexer, out *ToolFunction) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -233,7 +233,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV12(in *jlexer.Le
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV12(out *jwriter.Writer, in ToolFunction) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV12(out *jwriter.Writer, in ToolFunction) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -248,27 +248,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV12(out *jwriter.
 // MarshalJSON supports json.Marshaler interface
 func (v ToolFunction) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV12(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV12(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ToolFunction) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV12(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV12(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ToolFunction) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV12(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV12(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ToolFunction) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV12(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV12(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV13(in *jlexer.Lexer, out *ToolChoiceOption) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV13(in *jlexer.Lexer, out *ToolChoiceOption) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -301,7 +301,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV13(in *jlexer.Le
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV13(out *jwriter.Writer, in ToolChoiceOption) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV13(out *jwriter.Writer, in ToolChoiceOption) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -321,27 +321,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV13(out *jwriter.
 // MarshalJSON supports json.Marshaler interface
 func (v ToolChoiceOption) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV13(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV13(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ToolChoiceOption) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV13(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV13(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ToolChoiceOption) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV13(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV13(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ToolChoiceOption) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV13(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV13(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV14(in *jlexer.Lexer, out *ToolChoice) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV14(in *jlexer.Lexer, out *ToolChoice) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -374,7 +374,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV14(in *jlexer.Le
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV14(out *jwriter.Writer, in ToolChoice) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV14(out *jwriter.Writer, in ToolChoice) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -394,27 +394,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV14(out *jwriter.
 // MarshalJSON supports json.Marshaler interface
 func (v ToolChoice) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV14(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV14(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ToolChoice) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV14(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV14(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ToolChoice) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV14(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV14(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ToolChoice) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV14(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV14(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV15(in *jlexer.Lexer, out *ToolCall) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV15(in *jlexer.Lexer, out *ToolCall) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -459,7 +459,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV15(in *jlexer.Le
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV15(out *jwriter.Writer, in ToolCall) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV15(out *jwriter.Writer, in ToolCall) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -495,27 +495,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV15(out *jwriter.
 // MarshalJSON supports json.Marshaler interface
 func (v ToolCall) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV15(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV15(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ToolCall) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV15(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV15(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ToolCall) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV15(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV15(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ToolCall) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV15(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV15(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV16(in *jlexer.Lexer, out *Tool) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV16(in *jlexer.Lexer, out *Tool) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -556,7 +556,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV16(in *jlexer.Le
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV16(out *jwriter.Writer, in Tool) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV16(out *jwriter.Writer, in Tool) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -576,27 +576,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV16(out *jwriter.
 // MarshalJSON supports json.Marshaler interface
 func (v Tool) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV16(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV16(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Tool) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV16(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV16(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Tool) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV16(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV16(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Tool) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV16(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV16(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV17(in *jlexer.Lexer, out *StreamOptions) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV17(in *jlexer.Lexer, out *StreamOptions) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -627,7 +627,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV17(in *jlexer.Le
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV17(out *jwriter.Writer, in StreamOptions) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV17(out *jwriter.Writer, in StreamOptions) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -643,27 +643,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV17(out *jwriter.
 // MarshalJSON supports json.Marshaler interface
 func (v StreamOptions) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV17(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV17(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v StreamOptions) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV17(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV17(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *StreamOptions) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV17(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV17(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *StreamOptions) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV17(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV17(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV18(in *jlexer.Lexer, out *Sexual) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV18(in *jlexer.Lexer, out *Sexual) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -696,7 +696,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV18(in *jlexer.Le
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV18(out *jwriter.Writer, in Sexual) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV18(out *jwriter.Writer, in Sexual) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -716,27 +716,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV18(out *jwriter.
 // MarshalJSON supports json.Marshaler interface
 func (v Sexual) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV18(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV18(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Sexual) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV18(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV18(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Sexual) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV18(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV18(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Sexual) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV18(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV18(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV19(in *jlexer.Lexer, out *SelfHarm) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV19(in *jlexer.Lexer, out *SelfHarm) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -769,7 +769,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV19(in *jlexer.Le
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV19(out *jwriter.Writer, in SelfHarm) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV19(out *jwriter.Writer, in SelfHarm) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -789,27 +789,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV19(out *jwriter.
 // MarshalJSON supports json.Marshaler interface
 func (v SelfHarm) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV19(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV19(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v SelfHarm) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV19(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV19(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *SelfHarm) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV19(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV19(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *SelfHarm) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV19(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV19(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV110(in *jlexer.Lexer, out *PromptFilterResult) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV110(in *jlexer.Lexer, out *PromptFilterResult) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -842,7 +842,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV110(in *jlexer.L
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV110(out *jwriter.Writer, in PromptFilterResult) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV110(out *jwriter.Writer, in PromptFilterResult) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -862,27 +862,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV110(out *jwriter
 // MarshalJSON supports json.Marshaler interface
 func (v PromptFilterResult) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV110(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV110(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v PromptFilterResult) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV110(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV110(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *PromptFilterResult) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV110(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV110(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *PromptFilterResult) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV110(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV110(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV111(in *jlexer.Lexer, out *Profanity) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV111(in *jlexer.Lexer, out *Profanity) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -915,7 +915,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV111(in *jlexer.L
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV111(out *jwriter.Writer, in Profanity) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV111(out *jwriter.Writer, in Profanity) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -935,27 +935,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV111(out *jwriter
 // MarshalJSON supports json.Marshaler interface
 func (v Profanity) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV111(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV111(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Profanity) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV111(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV111(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Profanity) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV111(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV111(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Profanity) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV111(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV111(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV112(in *jlexer.Lexer, out *PredictionContent) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV112(in *jlexer.Lexer, out *PredictionContent) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -994,7 +994,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV112(in *jlexer.L
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV112(out *jwriter.Writer, in PredictionContent) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV112(out *jwriter.Writer, in PredictionContent) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1020,27 +1020,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV112(out *jwriter
 // MarshalJSON supports json.Marshaler interface
 func (v PredictionContent) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV112(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV112(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v PredictionContent) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV112(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV112(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *PredictionContent) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV112(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV112(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *PredictionContent) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV112(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV112(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV113(in *jlexer.Lexer, out *LogProbs) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV113(in *jlexer.Lexer, out *LogProbs) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1092,7 +1092,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV113(in *jlexer.L
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV113(out *jwriter.Writer, in LogProbs) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV113(out *jwriter.Writer, in LogProbs) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1118,27 +1118,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV113(out *jwriter
 // MarshalJSON supports json.Marshaler interface
 func (v LogProbs) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV113(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV113(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v LogProbs) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV113(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV113(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *LogProbs) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV113(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV113(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *LogProbs) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV113(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV113(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV114(in *jlexer.Lexer, out *LogProb) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV114(in *jlexer.Lexer, out *LogProb) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1217,7 +1217,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV114(in *jlexer.L
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV114(out *jwriter.Writer, in LogProb) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV114(out *jwriter.Writer, in LogProb) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1267,27 +1267,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV114(out *jwriter
 // MarshalJSON supports json.Marshaler interface
 func (v LogProb) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV114(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV114(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v LogProb) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV114(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV114(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *LogProb) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV114(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV114(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *LogProb) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV114(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV114(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV115(in *jlexer.Lexer, out *JailBreak) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV115(in *jlexer.Lexer, out *JailBreak) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1320,7 +1320,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV115(in *jlexer.L
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV115(out *jwriter.Writer, in JailBreak) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV115(out *jwriter.Writer, in JailBreak) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1340,27 +1340,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV115(out *jwriter
 // MarshalJSON supports json.Marshaler interface
 func (v JailBreak) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV115(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV115(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v JailBreak) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV115(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV115(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *JailBreak) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV115(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV115(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *JailBreak) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV115(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV115(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV116(in *jlexer.Lexer, out *Hate) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV116(in *jlexer.Lexer, out *Hate) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1393,7 +1393,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV116(in *jlexer.L
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV116(out *jwriter.Writer, in Hate) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV116(out *jwriter.Writer, in Hate) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1413,27 +1413,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV116(out *jwriter
 // MarshalJSON supports json.Marshaler interface
 func (v Hate) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV116(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV116(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Hate) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV116(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV116(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Hate) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV116(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV116(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Hate) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV116(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV116(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV117(in *jlexer.Lexer, out *FunctionDefinition) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV117(in *jlexer.Lexer, out *FunctionDefinition) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1476,7 +1476,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV117(in *jlexer.L
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV117(out *jwriter.Writer, in FunctionDefinition) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV117(out *jwriter.Writer, in FunctionDefinition) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1512,27 +1512,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV117(out *jwriter
 // MarshalJSON supports json.Marshaler interface
 func (v FunctionDefinition) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV117(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV117(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v FunctionDefinition) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV117(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV117(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *FunctionDefinition) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV117(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV117(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *FunctionDefinition) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV117(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV117(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV118(in *jlexer.Lexer, out *FunctionCall) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV118(in *jlexer.Lexer, out *FunctionCall) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1565,7 +1565,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV118(in *jlexer.L
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV118(out *jwriter.Writer, in FunctionCall) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV118(out *jwriter.Writer, in FunctionCall) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1585,27 +1585,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV118(out *jwriter
 // MarshalJSON supports json.Marshaler interface
 func (v FunctionCall) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV118(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV118(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v FunctionCall) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV118(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV118(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *FunctionCall) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV118(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV118(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *FunctionCall) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV118(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV118(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV119(in *jlexer.Lexer, out *ContentFilterResults) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV119(in *jlexer.Lexer, out *ContentFilterResults) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1694,7 +1694,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV119(in *jlexer.L
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV119(out *jwriter.Writer, in ContentFilterResults) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV119(out *jwriter.Writer, in ContentFilterResults) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1760,27 +1760,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV119(out *jwriter
 // MarshalJSON supports json.Marshaler interface
 func (v ContentFilterResults) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV119(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV119(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ContentFilterResults) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV119(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV119(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ContentFilterResults) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV119(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV119(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ContentFilterResults) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV119(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV119(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV120(in *jlexer.Lexer, out *ChatMessageImageURL) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV120(in *jlexer.Lexer, out *ChatMessageImageURL) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1813,7 +1813,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV120(in *jlexer.L
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV120(out *jwriter.Writer, in ChatMessageImageURL) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV120(out *jwriter.Writer, in ChatMessageImageURL) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1833,27 +1833,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV120(out *jwriter
 // MarshalJSON supports json.Marshaler interface
 func (v ChatMessageImageURL) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV120(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV120(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ChatMessageImageURL) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV120(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV120(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ChatMessageImageURL) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV120(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV120(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ChatMessageImageURL) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV120(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV120(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV121(in *jlexer.Lexer, out *ChatMessageContentPart) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV121(in *jlexer.Lexer, out *ChatMessageContentPart) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1896,7 +1896,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV121(in *jlexer.L
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV121(out *jwriter.Writer, in ChatMessageContentPart) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV121(out *jwriter.Writer, in ChatMessageContentPart) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1932,27 +1932,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV121(out *jwriter
 // MarshalJSON supports json.Marshaler interface
 func (v ChatMessageContentPart) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV121(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV121(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ChatMessageContentPart) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV121(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV121(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ChatMessageContentPart) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV121(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV121(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ChatMessageContentPart) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV121(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV121(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV122(in *jlexer.Lexer, out *ChatCompletionResponseFormatJSONSchema) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV122(in *jlexer.Lexer, out *ChatCompletionResponseFormatJSONSchema) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1995,7 +1995,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV122(in *jlexer.L
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV122(out *jwriter.Writer, in ChatCompletionResponseFormatJSONSchema) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV122(out *jwriter.Writer, in ChatCompletionResponseFormatJSONSchema) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -2031,27 +2031,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV122(out *jwriter
 // MarshalJSON supports json.Marshaler interface
 func (v ChatCompletionResponseFormatJSONSchema) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV122(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV122(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ChatCompletionResponseFormatJSONSchema) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV122(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV122(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ChatCompletionResponseFormatJSONSchema) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV122(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV122(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ChatCompletionResponseFormatJSONSchema) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV122(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV122(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV123(in *jlexer.Lexer, out *ChatCompletionResponseFormat) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV123(in *jlexer.Lexer, out *ChatCompletionResponseFormat) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -2092,7 +2092,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV123(in *jlexer.L
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV123(out *jwriter.Writer, in ChatCompletionResponseFormat) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV123(out *jwriter.Writer, in ChatCompletionResponseFormat) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -2112,27 +2112,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV123(out *jwriter
 // MarshalJSON supports json.Marshaler interface
 func (v ChatCompletionResponseFormat) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV123(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV123(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ChatCompletionResponseFormat) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV123(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV123(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ChatCompletionResponseFormat) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV123(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV123(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ChatCompletionResponseFormat) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV123(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV123(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV124(in *jlexer.Lexer, out *ChatCompletionResponse) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV124(in *jlexer.Lexer, out *ChatCompletionResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -2229,7 +2229,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV124(in *jlexer.L
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV124(out *jwriter.Writer, in ChatCompletionResponse) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV124(out *jwriter.Writer, in ChatCompletionResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -2305,27 +2305,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV124(out *jwriter
 // MarshalJSON supports json.Marshaler interface
 func (v ChatCompletionResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV124(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV124(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ChatCompletionResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV124(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV124(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ChatCompletionResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV124(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV124(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ChatCompletionResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV124(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV124(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV125(in *jlexer.Lexer, out *ChatCompletionRequest) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV125(in *jlexer.Lexer, out *ChatCompletionRequest) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -2663,7 +2663,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV125(in *jlexer.L
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV125(out *jwriter.Writer, in ChatCompletionRequest) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV125(out *jwriter.Writer, in ChatCompletionRequest) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -2911,27 +2911,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV125(out *jwriter
 // MarshalJSON supports json.Marshaler interface
 func (v ChatCompletionRequest) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV125(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV125(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ChatCompletionRequest) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV125(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV125(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ChatCompletionRequest) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV125(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV125(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ChatCompletionRequest) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV125(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV125(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV126(in *jlexer.Lexer, out *ChatCompletionMessage) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV126(in *jlexer.Lexer, out *ChatCompletionMessage) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -3021,7 +3021,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV126(in *jlexer.L
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV126(out *jwriter.Writer, in ChatCompletionMessage) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV126(out *jwriter.Writer, in ChatCompletionMessage) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -3084,27 +3084,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV126(out *jwriter
 // MarshalJSON supports json.Marshaler interface
 func (v ChatCompletionMessage) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV126(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV126(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ChatCompletionMessage) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV126(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV126(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ChatCompletionMessage) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV126(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV126(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ChatCompletionMessage) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV126(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV126(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV127(in *jlexer.Lexer, out *ChatCompletionChoice) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV127(in *jlexer.Lexer, out *ChatCompletionChoice) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -3167,7 +3167,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV127(in *jlexer.L
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV127(out *jwriter.Writer, in ChatCompletionChoice) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV127(out *jwriter.Writer, in ChatCompletionChoice) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -3202,27 +3202,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV127(out *jwriter
 // MarshalJSON supports json.Marshaler interface
 func (v ChatCompletionChoice) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV127(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV127(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ChatCompletionChoice) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV127(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV127(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ChatCompletionChoice) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV127(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV127(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ChatCompletionChoice) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV127(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV127(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV128(in *jlexer.Lexer, out *AudioResponse) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV128(in *jlexer.Lexer, out *AudioResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -3259,7 +3259,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV128(in *jlexer.L
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV128(out *jwriter.Writer, in AudioResponse) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV128(out *jwriter.Writer, in AudioResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -3289,27 +3289,27 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV128(out *jwriter
 // MarshalJSON supports json.Marshaler interface
 func (v AudioResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV128(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV128(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v AudioResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV128(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV128(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *AudioResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV128(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV128(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *AudioResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV128(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV128(l, v)
 }
-func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV129(in *jlexer.Lexer, out *AudioConfig) {
+func easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV129(in *jlexer.Lexer, out *AudioConfig) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -3342,7 +3342,7 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV129(in *jlexer.L
 		in.Consumed()
 	}
 }
-func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV129(out *jwriter.Writer, in AudioConfig) {
+func easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV129(out *jwriter.Writer, in AudioConfig) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -3362,23 +3362,23 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV129(out *jwriter
 // MarshalJSON supports json.Marshaler interface
 func (v AudioConfig) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV129(&w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV129(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v AudioConfig) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV129(w, v)
+	easyjsonD67a82aEncodeGithubComSubstratusaiKubeaiApiOpenaiV129(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *AudioConfig) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV129(&r, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV129(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *AudioConfig) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV129(l, v)
+	easyjsonD67a82aDecodeGithubComSubstratusaiKubeaiApiOpenaiV129(l, v)
 }
