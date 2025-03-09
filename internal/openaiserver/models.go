@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
+	kubeaiv1 "github.com/substratusai/kubeai/api/k8s/v1"
 	"github.com/substratusai/kubeai/internal/apiutils"
 	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/controller-runtime/pkg/client"
