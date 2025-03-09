@@ -1870,7 +1870,15 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV121(in *jlexer.L
 				out.Schema = in.Interface()
 			}
 		case "strict":
-			out.Strict = bool(in.Bool())
+			if in.IsNull() {
+				in.Skip()
+				out.Strict = nil
+			} else {
+				if out.Strict == nil {
+					out.Strict = new(bool)
+				}
+				*out.Strict = bool(in.Bool())
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -1906,10 +1914,10 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV121(out *jwriter
 			out.Raw(json.Marshal(in.Schema))
 		}
 	}
-	{
+	if in.Strict != nil {
 		const prefix string = ",\"strict\":"
 		out.RawString(prefix)
-		out.Bool(bool(in.Strict))
+		out.Bool(bool(*in.Strict))
 	}
 	out.RawByte('}')
 }
@@ -2726,7 +2734,15 @@ func easyjson2932ad71DecodeGithubComSubstratusaiKubeaiApiOpenaiV125(in *jlexer.L
 		case "role":
 			out.Role = string(in.String())
 		case "content":
-			(out.Content).UnmarshalEasyJSON(in)
+			if in.IsNull() {
+				in.Skip()
+				out.Content = nil
+			} else {
+				if out.Content == nil {
+					out.Content = new(ChatMessageContent)
+				}
+				(*out.Content).UnmarshalEasyJSON(in)
+			}
 		case "refusal":
 			out.Refusal = string(in.String())
 		case "name":
@@ -2785,10 +2801,10 @@ func easyjson2932ad71EncodeGithubComSubstratusaiKubeaiApiOpenaiV125(out *jwriter
 		out.RawString(prefix[1:])
 		out.String(string(in.Role))
 	}
-	if true {
+	if in.Content != nil {
 		const prefix string = ",\"content\":"
 		out.RawString(prefix)
-		(in.Content).MarshalEasyJSON(out)
+		(*in.Content).MarshalEasyJSON(out)
 	}
 	if in.Refusal != "" {
 		const prefix string = ",\"refusal\":"
