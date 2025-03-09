@@ -119,17 +119,6 @@ type ContentFilterResults struct {
 	Profanity *Profanity `json:"profanity,omitempty"`
 }
 
-// PromptAnnotation provides information about content filtering applied to a specific prompt.
-type PromptAnnotation struct {
-	// PromptIndex is the index of the prompt being annotated.
-	// +optional
-	PromptIndex int `json:"prompt_index,omitempty"`
-
-	// ContentFilterResults contains the filtering results for this prompt.
-	// +optional
-	ContentFilterResults ContentFilterResults `json:"content_filter_results,omitempty"`
-}
-
 // ImageURLDetail specifies the detail level of the image in a vision request.
 // Learn more in the Vision guide at https://platform.openai.com/docs/guides/vision
 type ImageURLDetail string
@@ -148,9 +137,10 @@ const (
 type ChatMessageImageURL struct {
 	// URL is either a URL of the image or the base64 encoded image data
 	// +required
-	URL string `json:"url,omitempty"`
+	URL string `json:"url"`
 
 	// Detail specifies the detail level of the image
+	// Default: "auto"
 	// +optional
 	Detail ImageURLDetail `json:"detail,omitempty"`
 }
@@ -274,7 +264,7 @@ type ChatCompletionMessage struct {
 
 	// Refusal contains the refusal message if the model refuses to respond.
 	// NOTE: When OpenAI responded with an assistant message, it responds with `refusal: null`.
-	//       This API will omit the field in those cases.
+	//       This API will omit the field in those cases (similar to what Ollama does).
 	// +optional
 	Refusal string `json:"refusal,omitempty"`
 
@@ -355,7 +345,7 @@ const (
 type ChatCompletionResponseFormat struct {
 	// Type specifies the format type: "text", "json_object", or "json_schema"
 	// +required
-	Type ChatCompletionResponseFormatType `json:"type,omitempty"`
+	Type ChatCompletionResponseFormatType `json:"type"`
 
 	// JSONSchema contains schema information when Type is "json_schema"
 	// +optional
@@ -365,24 +355,24 @@ type ChatCompletionResponseFormat struct {
 // ChatCompletionResponseFormatJSONSchema defines a JSON schema for structured model output.
 // Learn more in the Structured Outputs guide: https://platform.openai.com/docs/guides/structured-outputs
 type ChatCompletionResponseFormatJSONSchema struct {
-	// Name is the name of the response format
-	// Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 64
+	// Name is the name of the response format.
+	// Must be a-z, A-Z, 0-9, or contain underscores and dashes, with a maximum length of 64.
 	// +required
 	Name string `json:"name"`
 
-	// Description explains what the response format is for
-	// Used by the model to determine how to respond in the format
+	// Description explains what the response format is for.
+	// Used by the model to determine how to respond in the format.
 	// +optional
 	Description string `json:"description,omitempty"`
 
-	// Schema is the schema for the response format, described as a JSON Schema object
+	// Schema is the schema for the response format, described as a JSON Schema object.
 	// +required
 	Schema interface{} `json:"schema"`
 
-	// Strict enables strict schema adherence when generating the output
-	// If true, the model will always follow the exact schema defined
+	// Strict enables strict schema adherence when generating the output.
+	// If true, the model will always follow the exact schema defined.
 	// +optional
-	Strict *bool `json:"strict,omitempty"`
+	Strict bool `json:"strict,omitempty"`
 }
 
 // ChatCompletionRequest represents a request structure for chat completion API.
@@ -399,30 +389,35 @@ type ChatCompletionRequest struct {
 	Messages []ChatCompletionMessage `json:"messages"`
 
 	// MaxTokens is the maximum number of tokens to generate in the chat completion.
-	// Deprecated: Use MaxCompletionTokens instead. Not compatible with o1 series models.
+	// Deprecated: Use MaxCompletionTokens instead.
+	// Should be a value `>= 1`.
 	// +optional
 	MaxTokens int `json:"max_tokens,omitempty"`
 
 	// MaxCompletionTokens is an upper bound for the number of tokens that can be generated for a completion,
 	// including visible output tokens and reasoning tokens.
+	// Should be a value `>= 1`.
 	// +optional
 	MaxCompletionTokens int `json:"max_completion_tokens,omitempty"`
 
 	// Temperature controls randomness in the output. Values between 0 and 2.
 	// Higher values like 0.8 make output more random, while lower values like 0.2 make it more focused and deterministic.
+	// Default: 1.0
 	// +optional
-	Temperature float32 `json:"temperature,omitempty"`
+	Temperature *float32 `json:"temperature,omitempty"`
 
 	// TopP is an alternative to sampling with temperature, called nucleus sampling.
 	// The model considers the results of the tokens with top_p probability mass.
 	// So 0.1 means only the tokens comprising the top 10% probability mass are considered.
+	// Default: 1.0
 	// +optional
-	TopP float32 `json:"top_p,omitempty"`
+	TopP *float32 `json:"top_p,omitempty"`
 
 	// N specifies how many chat completion choices to generate for each input message.
 	// Note that you will be charged based on the number of generated tokens across all choices.
+	// Default: 1
 	// +optional
-	N int `json:"n,omitempty"`
+	N *int `json:"n,omitempty"`
 
 	// Stream enables partial message deltas to be sent as they're generated.
 	// If true, tokens will be sent as data-only server-sent events as they become available.
@@ -436,8 +431,9 @@ type ChatCompletionRequest struct {
 	// PresencePenalty is a number between -2.0 and 2.0.
 	// Positive values penalize new tokens based on whether they appear in the text so far,
 	// increasing the model's likelihood to talk about new topics.
+	// Default: 0
 	// +optional
-	PresencePenalty float32 `json:"presence_penalty,omitempty"`
+	PresencePenalty *float32 `json:"presence_penalty,omitempty"`
 
 	// ResponseFormat specifies the format that the model must output.
 	// Can be used to request JSON or structured data from the model.
@@ -453,8 +449,9 @@ type ChatCompletionRequest struct {
 	// FrequencyPenalty is a number between -2.0 and 2.0.
 	// Positive values penalize new tokens based on their existing frequency in the text so far,
 	// decreasing the model's likelihood to repeat the same line verbatim.
+	// Default: 0
 	// +optional
-	FrequencyPenalty float32 `json:"frequency_penalty,omitempty"`
+	FrequencyPenalty *float32 `json:"frequency_penalty,omitempty"`
 
 	// LogitBias modifies the likelihood of specified tokens appearing in the completion.
 	// Maps tokens (specified by their token ID in the tokenizer) to an associated bias value from -100 to 100.
@@ -464,12 +461,12 @@ type ChatCompletionRequest struct {
 	// LogProbs indicates whether to return log probabilities of the output tokens.
 	// If true, returns the log probabilities of each output token returned in the content of message.
 	// +optional
-	LogProbs *bool `json:"logprobs,omitempty"`
+	LogProbs bool `json:"logprobs,omitempty"`
 
 	// TopLogProbs specifies the number of most likely tokens to return at each token position (0-20).
 	// Requires logprobs to be true.
 	// +optional
-	TopLogProbs int `json:"top_logprobs,omitempty"`
+	TopLogProbs *int `json:"top_logprobs,omitempty"`
 
 	// User is a unique identifier representing your end-user.
 	// This helps OpenAI to monitor and detect abuse.
@@ -493,6 +490,7 @@ type ChatCompletionRequest struct {
 
 	// ToolChoice controls which (if any) tool is called by the model.
 	// Can be "none", "auto", "required" or a specific tool choice object.
+	// TODO: Update to be a string type (enum pattern).
 	// +optional
 	ToolChoice interface{} `json:"tool_choice,omitempty"`
 
@@ -502,15 +500,17 @@ type ChatCompletionRequest struct {
 	StreamOptions *StreamOptions `json:"stream_options,omitempty"`
 
 	// ParallelToolCalls enables parallel function calling during tool use.
+	// Default: true
 	// +optional
 	ParallelToolCalls *bool `json:"parallel_tool_calls,omitempty"`
 
 	// Store determines whether to store the output for model distillation or evals products.
 	// +optional
-	Store *bool `json:"store,omitempty"`
+	Store bool `json:"store,omitempty"`
 
-	// ReasoningEffort controls effort on reasoning for reasoning models (o1 and o3-mini models only).
+	// ReasoningEffort controls effort on reasoning for reasoning models.
 	// Values can be "low", "medium", or "high". Reducing reasoning effort results in faster responses.
+	// Default: "medium"
 	// +optional
 	ReasoningEffort string `json:"reasoning_effort,omitempty"`
 
@@ -521,6 +521,7 @@ type ChatCompletionRequest struct {
 
 	// ServiceTier specifies the latency tier for processing the request.
 	// Can be "auto" or "default".
+	// Default: "auto"
 	// +optional
 	ServiceTier string `json:"service_tier,omitempty"`
 
@@ -629,9 +630,6 @@ type FunctionDefinition struct {
 	Strict bool `json:"strict,omitempty"`
 
 	// Parameters is an object describing the function parameters as a JSON Schema object.
-	// You can pass json.RawMessage to describe the schema,
-	// or you can pass in a struct which serializes to the proper JSON schema.
-	// Omitting parameters defines a function with an empty parameter list.
 	// +required
 	Parameters any `json:"parameters"`
 }
@@ -735,8 +733,6 @@ type AudioResponse struct {
 // Learn more at https://platform.openai.com/docs/guides/audio
 type AudioConfig struct {
 	// Voice specifies the voice the model uses to respond.
-	// Supported voices include: "alloy", "echo", "fable", "onyx", "nova", "shimmer", etc.
-	// The following voices are recommended: "alloy", "echo", "fable", "onyx", "nova", "shimmer".
 	// +required
 	Voice string `json:"voice"`
 
@@ -884,6 +880,6 @@ type PromptFilterResult struct {
 	Index int `json:"index"`
 
 	// ContentFilterResults contains details about the content filtering applied.
-	// +optional
-	ContentFilterResults ContentFilterResults `json:"content_filter_results,omitempty"`
+	// +required
+	ContentFilterResults ContentFilterResults `json:"content_filter_results"`
 }
