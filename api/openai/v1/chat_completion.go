@@ -158,9 +158,9 @@ func (c ChatMessageContent) MarshalEasyJSON(w *jwriter.Writer) {
 }
 
 type ChatCompletionMessage struct {
-	Role    string             `json:"role"`
-	Content ChatMessageContent `json:"content,omitempty"`
-	Refusal string             `json:"refusal,omitempty"`
+	Role    string              `json:"role"`
+	Content *ChatMessageContent `json:"content,omitempty"`
+	Refusal string              `json:"refusal,omitempty"`
 	//MultiContent []ChatMessagePart
 
 	// This property isn't in the official documentation, but it's in
@@ -273,7 +273,7 @@ type ChatCompletionResponseFormatJSONSchema struct {
 	Name        string      `json:"name"`
 	Description string      `json:"description,omitempty"`
 	Schema      interface{} `json:"schema"`
-	Strict      bool        `json:"strict"`
+	Strict      *bool       `json:"strict,omitempty"`
 }
 
 // ChatCompletionRequest represents a request structure for chat completion API.

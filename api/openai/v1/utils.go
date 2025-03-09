@@ -6,3 +6,8 @@ func firstNChars(s string, n int) string {
 	runes := []rune(s)
 	return string(runes[:min(n, len(runes))])
 }
+
+// Ptr is a helper function for creating an inline pointer to a constant.
+func Ptr[T any](v T) *T {
+	return &v
+}
