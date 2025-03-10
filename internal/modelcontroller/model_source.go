@@ -20,7 +20,8 @@ func (r *ModelReconciler) parseModelSource(urlStr string) (modelSource, error) {
 		return modelSource{}, err
 	}
 	src := modelSource{
-		url: u,
+		url:                     u,
+		modelSourcePodAdditions: &modelSourcePodAdditions{},
 	}
 
 	switch {
@@ -35,7 +36,7 @@ func (r *ModelReconciler) parseModelSource(urlStr string) (modelSource, error) {
 	case u.scheme == "pvc":
 		src.modelSourcePodAdditions = r.pvcPodAdditions(u)
 	default:
-		src.modelSourcePodAdditions = &modelSourcePodAdditions{}
+		// Keep the default empty modelSourcePodAdditions
 	}
 	return src, nil
 }
