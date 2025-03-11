@@ -64,6 +64,23 @@ spec:
   resourceProfile: nvidia-gpu-l4:1
 ```
 
+## Configure a Chat Template
+Some models do not ship will chat templates and some engines such as vLLM do not provide a default one. In these cases, you can use `.spec.files` to inject a template at Pod runtime.
+
+```yaml
+kind: Model
+spec:
+  # ...
+  engine: VLLM
+  args:
+  - --chat-template=/config/chat-template.jinja
+  files:
+  - path: /config/chat-template.jinja
+    content: |
+      {% for message in messages %}{{'<|im_start|>' + message['role'] + '\n' + message['content']}}{% if (loop.last and add_generation_prompt) or not loop.last %}{{ '<|im_end|>' + '\n'}}{% endif %}{% endfor %}
+      {% if add_generation_prompt and messages[-1]['role'] != 'assistant' %}{{ '<|im_start|>assistant\n' }}{% endif %}
+```
+
 ## Interact with the Text Generation Model
 The KubeAI service exposes an OpenAI compatible API that you can use to query the available models and interact with them.
 

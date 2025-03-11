@@ -48,5 +48,9 @@ spec:
   {{- with $model.cacheProfile }}
   cacheProfile: {{ . }}
   {{- end}}
+  {{- with $model.files }}
+  files:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
 {{- end}}
 {{- end}}

@@ -1,48 +1,72 @@
 # KubeAI: AI Inferencing Operator
 
-Serve ML models in production on Kubernetes. Supports LLMs, embeddings, and speech-to-text.
+Deploy and scale machine learning models on Kubernetes. Built for LLMs, embeddings, and speech-to-text.
 
+## Highlights
 
-⛕  Better performance with Prefix-aware Load Balancing [(see benchmark)](./benchmarks/prefix-aware-load-balancing.md)  
-✅️  OpenAI API Compatibility: Drop-in replacement for OpenAI  
-⚖️  Autoscaling: Scale from zero, autoscale based on load  
-🧠  Serve text generation models with vLLM or Ollama  
-🔌  Dynamic LoRA adapter loading  
-💬  Speech to Text API with FasterWhisper  
-🧮  Embedding/Vector API with Infinity  
-🚀  Multi-platform: CPU, GPU, TPU  
-💾  Model caching with shared filesystems (EFS, Filestore, etc.)  
-🛠️  Zero dependencies (does not depend on Istio, Knative, etc.)  
-💬  Chat UI included ([OpenWebUI](https://github.com/open-webui/open-webui))  
-✉  Stream/batch inference via messaging integrations (Kafka, PubSub, etc.)  
+What is it for?
+
+🚀 **LLM Inferencing** - Operate vLLM and Ollama servers  
+🎙️ **Speech Processing** - Transcribe audio with FasterWhisper  
+🔢 **Vector Embeddings** - Generate embeddings with Infinity  
+
+What do you get?
+
+⚡️ **Intelligent Scaling** - Scale from zero to meet demand  
+📊 **Optimized Routing** - Dramatically improves performance at scale ([see paper](./blog/posts/llm-load-balancing-at-scale-chwbl.md))  
+💾 **Model Caching** - Automates downloading & mounting (EFS, etc.)  
+🧩 **Dynamic Adapters** - Orchestrates LoRA adapters across replicas  
+📨 **Event Streaming** - Integrates with Kafka, PubSub, and more  
+
+We strive for an "it justs works" experience:
+
+🔗 **OpenAI Compatible** - Works with OpenAI client libraries  
+🛠️ **Zero Dependencies** - Does not require Istio, Knative, etc.  
+🖥 **Hardware Flexible** - Runs on CPU, GPU, or TPU  
 
 Quotes from the community:
 
-> reusable, well abstracted solution to run LLMs - [Mike Ensor](https://www.linkedin.com/posts/mikeensor_gcp-solutions-public-retail-edge-available-cluster-traits-activity-7237515920259104769-vBs9?utm_source=share&utm_medium=member_desktop)
+> reusable, well abstracted solution to run LLMs - [Mike Ensor](https://www.linkedin.com/posts/mikeensor_gcp-solutions-public-retail-edge-available-cluster-traits-activity-7237515920259104769-vBs9?utm_source=share&utm_medium=member_desktop), Google
 
 ## Why KubeAI?
 
 ### Better performance at scale
-When running multiple replicas of a serving engine such as vLLM, performance under production traffic is heavily influence by the load balancing strategy.
 
-KubeAI supports Least Load and Prefix Hash load balancing. Prefix Hash
-load balancing with the KubeAI proxy provides a significant performance boost.
+When running multiple replicas of vLLM, the random load balancing strategy built into kube-proxy that backs standard Kubernetes Services performs poorly (TTFT & throughput). This is because vLLM isn't stateless, its performance is heavily influenced by the state of its KV cache.
 
-<img src="./benchmarks/prefix-aware-load-balancing-mean-ttft.png" width="80%"/>
+The KubeAI proxy includes a prefix-aware load balancing strategy that optimizes KV cache utilization - resulting in dramatic improvements to overall system performance.
 
-See the [full benchmark](./benchmarks/prefix-aware-load-balancing.md) for more details.
+<img src="./graphs/ttft-benchmark.png" width="80%"/>
+
+See the [full paper](./blog/posts/llm-load-balancing-at-scale-chwbl.md) for more details.
 
 ### Simplicity and ease of use
-KubeAI does not have other dependencies which makes it possible to deploy
-and manage in any environment. You can deploy models
-using pre-validated models for specific GPU types. This saves you time
-because you don't have to tweak engine arguments for hours to get
-a model up and running.
 
+KubeAI does not depend on other systems like Istio & Knative (for scale-from-zero), or the Prometheus metrics adapter (for autoscaling). This allows KubeAI to work out of the box in almost any Kubernetes cluster. Day-two operations is greatly simplified as well - don't worry about inter-project version and configuration mismatches.
+
+The project ships with a catalog of popular models, pre-configured for common GPU types. This means you can spend less time tweaking vLLM-specific flags. As we expand, we plan to build out an extensive model optimization pipeline that will ensure you get the most out of your hardware.
+
+### OpenAI API Compatibility
+
+No need to change your client libraries, KubeAI supports the following endpoints:
+
+```bash
+/v1/chat/completions
+/v1/completions
+/v1/embeddings
+/v1/models
+/v1/audio/transcriptions
+```
 
 ## Architecture
 
-KubeAI serves an OpenAI compatible HTTP API. Admins can configure ML models via `kind: Model` Kubernetes Custom Resources. KubeAI can be thought of as a Model Operator (See [Operator Pattern](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/)) that manages [vLLM](https://github.com/vllm-project/vllm) and [Ollama](https://github.com/ollama/ollama) servers.
+KubeAI consists of two primary sub-components:
+
+**1. The model proxy:** the KubeAI proxy provides an OpenAI-compatible API. Behind this API, the proxy implements a prefix-aware load balancing strategy that optimizes for KV the cache utilization of the backend serving engines (i.e. vLLM). The proxy also implements request queueing (while the system scales from zero replicas) and request retries (to seamlessly handle bad backends).
+
+**2. The model operator:** the KubeAI model operator manages backend server Pods directly. It automates common operations such as downloading models, mounting volumes, and loading dynamic LoRA adapters via the KubeAI Model CRD.
+
+Both of these components are co-located in the same deployment, but [could be deployed independently](https://github.com/substratusai/kubeai/issues/430).
 
 <img src="./diagrams/arch.excalidraw.png"></img>
 
@@ -57,6 +81,7 @@ List of known adopters:
 | Lambda | You can try KubeAI on the Lambda AI Developer Cloud. See Lambda's [tutorial](https://docs.lambdalabs.com/education/large-language-models/kubeai-hermes-3/) and [video](https://youtu.be/HEtPO2Wuiac). | [Lambda](https://lambdalabs.com/) |
 | Vultr | KubeAI can be deployed on Vultr Managed Kubernetes using the application marketplace. | [Vultr](https://www.vultr.com) |
 | Arcee | Arcee uses KubeAI for multi-region, multi-tenant SLM inference. | [Arcee](https://www.arcee.ai/) |
+| Seeweb | Seeweb leverages KubeAI for direct and client-facing GPU inference workloads. KubeAI can be deployed on any GPU server and SKS | [Seeweb](https://www.seeweb.it/en) |
 
 If you are using KubeAI and would like to be listed as an adopter, please make a PR.
 
@@ -144,46 +169,13 @@ Now open your browser to [localhost:8000](http://localhost:8000) and select the 
 
 If you go back to the browser and start a chat with Qwen2, you will notice that it will take a while to respond at first. This is because we set `minReplicas: 0` for this model and KubeAI needs to spin up a new Pod (you can verify with `kubectl get models -oyaml qwen2-500m-cpu`).
 
-## Documentation
+## Get Plugged-In
 
-Checkout our documentation on [kubeai.org](https://www.kubeai.org) to find info on:
-
-* Installing KubeAI in the cloud
-* How to guides (e.g. how to manage models and resource profiles).
-* Concepts (how the components of KubeAI work).
-* How to contribute
-
-## OpenAI API Compatibility
-
-```bash
-# Implemented #
-/v1/chat/completions
-/v1/completions
-/v1/embeddings
-/v1/models
-/v1/audio/transcriptions
-
-# Planned #
-# /v1/assistants/*
-# /v1/batches/*
-# /v1/fine_tuning/*
-# /v1/images/*
-# /v1/vector_stores/*
-```
-
-## Immediate Roadmap
-
-* Model caching
-* LoRA finetuning (compatible with OpenAI finetuning API)
-* Image generation (compatible with OpenAI images API)
-
-*NOTE:* KubeAI was born out of a project called Lingo which was a simple Kubernetes LLM proxy with basic autoscaling. We relaunched the project as KubeAI (late August 2024) and expanded the roadmap to what it is today.
+Read about concepts, guides, and API documentation on [kubeai.org](https://www.kubeai.org).
 
 🌟 Don't forget to drop us a star on GitHub and follow the repo to stay up to date!
 
 [![KubeAI Star history Chart](https://api.star-history.com/svg?repos=substratusai/kubeai&type=Date)](https://star-history.com/#substratusai/kubeai&Date)
-
-## Contact
 
 Let us know about features you are interested in seeing or reach out with questions. [Visit our Discord channel](https://discord.gg/JeXhcmjZVm) to join the discussion!
 

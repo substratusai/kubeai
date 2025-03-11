@@ -46,7 +46,7 @@ func TestConcurrentAccess(t *testing.T) {
 		}
 		t.Run(name, func(t *testing.T) {
 			// setup endpoint with one endpoint so that requests are not waiting
-			group := newEndpointGroup()
+			group := newEndpointGroup(v1.LoadBalancing{PrefixHash: v1.PrefixHash{Replication: 100}})
 			group.reconcileEndpoints(
 				map[string]endpoint{myModel: {address: myAddr}},
 			)
@@ -92,7 +92,7 @@ func TestBlockAndWaitForEndpoints(t *testing.T) {
 			}()
 		}
 	}
-	group := newEndpointGroup()
+	group := newEndpointGroup(v1.LoadBalancing{PrefixHash: v1.PrefixHash{Replication: 100}})
 	ctx := context.TODO()
 	startTogether(100, func() {
 		group.getBestAddr(ctx, &apiutils.Request{}, false)
@@ -116,7 +116,7 @@ func TestAbortOnCtxCancel(t *testing.T) {
 	doneWg.Add(1)
 	go func(t *testing.T) {
 		startWg.Wait()
-		endpoint := newEndpointGroup()
+		endpoint := newEndpointGroup(v1.LoadBalancing{PrefixHash: v1.PrefixHash{Replication: 100}})
 		_, f, err := endpoint.getBestAddr(ctx, &apiutils.Request{}, false)
 		defer f()
 		require.Error(t, err)

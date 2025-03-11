@@ -30,6 +30,23 @@ _Appears in:_
 | `url` _string_ |  |  |  |
 
 
+#### File
+
+
+
+File represents a file to be mounted in the model pod.
+
+
+
+_Appears in:_
+- [ModelSpec](#modelspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `path` _string_ | Path where the file should be mounted in the pod.<br />Must be an absolute path. |  | MaxLength: 1024 <br />Required: \{\} <br /> |
+| `content` _string_ | Content of the file to be mounted.<br />Will be injected into a ConfigMap and mounted in the model Pods. |  | MaxLength: 100000 <br />Required: \{\} <br /> |
+
+
 #### LoadBalancing
 
 
@@ -128,6 +145,7 @@ _Appears in:_
 | `scaleDownDelaySeconds` _integer_ | ScaleDownDelay is the minimum time before a deployment is scaled down after<br />the autoscaling algorithm determines that it should be scaled down. | 30 |  |
 | `owner` _string_ | Owner of the model. Used solely to populate the owner field in the<br />OpenAI /v1/models endpoint.<br />DEPRECATED. |  | Optional: \{\} <br /> |
 | `loadBalancing` _[LoadBalancing](#loadbalancing)_ | LoadBalancing configuration for the model.<br />If not specified, a default is used based on the engine and request. | \{  \} |  |
+| `files` _[File](#file) array_ | Files to be mounted in the model Pods. |  | MaxItems: 10 <br /> |
 
 
 #### ModelStatus
@@ -194,7 +212,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `meanLoadFactor` _integer_ | MeanLoadPercentage is the percentage that any given endpoint's load must not exceed<br />over the mean load of all endpoints in the hash ring. Defaults to 125% which is<br />a widely accepted value for the Consistent Hashing with Bounded Loads algorithm. | 125 | Minimum: 100 <br />Optional: \{\} <br /> |
-| `replication` _integer_ | Replication is the number of replicas of each endpoint on the hash ring.<br />Higher values will result in a more even distribution of load but will<br />decrease lookup performance. | 20 | Optional: \{\} <br /> |
+| `replication` _integer_ | Replication is the number of replicas of each endpoint on the hash ring.<br />Higher values will result in a more even distribution of load but will<br />decrease lookup performance. | 256 | Optional: \{\} <br /> |
 | `prefixCharLength` _integer_ | PrefixCharLength is the number of characters to count when building the prefix to hash. | 100 | Optional: \{\} <br /> |
 
 
