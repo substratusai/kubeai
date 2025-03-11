@@ -208,33 +208,33 @@ func Test_calculatePodPlan(t *testing.T) {
 				{Ready: true, ExpectedHash: false}, // ready old hash
 			},
 		},
-		// {
-		// 	name:     "single replica with surge pod and 2 old pods",
-		// 	replicas: 1,
-		// 	pods: []corev1.Pod{
-		// 		testPod("ready-surge-pod", expectedHash, ready),    // New hash surge pod
-		// 		testPod("ready-old-hash-pod-1", "old-hash", ready), // First old hash pod
-		// 		testPod("ready-old-hash-pod-2", "old-hash", ready), // Second old hash pod
-		// 	},
-		// 	wantNCreations: 0,
-		// 	wantDeletions: []WantDeletion{
-		// 		{Ready: true, ExpectedHash: false}, // ready old hash
-		// 		{Ready: true, ExpectedHash: false}, // ready old hash
-		// 	},
-		// },
-		// {
-		// 	name:     "scale down to zero replicas",
-		// 	replicas: 0,
-		// 	pods: []corev1.Pod{
-		// 		testPod("ready-pod-1", expectedHash, ready),
-		// 		testPod("ready-pod-2", expectedHash, ready),
-		// 	},
-		// 	wantNCreations: 0,
-		// 	wantDeletions: []WantDeletion{
-		// 		{Ready: true, ExpectedHash: true}, // ready new hash
-		// 		{Ready: true, ExpectedHash: true}, // ready new hash
-		// 	},
-		// },
+		{
+			name:     "single replica with surge pod and 2 old pods",
+			replicas: 1,
+			pods: []corev1.Pod{
+				testPod("ready-surge-pod", expectedHash, ready),    // New hash surge pod
+				testPod("ready-old-hash-pod-1", "old-hash", ready), // First old hash pod
+				testPod("ready-old-hash-pod-2", "old-hash", ready), // Second old hash pod
+			},
+			wantNCreations: 0,
+			wantDeletions: []WantDeletion{
+				{Ready: true, ExpectedHash: false}, // ready old hash
+				{Ready: true, ExpectedHash: false}, // ready old hash
+			},
+		},
+		{
+			name:     "scale down to zero replicas",
+			replicas: 0,
+			pods: []corev1.Pod{
+				testPod("ready-pod-1", expectedHash, ready),
+				testPod("ready-pod-2", expectedHash, ready),
+			},
+			wantNCreations: 0,
+			wantDeletions: []WantDeletion{
+				{Ready: true, ExpectedHash: true}, // ready new hash
+				{Ready: true, ExpectedHash: true}, // ready new hash
+			},
+		},
 	}
 
 	for _, c := range cases {
