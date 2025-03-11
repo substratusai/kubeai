@@ -17,7 +17,7 @@ spec:
           /bin/ollama pull qwen2:0.5b
         volumeMounts:
         - name: models-volume
-          mountPath: /models
+          mountPath: /usr/share/ollama/.ollama/models/
       volumes:
       - name: models-volume
         persistentVolumeClaim:
