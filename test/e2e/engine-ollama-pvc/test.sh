@@ -38,6 +38,7 @@ while true; do
   if kubectl get job ollama-pvc-hydrate -o jsonpath='{.status.conditions[?(@.type=="Failed")].status}' | grep -q "True"; then
     echo "Ollama hydrate job failed"
     kubectl logs job/ollama-pvc-hydrate
+    kubectl delete job ollama-pvc-hydrate
     exit 1
   fi
 
@@ -45,6 +46,7 @@ while true; do
   if [ $elapsed -ge $timeout ]; then
     echo "Timeout waiting for Ollama hydrate job to complete"
     kubectl logs job/ollama-pvc-hydrate
+    kubectl delete job ollama-pvc-hydrate
     exit 1
   fi
 
@@ -60,6 +62,7 @@ catalog:
     url: pvc://model-pvc?model=qwen:0.5b
     minReplicas: 2
     engine: OLlama
+    features: [TextGeneration]
 EOF
 
 sleep 5
