@@ -37,7 +37,7 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, c ModelConfig) *c
 	if c.Source.url.scheme == "pvc" {
 		env = append(env, corev1.EnvVar{
 			Name:  "OLLAMA_MODELS",
-			Value: "/models",
+			Value: "/model",
 		})
 	}
 

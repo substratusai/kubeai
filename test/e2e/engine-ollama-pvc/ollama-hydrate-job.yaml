@@ -8,16 +8,20 @@ spec:
       containers:
       - name: ollama
         image: ollama/ollama:latest
+        env:
+        - name: OLLAMA_MODELS
+          value: /model
         command: 
         - /bin/sh
         - -c
         - |
           /bin/ollama serve &
           sleep 10
-          /bin/ollama pull qwen2:0.5b
+          /bin/ollama pull qwen:0.5b &
+          ls -R /model
         volumeMounts:
         - name: models-volume
-          mountPath: /usr/share/ollama/.ollama/models/
+          mountPath: /model
       volumes:
       - name: models-volume
         persistentVolumeClaim:

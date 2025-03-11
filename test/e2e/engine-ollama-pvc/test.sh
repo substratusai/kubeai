@@ -30,7 +30,6 @@ while true; do
   status=$(kubectl get job ollama-pvc-hydrate -o jsonpath='{.status.conditions[?(@.type=="Complete")].status}')
   if [ "$status" == "True" ]; then
     echo "Ollama hydrate job completed successfully"
-    kubectl delete job ollama-pvc-hydrate
     break
   fi
   
@@ -38,7 +37,6 @@ while true; do
   if kubectl get job ollama-pvc-hydrate -o jsonpath='{.status.conditions[?(@.type=="Failed")].status}' | grep -q "True"; then
     echo "Ollama hydrate job failed"
     kubectl logs job/ollama-pvc-hydrate
-    kubectl delete job ollama-pvc-hydrate
     exit 1
   fi
 
@@ -46,7 +44,6 @@ while true; do
   if [ $elapsed -ge $timeout ]; then
     echo "Timeout waiting for Ollama hydrate job to complete"
     kubectl logs job/ollama-pvc-hydrate
-    kubectl delete job ollama-pvc-hydrate
     exit 1
   fi
 
@@ -62,10 +59,11 @@ catalog:
     url: pvc://model-pvc?model=qwen:0.5b
     minReplicas: 2
     engine: OLlama
+    resourceProfile: "cpu:1" 
     features: [TextGeneration]
 EOF
 
-sleep 5
+sleep 15
 
 # There are 2 replicas so send 10 requests to ensure that both replicas are used.
 for i in {1..10}; do
@@ -81,3 +79,4 @@ sleep 300
 helm uninstall kubeai-models # cleans up above model helm chart on success
 kubectl delete -f $REPO_DIR/test/e2e/engine-ollama-pvc/pv.yaml
 kubectl delete -f $REPO_DIR/test/e2e/engine-ollama-pvc/pvc.yaml
+kubectl delete -f $REPO_DIR/test/e2e/engine-ollama-pvc/ollama-hydrate-job.yaml
