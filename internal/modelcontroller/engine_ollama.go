@@ -175,12 +175,13 @@ func ollamaStartupProbeScript(m *kubeaiv1.Model, u modelURL) string {
 	// before the Pod becomes Ready. (by default it will load on the first prompt request).
 	startupScript := ""
 	// If the model is using a pvc, we don't want to try to connect/pull a model
-	if u.scheme != "pvc" {
 
-		startupScript = fmt.Sprintf("/bin/ollama pull %s && ", u.ref)
+	if u.modelParam == "" {
+		startupScript = fmt.Sprintf("/bin/ollama pull %s && /bin/ollama cp %s %s", u.ref, u.ref, u.name)
+	} else {
+		startupScript = fmt.Sprintf("/bin/ollama cp %s %s",
+			u.modelParam, u.name)
 	}
-	startupScript += fmt.Sprintf("/bin/ollama cp %s %s",
-		u.ref, u.name)
 
 	// Only run the model if the model has features
 	featuresMap := map[kubeaiv1.ModelFeature]struct{}{}

@@ -37,11 +37,12 @@ func Test_ollamaStartupProbeScript(t *testing.T) {
 				},
 			},
 			modelURL: modelURL{
-				scheme: "pvc",
-				ref:    "def",
-				name:   "abc",
+				scheme:     "pvc",
+				ref:        "def",
+				name:       "abc",
+				modelParam: "qwen2:0.5b",
 			},
-			want: "/bin/ollama cp def abc && /bin/ollama run abc hi",
+			want: "/bin/ollama cp qwen2:0.5b abc && /bin/ollama run abc hi",
 		},
 	}
 

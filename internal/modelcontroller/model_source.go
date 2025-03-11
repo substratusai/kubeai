@@ -224,18 +224,14 @@ func parseModelURL(urlStr string) (modelURL, error) {
 	}
 	scheme, ref := matches[1], matches[2]
 	name, path, _ := strings.Cut(ref, "/")
-	modelParam := ""
+	var modelParam string
 
-	// check to see if the pvc model has a query string, set model to query string, path to host
-
-	if scheme == "pvc" {
-		if len(matches) == 4 {
-			urlParser, err := url.ParseQuery(strings.TrimPrefix(matches[3], "?"))
-			if err == nil {
-				modelname := urlParser.Get("model")
-				if modelname != "" {
-					modelParam = modelname
-				}
+	if len(matches) == 4 { // check for query parameter model, e.g. pvc://my-pvc?model=qwen2:0.5b
+		urlParser, err := url.ParseQuery(strings.TrimPrefix(matches[3], "?"))
+		if err == nil {
+			modelname := urlParser.Get("model")
+			if modelname != "" {
+				modelParam = modelname
 			}
 		}
 	}

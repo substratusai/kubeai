@@ -20,6 +20,39 @@ docker exec -i $kind_container bash -c "
 kubectl apply -f $REPO_DIR/test/e2e/engine-ollama-pvc/pv.yaml
 kubectl apply -f $REPO_DIR/test/e2e/engine-ollama-pvc/pvc.yaml
 
+# Apply the Ollama hydrate job
+kubectl apply -f $REPO_DIR/test/e2e/engine-vllm-pvc/ollama-hydrate-job.yaml
+
+# Wait for job completion with timeout
+timeout=600 # 10 minutes
+elapsed=0
+while true; do
+  status=$(kubectl get job ollama-pvc-hydrate -o jsonpath='{.status.conditions[?(@.type=="Complete")].status}')
+  if [ "$status" == "True" ]; then
+    echo "Ollama hydrate job completed successfully"
+    kubectl delete job ollama-pvc-hydrate
+    break
+  fi
+  
+  # Check for job failure
+  if kubectl get job ollama-pvc-hydrate -o jsonpath='{.status.conditions[?(@.type=="Failed")].status}' | grep -q "True"; then
+    echo "Ollama hydrate job failed"
+    kubectl logs job/ollama-pvc-hydrate
+    exit 1
+  fi
+
+  # Check timeout
+  if [ $elapsed -ge $timeout ]; then
+    echo "Timeout waiting for Ollama hydrate job to complete"
+    kubectl logs job/ollama-pvc-hydrate
+    exit 1
+  fi
+
+  sleep 30
+  elapsed=$((elapsed + 30))
+  echo "Waiting for Ollama hydrate job to complete... ($elapsed seconds elapsed)"
+done
+
 helm install $models_release $REPO_DIR/charts/models -f - <<EOF
 catalog:
   qwen-500m:

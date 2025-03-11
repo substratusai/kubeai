@@ -1,0 +1,26 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ollama-pvc-hydrate
+spec:
+  template:
+    spec:
+      containers:
+      - name: ollama
+        image: ollama/ollama:latest
+        command: 
+        - /bin/sh
+        - -c
+        - |
+          /bin/ollama serve &
+          sleep 10
+          /bin/ollama pull qwen2:0.5b
+        volumeMounts:
+        - name: models-volume
+          mountPath: /models
+      volumes:
+      - name: models-volume
+        persistentVolumeClaim:
+          claimName: model-pvc
+          readOnly: false
+      restartPolicy: OnFailure
