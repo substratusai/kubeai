@@ -179,6 +179,19 @@ func baseSysCfg(t *testing.T) config.System {
 		ModelLoading: config.ModelLoading{
 			Image: "model-loader",
 		},
+		ModelServerPods: config.ModelServerPods{
+			ImagePullSecrets: []corev1.LocalObjectReference{
+				{Name: "test-secret1"},
+				{Name: "test-secret2"},
+			},
+			ModelServiceAccountName: "test-service-account",
+			ModelPodSecurityContext: &corev1.PodSecurityContext{
+				RunAsNonRoot: ptr.To(true),
+			},
+			ModelContainerSecurityContext: &corev1.SecurityContext{
+				AllowPrivilegeEscalation: ptr.To(false),
+			},
+		},
 		ResourceProfiles: map[string]config.ResourceProfile{
 			resourceProfileCPU: {
 				Requests: corev1.ResourceList{

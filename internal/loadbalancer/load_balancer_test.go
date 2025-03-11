@@ -2,6 +2,10 @@ package loadbalancer
 
 import (
 	"context"
+	"fmt"
+	"math"
+	"math/rand/v2"
+	"sync"
 	"testing"
 	"time"
 
@@ -95,21 +99,22 @@ func TestAwaitBestHostBehavior(t *testing.T) {
 					groups: map[string]*group{},
 				}
 
-				manager.getEndpoints(myModel).reconcileEndpoints(spec.endpoints)
+				lb := v1.LoadBalancing{
+					Strategy: strategy,
+					PrefixHash: v1.PrefixHash{
+						MeanLoadPercentage: 125,
+						Replication:        1,
+					},
+				}
+				manager.getOrCreateEndpointGroup(myModel, lb).reconcileEndpoints(spec.endpoints)
 
 				ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond)
 				defer cancel()
 
 				gotAddr, gotFunc, gotErr := manager.AwaitBestAddress(ctx, &apiutils.Request{
-					Model:   spec.model,
-					Adapter: spec.adapter,
-					LoadBalancing: v1.LoadBalancing{
-						Strategy: strategy,
-						PrefixHash: v1.PrefixHash{
-							MeanLoadPercentage: 125,
-							Replication:        1,
-						},
-					},
+					Model:         spec.model,
+					Adapter:       spec.adapter,
+					LoadBalancing: lb,
 				})
 				if spec.expErr != nil {
 					require.ErrorIs(t, spec.expErr, gotErr)
@@ -371,12 +376,12 @@ func TestLoadBalancingStrategies(t *testing.T) {
 			}
 
 			for model, endpoints := range c.modelEndpoints {
-				manager.getEndpoints(model).reconcileEndpoints(endpoints)
+				manager.getOrCreateEndpointGroup(model, c.loadBalancing).reconcileEndpoints(endpoints)
 			}
 
 			for modelName, inFlight := range c.initialInFlight {
 				for endpointName, count := range inFlight {
-					g := manager.getEndpoints(modelName)
+					g, _ := manager.getEndpointGroup(modelName)
 					ep := g.endpoints[endpointName]
 					g.addInFlight(ep.inFlight, count)
 				}
@@ -420,4 +425,103 @@ func TestLoadBalancingStrategies(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestAwaitbestHostParallelAccounting tests that running AwaitBestHost in parallel
+// produces and expected distribution of endpoint results.
+func TestAwaitBestHostParallelAccounting(t *testing.T) {
+	const (
+		myModel   = "my-model"
+		myAdapter = "my-adapter"
+		myPod0    = "pod0"
+		myPod1    = "pod1"
+		pod0Addr  = "10.0.0.1:8000"
+		pod1Addr  = "10.0.0.2:8000"
+	)
+
+	const m = 10
+	for i := 0; i < m; i++ {
+		for _, strategy := range []v1.LoadBalancingStrategy{
+			v1.LeastLoadStrategy,
+			v1.PrefixHashStrategy,
+		} {
+			t.Run(fmt.Sprintf("%s-%d", strategy, i), func(t *testing.T) {
+				metricstest.Init(t)
+
+				manager := &LoadBalancer{
+					groups: map[string]*group{},
+				}
+
+				lb := v1.LoadBalancing{
+					Strategy: strategy,
+					PrefixHash: v1.PrefixHash{
+						// Check that the distribution is roughly even without
+						// the MLP threshold taking effect.
+						MeanLoadPercentage: 100000,
+						Replication:        256,
+						PrefixCharLength:   1000,
+					},
+				}
+				manager.getOrCreateEndpointGroup(myModel, lb).reconcileEndpoints(map[string]endpoint{
+					myPod0: {address: pod0Addr},
+					myPod1: {address: pod1Addr},
+				})
+
+				ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond)
+				defer cancel()
+
+				var wg, awaitGroup sync.WaitGroup
+				var doneMtx sync.RWMutex
+				doneMtx.Lock()
+				const n = 100_000
+				rnd := rand.New(rand.NewPCG(uint64(i), 0))
+				for j := 0; j < n; j++ {
+					wg.Add(1)
+					awaitGroup.Add(1)
+					go func() {
+						_, doneFunc, err := manager.AwaitBestAddress(ctx, &apiutils.Request{
+							Model:         myModel,
+							Adapter:       "",
+							LoadBalancing: lb,
+							Prefix:        fmt.Sprintf("%d", rnd.IntN(100_000_000)),
+						})
+						require.NoError(t, err)
+						awaitGroup.Done()
+						defer func() {
+							doneMtx.RLock()
+							defer doneMtx.RUnlock()
+							doneFunc()
+							wg.Done()
+						}()
+					}()
+				}
+
+				awaitGroup.Wait()
+				g := manager.groups[myModel]
+				require.EqualValues(t, n, g.totalInFlight.Load())
+				ep0Val := g.endpoints[myPod0].inFlight.Load()
+				ep1Val := g.endpoints[myPod1].inFlight.Load()
+				require.Less(t, percentDifference(float64(ep0Val), float64(ep1Val)), 4.0)
+
+				doneMtx.Unlock()
+				wg.Wait()
+
+				require.EqualValues(t, 0, g.totalInFlight.Load())
+				for _, ep := range g.endpoints {
+					require.EqualValues(t, 0, ep.inFlight.Load())
+				}
+			})
+		}
+	}
+}
+
+func percentDifference(a, b float64) float64 {
+	// Avoid division by zero if a + b == 0
+	if (a + b) == 0 {
+		return 0
+	}
+
+	diff := math.Abs(a - b)
+	avg := (a + b) / 2.0
+	return (diff / avg) * 100.0
 }

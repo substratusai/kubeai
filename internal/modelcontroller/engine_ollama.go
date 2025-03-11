@@ -73,6 +73,7 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, c ModelConfig) *c
 			RuntimeClassName:   c.RuntimeClassName,
 			ServiceAccountName: r.ModelServerPods.ModelServiceAccountName,
 			SecurityContext:    r.ModelServerPods.ModelPodSecurityContext,
+			ImagePullSecrets:   r.ModelServerPods.ImagePullSecrets,
 			Containers: []corev1.Container{
 				{
 					Name:            serverContainerName,
@@ -159,6 +160,7 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, c ModelConfig) *c
 		},
 	}
 
+	patchFileVolumes(&pod.Spec, m)
 	patchServerCacheVolumes(&pod.Spec, m, c)
 	c.Source.modelSourcePodAdditions.applyToPodSpec(&pod.Spec, 0)
 

@@ -49,12 +49,11 @@ catalog:
 
 When using the OpenAI compatible REST API, model adapters are referenced using the `<base-model>_<adapter>` convention. Once a Model is installed with an adapter, you can request that adapter by name via appending `_<adapter-name>` to the model field. This will work with any OpenAI client library.
 
-If you installed a Model with `name: llama-3.2` and configured `.spec.adapters[]` to contain an adapter with `name: sql`, you could issue a completion request to that adapter using:
+If you installed a Model with `name: llama-3.2` and configured `.spec.adapters[]` to contain an adapter with `name: sql`, you can issue a completion request to that adapter using:
 
 ```bash
 curl http://$KUBEAI_ENDPOINT/openai/v1/completions \
     -H "Content-Type: application/json" \
-    -H "X-Label-Selector: tenancy in (org-abc, public)" \
     -d '{"prompt": "Hi", "model": "llama-3.2_sql"}'
 ```
 

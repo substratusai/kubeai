@@ -69,6 +69,7 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 			RuntimeClassName:   c.RuntimeClassName,
 			ServiceAccountName: r.ModelServerPods.ModelServiceAccountName,
 			SecurityContext:    r.ModelServerPods.ModelPodSecurityContext,
+			ImagePullSecrets:   r.ModelServerPods.ImagePullSecrets,
 			Containers: []corev1.Container{
 				{
 					Name:            serverContainerName,
@@ -148,6 +149,7 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 		},
 	}
 
+	patchFileVolumes(&pod.Spec, m)
 	r.patchServerAdapterLoader(&pod.Spec, m, r.ModelLoaders.Image)
 	patchServerCacheVolumes(&pod.Spec, m, c)
 	c.Source.modelSourcePodAdditions.applyToPodSpec(&pod.Spec, 0)

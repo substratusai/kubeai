@@ -78,6 +78,7 @@ func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, c ModelConfig) 
 			RuntimeClassName:   c.RuntimeClassName,
 			ServiceAccountName: r.ModelServerPods.ModelServiceAccountName,
 			SecurityContext:    r.ModelServerPods.ModelPodSecurityContext,
+			ImagePullSecrets:   r.ModelServerPods.ImagePullSecrets,
 			Containers: []corev1.Container{
 				{
 					Name:  serverContainerName,
@@ -156,6 +157,7 @@ func (r *ModelReconciler) infinityPodForModel(m *kubeaiv1.Model, c ModelConfig) 
 		},
 	}
 
+	patchFileVolumes(&pod.Spec, m)
 	patchServerCacheVolumes(&pod.Spec, m, c)
 	c.Source.modelSourcePodAdditions.applyToPodSpec(&pod.Spec, 0)
 

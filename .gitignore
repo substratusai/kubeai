@@ -41,3 +41,5 @@ site
 /tmp
 
 ./charts/kubeai/charts/*.tgz
+
+.cache/

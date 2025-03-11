@@ -29,12 +29,14 @@ jobs:
       matrix:
         testcase:
         - "quickstart"
+        - "rollouts"
         - "openai-python-client"
         - "autoscaler-restart-under-load"
         - "autoscaler-restart-no-load"
         - "cache-shared-filesystem"
         - "engine-vllm-pvc"
         - "engine-ollama-pvc"
+        - "model-files"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

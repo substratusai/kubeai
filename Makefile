@@ -71,9 +71,10 @@ vet: ## Run go vet against code.
 test-unit: fmt vet
 	go test -v ./internal/... -coverprofile cover.unit.out
 
+# Use RUN=TestName to run specific integration tests.
 .PHONY: test-integration
 test-integration: fmt vet envtest
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test -v ./test/integration -coverprofile cover.integration.out
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test -v ./test/integration $(if $(RUN),-run $(RUN),) -coverprofile cover.integration.out
 
 .PHONY: helm-dependency-build
 helm-dependency-build:
@@ -83,6 +84,10 @@ helm-dependency-build:
 .PHONY: test-e2e-quickstart
 test-e2e-quickstart: skaffold helm-dependency-build
 	./test/e2e/run.sh quickstart
+
+.PHONY: test-e2e-rollouts
+test-e2e-rollouts: skaffold helm-dependency-build
+	./test/e2e/run.sh rollouts
 
 .PHONY: test-e2e-openai-python-client
 test-e2e-openai-python-client: skaffold helm-dependency-build
@@ -111,6 +116,10 @@ test-e2e-engine-ollama-pvc: skaffold helm-dependency-build
 .PHONY: test-e2e-engine
 test-e2e-engine: skaffold helm-dependency-build
 	CACHE_PROFILE=$(CACHE_PROFILE) ./test/e2e/run.sh engine-$(ENGINE) --profile e2e-test-default
+
+.PHONY: test-e2e-model-files
+test-e2e-model-files: skaffold helm-dependency-build
+	./test/e2e/run.sh model-files --profile e2e-test-default
 
 .PHONY: lint
 lint: golangci-lint ## Run golangci-lint linter

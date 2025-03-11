@@ -101,6 +101,33 @@ spec:
                   - SpeechToText
                   type: string
                 type: array
+              files:
+                description: Files to be mounted in the model Pods.
+                items:
+                  description: File represents a file to be mounted in the model pod.
+                  properties:
+                    content:
+                      description: |-
+                        Content of the file to be mounted.
+                        Will be injected into a ConfigMap and mounted in the model Pods.
+                      maxLength: 100000
+                      type: string
+                    path:
+                      description: |-
+                        Path where the file should be mounted in the pod.
+                        Must be an absolute path.
+                      maxLength: 1024
+                      type: string
+                      x-kubernetes-validations:
+                      - message: Path must be an absolute path, starting with /, and
+                          must not contain a ':' character.
+                        rule: self.startsWith('/') && !self.contains(':')
+                  required:
+                  - content
+                  - path
+                  type: object
+                maxItems: 10
+                type: array
               image:
                 description: |-
                   Image to be used for the server process.
@@ -129,7 +156,7 @@ spec:
                           to count when building the prefix to hash.
                         type: integer
                       replication:
-                        default: 20
+                        default: 256
                         description: |-
                           Replication is the number of replicas of each endpoint on the hash ring.
                           Higher values will result in a more even distribution of load but will
@@ -218,8 +245,6 @@ spec:
                   "ollama://<model>"
                 type: string
                 x-kubernetes-validations:
-                - message: url is immutable.
-                  rule: self == oldSelf
                 - message: url must start with "hf://", "pvc://", "ollama://", "s3://",
                     "gs://", or "oss://" and not be empty.
                   rule: self.startsWith("hf://") || self.startsWith("pvc://") || self.startsWith("ollama://")
@@ -246,6 +271,11 @@ spec:
               rule: '!has(self.maxReplicas) || self.minReplicas <= self.maxReplicas'
             - message: adapters only supported with VLLM engine.
               rule: '!has(self.adapters) || self.engine == "VLLM"'
+            - message: url is immutable when using cacheProfile.
+              rule: '!has(oldSelf.cacheProfile) || self.url == oldSelf.url'
+            - message: All file paths must be unique.
+              rule: '!has(self.files) || self.files.size() <= 1 || !self.files.exists(f,
+                self.files.filter(other, other.path == f.path).size() > 1)'
           status:
             description: ModelStatus defines the observed state of Model.
             properties:

@@ -7,6 +7,8 @@ import (
 
 	"github.com/cespare/xxhash"
 	"github.com/substratusai/kubeai/internal/metrics"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 )
 
 func (g *group) chwblGetAddr(key string, loadFactor float64, adapter string) (endpoint, bool) {
@@ -15,7 +17,14 @@ func (g *group) chwblGetAddr(key string, loadFactor float64, adapter string) (en
 	}
 
 	h := chwblHash(key)
-	_, i0 := g.chwblSearch(h)
+	hash0, i0 := g.chwblSearch(h)
+
+	{
+		name0 := g.chwblHashes[hash0]
+		metrics.InferenceRequestsHashLookupInitial.Add(context.Background(), 1, metric.WithAttributeSet(attribute.NewSet(
+			metrics.AttrEndpoint.String(name0),
+		)))
+	}
 
 	// The default endpoint is the endpoint that is able to serve the request (has the adapter)
 	// but might not meet the load requirement after all other endpoints have been checked.
@@ -23,6 +32,7 @@ func (g *group) chwblGetAddr(key string, loadFactor float64, adapter string) (en
 
 	i := i0
 	// Avoid an infinite loop by checking if we've checked all the endpoints.
+	var defaultEndpointName string
 	for n := 0; n < len(g.chwblSortedHashes); n++ {
 		name := g.chwblHashes[g.chwblSortedHashes[i]]
 		ep, ok := g.endpoints[name]
@@ -42,9 +52,13 @@ func (g *group) chwblGetAddr(key string, loadFactor float64, adapter string) (en
 				// Save the first endpoint that has the adapter in case no
 				// endpoint is found with acceptable load.
 				defaultEndpoint = &ep
+				defaultEndpointName = name
 			}
 			if chwblLoadOK(ep.inFlight.Load(), g.totalInFlight.Load(), len(g.endpoints), loadFactor) {
 				metrics.InferenceRequestsHashLookupIterations.Record(context.Background(), int64(n+1))
+				metrics.InferenceRequestsHashLookupFinal.Add(context.Background(), 1, metric.WithAttributeSet(attribute.NewSet(
+					metrics.AttrEndpoint.String(name),
+				)))
 				return ep, true
 			}
 		}
@@ -58,6 +72,12 @@ func (g *group) chwblGetAddr(key string, loadFactor float64, adapter string) (en
 
 	if defaultEndpoint != nil {
 		metrics.InferenceRequestsHashLookupIterations.Record(context.Background(), int64(len(g.chwblSortedHashes)))
+		metrics.InferenceRequestsHashLookupFinal.Add(context.Background(), 1, metric.WithAttributeSet(attribute.NewSet(
+			metrics.AttrEndpoint.String(defaultEndpointName),
+		)))
+		metrics.InferenceRequestsHashLookupDefault.Add(context.Background(), 1, metric.WithAttributeSet(attribute.NewSet(
+			metrics.AttrEndpoint.String(defaultEndpointName),
+		)))
 		return *defaultEndpoint, true
 	}
 	return endpoint{}, false
