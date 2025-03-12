@@ -1,6 +1,8 @@
 module github.com/substratusai/kubeai
 
-go 1.22.0
+go 1.24
+
+toolchain go1.24.1
 
 require (
 	github.com/cespare/xxhash v1.1.0
@@ -70,6 +72,7 @@ require (
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
+	github.com/go-json-experiment/json v0.0.0-20250223041408-d3c622f1b874 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-logr/zapr v1.3.0 // indirect

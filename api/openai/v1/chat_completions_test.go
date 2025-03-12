@@ -1,11 +1,11 @@
 package v1_test
 
 import (
-	"encoding/json"
+	stdjson "encoding/json"
 	"fmt"
 	"testing"
 
-	easyjson "github.com/mailru/easyjson"
+	"github.com/go-json-experiment/json"
 	"github.com/stretchr/testify/require"
 	v1 "github.com/substratusai/kubeai/api/openai/v1"
 )
@@ -37,7 +37,7 @@ func TestChatCompletionRequestPrefix(t *testing.T) {
 	for _, c := range cases {
 		t.Run(fmt.Sprintf("%q %d", c.input, c.n), func(t *testing.T) {
 			var body v1.ChatCompletionRequest
-			require.NoError(t, easyjson.Unmarshal([]byte(c.input), &body))
+			require.NoError(t, json.Unmarshal([]byte(c.input), &body))
 			require.Equal(t, c.exp, body.Prefix(c.n))
 		})
 	}
@@ -45,9 +45,10 @@ func TestChatCompletionRequestPrefix(t *testing.T) {
 
 func TestChatCompletionRequest_JSON(t *testing.T) {
 	cases := []struct {
-		name string
-		json string
-		req  *v1.ChatCompletionRequest
+		name          string
+		json          string
+		roundTripJSON string
+		req           *v1.ChatCompletionRequest
 	}{
 		// OpenAPI example: Default chat request
 		{
@@ -263,6 +264,12 @@ func TestChatCompletionRequest_JSON(t *testing.T) {
 			name: "empty request",
 			json: `{"model":"","messages":null}`,
 			req:  &v1.ChatCompletionRequest{},
+		},
+		{
+			name:          "null values",
+			json:          `{"model": null, "messages": null, "store": null, "reasoning_effort": null, "metadata": null, "service_tier": null}`,
+			roundTripJSON: `{"model": "", "messages": null}`,
+			req:           &v1.ChatCompletionRequest{},
 		},
 		{
 			name: "extra field",
@@ -758,23 +765,28 @@ func TestChatCompletionRequest_JSON(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			require.True(t, json.Valid([]byte(c.json)), "test case should be valid json")
+			require.True(t, stdjson.Valid([]byte(c.json)), "test case should be valid json")
 
 			var req v1.ChatCompletionRequest
-			err := easyjson.Unmarshal([]byte(c.json), &req)
+			err := json.Unmarshal([]byte(c.json), &req)
 			require.NoError(t, err, "unmarshal error")
 
 			if c.req != nil {
-				proxy := req.UnknownFieldsProxy
-				req.UnknownFieldsProxy = easyjson.UnknownFieldsProxy{}
+				unknown := req.Unknown
+				req.Unknown = nil
 				// Assert on equality without the unknown fields.
 				require.EqualValues(t, *c.req, req, "expected struct values")
-				req.UnknownFieldsProxy = proxy
+				req.Unknown = unknown
 			}
 
-			jsn, err := easyjson.Marshal(req)
+			jsn, err := json.Marshal(req)
 			require.NoError(t, err, "marshal error")
-			require.JSONEq(t, c.json, string(jsn), "expected round-trip JSON")
+
+			if c.roundTripJSON != "" {
+				require.JSONEq(t, c.roundTripJSON, string(jsn), "expected specific round-trip JSON")
+			} else {
+				require.JSONEq(t, c.json, string(jsn), "expected round-trip JSON to remain unchanged")
+			}
 		})
 	}
 }
@@ -788,13 +800,13 @@ func TestChatCompletionRequest_InvalidMessageContent(t *testing.T) {
 			}},
 		},
 	}
-	_, err := easyjson.Marshal(validArray)
+	_, err := json.Marshal(validArray)
 	require.NoError(t, err)
 
 	validString := v1.ChatMessageContent{
 		String: "test",
 	}
-	_, err = easyjson.Marshal(validString)
+	_, err = json.Marshal(validString)
 	require.NoError(t, err)
 
 	invalidBoth := v1.ChatMessageContent{
@@ -803,15 +815,16 @@ func TestChatCompletionRequest_InvalidMessageContent(t *testing.T) {
 		},
 		String: "test",
 	}
-	_, err = easyjson.Marshal(invalidBoth)
+	_, err = json.Marshal(invalidBoth)
 	require.ErrorContains(t, err, "String and Array cannot be specified at the same time")
 }
 
 func TestChatCompletionResponse_JSON(t *testing.T) {
 	cases := []struct {
-		name string
-		json string
-		resp *v1.ChatCompletionResponse
+		name          string
+		json          string
+		roundTripJSON string
+		resp          *v1.ChatCompletionResponse
 	}{
 		// OpenAPI example: Default response
 		{
@@ -1374,8 +1387,8 @@ func TestChatCompletionResponse_JSON(t *testing.T) {
 		},
 		{
 			name: "empty response",
-			json: `{"object":"", "created": 0, "id": "", "model":"","choices":null}`,
-			resp: &v1.ChatCompletionResponse{},
+			json: `{"object":"", "created": 0, "id": "", "model":"","choices":[]}`,
+			resp: &v1.ChatCompletionResponse{Choices: []v1.ChatCompletionChoice{}},
 		},
 		{
 			name: "basic response",
@@ -1759,23 +1772,33 @@ func TestChatCompletionResponse_JSON(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			require.True(t, json.Valid([]byte(c.json)), "test case should be valid json")
+			require.True(t, stdjson.Valid([]byte(c.json)), "test case should be valid json")
 
 			var resp v1.ChatCompletionResponse
-			err := easyjson.Unmarshal([]byte(c.json), &resp)
+			err := json.Unmarshal([]byte(c.json), &resp)
 			require.NoError(t, err, "unmarshal error")
 
 			if c.resp != nil {
-				proxy := resp.UnknownFieldsProxy
-				resp.UnknownFieldsProxy = easyjson.UnknownFieldsProxy{}
+				unknown := resp.Unknown
+				resp.Unknown = nil
 				// Assert on equality without the unknown fields.
 				require.EqualValues(t, *c.resp, resp, "expected struct values")
-				resp.UnknownFieldsProxy = proxy
+				resp.Unknown = unknown
 			}
 
-			jsn, err := easyjson.Marshal(resp)
+			jsn, err := json.Marshal(resp)
 			require.NoError(t, err, "marshal error")
-			require.JSONEq(t, c.json, string(jsn), "expected round-trip JSON")
+			if c.roundTripJSON != "" {
+				requireEqualJSON(t, c.roundTripJSON, string(jsn), "expected exact round-trip JSON")
+			} else {
+				requireEqualJSON(t, c.json, string(jsn), "expected round-trip JSON to remain unchanged")
+			}
 		})
 	}
+}
+
+func requireEqualJSON(t *testing.T, exp, act, msg string) {
+	t.Logf("expected json: %s", exp)
+	t.Logf("actual json: %s", act)
+	require.JSONEq(t, exp, act, msg)
 }

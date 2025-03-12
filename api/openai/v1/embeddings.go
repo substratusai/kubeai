@@ -3,7 +3,7 @@ package v1
 import (
 	"errors"
 
-	easyjson "github.com/mailru/easyjson"
+	"github.com/go-json-experiment/json/jsontext"
 )
 
 var ErrVectorLengthMismatch = errors.New("vector length mismatch")
@@ -33,14 +33,14 @@ const (
 type EmbeddingRequest struct {
 	Input          any                     `json:"input"`
 	Model          string                  `json:"model"`
-	User           string                  `json:"user,omitempty"`
-	EncodingFormat EmbeddingEncodingFormat `json:"encoding_format,omitempty"`
+	User           string                  `json:"user,omitzero"`
+	EncodingFormat EmbeddingEncodingFormat `json:"encoding_format,omitzero"`
 	// Dimensions The number of dimensions the resulting output embeddings should have.
 	// Only supported in text-embedding-3 and later models.
-	Dimensions int `json:"dimensions,omitempty"`
+	Dimensions int `json:"dimensions,omitzero"`
 
-	// Preserve unknown fields to fully support the extended set of fields that backends might support.
-	easyjson.UnknownFieldsProxy
+	// Unknown fields should be preserved to fully support the extended set of fields that backends such as vLLM support.
+	Unknown jsontext.Value `json:",unknown"`
 }
 
 func (r *EmbeddingRequest) GetModel() string {
@@ -56,8 +56,8 @@ type EmbeddingResponse struct {
 	Object string      `json:"object"`
 	Data   []Embedding `json:"data"`
 	Model  string      `json:"model"`
-	Usage  *Usage      `json:"usage,omitempty"`
+	Usage  *Usage      `json:"usage,omitzero"`
 
-	// Preserve unknown fields to fully support the extended set of fields that backends might support.
-	easyjson.UnknownFieldsProxy
+	// Unknown fields should be preserved to fully support the extended set of fields that backends such as vLLM support.
+	Unknown jsontext.Value `json:",unknown"`
 }
