@@ -182,7 +182,7 @@ func ollamaStartupProbeScript(m *kubeaiv1.Model, u modelURL) string {
 		startupScript = fmt.Sprintf("/bin/ollama pull %s && /bin/ollama cp %s %s", u.ref, u.ref, u.name)
 	} else {
 		startupScript = fmt.Sprintf("/bin/ollama cp %s %s",
-			u.modelParam, u.name)
+			u.modelParam, m.Name)
 	}
 
 	// Only run the model if the model has features
