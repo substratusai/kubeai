@@ -196,7 +196,7 @@ func ollamaStartupProbeScript(m *kubeaiv1.Model, u modelURL) string {
 		// ollama run nomic-embed-text hey
 		// Error: "nomic-embed-text" does not support generate
 		//
-		startupScript += fmt.Sprintf(" && /bin/ollama run %s hi", u.name)
+		startupScript += fmt.Sprintf(" && /bin/ollama run %s hi", m.Name)
 	}
 
 	return startupScript

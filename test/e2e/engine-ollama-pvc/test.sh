@@ -4,17 +4,12 @@ source $REPO_DIR/test/e2e/common.sh
 
 models_release="kubeai-models"
 
-export PV_HOST_PATH=$(mktemp -d)
+# Create PV_HOST_PATH inside the kind container
+kind_container=$(docker ps --filter "name=kind-control-plane" --format "{{.ID}}")
+export PV_HOST_PATH="/mnt/models"
+docker exec -i $kind_container mkdir -p $PV_HOST_PATH
 echo "PV_HOST_PATH: $PV_HOST_PATH"
 
-# Execute into the kind container - ollama pull
-kind_container=$(docker ps --filter "name=kind-control-plane" --format "{{.ID}}")
-# pull qwen:0.5b model into /usr/share/ollama/.ollama/models/
-#docker exec -i $kind_container bash -c "
-#  mkdir -p ${PV_HOST_PATH}
-#  curl -L https://ollama.com/download/ollama-linux-amd64.tgz -o ollama-linux-amd64.tgz
-#  tar -C /usr -xzf ollama-linux-amd64.tgz
-#  ollama pull qwen:0.5b"
 
 envsubst < $REPO_DIR/test/e2e/engine-ollama-pvc/pv.yaml | kubectl apply -f -
 kubectl apply -f $REPO_DIR/test/e2e/engine-ollama-pvc/pvc.yaml
