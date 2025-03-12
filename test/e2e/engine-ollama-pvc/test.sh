@@ -4,7 +4,7 @@ source $REPO_DIR/test/e2e/common.sh
 
 models_release="kubeai-models"
 
-PV_HOST_PATH=/usr/share/ollama/.ollama/models/
+PV_HOST_PATH=/tmp/model
 
 mkdir -p ${PV_HOST_PATH}
 
