@@ -4,7 +4,7 @@ source $REPO_DIR/test/e2e/common.sh
 
 models_release="kubeai-models"
 
-PV_HOST_PATH=/tmp/model
+export PV_HOST_PATH=/tmp/model
 
 mkdir -p ${PV_HOST_PATH}
 
@@ -17,40 +17,20 @@ kind_container=$(docker ps --filter "name=kind-control-plane" --format "{{.ID}}"
 #  tar -C /usr -xzf ollama-linux-amd64.tgz
 #  ollama pull qwen:0.5b"
 
-envsubst $REPO_DIR/test/e2e/engine-ollama-pvc/pv.yaml | kubectl apply -f -
+envsubst < $REPO_DIR/test/e2e/engine-ollama-pvc/pv.yaml | kubectl apply -f -
 kubectl apply -f $REPO_DIR/test/e2e/engine-ollama-pvc/pvc.yaml
 
 # Apply the Ollama hydrate job
 kubectl apply -f $REPO_DIR/test/e2e/engine-ollama-pvc/ollama-hydrate-job.yaml
 
 # Wait for job completion with timeout
-timeout=600 # 10 minutes
-elapsed=0
-while true; do
-  status=$(kubectl get job ollama-pvc-hydrate -o jsonpath='{.status.conditions[?(@.type=="Complete")].status}')
-  if [ "$status" == "True" ]; then
-    echo "Ollama hydrate job completed successfully"
-    break
-  fi
-  
-  # Check for job failure
-  if kubectl get job ollama-pvc-hydrate -o jsonpath='{.status.conditions[?(@.type=="Failed")].status}' | grep -q "True"; then
-    echo "Ollama hydrate job failed"
+echo "Waiting for Ollama hydrate job to complete..."
+if ! kubectl wait --for=condition=complete --timeout=600s job/ollama-pvc-hydrate; then
+    echo "Ollama hydrate job failed or timed out"
     kubectl logs job/ollama-pvc-hydrate
     exit 1
-  fi
+fi
 
-  # Check timeout
-  if [ $elapsed -ge $timeout ]; then
-    echo "Timeout waiting for Ollama hydrate job to complete"
-    kubectl logs job/ollama-pvc-hydrate
-    exit 1
-  fi
-
-  sleep 30
-  elapsed=$((elapsed + 30))
-  echo "Waiting for Ollama hydrate job to complete... ($elapsed seconds elapsed)"
-done
 
 helm install $models_release $REPO_DIR/charts/models -f - <<EOF
 catalog:
