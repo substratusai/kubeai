@@ -17,7 +17,7 @@ kind_container=$(docker ps --filter "name=kind-control-plane" --format "{{.ID}}"
 #  tar -C /usr -xzf ollama-linux-amd64.tgz
 #  ollama pull qwen:0.5b"
 
-kubectl apply -f $REPO_DIR/test/e2e/engine-ollama-pvc/pv.yaml
+envsubst $REPO_DIR/test/e2e/engine-ollama-pvc/pv.yaml | kubectl apply -f -
 kubectl apply -f $REPO_DIR/test/e2e/engine-ollama-pvc/pvc.yaml
 
 # Apply the Ollama hydrate job

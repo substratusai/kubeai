@@ -11,6 +11,6 @@ spec:
     - ReadOnlyMany
     - ReadWriteOnce
   hostPath:
-    path: /usr/share/ollama/.ollama/models/
+    path: $PV_HOST_PATH
     type: DirectoryOrCreate
   persistentVolumeReclaimPolicy: Retain
