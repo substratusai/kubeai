@@ -15,9 +15,7 @@ spec:
         - /bin/sh
         - -c
         - |
-          /bin/ollama serve &
-          sleep 10
-          /bin/ollama pull qwen:0.5b &
+          /bin/ollama pull qwen:0.5b
           ls -R /model
         volumeMounts:
         - name: models-volume
