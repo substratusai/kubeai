@@ -179,7 +179,7 @@ func ollamaStartupProbeScript(m *kubeaiv1.Model, u modelURL) string {
 	// If the model is using a pvc, we don't want to try to connect/pull a model
 
 	if u.modelParam == "" {
-		startupScript = fmt.Sprintf("/bin/ollama pull %s && /bin/ollama cp %s %s", u.ref, u.ref, u.name)
+		startupScript = fmt.Sprintf("/bin/ollama pull %s && /bin/ollama cp %s %s", u.ref, u.ref, m.Name)
 	} else {
 		startupScript = fmt.Sprintf("/bin/ollama cp %s %s",
 			u.modelParam, m.Name)
