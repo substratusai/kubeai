@@ -4,9 +4,8 @@ source $REPO_DIR/test/e2e/common.sh
 
 models_release="kubeai-models"
 
-export PV_HOST_PATH=/tmp/model
-
-mkdir -p ${PV_HOST_PATH}
+export PV_HOST_PATH=$(mktemp -d)
+echo "PV_HOST_PATH: $PV_HOST_PATH"
 
 # Execute into the kind container - ollama pull
 kind_container=$(docker ps --filter "name=kind-control-plane" --format "{{.ID}}")
