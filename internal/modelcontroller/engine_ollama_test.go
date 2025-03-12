@@ -52,7 +52,7 @@ func Test_ollamaStartupProbeScript(t *testing.T) {
 				scheme:     "pvc",
 				ref:        "def",
 				name:       "abc",
-				modelParam: "qwen2:0.5b",
+				modelParam: ollamaRef,
 			},
 			want: fmt.Sprintf("/bin/ollama cp %s %s && /bin/ollama run %s hi",
 				ollamaRef, modelName, modelName),
