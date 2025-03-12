@@ -1,11 +1,12 @@
 package v1_test
 
 import (
-	"encoding/json"
 	"fmt"
 	"testing"
 
-	easyjson "github.com/mailru/easyjson"
+	stdjson "encoding/json"
+
+	"github.com/go-json-experiment/json"
 	"github.com/stretchr/testify/require"
 	v1 "github.com/substratusai/kubeai/api/openai/v1"
 )
@@ -30,7 +31,7 @@ func TestCompletionRequestPrefix(t *testing.T) {
 	for _, c := range cases {
 		t.Run(fmt.Sprintf("%q %d", c.input, c.n), func(t *testing.T) {
 			var req v1.CompletionRequest
-			require.NoError(t, easyjson.Unmarshal([]byte(c.input), &req))
+			require.NoError(t, json.Unmarshal([]byte(c.input), &req))
 			require.Equal(t, c.exp, req.Prefix(c.n))
 		})
 	}
@@ -38,9 +39,10 @@ func TestCompletionRequestPrefix(t *testing.T) {
 
 func TestCompletionRequest_JSON(t *testing.T) {
 	cases := []struct {
-		name string
-		json string
-		req  *v1.CompletionRequest
+		name          string
+		json          string
+		roundTripJSON string
+		req           *v1.CompletionRequest
 	}{
 		{
 			name: "empty request",
@@ -122,37 +124,42 @@ func TestCompletionRequest_JSON(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			require.True(t, json.Valid([]byte(c.json)), "test case should be valid json")
+			require.True(t, stdjson.Valid([]byte(c.json)), "test case should be valid json")
 
 			var req v1.CompletionRequest
-			err := easyjson.Unmarshal([]byte(c.json), &req)
+			err := json.Unmarshal([]byte(c.json), &req)
 			require.NoError(t, err, "unmarshal error")
 
 			if c.req != nil {
-				proxy := req.UnknownFieldsProxy
-				req.UnknownFieldsProxy = easyjson.UnknownFieldsProxy{}
+				unknown := req.Unknown
+				req.Unknown = nil
 				// Assert on equality without the unknown fields.
 				require.EqualValues(t, *c.req, req, "expected struct values")
-				req.UnknownFieldsProxy = proxy
+				req.Unknown = unknown
 			}
 
-			jsn, err := easyjson.Marshal(req)
+			jsn, err := json.Marshal(req)
 			require.NoError(t, err, "marshal error")
-			require.JSONEq(t, c.json, string(jsn), "expected round-trip JSON")
+			if c.roundTripJSON != "" {
+				requireEqualJSON(t, c.roundTripJSON, string(jsn), "expected exact round-trip JSON")
+			} else {
+				requireEqualJSON(t, c.json, string(jsn), "expected round-trip JSON to remain unchanged")
+			}
 		})
 	}
 }
 
 func TestCompletionResponse_JSON(t *testing.T) {
 	cases := []struct {
-		name string
-		json string
-		resp *v1.CompletionResponse
+		name          string
+		json          string
+		roundTripJSON string
+		resp          *v1.CompletionResponse
 	}{
 		{
 			name: "empty response",
-			json: `{"object":"","model":"","choices":null}`,
-			resp: &v1.CompletionResponse{},
+			json: `{"object":"","model":"","choices":[]}`,
+			resp: &v1.CompletionResponse{Choices: []v1.CompletionChoice{}},
 		},
 		{
 			name: "basic response",
@@ -235,24 +242,28 @@ func TestCompletionResponse_JSON(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			require.True(t, json.Valid([]byte(c.json)), "test case should be valid json")
+			require.True(t, stdjson.Valid([]byte(c.json)), "test case should be valid json")
 
 			var resp v1.CompletionResponse
-			err := easyjson.Unmarshal([]byte(c.json), &resp)
+			err := json.Unmarshal([]byte(c.json), &resp)
 			require.NoError(t, err, "unmarshal error")
 
 			if c.resp != nil {
-				// Set aside the proxy to check equality without unknown fields
-				proxy := resp.UnknownFieldsProxy
-				resp.UnknownFieldsProxy = easyjson.UnknownFieldsProxy{}
+				// Set aside the unknown fields to check equality without unknown fields
+				unknown := resp.Unknown
+				resp.Unknown = nil
 				// Assert on equality without the unknown fields.
 				require.EqualValues(t, *c.resp, resp, "expected struct values")
-				resp.UnknownFieldsProxy = proxy
+				resp.Unknown = unknown
 			}
 
-			jsn, err := easyjson.Marshal(resp)
+			jsn, err := json.Marshal(resp)
 			require.NoError(t, err, "marshal error")
-			require.JSONEq(t, c.json, string(jsn), "expected round-trip JSON")
+			if c.roundTripJSON != "" {
+				requireEqualJSON(t, c.roundTripJSON, string(jsn), "expected exact round-trip JSON")
+			} else {
+				requireEqualJSON(t, c.json, string(jsn), "expected round-trip JSON to remain unchanged")
+			}
 		})
 	}
 }

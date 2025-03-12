@@ -2,13 +2,14 @@ package apiutils
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"mime"
 	"mime/multipart"
 	"net/http"
+
+	"github.com/go-json-experiment/json"
 
 	"context"
 
@@ -175,7 +176,7 @@ func (r *Request) readJSONBody(body io.Reader, path string) error {
 		return fmt.Errorf("unknown path: %q", path)
 	}
 
-	if err := json.NewDecoder(body).Decode(r.modelRequest); err != nil {
+	if err := json.UnmarshalRead(body, r.modelRequest); err != nil {
 		return fmt.Errorf("decoding: %w", err)
 	}
 

@@ -4,9 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	easyjson "github.com/mailru/easyjson"
-	jlexer "github.com/mailru/easyjson/jlexer"
-	jwriter "github.com/mailru/easyjson/jwriter"
+	"github.com/go-json-experiment/json"
+	"github.com/go-json-experiment/json/jsontext"
 )
 
 // Chat message roles defined by the OpenAI API.
@@ -33,7 +32,7 @@ type Hate struct {
 
 	// Severity indicates the severity level of the filtered content.
 	// +optional
-	Severity string `json:"severity,omitempty"`
+	Severity string `json:"severity,omitzero"`
 }
 
 // SelfHarm represents content filter results for self-harm content.
@@ -44,7 +43,7 @@ type SelfHarm struct {
 
 	// Severity indicates the severity level of the filtered content.
 	// +optional
-	Severity string `json:"severity,omitempty"`
+	Severity string `json:"severity,omitzero"`
 }
 
 // Sexual represents content filter results for sexual content.
@@ -55,7 +54,7 @@ type Sexual struct {
 
 	// Severity indicates the severity level of the filtered content.
 	// +optional
-	Severity string `json:"severity,omitempty"`
+	Severity string `json:"severity,omitzero"`
 }
 
 // Violence represents content filter results for violent content.
@@ -66,7 +65,7 @@ type Violence struct {
 
 	// Severity indicates the severity level of the filtered content.
 	// +optional
-	Severity string `json:"severity,omitempty"`
+	Severity string `json:"severity,omitzero"`
 }
 
 // JailBreak represents content filter results for jailbreak attempts.
@@ -96,27 +95,27 @@ type Profanity struct {
 type ContentFilterResults struct {
 	// Hate contains filtering results for hate speech content.
 	// +optional
-	Hate *Hate `json:"hate,omitempty"`
+	Hate *Hate `json:"hate,omitzero"`
 
 	// SelfHarm contains filtering results for self-harm content.
 	// +optional
-	SelfHarm *SelfHarm `json:"self_harm,omitempty"`
+	SelfHarm *SelfHarm `json:"self_harm,omitzero"`
 
 	// Sexual contains filtering results for sexual content.
 	// +optional
-	Sexual *Sexual `json:"sexual,omitempty"`
+	Sexual *Sexual `json:"sexual,omitzero"`
 
 	// Violence contains filtering results for violent content.
 	// +optional
-	Violence *Violence `json:"violence,omitempty"`
+	Violence *Violence `json:"violence,omitzero"`
 
 	// JailBreak contains filtering results for jailbreak attempts.
 	// +optional
-	JailBreak *JailBreak `json:"jailbreak,omitempty"`
+	JailBreak *JailBreak `json:"jailbreak,omitzero"`
 
 	// Profanity contains filtering results for profane content.
 	// +optional
-	Profanity *Profanity `json:"profanity,omitempty"`
+	Profanity *Profanity `json:"profanity,omitzero"`
 }
 
 // ImageURLDetail specifies the detail level of the image in a vision request.
@@ -142,7 +141,7 @@ type ChatMessageImageURL struct {
 	// Detail specifies the detail level of the image
 	// Default: "auto"
 	// +optional
-	Detail ImageURLDetail `json:"detail,omitempty"`
+	Detail ImageURLDetail `json:"detail,omitzero"`
 }
 
 // ChatMessagePartType defines the types of content parts that can be included in a message.
@@ -160,22 +159,20 @@ const (
 type ChatMessageContentPart struct {
 	// Type is the type of the content part (text, image_url, etc.)
 	// +required
-	Type ChatMessagePartType `json:"type,omitempty"`
+	Type ChatMessagePartType `json:"type,omitzero"`
 
 	// Text contains the text content (used when Type is "text")
 	// +optional
-	Text string `json:"text,omitempty"`
+	Text string `json:"text,omitzero"`
 
 	// ImageURL contains the image data (used when Type is "image_url")
 	// +optional
-	ImageURL *ChatMessageImageURL `json:"image_url,omitempty"`
+	ImageURL *ChatMessageImageURL `json:"image_url,omitzero"`
 }
 
 // ChatMessageContent is a struct that represents the content of a chat message.
 // It can be either a plain string or an array of content parts with defined types.
 // This structure handles both simple text messages and multimodal content.
-//
-//easyjson:skip
 type ChatMessageContent struct {
 	// String contains the message content as a plain string.
 	// Should not be set when Array is set.
@@ -188,65 +185,38 @@ type ChatMessageContent struct {
 	Array []ChatMessageContentPart
 }
 
-func (c *ChatMessageContent) UnmarshalEasyJSON(in *jlexer.Lexer) {
-	if in.IsNull() {
-		in.Skip()
-		return
+// UnmarshalJSON implements the json.Unmarshaler interface.
+func (c *ChatMessageContent) UnmarshalJSON(data []byte) error {
+	// Try unmarshaling as a string first
+	var str string
+	if err := json.Unmarshal(data, &str); err == nil {
+		c.String = str
+		c.Array = nil
+		return nil
 	}
-	// Look at the next byte to decide if we have a string or an object.
-	switch t := in.CurrentToken(); t {
-	case jlexer.TokenString: // it is a string
-		c.String = in.String()
-	case jlexer.TokenDelim: // it is an array
-		if in.IsNull() {
-			in.Skip()
-			c.Array = nil
-		} else {
-			in.Delim('[')
-			if c.Array == nil {
-				if !in.IsDelim(']') {
-					c.Array = make([]ChatMessageContentPart, 0, 1)
-				} else {
-					c.Array = []ChatMessageContentPart{}
-				}
-			} else {
-				c.Array = (c.Array)[:0]
-			}
-			for !in.IsDelim(']') {
-				var part ChatMessageContentPart
-				(part).UnmarshalEasyJSON(in)
-				c.Array = append(c.Array, part)
-				in.WantComma()
-			}
-			in.Delim(']')
-		}
-	default:
-		in.AddError(fmt.Errorf("unexpected token for ChatMessageContent: %v", t))
+
+	// If not a string, try as an array
+	var arr []ChatMessageContentPart
+	if err := json.Unmarshal(data, &arr); err == nil {
+		c.String = ""
+		c.Array = arr
+		return nil
 	}
+
+	return fmt.Errorf("content must be either a string or an array of content parts")
 }
 
-func (c ChatMessageContent) MarshalEasyJSON(w *jwriter.Writer) {
+// MarshalJSON implements the json.Marshaler interface.
+func (c ChatMessageContent) MarshalJSON() ([]byte, error) {
 	if c.String != "" && c.Array != nil {
-		w.Error = errors.New("ChatMessageContent: String and Array cannot be specified at the same time")
-		return
+		return nil, errors.New("ChatMessageContent: String and Array cannot be specified at the same time")
 	}
 
 	if c.Array != nil {
-		// Treat as an array.
-		w.RawByte('[')
-		for i, part := range c.Array {
-			if i > 0 {
-				w.RawByte(',')
-			}
-			part.MarshalEasyJSON(w)
-			_ = part
-		}
-		w.RawByte(']')
-		return
+		return json.Marshal(c.Array)
 	}
 
-	// Treat as a string
-	w.String(c.String)
+	return json.Marshal(c.String)
 }
 
 // ChatCompletionMessage represents a message in a chat conversation.
@@ -266,38 +236,38 @@ type ChatCompletionMessage struct {
 	// NOTE: When OpenAI responded with an assistant message, it responds with `refusal: null`.
 	//       This API will omit the field in those cases (similar to what Ollama does).
 	// +optional
-	Refusal string `json:"refusal,omitempty"`
+	Refusal string `json:"refusal,omitzero"`
 
 	// Name is an optional identifier for the participant.
 	// Provides the model information to differentiate between participants of the same role.
 	// +optional
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitzero"`
 
 	// FunctionCall contains details about the function to call.
 	// Deprecated: Use ToolCalls instead.
 	// +optional
-	FunctionCall *FunctionCall `json:"function_call,omitempty"`
+	FunctionCall *FunctionCall `json:"function_call,omitzero"`
 
 	// ToolCalls contains the tool calls generated by the model, such as function calls.
 	// This is used when Role="assistant".
 	// +optional
-	ToolCalls []ToolCall `json:"tool_calls,omitempty"`
+	ToolCalls []ToolCall `json:"tool_calls,omitzero"`
 
 	// ToolCallID is the ID of the tool call this message is responding to.
 	// This is required when Role="tool".
 	// +optional
-	ToolCallID string `json:"tool_call_id,omitempty"`
+	ToolCallID string `json:"tool_call_id,omitzero"`
 
 	// Audio contains audio data when the model generates audio responses.
 	// +optional
-	Audio *AudioResponse `json:"audio,omitempty"`
+	Audio *AudioResponse `json:"audio,omitzero"`
 }
 
 // ToolCall represents a tool that the model calls such as a function call.
 type ToolCall struct {
 	// Index is only used in chat completion chunk objects.
 	// +optional
-	Index *int `json:"index,omitempty"`
+	Index *int `json:"index,omitzero"`
 
 	// ID is the unique identifier for this tool call.
 	// +required
@@ -349,7 +319,7 @@ type ChatCompletionResponseFormat struct {
 
 	// JSONSchema contains schema information when Type is "json_schema"
 	// +optional
-	JSONSchema *ChatCompletionResponseFormatJSONSchema `json:"json_schema,omitempty"`
+	JSONSchema *ChatCompletionResponseFormatJSONSchema `json:"json_schema,omitzero"`
 }
 
 // ChatCompletionResponseFormatJSONSchema defines a JSON schema for structured model output.
@@ -363,7 +333,7 @@ type ChatCompletionResponseFormatJSONSchema struct {
 	// Description explains what the response format is for.
 	// Used by the model to determine how to respond in the format.
 	// +optional
-	Description string `json:"description,omitempty"`
+	Description string `json:"description,omitzero"`
 
 	// Schema is the schema for the response format, described as a JSON Schema object.
 	// +required
@@ -372,7 +342,7 @@ type ChatCompletionResponseFormatJSONSchema struct {
 	// Strict enables strict schema adherence when generating the output.
 	// If true, the model will always follow the exact schema defined.
 	// +optional
-	Strict bool `json:"strict,omitempty"`
+	Strict bool `json:"strict,omitzero"`
 }
 
 // ChatCompletionRequest represents a request structure for chat completion API.
@@ -386,162 +356,162 @@ type ChatCompletionRequest struct {
 	// Messages is a list of messages comprising the conversation so far.
 	// Different message types (modalities) are supported, like text, images, and audio.
 	// +required
-	Messages []ChatCompletionMessage `json:"messages"`
+	Messages []ChatCompletionMessage `json:"messages,format:emitnull"`
 
 	// MaxTokens is the maximum number of tokens to generate in the chat completion.
 	// Deprecated: Use MaxCompletionTokens instead.
 	// Should be a value `>= 1`.
 	// +optional
-	MaxTokens int `json:"max_tokens,omitempty"`
+	MaxTokens int `json:"max_tokens,omitzero"`
 
 	// MaxCompletionTokens is an upper bound for the number of tokens that can be generated for a completion,
 	// including visible output tokens and reasoning tokens.
 	// Should be a value `>= 1`.
 	// +optional
-	MaxCompletionTokens int `json:"max_completion_tokens,omitempty"`
+	MaxCompletionTokens int `json:"max_completion_tokens,omitzero"`
 
 	// Temperature controls randomness in the output. Values between 0 and 2.
 	// Higher values like 0.8 make output more random, while lower values like 0.2 make it more focused and deterministic.
 	// Default: 1.0
 	// +optional
-	Temperature *float32 `json:"temperature,omitempty"`
+	Temperature *float32 `json:"temperature,omitzero"`
 
 	// TopP is an alternative to sampling with temperature, called nucleus sampling.
 	// The model considers the results of the tokens with top_p probability mass.
 	// So 0.1 means only the tokens comprising the top 10% probability mass are considered.
 	// Default: 1.0
 	// +optional
-	TopP *float32 `json:"top_p,omitempty"`
+	TopP *float32 `json:"top_p,omitzero"`
 
 	// N specifies how many chat completion choices to generate for each input message.
 	// Note that you will be charged based on the number of generated tokens across all choices.
 	// Default: 1
 	// +optional
-	N *int `json:"n,omitempty"`
+	N *int `json:"n,omitzero"`
 
 	// Stream enables partial message deltas to be sent as they're generated.
 	// If true, tokens will be sent as data-only server-sent events as they become available.
 	// +optional
-	Stream bool `json:"stream,omitempty"`
+	Stream bool `json:"stream,omitzero"`
 
 	// Stop sequences are up to 4 sequences where the API will stop generating further tokens.
 	// +optional
-	Stop []string `json:"stop,omitempty"`
+	Stop []string `json:"stop,omitzero"`
 
 	// PresencePenalty is a number between -2.0 and 2.0.
 	// Positive values penalize new tokens based on whether they appear in the text so far,
 	// increasing the model's likelihood to talk about new topics.
 	// Default: 0
 	// +optional
-	PresencePenalty *float32 `json:"presence_penalty,omitempty"`
+	PresencePenalty *float32 `json:"presence_penalty,omitzero"`
 
 	// ResponseFormat specifies the format that the model must output.
 	// Can be used to request JSON or structured data from the model.
 	// +optional
-	ResponseFormat *ChatCompletionResponseFormat `json:"response_format,omitempty"`
+	ResponseFormat *ChatCompletionResponseFormat `json:"response_format,omitzero"`
 
 	// Seed enables deterministic sampling for consistent outputs.
 	// If specified, the system will make a best effort to sample deterministically,
 	// such that repeated requests with the same seed and parameters should return the same result.
 	// +optional
-	Seed *int `json:"seed,omitempty"`
+	Seed *int `json:"seed,omitzero"`
 
 	// FrequencyPenalty is a number between -2.0 and 2.0.
 	// Positive values penalize new tokens based on their existing frequency in the text so far,
 	// decreasing the model's likelihood to repeat the same line verbatim.
 	// Default: 0
 	// +optional
-	FrequencyPenalty *float32 `json:"frequency_penalty,omitempty"`
+	FrequencyPenalty *float32 `json:"frequency_penalty,omitzero"`
 
 	// LogitBias modifies the likelihood of specified tokens appearing in the completion.
 	// Maps tokens (specified by their token ID in the tokenizer) to an associated bias value from -100 to 100.
 	// +optional
-	LogitBias map[string]int `json:"logit_bias,omitempty"`
+	LogitBias map[string]int `json:"logit_bias,omitzero"`
 
 	// LogProbs indicates whether to return log probabilities of the output tokens.
 	// If true, returns the log probabilities of each output token returned in the content of message.
 	// +optional
-	LogProbs bool `json:"logprobs,omitempty"`
+	LogProbs bool `json:"logprobs,omitzero"`
 
 	// TopLogProbs specifies the number of most likely tokens to return at each token position (0-20).
 	// Requires logprobs to be true.
 	// +optional
-	TopLogProbs *int `json:"top_logprobs,omitempty"`
+	TopLogProbs *int `json:"top_logprobs,omitzero"`
 
 	// User is a unique identifier representing your end-user.
 	// This helps OpenAI to monitor and detect abuse.
 	// +optional
-	User string `json:"user,omitempty"`
+	User string `json:"user,omitzero"`
 
 	// Functions is a list of functions the model may generate JSON inputs for.
 	// Deprecated: Use Tools instead.
 	// +optional
-	Functions []FunctionDefinition `json:"functions,omitempty"`
+	Functions []FunctionDefinition `json:"functions,omitzero"`
 
 	// FunctionCall controls which function is called by the model.
 	// Deprecated: Use ToolChoice instead.
 	// +optional
-	FunctionCall interface{} `json:"function_call,omitempty"`
+	FunctionCall interface{} `json:"function_call,omitzero"`
 
 	// Tools is a list of tools the model may call.
 	// Currently, only functions are supported as tools.
 	// +optional
-	Tools []Tool `json:"tools,omitempty"`
+	Tools []Tool `json:"tools,omitzero"`
 
 	// ToolChoice controls which (if any) tool is called by the model.
 	// Can be "none", "auto", "required" or a specific tool choice object.
 	// TODO: Update to be a string type (enum pattern).
 	// +optional
-	ToolChoice interface{} `json:"tool_choice,omitempty"`
+	ToolChoice interface{} `json:"tool_choice,omitzero"`
 
 	// StreamOptions configures options for streaming response.
 	// Only set this when stream is true.
 	// +optional
-	StreamOptions *StreamOptions `json:"stream_options,omitempty"`
+	StreamOptions *StreamOptions `json:"stream_options,omitzero"`
 
 	// ParallelToolCalls enables parallel function calling during tool use.
 	// Default: true
 	// +optional
-	ParallelToolCalls *bool `json:"parallel_tool_calls,omitempty"`
+	ParallelToolCalls *bool `json:"parallel_tool_calls,omitzero"`
 
 	// Store determines whether to store the output for model distillation or evals products.
 	// +optional
-	Store bool `json:"store,omitempty"`
+	Store bool `json:"store,omitzero"`
 
 	// ReasoningEffort controls effort on reasoning for reasoning models.
 	// Values can be "low", "medium", or "high". Reducing reasoning effort results in faster responses.
 	// Default: "medium"
 	// +optional
-	ReasoningEffort string `json:"reasoning_effort,omitempty"`
+	ReasoningEffort string `json:"reasoning_effort,omitzero"`
 
 	// Metadata is a set of 16 key-value pairs that can be attached to an object.
 	// Useful for storing additional information in a structured format.
 	// +optional
-	Metadata map[string]string `json:"metadata,omitempty"`
+	Metadata map[string]string `json:"metadata,omitzero"`
 
 	// ServiceTier specifies the latency tier for processing the request.
 	// Can be "auto" or "default".
 	// Default: "auto"
 	// +optional
-	ServiceTier string `json:"service_tier,omitempty"`
+	ServiceTier string `json:"service_tier,omitzero"`
 
 	// Modalities specifies output types that the model should generate for this request.
 	// Most models generate text by default. Some models can also generate audio.
 	// +optional
-	Modalities []string `json:"modalities,omitempty"`
+	Modalities []string `json:"modalities,omitzero"`
 
 	// Prediction provides static content for faster responses.
 	// Can improve response times when large parts of the model response are known ahead of time.
 	// +optional
-	Prediction *PredictionContent `json:"prediction,omitempty"`
+	Prediction *PredictionContent `json:"prediction,omitzero"`
 
 	// Audio contains parameters for audio output.
 	// Required when audio output is requested with modalities: ["audio"].
 	// +optional
-	Audio *AudioConfig `json:"audio,omitempty"`
+	Audio *AudioConfig `json:"audio,omitzero"`
 
-	// Preserve unknown fields to fully support the extended set of fields that backends such as vLLM support.
-	easyjson.UnknownFieldsProxy
+	// Unknown fields should be preserved to fully support the extended set of fields that backends such as vLLM support.
+	Unknown jsontext.Value `json:",unknown"`
 }
 
 func (r *ChatCompletionRequest) GetModel() string {
@@ -590,7 +560,7 @@ type Tool struct {
 
 	// Function contains the definition of the function that can be called.
 	// +required
-	Function *FunctionDefinition `json:"function,omitempty"`
+	Function *FunctionDefinition `json:"function,omitzero"`
 }
 
 // ToolChoice specifies a particular tool the model should use.
@@ -602,7 +572,7 @@ type ToolChoice struct {
 
 	// Function contains information about the specific function to call.
 	// +required
-	Function ToolFunction `json:"function,omitempty"`
+	Function ToolFunction `json:"function,omitzero"`
 }
 
 // ToolFunction specifies a named function to call.
@@ -622,12 +592,12 @@ type FunctionDefinition struct {
 	// Description explains what the function does and when it should be called.
 	// Used by the model to determine when and how to call the function.
 	// +optional
-	Description string `json:"description,omitempty"`
+	Description string `json:"description,omitzero"`
 
 	// Strict enables strict schema adherence when generating the function call.
 	// If true, the model will follow the exact schema defined in the parameters field.
 	// +optional
-	Strict bool `json:"strict,omitempty"`
+	Strict bool `json:"strict,omitzero"`
 
 	// Parameters is an object describing the function parameters as a JSON Schema object.
 	// +required
@@ -670,7 +640,7 @@ type LogProb struct {
 	// must be combined to generate the correct text representation.
 	// Can be null if there is no bytes representation for the token.
 	// +optional
-	Bytes []int `json:"bytes,omitempty"`
+	Bytes []int `json:"bytes,omitzero"`
 
 	// TopLogProbs is a list of the most likely tokens and their log probability at this token position.
 	// In rare cases, there may be fewer than the number of requested top_logprobs returned.
@@ -750,7 +720,7 @@ type StreamOptions struct {
 	// containing token usage statistics for the entire request.
 	// All other chunks will include a usage field with a null value.
 	// +optional
-	IncludeUsage bool `json:"include_usage,omitempty"`
+	IncludeUsage bool `json:"include_usage,omitzero"`
 }
 
 // ToolChoiceOption represents a named tool choice option for forcing a specific tool call.
@@ -814,17 +784,17 @@ type ChatCompletionChoice struct {
 	// - "content_filter": Omitted content due to a flag from content filters
 	// - null: API response still in progress or incomplete
 	// +optional
-	FinishReason *FinishReason `json:"finish_reason,omitempty"`
+	FinishReason *FinishReason `json:"finish_reason,omitzero"`
 
 	// LogProbs contains log probability information for the choice.
 	// Only present if logprobs was set to true in the request.
 	// NOTE: OpenAI will respond with `"logprobs": null`. This API will omit null logprobs.
 	// +optional
-	LogProbs *LogProbs `json:"logprobs,omitempty"`
+	LogProbs *LogProbs `json:"logprobs,omitzero"`
 
 	// ContentFilterResults contains any content filtering applied to this choice.
 	// +optional
-	ContentFilterResults *ContentFilterResults `json:"content_filter_results,omitempty"`
+	ContentFilterResults *ContentFilterResults `json:"content_filter_results,omitzero"`
 }
 
 // ChatCompletionResponse represents a response structure for chat completion API.
@@ -852,25 +822,25 @@ type ChatCompletionResponse struct {
 
 	// Usage provides token usage statistics for the completion request.
 	// +optional
-	Usage *Usage `json:"usage,omitempty"`
+	Usage *Usage `json:"usage,omitzero"`
 
 	// SystemFingerprint represents the backend configuration that the model runs with.
 	// Can be used with the seed parameter to understand when backend changes have been made
 	// that might impact determinism.
 	// +optional
-	SystemFingerprint string `json:"system_fingerprint,omitempty"`
+	SystemFingerprint string `json:"system_fingerprint,omitzero"`
 
 	// ServiceTier indicates the service tier used for processing the request.
 	// Can be "scale" or "default".
 	// +optional
-	ServiceTier string `json:"service_tier,omitempty"`
+	ServiceTier string `json:"service_tier,omitzero"`
 
 	// PromptFilterResults contains any content filtering applied to the prompts.
 	// +optional
-	PromptFilterResults []PromptFilterResult `json:"prompt_filter_results,omitempty"`
+	PromptFilterResults []PromptFilterResult `json:"prompt_filter_results,omitzero"`
 
-	// Preserve unknown fields to fully support the extended set of fields that backends such as vLLM support.
-	easyjson.UnknownFieldsProxy
+	// Unknown fields should be preserved to fully support the extended set of fields that backends such as vLLM support.
+	Unknown jsontext.Value `json:",unknown"`
 }
 
 // PromptFilterResult contains information about content filtering applied to a particular prompt.
