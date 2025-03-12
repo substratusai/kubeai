@@ -49,6 +49,6 @@ for i in {1..10}; do
 done
 
 helm uninstall kubeai-models # cleans up above model helm chart on success
+kubectl delete -f $REPO_DIR/test/e2e/engine-ollama-pvc/ollama-hydrate-job.yaml
 kubectl delete -f $REPO_DIR/test/e2e/engine-ollama-pvc/pv.yaml
 kubectl delete -f $REPO_DIR/test/e2e/engine-ollama-pvc/pvc.yaml
-kubectl delete -f $REPO_DIR/test/e2e/engine-ollama-pvc/ollama-hydrate-job.yaml
