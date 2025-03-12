@@ -2,14 +2,19 @@
 package modelcontroller
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func Test_ollamaStartupProbeScript(t *testing.T) {
 	t.Parallel()
+
+	modelName := "model-name"
+	ollamaRef := "qwen2:0.5b"
 
 	cases := map[string]struct {
 		model       kubeaiv1.Model
@@ -19,19 +24,26 @@ func Test_ollamaStartupProbeScript(t *testing.T) {
 	}{
 		"basic-model-no-pvc": {
 			model: kubeaiv1.Model{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: modelName,
+				},
 				Spec: kubeaiv1.ModelSpec{
 					Features: []kubeaiv1.ModelFeature{kubeaiv1.ModelFeatureTextGeneration},
 				},
 			},
 			modelURL: modelURL{
 				scheme: "ollama",
-				ref:    "def",
+				ref:    ollamaRef,
 				name:   "abc",
 			},
-			want: "/bin/ollama pull def && /bin/ollama cp def abc && /bin/ollama run abc hi",
+			want: fmt.Sprintf("/bin/ollama pull %s && /bin/ollama cp %s %s && /bin/ollama run %s hi",
+				ollamaRef, ollamaRef, modelName, modelName),
 		},
 		"basic-model-with-pvc": {
 			model: kubeaiv1.Model{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: modelName,
+				},
 				Spec: kubeaiv1.ModelSpec{
 					Features: []kubeaiv1.ModelFeature{kubeaiv1.ModelFeatureTextGeneration},
 				},
@@ -42,7 +54,8 @@ func Test_ollamaStartupProbeScript(t *testing.T) {
 				name:       "abc",
 				modelParam: "qwen2:0.5b",
 			},
-			want: "/bin/ollama cp qwen2:0.5b abc && /bin/ollama run abc hi",
+			want: fmt.Sprintf("/bin/ollama cp %s %s && /bin/ollama run %s hi",
+				ollamaRef, modelName, modelName),
 		},
 	}
 
