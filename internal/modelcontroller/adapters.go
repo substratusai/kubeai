@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	v1 "github.com/substratusai/kubeai/api/v1"
+	v1 "github.com/substratusai/kubeai/api/k8s/v1"
 	"github.com/substratusai/kubeai/internal/k8sutils"
 	"github.com/substratusai/kubeai/internal/vllmclient"
 	corev1 "k8s.io/api/core/v1"
