@@ -1,0 +1,613 @@
++ '[' -z http://localhost:11434 ']'
++ echo 'Configured models:'
+Configured models:
++ '[' '!' -z qwen2:0.5b ']'
++ echo '- Completions: qwen2:0.5b'
+- Completions: qwen2:0.5b
++ '[' '!' -z qwen2:0.5b ']'
++ echo '- Chat: qwen2:0.5b'
+- Chat: qwen2:0.5b
++ '[' '!' -z all-minilm ']'
++ echo '- Embeddings: all-minilm'
+- Embeddings: all-minilm
++ '[' -z qwen2:0.5b ']'
++ echo -e '\nMaking example API requests...'
+
+Making example API requests...
++ '[' '!' -z qwen2:0.5b ']'
++ echo -e '\n1. Basic completion request:'
+
+1. Basic completion request:
++ curl -s http://localhost:11434/v1/completions -H 'Content-Type: application/json' -H 'Authorization: Bearer REDACTED -d '{
+        "model": "qwen2:0.5b",
+        "prompt": "Say this is a test",
+        "max_tokens": 7,
+        "temperature": 0
+      }'
++ jq .
+{
+  "id": "cmpl-193",
+  "object": "text_completion",
+  "created": 1741831561,
+  "model": "qwen2:0.5b",
+  "system_fingerprint": "fp_ollama",
+  "choices": [
+    {
+      "text": "Test",
+      "index": 0,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 13,
+    "completion_tokens": 2,
+    "total_tokens": 15
+  }
+}
++ echo -e '\n\n2. Streaming completion request:'
+
+
+2. Streaming completion request:
++ curl -s http://localhost:11434/v1/completions -H 'Content-Type: application/json' -H 'Authorization: Bearer REDACTED -d '{
+        "model": "qwen2:0.5b",
+        "prompt": "Say this is a test",
+        "max_tokens": 7,
+        "temperature": 0,
+        "stream": true
+      }'
+data: {"id":"cmpl-747","object":"text_completion","created":1741831561,"choices":[{"text":"Test","index":0,"finish_reason":null}],"model":"qwen2:0.5b","system_fingerprint":"fp_ollama"}
+
+data: {"id":"cmpl-747","object":"text_completion","created":1741831561,"choices":[{"text":"","index":0,"finish_reason":"stop"}],"model":"qwen2:0.5b","system_fingerprint":"fp_ollama"}
+
+data: [DONE]
+
++ '[' '!' -z qwen2:0.5b ']'
++ echo -e '\n\n3. Basic chat completion request:'
+
+
+3. Basic chat completion request:
++ curl -s http://localhost:11434/v1/chat/completions -H 'Content-Type: application/json' -H 'Authorization: Bearer REDACTED -d '{
+        "model": "qwen2:0.5b",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are a helpful assistant."
+          },
+          {
+            "role": "user",
+            "content": "Hello!"
+          }
+        ]
+      }'
++ jq .
+{
+  "id": "chatcmpl-868",
+  "object": "chat.completion",
+  "created": 1741831562,
+  "model": "qwen2:0.5b",
+  "system_fingerprint": "fp_ollama",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Hello! How can I help you today? Is there something you need to know or talk about?"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 21,
+    "completion_tokens": 21,
+    "total_tokens": 42
+  }
+}
++ echo -e '\n\n4. Streaming chat completion request:'
+
+
+4. Streaming chat completion request:
++ curl -s http://localhost:11434/v1/chat/completions -H 'Content-Type: application/json' -H 'Authorization: Bearer REDACTED -d '{
+        "model": "qwen2:0.5b",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are a helpful assistant."
+          },
+          {
+            "role": "user",
+            "content": "Hello!"
+          }
+        ],
+        "stream": true
+      }'
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":"Hello"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" there"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":"!"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" How"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" can"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" I"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" help"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" you"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" today"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":"?"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" Let"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":"'s"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" talk"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" about"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" something"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" fun"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" or"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" challenging"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" to"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" see"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" what"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" kind"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" of"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" information"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" we"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" could"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" share"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" next"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":"."},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" What"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":"'s"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" on"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" your"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" mind"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":","},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" my"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" friend"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":"?"},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-727","object":"chat.completion.chunk","created":1741831562,"model":"qwen2:0.5b","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"stop"}]}
+
+data: [DONE]
+
++ '[' '!' -z all-minilm ']'
++ echo -e '\n\n5. Embeddings request:'
+
+
+5. Embeddings request:
++ curl -s http://localhost:11434/v1/embeddings -H 'Content-Type: application/json' -H 'Authorization: Bearer REDACTED -d '{
+        "input": "The food was delicious and the waiter...",
+        "model": "all-minilm",
+        "encoding_format": "float"
+      }'
++ jq .
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "embedding",
+      "embedding": [
+        -0.036496047,
+        0.07631608,
+        0.011182876,
+        0.036127694,
+        -0.089672215,
+        0.0010146899,
+        0.08769363,
+        -0.059441138,
+        0.034964196,
+        -0.093760625,
+        0.13219339,
+        -0.00031565627,
+        0.023378689,
+        -0.022467298,
+        0.005281722,
+        -0.09928396,
+        0.0873664,
+        -0.059446175,
+        0.025615565,
+        -0.089701466,
+        -0.052875847,
+        0.0055324403,
+        -0.02612418,
+        -0.035585344,
+        0.0011850357,
+        0.032294363,
+        0.030828223,
+        0.015984345,
+        -0.018809823,
+        -0.0024657615,
+        -0.03181919,
+        -0.0035576927,
+        -0.009657513,
+        0.0075633894,
+        -0.06452302,
+        -0.003724984,
+        0.071450084,
+        -0.083512664,
+        0.04293664,
+        -0.0023153848,
+        0.026376918,
+        -0.028277313,
+        0.03707604,
+        0.022663144,
+        0.017768016,
+        -0.055250965,
+        -0.044017114,
+        -0.023202045,
+        0.037098456,
+        -0.01007316,
+        -0.04803339,
+        0.030025296,
+        -0.036323573,
+        -0.09061511,
+        0.06422635,
+        0.022441575,
+        0.04667215,
+        -0.09230111,
+        -0.023002973,
+        0.01918035,
+        -0.018588271,
+        -0.0011679034,
+        0.04477413,
+        0.05196625,
+        0.04561733,
+        -0.058745135,
+        -0.033129554,
+        -0.0847986,
+        -0.029665165,
+        0.052268744,
+        0.02157439,
+        -0.045587294,
+        0.049203686,
+        -0.023069762,
+        -0.027623385,
+        -0.04600726,
+        0.0003680435,
+        -0.076241486,
+        -0.10626096,
+        0.01457962,
+        -0.029170938,
+        -0.078171216,
+        -0.039964993,
+        0.038794633,
+        -0.03870138,
+        -0.069571964,
+        0.009964031,
+        -0.047413442,
+        0.021943504,
+        0.03180467,
+        0.050934006,
+        -0.04394544,
+        -0.038742553,
+        -0.052244168,
+        0.039410256,
+        -0.046974387,
+        -0.02836453,
+        -0.023849258,
+        0.052514058,
+        0.079681985,
+        -0.0023574152,
+        0.033837527,
+        -0.028914388,
+        -0.007590586,
+        -0.0069229878,
+        0.022609789,
+        -0.0149983615,
+        0.029162606,
+        -0.021911506,
+        -0.0016569564,
+        0.0023061442,
+        0.07989487,
+        0.034346342,
+        0.008903262,
+        -0.060073655,
+        -0.054385506,
+        0.005369827,
+        -0.036281735,
+        -0.028328955,
+        0.044618547,
+        0.050237402,
+        0.057492375,
+        -0.059575714,
+        0.03278413,
+        -0.1170455,
+        -0.031528614,
+        0.1365984,
+        -7.911469e-33,
+        -0.0751222,
+        -0.029160786,
+        0.04602136,
+        -0.02659626,
+        0.13003938,
+        0.025835048,
+        -0.03573219,
+        0.050471768,
+        -0.024186863,
+        0.010125143,
+        0.049621314,
+        -0.06517716,
+        -0.036286555,
+        0.0031590543,
+        0.028255323,
+        0.016424686,
+        -0.016489634,
+        0.09958125,
+        0.073471375,
+        0.009544979,
+        -0.009063126,
+        -0.07411406,
+        0.061904997,
+        0.005905504,
+        -0.06864777,
+        0.031658463,
+        -0.0138341375,
+        0.009344354,
+        0.02789919,
+        -0.020074358,
+        0.032420795,
+        0.022888497,
+        0.0027110642,
+        0.017224379,
+        0.004247996,
+        -0.013155327,
+        -0.017468048,
+        -0.07578543,
+        -0.0392882,
+        -0.016567597,
+        -0.0015533912,
+        0.019925542,
+        0.052639414,
+        0.050306737,
+        -0.12956141,
+        0.062289026,
+        -0.07664178,
+        0.053187467,
+        0.03176851,
+        -0.013599074,
+        -0.032083232,
+        -0.021643046,
+        0.10653029,
+        0.060582023,
+        -0.042847652,
+        0.015460385,
+        0.036260985,
+        0.042954873,
+        0.022657115,
+        -0.03956747,
+        0.045535002,
+        0.088463776,
+        0.019722752,
+        -0.057524767,
+        0.0066800695,
+        -0.018722229,
+        0.0002921149,
+        0.014229431,
+        0.034545258,
+        0.04262025,
+        -0.019079871,
+        0.012580067,
+        0.001016594,
+        -0.00572036,
+        -0.033745687,
+        0.043936267,
+        -0.04439138,
+        -0.03566934,
+        0.02685548,
+        -0.040142458,
+        0.0912902,
+        0.0014555224,
+        0.04860901,
+        -0.024650656,
+        -0.04089763,
+        0.08312316,
+        -0.030575963,
+        -0.12600265,
+        0.07319725,
+        0.09339129,
+        -0.102162,
+        0.02992794,
+        0.07657625,
+        -0.0273996,
+        -0.024072334,
+        3.9841067e-33,
+        -0.024517026,
+        0.097161084,
+        -0.09340065,
+        0.011159301,
+        -0.002034092,
+        -0.076793015,
+        -0.12191036,
+        -0.052063867,
+        -0.041675966,
+        0.024861423,
+        -0.045510836,
+        -0.024135787,
+        0.044374283,
+        -0.03736474,
+        -0.020540873,
+        0.09117005,
+        0.05262144,
+        0.018971654,
+        -0.014987732,
+        0.03551866,
+        -0.002929108,
+        0.034970958,
+        0.020950273,
+        0.08626133,
+        -0.04707455,
+        0.097878896,
+        0.029188883,
+        0.05141066,
+        -0.16568524,
+        -0.03916897,
+        0.07528133,
+        -0.043017305,
+        0.028079001,
+        -0.031108506,
+        0.0009798497,
+        0.09452932,
+        -0.019836122,
+        -0.025956603,
+        -0.010912964,
+        0.03872992,
+        0.051987167,
+        -0.03229513,
+        0.013184983,
+        0.08455182,
+        0.016530925,
+        -0.024165507,
+        -0.010025006,
+        -0.06620957,
+        0.03527875,
+        -0.012523567,
+        0.005463863,
+        -0.0126224095,
+        -0.025370631,
+        -0.06971695,
+        -0.0108473245,
+        0.005658729,
+        0.047119394,
+        -0.0047027916,
+        0.016999593,
+        -0.06506345,
+        -0.06389691,
+        -4.828894e-07,
+        0.0478036,
+        0.066147394,
+        0.07794207,
+        0.012703915,
+        0.027930245,
+        -0.070948444,
+        -0.03424682,
+        0.010743449,
+        -0.03231817,
+        0.059617303,
+        0.011911043,
+        0.022204708,
+        -0.031204125,
+        -0.002354802,
+        -0.08798628,
+        0.0265224,
+        0.021359375,
+        -0.069635436,
+        -0.034912173,
+        -0.039655045,
+        -0.00082443864,
+        0.01658128,
+        -0.02230996,
+        0.06521402,
+        0.033985417,
+        -0.052688304,
+        -0.016540734,
+        0.018981403,
+        -0.027895542,
+        -0.020985825,
+        -0.020927504,
+        0.004332761,
+        0.022928832,
+        -1.8641241e-08,
+        0.063399255,
+        -0.0048759817,
+        -0.053661987,
+        0.0664299,
+        0.007880872,
+        -0.06656542,
+        0.043505497,
+        -0.00814948,
+        0.0073400256,
+        0.10802569,
+        -0.17931594,
+        0.032703917,
+        0.024841722,
+        0.083478115,
+        0.017047156,
+        0.037985202,
+        0.06336104,
+        -0.020344393,
+        -0.054230142,
+        0.05392558,
+        0.033028595,
+        0.040292673,
+        -0.020493051,
+        -0.06689582,
+        0.028574804,
+        0.0026401188,
+        -0.07001472,
+        0.045573343,
+        -0.012231556,
+        0.04769177,
+        0.0076798536,
+        -0.07233754,
+        -0.08117517,
+        0.029062215,
+        0.06987064,
+        0.010954546,
+        -0.06664547,
+        -0.086960986,
+        0.07812981,
+        -0.07476019,
+        -0.09323345,
+        0.09060799,
+        -0.118041605,
+        -0.0035501854,
+        0.0045583346,
+        0.04332264,
+        -0.014488988,
+        0.101822115,
+        -0.051916383,
+        0.044103954,
+        -0.035012662,
+        0.024239399,
+        0.049283653,
+        -0.014557773,
+        0.0442102,
+        -0.09978119,
+        0.025641916,
+        -0.0021013801,
+        0.01705218,
+        0.04891146,
+        0.036774512,
+        0.08526833,
+        -0.031230196,
+        -0.07032178
+      ],
+      "index": 0
+    }
+  ],
+  "model": "all-minilm",
+  "usage": {
+    "prompt_tokens": 10,
+    "total_tokens": 10
+  }
+}
