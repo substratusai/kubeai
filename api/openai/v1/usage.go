@@ -1,8 +1,8 @@
 package v1
 
-// Usage represents usage statistics for the completion request.
+// CompletionUsage represents usage statistics for the completion request.
 // These statistics help track token consumption for billing and context window management.
-type Usage struct {
+type CompletionUsage struct {
 	// PromptTokens is the number of tokens in the prompt.
 	// +required
 	PromptTokens int `json:"prompt_tokens"`
@@ -22,6 +22,19 @@ type Usage struct {
 	// CompletionTokensDetails provides a breakdown of tokens used in a completion.
 	// +optional
 	CompletionTokensDetails *CompletionTokensDetails `json:"completion_tokens_details,omitempty"`
+}
+
+// EmbeddingUsage represents usage statistics for the embedding request.
+// These statistics help track token consumption for billing purposes.
+type EmbeddingUsage struct {
+	// PromptTokens is the number of tokens in the input text.
+	// +required
+	PromptTokens int `json:"prompt_tokens"`
+
+	// TotalTokens is the total number of tokens used in the request.
+	// For embeddings, this is equal to prompt_tokens as there is no completion.
+	// +required
+	TotalTokens int `json:"total_tokens"`
 }
 
 // CompletionTokensDetails provides a breakdown of tokens used in a completion.

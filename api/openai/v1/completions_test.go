@@ -45,6 +45,38 @@ func TestCompletionRequest_JSON(t *testing.T) {
 		req           *v1.CompletionRequest
 	}{
 		{
+			name: "openapi spec example - no streaming",
+			json: `{
+    "model": "VAR_completion_model_id",
+    "prompt": "Say this is a test",
+    "max_tokens": 7,
+    "temperature": 0
+  }`,
+			req: &v1.CompletionRequest{
+				Model:       "VAR_completion_model_id",
+				Prompt:      "Say this is a test",
+				MaxTokens:   7,
+				Temperature: v1.Ptr[float32](0),
+			},
+		},
+		{
+			name: "openapi spec example - streaming",
+			json: `{
+    "model": "VAR_completion_model_id",
+    "prompt": "Say this is a test",
+    "max_tokens": 7,
+    "temperature": 0,
+    "stream": true
+  }`,
+			req: &v1.CompletionRequest{
+				Model:       "VAR_completion_model_id",
+				Prompt:      "Say this is a test",
+				MaxTokens:   7,
+				Temperature: v1.Ptr[float32](0),
+				Stream:      true,
+			},
+		},
+		{
 			name: "empty request",
 			json: `{"model":"", "prompt": null}`,
 			req:  &v1.CompletionRequest{},
@@ -157,6 +189,82 @@ func TestCompletionResponse_JSON(t *testing.T) {
 		resp          *v1.CompletionResponse
 	}{
 		{
+			name: "openapi spec example - no streaming",
+			json: `{
+  "id": "cmpl-uqkvlQyYK7bGYrRHQ0eXlWi7",
+  "object": "text_completion",
+  "created": 1589478378,
+  "model": "VAR_completion_model_id",
+  "system_fingerprint": "fp_44709d6fcb",
+  "choices": [
+    {
+      "text": "\n\nThis is indeed a test",
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "length"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 5,
+    "completion_tokens": 7,
+    "total_tokens": 12
+  }
+}`,
+			resp: &v1.CompletionResponse{
+				ID:                "cmpl-uqkvlQyYK7bGYrRHQ0eXlWi7",
+				Object:            "text_completion",
+				Created:           1589478378,
+				Model:             "VAR_completion_model_id",
+				SystemFingerprint: "fp_44709d6fcb",
+				Choices: []v1.CompletionChoice{
+					{
+						Text:         "\n\nThis is indeed a test",
+						Index:        0,
+						LogProbs:     nil,
+						FinishReason: v1.Ptr("length"),
+					},
+				},
+				Usage: &v1.CompletionUsage{
+					PromptTokens:     5,
+					CompletionTokens: 7,
+					TotalTokens:      12,
+				},
+			},
+		},
+		{
+			name: "openapi spec example - streaming",
+			json: `{
+  "id": "cmpl-7iA7iJjj8V2zOkCGvWF2hAkDWBQZe",
+  "object": "text_completion",
+  "created": 1690759702,
+  "choices": [
+    {
+      "text": "This",
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": null
+    }
+  ],
+  "model": "gpt-3.5-turbo-instruct",
+  "system_fingerprint": "fp_44709d6fcb"
+}`,
+			resp: &v1.CompletionResponse{
+				ID:                "cmpl-7iA7iJjj8V2zOkCGvWF2hAkDWBQZe",
+				Object:            "text_completion",
+				Created:           1690759702,
+				Model:             "gpt-3.5-turbo-instruct",
+				SystemFingerprint: "fp_44709d6fcb",
+				Choices: []v1.CompletionChoice{
+					{
+						Text:     "This",
+						Index:    0,
+						LogProbs: nil,
+						// FinishReason is omitted in streaming responses until the final chunk
+					},
+				},
+			},
+		},
+		{
 			name: "empty response",
 			json: `{"object":"","model":"","choices":[]}`,
 			resp: &v1.CompletionResponse{Choices: []v1.CompletionChoice{}},
@@ -172,7 +280,8 @@ func TestCompletionResponse_JSON(t *testing.T) {
 					{
 						"text": "This is a test response.",
 						"index": 0,
-						"finish_reason": "stop"
+						"finish_reason": "stop",
+						"logprobs": null
 					}
 				]
 			}`,
@@ -185,7 +294,7 @@ func TestCompletionResponse_JSON(t *testing.T) {
 					{
 						Text:         "This is a test response.",
 						Index:        0,
-						FinishReason: "stop",
+						FinishReason: v1.Ptr("stop"),
 					},
 				},
 			},
@@ -201,12 +310,14 @@ func TestCompletionResponse_JSON(t *testing.T) {
 					{
 						"text": "First completion option.",
 						"index": 0,
-						"finish_reason": "stop"
+						"finish_reason": "stop",
+						"logprobs": null
 					},
 					{
 						"text": "Second completion option.",
 						"index": 1,
-						"finish_reason": "length"
+						"finish_reason": "length",
+						"logprobs": null
 					}
 				],
 				"usage": {
@@ -224,15 +335,15 @@ func TestCompletionResponse_JSON(t *testing.T) {
 					{
 						Text:         "First completion option.",
 						Index:        0,
-						FinishReason: "stop",
+						FinishReason: v1.Ptr("stop"),
 					},
 					{
 						Text:         "Second completion option.",
 						Index:        1,
-						FinishReason: "length",
+						FinishReason: v1.Ptr("length"),
 					},
 				},
-				Usage: &v1.Usage{
+				Usage: &v1.CompletionUsage{
 					PromptTokens:     10,
 					CompletionTokens: 15,
 					TotalTokens:      25,

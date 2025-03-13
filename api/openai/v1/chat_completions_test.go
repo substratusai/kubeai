@@ -841,7 +841,8 @@ func TestChatCompletionResponse_JSON(t *testing.T) {
 						"role": "assistant",
 						"content": "\n\nHello there, how may I assist you today?"
 					},
-					"finish_reason": "stop"
+					"finish_reason": "stop",
+					"logprobs": null
 				}],
 				"service_tier": "default",
 				"usage": {
@@ -872,7 +873,7 @@ func TestChatCompletionResponse_JSON(t *testing.T) {
 					},
 				},
 				ServiceTier: "default",
-				Usage: &v1.Usage{
+				Usage: &v1.CompletionUsage{
 					PromptTokens:     9,
 					CompletionTokens: 12,
 					TotalTokens:      21,
@@ -900,7 +901,8 @@ func TestChatCompletionResponse_JSON(t *testing.T) {
 						"role": "assistant",
 						"content": "\n\nThis image shows a wooden boardwalk extending through a lush green marshland."
 					},
-					"finish_reason": "stop"
+					"finish_reason": "stop",
+					"logprobs": null
 				}],
 				"usage": {
 					"prompt_tokens": 9,
@@ -929,7 +931,7 @@ func TestChatCompletionResponse_JSON(t *testing.T) {
 						FinishReason: func() *v1.FinishReason { r := v1.FinishReasonStop; return &r }(),
 					},
 				},
-				Usage: &v1.Usage{
+				Usage: &v1.CompletionUsage{
 					PromptTokens:     9,
 					CompletionTokens: 12,
 					TotalTokens:      21,
@@ -967,7 +969,8 @@ func TestChatCompletionResponse_JSON(t *testing.T) {
 								}
 							]
 						},
-						"finish_reason": "tool_calls"
+						"finish_reason": "tool_calls",
+						"logprobs": null
 					}
 				],
 				"usage": {
@@ -1006,7 +1009,7 @@ func TestChatCompletionResponse_JSON(t *testing.T) {
 						FinishReason: func() *v1.FinishReason { r := v1.FinishReasonToolCalls; return &r }(),
 					},
 				},
-				Usage: &v1.Usage{
+				Usage: &v1.CompletionUsage{
 					PromptTokens:     82,
 					CompletionTokens: 17,
 					TotalTokens:      99,
@@ -1034,7 +1037,8 @@ func TestChatCompletionResponse_JSON(t *testing.T) {
         "role": "assistant",
         "content": "Hello! How can I assist you today?"
       },
-      "finish_reason": "stop"
+      "finish_reason": "stop",
+      "logprobs": null
     }
   ],
   "usage": {
@@ -1404,7 +1408,8 @@ func TestChatCompletionResponse_JSON(t *testing.T) {
 							"role": "assistant",
 							"content": "This is a test response."
 						},
-						"finish_reason": "stop"
+						"finish_reason": "stop",
+						"logprobs": null
 					}
 				]
 			}`,
@@ -1449,7 +1454,8 @@ func TestChatCompletionResponse_JSON(t *testing.T) {
 								}
 							]
 						},
-						"finish_reason": "tool_calls"
+						"finish_reason": "tool_calls",
+						"logprobs": null
 					}
 				],
 				"usage": {
@@ -1484,7 +1490,7 @@ func TestChatCompletionResponse_JSON(t *testing.T) {
 						FinishReason: func() *v1.FinishReason { r := v1.FinishReasonToolCalls; return &r }(),
 					},
 				},
-				Usage: &v1.Usage{
+				Usage: &v1.CompletionUsage{
 					PromptTokens:     82,
 					CompletionTokens: 29,
 					TotalTokens:      111,
@@ -1507,6 +1513,7 @@ func TestChatCompletionResponse_JSON(t *testing.T) {
 							"content": "I cannot provide information about that topic."
 						},
 						"finish_reason": "stop",
+						"logprobs": null,
 						"content_filter_results": {
 							"hate": {
 								"filtered": true,
@@ -1565,7 +1572,7 @@ func TestChatCompletionResponse_JSON(t *testing.T) {
 						},
 					},
 				},
-				Usage: &v1.Usage{
+				Usage: &v1.CompletionUsage{
 					PromptTokens:     20,
 					CompletionTokens: 12,
 					TotalTokens:      32,
@@ -1601,7 +1608,8 @@ func TestChatCompletionResponse_JSON(t *testing.T) {
 							"role": "assistant",
 							"content": "First response option"
 						},
-						"finish_reason": "stop"
+						"finish_reason": "stop",
+						"logprobs": null
 					},
 					{
 						"index": 1,
@@ -1609,7 +1617,8 @@ func TestChatCompletionResponse_JSON(t *testing.T) {
 							"role": "assistant",
 							"content": "Second response option"
 						},
-						"finish_reason": "stop"
+						"finish_reason": "stop",
+						"logprobs": null
 					},
 					{
 						"index": 2,
@@ -1617,7 +1626,8 @@ func TestChatCompletionResponse_JSON(t *testing.T) {
 							"role": "assistant",
 							"content": "Third response option"
 						},
-						"finish_reason": "stop"
+						"finish_reason": "stop",
+						"logprobs": null
 					}
 				],
 				"usage": {
@@ -1641,7 +1651,8 @@ func TestChatCompletionResponse_JSON(t *testing.T) {
 							"role": "assistant",
 							"content": "This is a response that reached the maximum token limit..."
 						},
-						"finish_reason": "length"
+						"finish_reason": "length",
+						"logprobs": null
 					}
 				],
 				"usage": {
@@ -1666,6 +1677,7 @@ func TestChatCompletionResponse_JSON(t *testing.T) {
 							"content": ""
 						},
 						"finish_reason": "content_filter",
+						"logprobs": null,
 						"content_filter_results": {
 							"hate": {
 								"filtered": true,
@@ -1707,7 +1719,8 @@ func TestChatCompletionResponse_JSON(t *testing.T) {
 							"role": "assistant",
 							"content": "{\"name\":\"John Doe\",\"age\":30,\"city\":\"New York\",\"skills\":[\"programming\",\"design\",\"writing\"]}"
 						},
-						"finish_reason": "stop"
+						"finish_reason": "stop",
+						"logprobs": null
 					}
 				],
 				"usage": {
@@ -1735,7 +1748,8 @@ func TestChatCompletionResponse_JSON(t *testing.T) {
 								"arguments": "{\"location\":\"Paris\",\"unit\":\"celsius\"}"
 							}
 						},
-						"finish_reason": "function_call"
+						"finish_reason": "function_call",
+						"logprobs": null
 					}
 				],
 				"usage": {
@@ -1759,7 +1773,8 @@ func TestChatCompletionResponse_JSON(t *testing.T) {
 							"role": "assistant",
 							"content": "The image shows a scenic landscape with mountains and a lake."
 						},
-						"finish_reason": "stop"
+						"finish_reason": "stop",
+						"logprobs": null
 					}
 				],
 				"usage": {
