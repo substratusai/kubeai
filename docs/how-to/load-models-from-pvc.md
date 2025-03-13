@@ -15,13 +15,13 @@ url: pvc://$PVC_NAME/$PATH    # Loads from a specific path within the PVC
 
 
 ### Ollama
-For Ollama, use the following URL format:
+For Ollama, use the following URL formats:
 ```yaml
 url: pvc://$PVC_NAME?model=$MODEL_NAME    # Loads the model named $MODEL_NAME that's loaded on the disk
-url: pvc://$PVC_NAME/$PATH?model=$MODEL_NAME    # Loads the model and renames it to $MODEL_NAME
+url: pvc://$PVC_NAME/$PATH?model=$MODEL_NAME
 ```
 
-For example, if you ran `ollama pull qwen:0.5b` to preload on your PVC named `my-pvc`. Then the PVC disk should have the following directories:
+For example, if you ran `ollama pull qwen:0.5b` to preload the model on your PVC named `my-pvc`. Then the PVC disk should have the following directories:
 ```
 blobs/
 manifests/registry.ollama.ai/library/qwen/0.5b
@@ -40,7 +40,6 @@ url: pvc://my-pvc?model=qwen:0.5b
 2. **Storage**: Ensure sufficient storage capacity for your model files. The recommended minimum is 10Gi.
 
 3. **Pre-loading**: You must ensure the model files are already present in the PVC before creating the Model resource.
-
 
 
 ## Implementation details
