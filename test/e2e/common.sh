@@ -24,5 +24,11 @@ retry() {
 
 apply_model() {
   model_name=$1
-  yq eval ".spec.cacheProfile = \"$CACHE_PROFILE\"" $REPO_DIR/manifests/models/$model_name.yaml | kubectl apply -f -
+  model_file="$REPO_DIR/manifests/models/$model_name.yaml"
+  
+  if [ -n "${CACHE_PROFILE:-}" ]; then
+    yq eval ".spec.cacheProfile = \"$CACHE_PROFILE\"" "$model_file" | kubectl apply -f -
+  else
+    kubectl apply -f "$model_file"
+  fi
 }
