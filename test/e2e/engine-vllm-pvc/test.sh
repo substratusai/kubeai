@@ -38,5 +38,3 @@ for i in {1..10}; do
     -H "Content-Type: application/json" \
     -d '{"model": "opt-125m-cpu", "prompt": "Who was the first president of the United States?", "max_tokens": 40}'
 done
-
-helm uninstall kubeai-models # cleans up above model helm chart on success
