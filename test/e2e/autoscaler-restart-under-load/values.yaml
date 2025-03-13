@@ -1,0 +1,5 @@
+modelAutoscaling:
+  interval: 1s
+  timeWindow: 30s
+open-webui:
+  enabled: false

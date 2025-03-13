@@ -60,7 +60,13 @@ cleanup() {
         kill $skaffold_pid
         wait $skaffold_pid
     fi
-    skaffold delete -f $REPO_DIR/skaffold.yaml
+    # Always run skaffold from the repository root
+    cd $REPO_DIR
+    if [ -f "$TEST_DIR/skaffold.yaml" ]; then
+        skaffold delete -f "$TEST_DIR/skaffold.yaml"
+    else
+        skaffold delete -f "$REPO_DIR/test/e2e/skaffold.default.yaml"
+    fi
 }
 trap cleanup EXIT
 
@@ -71,8 +77,18 @@ if [ "$(which skaffold)" != "$REPO_DIR/bin/skaffold" ]; then
 fi
 
 skaffold_build_file=$TMP_DIR/skaffold-build.json
-skaffold build -f $REPO_DIR/skaffold.yaml --file-output=$skaffold_build_file $skaffold_flags
-skaffold deploy -f $REPO_DIR/skaffold.yaml --tail --port-forward --load-images --build-artifacts=$skaffold_build_file $skaffold_flags > $skaffold_log_file &
+# Use test-specific skaffold file if it exists, otherwise use default config
+if [ -f "$TEST_DIR/skaffold.yaml" ]; then
+    skaffold_file="$TEST_DIR/skaffold.yaml"
+else
+    skaffold_file="$REPO_DIR/test/e2e/skaffold.default.yaml"
+fi
+
+# Always run skaffold from the repository root
+cd $REPO_DIR
+
+skaffold build -f $skaffold_file --file-output=$skaffold_build_file $skaffold_flags
+skaffold deploy -f $skaffold_file --tail --port-forward --load-images --build-artifacts=$skaffold_build_file $skaffold_flags > $skaffold_log_file &
 skaffold_pid=$!
 
 echo "Waiting for KubeAI API on localhost:8000"
