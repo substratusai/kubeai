@@ -47,7 +47,3 @@ for i in {1..10}; do
     -H "Content-Type: application/json" \
     -d '{"model": "qwen-500m-cpu", "prompt": "Who was the first president of the United States?", "max_tokens": 40}'
 done
-
-kubectl delete -f $REPO_DIR/test/e2e/engine-ollama-pvc/ollama-hydrate-job.yaml
-kubectl delete -f $REPO_DIR/test/e2e/engine-ollama-pvc/pvc.yaml
-kubectl delete -f $REPO_DIR/test/e2e/engine-ollama-pvc/pv.yaml
