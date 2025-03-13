@@ -252,5 +252,5 @@ type modelURL struct {
 	ref        string // e.g. "username/model"
 	name       string // e.g. username or bucket-name
 	path       string // e.g. model or path/to/model
-	modelParam string // e.g. the ?model=example_model at the end of the string
+	modelParam string // e.g. "qwen2:0.5b when ?model=qwen2:0.5b is part of the URL
 }
