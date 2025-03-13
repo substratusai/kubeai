@@ -134,6 +134,12 @@ type ModelSpec struct {
 	// Files to be mounted in the model Pods.
 	// +kubebuilder:validation:MaxItems=10
 	Files []File `json:"files,omitempty"`
+
+	// PriorityClassName sets the priority class for all pods created for this model.
+	// If specified, the PriorityClass must exist before the model is created.
+	// This is useful for implementing priority and preemption for models.
+	// +kubebuilder:validation:Optional
+	PriorityClassName string `json:"priorityClassName,omitempty"`
 }
 
 // +kubebuilder:validation:Enum=TextGeneration;TextEmbedding;SpeechToText

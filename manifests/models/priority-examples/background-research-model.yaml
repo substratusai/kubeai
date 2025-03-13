@@ -1,0 +1,11 @@
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: background-research-model
+spec:
+  features: [TextGeneration]
+  url: ollama://gemma2:2b
+  engine: OLlama
+  # Background tasks with low priority will be preempted when resources are needed for higher priority models
+  priorityClassName: low-priority
+  resourceProfile: cpu:2 

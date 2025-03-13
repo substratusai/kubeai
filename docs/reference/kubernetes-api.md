@@ -147,6 +147,7 @@ _Appears in:_
 | `owner` _string_ | Owner of the model. Used solely to populate the owner field in the<br />OpenAI /v1/models endpoint.<br />DEPRECATED. |  | Optional: \{\} <br /> |
 | `loadBalancing` _[LoadBalancing](#loadbalancing)_ | LoadBalancing configuration for the model.<br />If not specified, a default is used based on the engine and request. | \{  \} |  |
 | `files` _[File](#file) array_ | Files to be mounted in the model Pods. |  | MaxItems: 10 <br /> |
+| `priorityClassName` _string_ | PriorityClassName sets the priority class for all pods created for this model.<br />If specified, the PriorityClass must exist before the model is created.<br />This is useful for implementing priority and preemption for models. |  | Optional: \{\} <br /> |
 
 
 #### ModelStatus
