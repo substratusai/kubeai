@@ -179,6 +179,7 @@ func ollamaStartupProbeScript(m *kubeaiv1.Model, u modelURL) string {
 	// If the model is using a pvc, we don't want to try to connect/pull a model
 
 	if u.scheme == "pvc" {
+		// There is a potential race condition when multiple pods try to rename/copy the same model.
 		startupScript = fmt.Sprintf("/bin/ollama cp %s %s",
 			u.modelParam, m.Name)
 	} else {
