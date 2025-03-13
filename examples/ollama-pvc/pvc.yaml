@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: model-pvc
+spec:
+  storageClassName: premium-rwx # replace with your actual storage class
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi

@@ -33,6 +33,14 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, c ModelConfig) *c
 			Value: "999999h",
 		},
 	}
+	// Adding an override variable for model location
+	if c.Source.url.scheme == "pvc" {
+		env = append(env, corev1.EnvVar{
+			Name:  "OLLAMA_MODELS",
+			Value: "/model",
+		})
+	}
+
 	var envKeys []string
 	for key := range m.Spec.Env {
 		envKeys = append(envKeys, key)
@@ -45,29 +53,12 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, c ModelConfig) *c
 		})
 	}
 
-	ollamaModelRef := c.Source.url.ref
-
 	featuresMap := map[kubeaiv1.ModelFeature]struct{}{}
 	for _, f := range m.Spec.Features {
 		featuresMap[f] = struct{}{}
 	}
 
-	// Pull model and copy to rename it to Model.metadata.name.
-	// See Ollama issue for rename/copy workaround: https://github.com/ollama/ollama/issues/5914
-	// NOTE: The cp command should just create a pointer to the old model, not copy data
-	// (see https://github.com/ollama/ollama/issues/5914#issuecomment-2248168474).
-	// Use `ollama run` to send a single prompt to ollama to load the model into memory
-	// before the Pod becomes Ready. (by default it will load on the first prompt request).
-	startupProbeScript := fmt.Sprintf("/bin/ollama pull %s && /bin/ollama cp %s %s",
-		ollamaModelRef, ollamaModelRef, m.Name)
-	if _, ok := featuresMap[kubeaiv1.ModelFeatureTextGeneration]; ok {
-		// NOTE: Embedding text models do not support "ollama run":
-		//
-		// ollama run nomic-embed-text hey
-		// Error: "nomic-embed-text" does not support generate
-		//
-		startupProbeScript += fmt.Sprintf(" && /bin/ollama run %s hi", m.Name)
-	}
+	startupProbeScript := ollamaStartupProbeScript(m, c.Source.url)
 
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -175,4 +166,39 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, c ModelConfig) *c
 
 	return pod
 
+}
+
+func ollamaStartupProbeScript(m *kubeaiv1.Model, u modelURL) string {
+	// Pull model and copy to rename it to Model.metadata.name.
+	// See Ollama issue for rename/copy workaround: https://github.com/ollama/ollama/issues/5914
+	// NOTE: The cp command should just create a pointer to the old model, not copy data
+	// (see https://github.com/ollama/ollama/issues/5914#issuecomment-2248168474).
+	// Use `ollama run` to send a single prompt to ollama to load the model into memory
+	// before the Pod becomes Ready. (by default it will load on the first prompt request).
+	startupScript := ""
+	// If the model is using a pvc, we don't want to try to connect/pull a model
+
+	if u.scheme == "pvc" {
+		// There is a potential race condition when multiple pods try to rename/copy the same model.
+		startupScript = fmt.Sprintf("/bin/ollama cp %s %s",
+			u.modelParam, m.Name)
+	} else {
+		startupScript = fmt.Sprintf("/bin/ollama pull %s && /bin/ollama cp %s %s", u.ref, u.ref, m.Name)
+	}
+
+	// Only run the model if the model has features
+	featuresMap := map[kubeaiv1.ModelFeature]struct{}{}
+	for _, f := range m.Spec.Features {
+		featuresMap[f] = struct{}{}
+	}
+	if _, ok := featuresMap[kubeaiv1.ModelFeatureTextGeneration]; ok {
+		// NOTE: Embedding text models do not support "ollama run":
+		//
+		// ollama run nomic-embed-text hey
+		// Error: "nomic-embed-text" does not support generate
+		//
+		startupScript += fmt.Sprintf(" && /bin/ollama run %s hi", m.Name)
+	}
+
+	return startupScript
 }

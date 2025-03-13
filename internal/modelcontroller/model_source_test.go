@@ -95,6 +95,26 @@ func Test_parseModelURL(t *testing.T) {
 				path:   "/",
 			},
 		},
+		"valid-pvc-with-modelname": {
+			input: "pvc://my-vpc?model=qwen2:0.5b",
+			want: modelURL{
+				scheme:     "pvc",
+				ref:        "my-vpc",
+				name:       "my-vpc",
+				path:       "",
+				modelParam: "qwen2:0.5b",
+			},
+		},
+		"valid-pvc-withpath-and-modelname": {
+			input: "pvc://my-vpc/path/to/model?model=qwen2:0.5b",
+			want: modelURL{
+				scheme:     "pvc",
+				ref:        "my-vpc/path/to/model",
+				name:       "my-vpc",
+				path:       "path/to/model",
+				modelParam: "qwen2:0.5b",
+			},
+		},
 	}
 
 	for name, c := range cases {

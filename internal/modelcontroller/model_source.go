@@ -2,6 +2,7 @@ package modelcontroller
 
 import (
 	"fmt"
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -214,28 +215,44 @@ func (r *ModelReconciler) pvcPodAdditions(url modelURL) *modelSourcePodAdditions
 	}
 }
 
-var modelURLRegex = regexp.MustCompile(`^([a-z]+):\/\/(\S+)$`)
+var modelURLRegex = regexp.MustCompile(`^([a-z]+):\/\/([^?]+)(\?.*)?$`)
 
 func parseModelURL(urlStr string) (modelURL, error) {
 	matches := modelURLRegex.FindStringSubmatch(urlStr)
-	if len(matches) != 3 {
+	if len(matches) != 3 && len(matches) != 4 {
 		return modelURL{}, fmt.Errorf("invalid model URL: %s", urlStr)
 	}
 	scheme, ref := matches[1], matches[2]
 	name, path, _ := strings.Cut(ref, "/")
+	var modelParam string
+
+	if len(matches) == 4 { // check for query parameter model, e.g. pvc://my-pvc?model=qwen2:0.5b
+		urlParser, err := url.ParseQuery(strings.TrimPrefix(matches[3], "?"))
+		if err == nil {
+			modelname := urlParser.Get("model")
+			if modelname != "" {
+				modelParam = modelname
+			}
+		}
+	}
+
 	return modelURL{
-		original: urlStr,
-		scheme:   scheme,
-		ref:      ref,
-		name:     name,
-		path:     path,
+		original:   urlStr,
+		scheme:     scheme,
+		ref:        ref,
+		name:       name,
+		path:       path,
+		modelParam: modelParam,
 	}, nil
 }
 
 type modelURL struct {
 	original string // e.g. "hf://username/model"
-	scheme   string // e.g. "hf", "s3", "gs", "oss"
+	scheme   string // e.g. "hf", "s3", "gs", "oss", "pvc"
 	ref      string // e.g. "username/model"
 	name     string // e.g. username or bucket-name
 	path     string // e.g. model or path/to/model
+	// e.g. "qwen2:0.5b" when ?model=qwen2:0.5b is part of the URL.
+	// This is used for Ollama where the PVC may have multiple models and we need to specify which one to load by name.
+	modelParam string
 }
