@@ -66,7 +66,7 @@ jobs:
     #needs: unit-and-integration # No use in running e2e tests if integration tests fail.
     strategy:
       matrix:
-        engine: ["FasterWhisper"] # "VLLM", "Infinity", "OLlama"
+        engine: ["FasterWhisper", "infinity"] # "VLLM", "OLlama"
         # Run each test case with and without caching.
         cacheProfile: ["", "e2e-test-kind-pv"]
     steps:

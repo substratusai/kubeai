@@ -109,6 +109,10 @@ test-e2e-cache-shared-filesystem: skaffold helm-dependency-build
 test-e2e-engine-vllm-pvc: skaffold helm-dependency-build
 	./test/e2e/run.sh engine-vllm-pvc --profile e2e-test-default
 
+.PHONY: test-e2e-engine-infinity
+test-e2e-engine-infinity: skaffold helm-dependency-build
+	./test/e2e/run.sh engine-infinity --profile e2e-test-default
+
 .PHONY: test-e2e-engine-ollama-pvc
 test-e2e-engine-ollama-pvc: skaffold helm-dependency-build
 	./test/e2e/run.sh engine-ollama-pvc --profile e2e-test-default
