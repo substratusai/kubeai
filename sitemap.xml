@@ -101,6 +101,10 @@
          <lastmod>2025-03-13</lastmod>
     </url>
     <url>
+         <loc>https://www.kubeai.org/how-to/load-models-from-pvc/</loc>
+         <lastmod>2025-03-13</lastmod>
+    </url>
+    <url>
          <loc>https://www.kubeai.org/how-to/observability-with-prometheus-stack/</loc>
          <lastmod>2025-03-13</lastmod>
     </url>

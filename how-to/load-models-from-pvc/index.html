@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://www.kubeai.org/reference/openai-api-compatibility/">
+        <link rel="canonical" href="https://www.kubeai.org/how-to/load-models-from-pvc/">
       
       
-        <link rel="prev" href="../kubernetes-api/">
+        <link rel="prev" href="../install-models/">
       
       
-        <link rel="next" href="../../benchmarks/llama-3.2-11b-vision/">
+        <link rel="next" href="../observability-with-prometheus-stack/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>OpenAI API Compatibility - KubeAI</title>
+        <title>Load Models from PVC - KubeAI</title>
       
     
     
@@ -65,11 +65,11 @@
       
         <meta  property="og:type"  content="website" >
       
-        <meta  property="og:title"  content="OpenAI API Compatibility - KubeAI" >
+        <meta  property="og:title"  content="Load Models from PVC - KubeAI" >
       
         <meta  property="og:description"  content="None" >
       
-        <meta  property="og:image"  content="https://www.kubeai.org/assets/images/social/reference/openai-api-compatibility.png" >
+        <meta  property="og:image"  content="https://www.kubeai.org/assets/images/social/how-to/load-models-from-pvc.png" >
       
         <meta  property="og:image:type"  content="image/png" >
       
@@ -77,15 +77,15 @@
       
         <meta  property="og:image:height"  content="630" >
       
-        <meta  property="og:url"  content="https://www.kubeai.org/reference/openai-api-compatibility/" >
+        <meta  property="og:url"  content="https://www.kubeai.org/how-to/load-models-from-pvc/" >
       
         <meta  name="twitter:card"  content="summary_large_image" >
       
-        <meta  name="twitter:title"  content="OpenAI API Compatibility - KubeAI" >
+        <meta  name="twitter:title"  content="Load Models from PVC - KubeAI" >
       
         <meta  name="twitter:description"  content="None" >
       
-        <meta  name="twitter:image"  content="https://www.kubeai.org/assets/images/social/reference/openai-api-compatibility.png" >
+        <meta  name="twitter:image"  content="https://www.kubeai.org/assets/images/social/how-to/load-models-from-pvc.png" >
       
     
     
@@ -106,7 +106,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#openai-api-compatibility" class="md-skip">
+        <a href="#load-models-from-pvc" class="md-skip">
           Skip to content
         </a>
       
@@ -142,7 +142,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              OpenAI API Compatibility
+              Load Models from PVC
             
           </span>
         </div>
@@ -386,17 +386,19 @@
       
   
   
+    
   
   
+  
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -411,7 +413,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             How to
@@ -425,7 +427,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/architect-for-multitenancy/" class="md-nav__link">
+      <a href="../architect-for-multitenancy/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -447,7 +449,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/authenticate-to-model-repos/" class="md-nav__link">
+      <a href="../authenticate-to-model-repos/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -469,7 +471,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/build-models-into-containers/" class="md-nav__link">
+      <a href="../build-models-into-containers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -491,7 +493,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/cache-models-with-aws-efs/" class="md-nav__link">
+      <a href="../cache-models-with-aws-efs/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -513,7 +515,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/cache-models-with-gcp-filestore/" class="md-nav__link">
+      <a href="../cache-models-with-gcp-filestore/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -535,7 +537,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/configure-autoscaling/" class="md-nav__link">
+      <a href="../configure-autoscaling/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -557,7 +559,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/configure-embedding-models/" class="md-nav__link">
+      <a href="../configure-embedding-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -579,7 +581,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/configure-resource-profiles/" class="md-nav__link">
+      <a href="../configure-resource-profiles/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -601,7 +603,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/configure-speech-to-text/" class="md-nav__link">
+      <a href="../configure-speech-to-text/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -623,7 +625,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/configure-text-generation-models/" class="md-nav__link">
+      <a href="../configure-text-generation-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -645,7 +647,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/install-models/" class="md-nav__link">
+      <a href="../install-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -664,10 +666,31 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../how-to/load-models-from-pvc/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Load Models from PVC
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -677,6 +700,83 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#vllm" class="md-nav__link">
+    <span class="md-ellipsis">
+      vLLM
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="vLLM">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pvc-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      PVC requirements
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ollama" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ollama
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Ollama">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pvc-requirements_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      PVC Requirements
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-loading-qwen-05b-from-pvc" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example: Loading Qwen 0.5b from PVC
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -689,7 +789,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/observability-with-prometheus-stack/" class="md-nav__link">
+      <a href="../observability-with-prometheus-stack/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -711,7 +811,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../how-to/serve-lora-adapters/" class="md-nav__link">
+      <a href="../serve-lora-adapters/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1152,19 +1252,17 @@
       
   
   
-    
   
   
-  
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
         
           
           <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
@@ -1179,7 +1277,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             Reference
@@ -1193,7 +1291,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../kubernetes-api/" class="md-nav__link">
+      <a href="../../reference/kubernetes-api/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1212,31 +1310,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    OpenAI API Compatibility
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../reference/openai-api-compatibility/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1246,101 +1323,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#general" class="md-nav__link">
-    <span class="md-ellipsis">
-      General:
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="General:">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#models" class="md-nav__link">
-    <span class="md-ellipsis">
-      Models
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#inference" class="md-nav__link">
-    <span class="md-ellipsis">
-      Inference
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Inference">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#text-generation" class="md-nav__link">
-    <span class="md-ellipsis">
-      Text Generation
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#embeddings" class="md-nav__link">
-    <span class="md-ellipsis">
-      Embeddings
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#speech-to-text" class="md-nav__link">
-    <span class="md-ellipsis">
-      Speech-to-Text
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#openai-client-libaries" class="md-nav__link">
-    <span class="md-ellipsis">
-      OpenAI Client libaries
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1670,19 +1652,19 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#general" class="md-nav__link">
+  <a href="#vllm" class="md-nav__link">
     <span class="md-ellipsis">
-      General:
+      vLLM
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="General:">
+    <nav class="md-nav" aria-label="vLLM">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#models" class="md-nav__link">
+  <a href="#pvc-requirements" class="md-nav__link">
     <span class="md-ellipsis">
-      Models
+      PVC requirements
     </span>
   </a>
   
@@ -1694,37 +1676,28 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#inference" class="md-nav__link">
+  <a href="#ollama" class="md-nav__link">
     <span class="md-ellipsis">
-      Inference
+      Ollama
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Inference">
+    <nav class="md-nav" aria-label="Ollama">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#text-generation" class="md-nav__link">
+  <a href="#pvc-requirements_1" class="md-nav__link">
     <span class="md-ellipsis">
-      Text Generation
+      PVC Requirements
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#embeddings" class="md-nav__link">
+  <a href="#example-loading-qwen-05b-from-pvc" class="md-nav__link">
     <span class="md-ellipsis">
-      Embeddings
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#speech-to-text" class="md-nav__link">
-    <span class="md-ellipsis">
-      Speech-to-Text
+      Example: Loading Qwen 0.5b from PVC
     </span>
   </a>
   
@@ -1732,15 +1705,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#openai-client-libaries" class="md-nav__link">
-    <span class="md-ellipsis">
-      OpenAI Client libaries
-    </span>
-  </a>
   
 </li>
       
@@ -1763,52 +1727,42 @@
   
 
 
-<h1 id="openai-api-compatibility">OpenAI API Compatibility<a class="headerlink" href="#openai-api-compatibility" title="Permanent link">&para;</a></h1>
-<p>KubeAI provides an OpenAI API compatiblity layer.</p>
-<h2 id="general">General:<a class="headerlink" href="#general" title="Permanent link">&para;</a></h2>
-<h3 id="models">Models<a class="headerlink" href="#models" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code>GET /v1/models
-</code></pre></div>
+<h1 id="load-models-from-pvc">Load Models from PVC<a class="headerlink" href="#load-models-from-pvc" title="Permanent link">&para;</a></h1>
+<p>You can store your models in a Persistent Volume Claim (PVC) and let KubeAI use them for serving.
+Both vLLM and Ollama engines support loading models from PVCs.</p>
+<p>You must ensure the model files are already present in the PVC before creating the Model resource.
+Alternatively you can use KubeAI's native caching mechanism which downloads the model for you:</p>
 <ul>
-<li>Lists all <code>kind: Model</code> object installed in teh Kubernetes API Server.</li>
+<li><a href="../cache-models-with-gcp-filestore/">Cache Models with GCP Filestore</a></li>
+<li><a href="../cache-models-with-aws-efs/">Cache Models with EFS</a></li>
 </ul>
-<h2 id="inference">Inference<a class="headerlink" href="#inference" title="Permanent link">&para;</a></h2>
-<h3 id="text-generation">Text Generation<a class="headerlink" href="#text-generation" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code>POST /v1/chat/completions
-POST /v1/completions
-</code></pre></div>
-<ul>
-<li>Supported for Models with <code>.spec.features: ["TextGeneration"]</code>.</li>
-</ul>
-<h3 id="embeddings">Embeddings<a class="headerlink" href="#embeddings" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code>POST /v1/embeddings
-</code></pre></div>
-<ul>
-<li>Supported for  Models with <code>.spec.features: ["TextEmbedding"]</code>.</li>
-</ul>
-<h3 id="speech-to-text">Speech-to-Text<a class="headerlink" href="#speech-to-text" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code>POST /v1/audio/transcriptions
-</code></pre></div>
-<ul>
-<li>Supported for Models with <code>.spec.features: ["SpeechToText"]</code>.</li>
-</ul>
-<h2 id="openai-client-libaries">OpenAI Client libaries<a class="headerlink" href="#openai-client-libaries" title="Permanent link">&para;</a></h2>
-<p>You can use the official OpenAI client libraries by setting the
-<code>base_url</code> to the KubeAI endpoint.</p>
-<p>For example, you can use the Python client like this:
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">openai</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenAI</span>
-<span class="n">client</span> <span class="o">=</span> <span class="n">OpenAI</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;ignored&quot;</span><span class="p">,</span>
-                <span class="n">base_url</span><span class="o">=</span><span class="s2">&quot;http://kubeai/openai/v1&quot;</span><span class="p">)</span>
-<span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
-  <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gemma2-2b-cpu&quot;</span><span class="p">,</span>
-  <span class="n">messages</span><span class="o">=</span><span class="p">[</span>
-    <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;You are a helpful assistant.&quot;</span><span class="p">},</span>
-    <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;Who won the world series in 2020?&quot;</span><span class="p">},</span>
-    <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;assistant&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;The Los Angeles Dodgers won the World Series in 2020.&quot;</span><span class="p">},</span>
-    <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;Where was it played?&quot;</span><span class="p">}</span>
-  <span class="p">]</span>
-<span class="p">)</span>
+<h2 id="vllm">vLLM<a class="headerlink" href="#vllm" title="Permanent link">&para;</a></h2>
+<p>For vLLM, use the following URL format:
+<div class="highlight"><pre><span></span><code><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pvc://$PVC_NAME</span><span class="w">          </span><span class="c1"># Loads the model from the PVC named $PVC_NAME</span>
+<span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pvc://$PVC_NAME/$PATH</span><span class="w">    </span><span class="c1"># Loads from a specific path within the PVC</span>
 </code></pre></div></p>
+<h3 id="pvc-requirements">PVC requirements<a class="headerlink" href="#pvc-requirements" title="Permanent link">&para;</a></h3>
+<p>vLLM supports both ReadWriteMany and ReadOnlyMany access modes. <code>Many</code> is used in order to support more than 1 vLLM replica.</p>
+<h2 id="ollama">Ollama<a class="headerlink" href="#ollama" title="Permanent link">&para;</a></h2>
+<p>For Ollama, use the following URL formats:
+<div class="highlight"><pre><span></span><code><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pvc://$PVC_NAME?model=$MODEL_NAME</span><span class="w">    </span><span class="c1"># Loads the model named $MODEL_NAME that&#39;s loaded on the disk</span>
+<span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pvc://$PVC_NAME/$PATH?model=$MODEL_NAME</span>
+</code></pre></div></p>
+<h3 id="pvc-requirements_1">PVC Requirements<a class="headerlink" href="#pvc-requirements_1" title="Permanent link">&para;</a></h3>
+<p>Ollama requires using ReadWriteMany access mode because the rename operation <code>ollama cp</code> needs to write to the PVC.</p>
+<h3 id="example-loading-qwen-05b-from-pvc">Example: Loading Qwen 0.5b from PVC<a class="headerlink" href="#example-loading-qwen-05b-from-pvc" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Create a PVC with ReadWriteMany named <code>model-pvc</code>. See <a href="https://github.com/substratusai/kubeai/blob/main/examples/ollama-pvc/pvc.yaml">example</a>.</li>
+<li>
+<p>Create a K8s Job to load the model onto `model-pvc. See <a href="https://github.com/substratusai/kubeai/blob/main/examples/ollama-pvc/job.yaml">example</a></p>
+<p>The PVC should now have a <code>blobs/</code> and <code>manifests/</code> directory after the loader completes.</p>
+</li>
+<li>
+<p>Create a Model to load from PVC:</p>
+</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pvc://model-pvc?model=qwen:0.5b</span>
+</code></pre></div>
 
 
 
