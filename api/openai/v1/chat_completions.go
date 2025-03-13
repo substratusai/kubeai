@@ -788,9 +788,8 @@ type ChatCompletionChoice struct {
 
 	// LogProbs contains log probability information for the choice.
 	// Only present if logprobs was set to true in the request.
-	// NOTE: OpenAI will respond with `"logprobs": null`. This API will omit null logprobs.
 	// +optional
-	LogProbs *LogProbs `json:"logprobs,omitzero"`
+	LogProbs *LogProbs `json:"logprobs"`
 
 	// ContentFilterResults contains any content filtering applied to this choice.
 	// +optional
@@ -822,7 +821,7 @@ type ChatCompletionResponse struct {
 
 	// Usage provides token usage statistics for the completion request.
 	// +optional
-	Usage *Usage `json:"usage,omitzero"`
+	Usage *CompletionUsage `json:"usage,omitzero"`
 
 	// SystemFingerprint represents the backend configuration that the model runs with.
 	// Can be used with the seed parameter to understand when backend changes have been made

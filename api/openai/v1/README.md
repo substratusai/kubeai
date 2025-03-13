@@ -8,16 +8,6 @@ The goal of these API structs is to define a standard API for interfacing with m
   * Used to preserve unknown fields while staying close to the stdlib.
 * Extra fields at the root of requests/responses should be preserved (supports additional fields that engines like vLLM support - see [vLLM docs](https://docs.vllm.ai/en/latest/serving/openai_compatible_server.html#extra-parameters)).
 
-## Generation
-
-To generate the `easyjson` implementations, run the following command:
-
-```bash
-make generate
-```
-
-**NOTE:** There are edge cases where you might need to comment out parts of the custom marshalling funcs and remove the generated files before `make generate` will succeed.
-
 ## API References
 
 API References (useful for AI generation) were generated using:

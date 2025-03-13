@@ -53,10 +53,10 @@ func (r *EmbeddingRequest) SetModel(m string) {
 
 // EmbeddingResponse is the response from a Create embeddings request.
 type EmbeddingResponse struct {
-	Object string      `json:"object"`
-	Data   []Embedding `json:"data"`
-	Model  string      `json:"model"`
-	Usage  *Usage      `json:"usage,omitzero"`
+	Object string          `json:"object"`
+	Data   []Embedding     `json:"data"`
+	Model  string          `json:"model"`
+	Usage  *EmbeddingUsage `json:"usage,omitzero"`
 
 	// Unknown fields should be preserved to fully support the extended set of fields that backends such as vLLM support.
 	Unknown jsontext.Value `json:",unknown"`

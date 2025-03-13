@@ -176,12 +176,13 @@ type CompletionChoice struct {
 	// `stop` if the model hit a natural stop point or a provided stop sequence,
 	// `length` if the maximum number of tokens specified in the request was reached,
 	// or `content_filter` if content was omitted due to a flag from content filters.
-	// +required
-	FinishReason string `json:"finish_reason"`
+	// This field is null in streaming responses until the final chunk.
+	// +optional
+	FinishReason *string `json:"finish_reason"`
 
 	// LogProbs contains log probability information if requested in the API call.
 	// +optional
-	LogProbs *LogprobResult `json:"logprobs,omitzero"`
+	LogProbs *LogprobResult `json:"logprobs"`
 }
 
 // LogprobResult represents logprob result of Choice.
@@ -227,7 +228,7 @@ type CompletionResponse struct {
 
 	// Usage provides usage statistics for the completion request.
 	// +optional
-	Usage *Usage `json:"usage,omitzero"`
+	Usage *CompletionUsage `json:"usage,omitzero"`
 
 	// SystemFingerprint represents the backend configuration that the model runs with.
 	// Can be used with the seed parameter to understand when backend changes have been made

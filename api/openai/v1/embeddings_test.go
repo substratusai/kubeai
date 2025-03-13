@@ -18,6 +18,19 @@ func TestEmbeddingRequest_JSON(t *testing.T) {
 		req           *v1.EmbeddingRequest
 	}{
 		{
+			name: "openapi spec example",
+			json: `{
+    "input": "The food was delicious and the waiter...",
+    "model": "text-embedding-ada-002",
+    "encoding_format": "float"
+}`,
+			req: &v1.EmbeddingRequest{
+				Model:          "text-embedding-ada-002",
+				Input:          "The food was delicious and the waiter...",
+				EncodingFormat: v1.EmbeddingEncodingFormatFloat,
+			},
+		},
+		{
 			name: "empty request",
 			json: `{"model":"","input":null}`,
 			req:  &v1.EmbeddingRequest{},
@@ -119,6 +132,39 @@ func TestEmbeddingResponse_JSON(t *testing.T) {
 		resp          *v1.EmbeddingResponse
 	}{
 		{
+			name: "openapi spec example",
+			json: `{
+  "object": "list",
+  "data": [
+    {
+      "object": "embedding",
+      "embedding": [0.0023064255, -0.009327292, -0.0028842222],
+      "index": 0
+    }
+  ],
+  "model": "text-embedding-ada-002",
+  "usage": {
+    "prompt_tokens": 8,
+    "total_tokens": 8
+  }
+}`,
+			resp: &v1.EmbeddingResponse{
+				Object: "list",
+				Data: []v1.Embedding{
+					{
+						Object:    "embedding",
+						Embedding: []float32{0.0023064255, -0.009327292, -0.0028842222},
+						Index:     0,
+					},
+				},
+				Model: "text-embedding-ada-002",
+				Usage: &v1.EmbeddingUsage{
+					PromptTokens: 8,
+					TotalTokens: 8,
+				},
+			},
+		},
+		{
 			name: "empty response",
 			json: `{"object":"","data":[],"model":""}`,
 			resp: &v1.EmbeddingResponse{Data: []v1.Embedding{}},
@@ -137,8 +183,7 @@ func TestEmbeddingResponse_JSON(t *testing.T) {
 			"model": "text-embedding-ada-002",
 			"usage": {
 				"prompt_tokens": 10,
-				"total_tokens": 20,
-				"completion_tokens": 10
+				"total_tokens": 20
 			}
 		}`,
 			resp: &v1.EmbeddingResponse{
@@ -151,10 +196,9 @@ func TestEmbeddingResponse_JSON(t *testing.T) {
 					},
 				},
 				Model: "text-embedding-ada-002",
-				Usage: &v1.Usage{
-					PromptTokens:     10,
-					TotalTokens:      20,
-					CompletionTokens: 10,
+				Usage: &v1.EmbeddingUsage{
+					PromptTokens: 10,
+					TotalTokens: 20,
 				},
 			},
 		},
