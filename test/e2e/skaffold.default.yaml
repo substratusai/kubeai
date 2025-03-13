@@ -1,0 +1,23 @@
+apiVersion: skaffold/v4beta11
+kind: Config
+metadata:
+  name: kubeai-default-test
+build:
+  artifacts:
+    - image: substratusai/kubeai
+  local:
+    push: false
+deploy:
+  helm:
+    releases:
+      - name: kubeai
+        chartPath: ./charts/kubeai
+        valuesFiles:
+          - ./test/e2e/values.default.yaml
+        skipBuildDependencies: true
+portForward:
+  - resourceType: service
+    resourceName: kubeai
+    namespace: default
+    port: 80
+    localPort: 8000
