@@ -247,10 +247,12 @@ func parseModelURL(urlStr string) (modelURL, error) {
 }
 
 type modelURL struct {
-	original   string // e.g. "hf://username/model"
-	scheme     string // e.g. "hf", "s3", "gs", "oss", "pvc"
-	ref        string // e.g. "username/model"
-	name       string // e.g. username or bucket-name
-	path       string // e.g. model or path/to/model
-	modelParam string // e.g. "qwen2:0.5b when ?model=qwen2:0.5b is part of the URL
+	original string // e.g. "hf://username/model"
+	scheme   string // e.g. "hf", "s3", "gs", "oss", "pvc"
+	ref      string // e.g. "username/model"
+	name     string // e.g. username or bucket-name
+	path     string // e.g. model or path/to/model
+	// e.g. "qwen2:0.5b" when ?model=qwen2:0.5b is part of the URL.
+	// This is used for Ollama where the PVC may have multiple models and we need to specify which one to load by name.
+	modelParam string
 }
