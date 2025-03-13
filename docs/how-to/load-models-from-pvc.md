@@ -45,12 +45,12 @@ url: pvc://my-pvc?model=qwen:0.5b
 ## Implementation details
 
 1. **Mounting**: KubeAI will automatically mount the PVC at:
-   - vLLM: `/model` directory in the model server pod
-   - Ollama: `/model` directory in the Ollama server pod
+    - vLLM: `/model` directory in the model server pod
+    - Ollama: `/model` directory in the Ollama server pod
 
 2. **Environment Variables**: 
-   - For Ollama, KubeAI automatically sets `OLLAMA_MODELS=/model` to ensure models are loaded from the PVC
-   - For vLLM, the model path is automatically configured through command-line arguments
+    - For Ollama, KubeAI automatically sets `OLLAMA_MODELS=/model` to ensure models are loaded from the PVC
+    - For vLLM, the model path is automatically configured through command-line arguments
 
 ## Best Practices
 
