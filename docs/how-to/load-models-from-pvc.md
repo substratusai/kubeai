@@ -1,10 +1,14 @@
 # Load Models from PVC
 
 You can store your models in a Persistent Volume Claim (PVC) and let KubeAI use them for serving.
+Both vLLM and Ollama engines support loading models from PVCs.
 
 You must ensure the model files are already present in the PVC before creating the Model resource.
+Alternatively you can use KubeAI's native caching mechanism which downloads the model for you:
 
-Both vLLM and Ollama engines support loading models from PVCs.
+- [Cache Models with GCP Filestore](./cache-models-with-gcp-filestore.md)
+- [Cache Models with EFS](./cache-models-with-aws-efs.md)
+
 
 ## vLLM
 
