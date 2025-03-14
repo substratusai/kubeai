@@ -7,6 +7,9 @@ build:
     - image: substratusai/kubeai
   local:
     push: false
+manifests:
+  rawYaml:
+    - ./test/e2e/messaging-rabbitmq/rabbitmq.yaml
 deploy:
   helm:
     releases:
