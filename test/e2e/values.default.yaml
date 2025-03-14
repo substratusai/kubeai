@@ -1,3 +1,5 @@
+open-webui:
+  enabled: false
 cacheProfiles:
   e2e-test-kind-pv:
     sharedFilesystem:

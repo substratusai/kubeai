@@ -1,0 +1,11 @@
+env:
+  - name: RABBIT_SERVER_URL
+    value: amqp://guest:guest@rabbitmq.default.svc.cluster.local:5672
+messaging:
+  errorMaxBackoff: 30s
+  streams:
+    - maxHandlers: "1"
+      requestsURL: rabbit://requests
+      responsesURL: rabbit://responses
+open-webui:
+  enabled: false

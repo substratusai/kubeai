@@ -81,49 +81,17 @@ helm-dependency-build:
 	helm repo add open-webui https://helm.openwebui.com/
 	helm dependency build ./charts/kubeai
 
-.PHONY: test-e2e-quickstart
-test-e2e-quickstart: skaffold helm-dependency-build
-	./test/e2e/run.sh quickstart
-
-.PHONY: test-e2e-rollouts
-test-e2e-rollouts: skaffold helm-dependency-build
-	./test/e2e/run.sh rollouts
-
-.PHONY: test-e2e-openai-python-client
-test-e2e-openai-python-client: skaffold helm-dependency-build
-	./test/e2e/run.sh openai-python-client --profile e2e-test-default
-
-.PHONY: test-e2e-autoscaler-restart-under-load
-test-e2e-autoscaler-restart-under-load: skaffold helm-dependency-build
-	./test/e2e/run.sh autoscaler-restart-under-load --profile e2e-test-autoscaler-restart
-
-.PHONY: test-e2e-autoscaler-restart-no-load
-test-e2e-autoscaler-restart-no-load: skaffold helm-dependency-build
-	./test/e2e/run.sh autoscaler-restart-no-load --profile e2e-test-autoscaler-restart
-
-.PHONY: test-e2e-cache-shared-filesystem
-test-e2e-cache-shared-filesystem: skaffold helm-dependency-build
-	./test/e2e/run.sh cache-shared-filesystem --profile e2e-test-default
-
-.PHONY: test-e2e-engine-vllm-pvc
-test-e2e-engine-vllm-pvc: skaffold helm-dependency-build
-	./test/e2e/run.sh engine-vllm-pvc --profile e2e-test-default
-
-.PHONY: test-e2e-engine-infinity
-test-e2e-engine-infinity: skaffold helm-dependency-build
-	./test/e2e/run.sh engine-infinity --profile e2e-test-default
-
-.PHONY: test-e2e-engine-ollama-pvc
-test-e2e-engine-ollama-pvc: skaffold helm-dependency-build
-	./test/e2e/run.sh engine-ollama-pvc --profile e2e-test-default
-
-.PHONY: test-e2e-engine
-test-e2e-engine: skaffold helm-dependency-build
-	CACHE_PROFILE=$(CACHE_PROFILE) ./test/e2e/run.sh engine-$(ENGINE) --profile e2e-test-default
-
-.PHONY: test-e2e-model-files
-test-e2e-model-files: skaffold helm-dependency-build
-	./test/e2e/run.sh model-files --profile e2e-test-default
+# TEST_CASE is required for test-e2e target
+.PHONY: test-e2e
+test-e2e: skaffold helm-dependency-build
+ifeq ($(TEST_CASE),)
+	@echo "Error: TEST_CASE is required. Usage: make test-e2e TEST_CASE=<test-case>"
+	@echo "Available test cases:"
+	@ls -1 test/e2e/ | grep -v "\(common\|run.sh\|skaffold\|values\)" | sed 's/^/  - /'
+	@exit 1
+else
+	$(if $(CACHE_PROFILE),CACHE_PROFILE=$(CACHE_PROFILE),) ./test/e2e/run.sh $(TEST_CASE)
+endif
 
 .PHONY: lint
 lint: golangci-lint ## Run golangci-lint linter
