@@ -271,8 +271,6 @@ spec:
               rule: '!has(self.maxReplicas) || self.minReplicas <= self.maxReplicas'
             - message: adapters only supported with VLLM engine.
               rule: '!has(self.adapters) || self.engine == "VLLM"'
-            - message: url is immutable when using cacheProfile.
-              rule: '!has(oldSelf.cacheProfile) || self.url == oldSelf.url'
             - message: All file paths must be unique.
               rule: '!has(self.files) || self.files.size() <= 1 || !self.files.exists(f,
                 self.files.filter(other, other.path == f.path).size() > 1)'
@@ -283,6 +281,8 @@ spec:
                 properties:
                   loaded:
                     type: boolean
+                  url:
+                    type: string
                 required:
                 - loaded
                 type: object
