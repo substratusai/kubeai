@@ -10,7 +10,6 @@ build:
 manifests:
   rawYaml:
     - ./test/e2e/messaging-rabbitmq/rabbitmq.yaml
-deploy:
   helm:
     releases:
       - name: kubeai
@@ -18,6 +17,9 @@ deploy:
         valuesFiles:
           - ./test/e2e/messaging-rabbitmq/values.yaml
         skipBuildDependencies: true
+deploy:
+  statusCheckDeadlineSeconds: 300
+  tolerateFailuresUntilDeadline: true
 portForward:
   - resourceType: service
     resourceName: rabbitmq

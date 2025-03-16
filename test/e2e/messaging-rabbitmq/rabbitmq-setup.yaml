@@ -1,0 +1,28 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: rabbitmq-setup
+spec:
+  template:
+    spec:
+      containers:
+      - name: rabbitmq-setup
+        image: rabbitmq:3-management
+        command: 
+        - sh
+        - -c
+        - |
+          until rabbitmqadmin --host=rabbitmq.default.svc.cluster.local --port=15672 --username=guest --password=guest list exchanges; do
+            echo "Waiting for RabbitMQ to be ready...";
+            sleep 2;
+          done;
+          rabbitmqadmin --host=rabbitmq.default.svc.cluster.local --port=15672 --username=guest --password=guest declare exchange name=requests_exchange durable=true;
+          rabbitmqadmin --host=rabbitmq.default.svc.cluster.local --port=15672 --username=guest --password=guest declare exchange name=responses_exchange durable=true;
+          echo "RabbitMQ exchanges created successfully"
+          rabbitmqadmin --host=rabbitmq.default.svc.cluster.local --port=15672 --username=guest --password=guest declare queue name=requests_queue durable=true;
+          rabbitmqadmin --host=rabbitmq.default.svc.cluster.local --port=15672 --username=guest --password=guest declare queue name=responses_queue durable=true;
+          echo "RabbitMQ queues created successfully"
+          rabbitmqadmin --host=rabbitmq.default.svc.cluster.local --port=15672 --username=guest --password=guest declare binding source=requests_exchange destination=requests_queue;
+          rabbitmqadmin --host=rabbitmq.default.svc.cluster.local --port=15672 --username=guest --password=guest declare binding source=responses_exchange destination=responses_queue;
+          echo "RabbitMQ bindings created successfully"
+      restartPolicy: OnFailure
