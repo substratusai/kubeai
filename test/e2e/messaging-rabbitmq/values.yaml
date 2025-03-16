@@ -4,8 +4,8 @@ env:
 messaging:
   errorMaxBackoff: 30s
   streams:
-    - maxHandlers: "1"
-      requestsURL: rabbit://requests
-      responsesURL: rabbit://responses
+    - maxHandlers: 1
+      requestsURL: rabbit://requests_exchange
+      responsesURL: rabbit://responses_exchange
 open-webui:
   enabled: false
