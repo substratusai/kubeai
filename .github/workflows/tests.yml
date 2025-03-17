@@ -37,7 +37,6 @@ jobs:
         - "engine-vllm-pvc"
         - "engine-ollama-pvc"
         - "model-files"
-        - "messaging-rabbitmq"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
