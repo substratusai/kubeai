@@ -45,31 +45,31 @@ func TestCompletionRequest_JSON(t *testing.T) {
 		req           *v1.CompletionRequest
 	}{
 		{
-			name: "openapi spec example - no streaming",
+			name: "real-world example - basic completion",
 			json: `{
-    "model": "VAR_completion_model_id",
-    "prompt": "Say this is a test",
-    "max_tokens": 7,
-    "temperature": 0
-  }`,
+        "model": "deepseek-r1-distill-llama-8b-l4",
+        "prompt": "Say this is a test",
+        "max_tokens": 7,
+        "temperature": 0
+      }`,
 			req: &v1.CompletionRequest{
-				Model:       "VAR_completion_model_id",
+				Model:       "deepseek-r1-distill-llama-8b-l4",
 				Prompt:      "Say this is a test",
 				MaxTokens:   7,
 				Temperature: v1.Ptr[float32](0),
 			},
 		},
 		{
-			name: "openapi spec example - streaming",
+			name: "real-world example - streaming completion",
 			json: `{
-    "model": "VAR_completion_model_id",
-    "prompt": "Say this is a test",
-    "max_tokens": 7,
-    "temperature": 0,
-    "stream": true
-  }`,
+        "model": "deepseek-r1-distill-llama-8b-l4",
+        "prompt": "Say this is a test",
+        "max_tokens": 7,
+        "temperature": 0,
+        "stream": true
+      }`,
 			req: &v1.CompletionRequest{
-				Model:       "VAR_completion_model_id",
+				Model:       "deepseek-r1-distill-llama-8b-l4",
 				Prompt:      "Say this is a test",
 				MaxTokens:   7,
 				Temperature: v1.Ptr[float32](0),
@@ -82,13 +82,16 @@ func TestCompletionRequest_JSON(t *testing.T) {
 			req:  &v1.CompletionRequest{},
 		},
 		{
-			name: "extra field",
-			json: `{"model":"", "prompt": null, "eexxttrraa":"val"}`,
-			req:  &v1.CompletionRequest{},
+			name: "extra field test",
+			json: `{"model":"test-model", "prompt": "test-prompt", "extra_field":"should be preserved"}`,
+			req: &v1.CompletionRequest{
+				Model:  "test-model",
+				Prompt: "test-prompt",
+			},
 		},
 		{
 			name: "string prompt",
-			json: `{"model":"test-model","prompt":"test-prompt","extra":"val"}`,
+			json: `{"model":"test-model","prompt":"test-prompt"}`,
 			req: &v1.CompletionRequest{
 				Model:  "test-model",
 				Prompt: "test-prompt",
@@ -96,7 +99,7 @@ func TestCompletionRequest_JSON(t *testing.T) {
 		},
 		{
 			name: "array prompt",
-			json: `{"model":"test-model","prompt":["test-prompt1","test-prompt2"],"extra":"val"}`,
+			json: `{"model":"test-model","prompt":["test-prompt1","test-prompt2"]}`,
 			req: &v1.CompletionRequest{
 				Model:  "test-model",
 				Prompt: []interface{}{"test-prompt1", "test-prompt2"},

@@ -18,15 +18,15 @@ func TestEmbeddingRequest_JSON(t *testing.T) {
 		req           *v1.EmbeddingRequest
 	}{
 		{
-			name: "openapi spec example",
+			name: "real world example",
 			json: `{
-    "input": "The food was delicious and the waiter...",
-    "model": "text-embedding-ada-002",
-    "encoding_format": "float"
+        "input": "What is the meaning of life?",
+        "model": "text-embedding-ada-002",
+        "encoding_format": "float"
 }`,
 			req: &v1.EmbeddingRequest{
 				Model:          "text-embedding-ada-002",
-				Input:          "The food was delicious and the waiter...",
+				Input:          "What is the meaning of life?",
 				EncodingFormat: v1.EmbeddingEncodingFormatFloat,
 			},
 		},
@@ -41,13 +41,16 @@ func TestEmbeddingRequest_JSON(t *testing.T) {
 			req:  &v1.EmbeddingRequest{Model: "test", Input: "hey"},
 		},
 		{
-			name: "extra field",
-			json: `{"model":"","input":null,"eexxttrraa":"val"}`,
-			req:  &v1.EmbeddingRequest{},
+			name: "extra field test",
+			json: `{"model":"text-embedding-ada-002","input":"test","extra_field":"should be preserved"}`,
+			req: &v1.EmbeddingRequest{
+				Model: "text-embedding-ada-002",
+				Input: "test",
+			},
 		},
 		{
 			name: "string input",
-			json: `{"model":"text-embedding-ada-002","input":"This is a test string","extra":"val"}`,
+			json: `{"model":"text-embedding-ada-002","input":"This is a test string"}`,
 			req: &v1.EmbeddingRequest{
 				Model: "text-embedding-ada-002",
 				Input: "This is a test string",
@@ -55,7 +58,7 @@ func TestEmbeddingRequest_JSON(t *testing.T) {
 		},
 		{
 			name: "array input",
-			json: `{"model":"text-embedding-ada-002","input":["This is a test string","And another string"],"extra":"val"}`,
+			json: `{"model":"text-embedding-ada-002","input":["This is a test string","And another string"]}`,
 			req: &v1.EmbeddingRequest{
 				Model: "text-embedding-ada-002",
 				Input: []interface{}{"This is a test string", "And another string"},
@@ -63,7 +66,7 @@ func TestEmbeddingRequest_JSON(t *testing.T) {
 		},
 		{
 			name: "with encoding format float",
-			json: `{"model":"text-embedding-ada-002","input":"Test","encoding_format":"float","extra":"val"}`,
+			json: `{"model":"text-embedding-ada-002","input":"Test","encoding_format":"float"}`,
 			req: &v1.EmbeddingRequest{
 				Model:          "text-embedding-ada-002",
 				Input:          "Test",
@@ -72,7 +75,7 @@ func TestEmbeddingRequest_JSON(t *testing.T) {
 		},
 		{
 			name: "with encoding format base64",
-			json: `{"model":"text-embedding-ada-002","input":"Test","encoding_format":"base64","extra":"val"}`,
+			json: `{"model":"text-embedding-ada-002","input":"Test","encoding_format":"base64"}`,
 			req: &v1.EmbeddingRequest{
 				Model:          "text-embedding-ada-002",
 				Input:          "Test",
@@ -132,17 +135,17 @@ func TestEmbeddingResponse_JSON(t *testing.T) {
 		resp          *v1.EmbeddingResponse
 	}{
 		{
-			name: "openapi spec example",
+			name: "real world example",
 			json: `{
   "object": "list",
   "data": [
     {
       "object": "embedding",
-      "embedding": [0.0023064255, -0.009327292, -0.0028842222],
+      "embedding": [0.0022756963, -0.009305916, 0.015742613, -0.0077253063, -0.0047450014],
       "index": 0
     }
   ],
-  "model": "text-embedding-ada-002",
+  "model": "text-embedding-ada-002-v2",
   "usage": {
     "prompt_tokens": 8,
     "total_tokens": 8
@@ -153,11 +156,11 @@ func TestEmbeddingResponse_JSON(t *testing.T) {
 				Data: []v1.Embedding{
 					{
 						Object:    "embedding",
-						Embedding: []float32{0.0023064255, -0.009327292, -0.0028842222},
+						Embedding: []float32{0.0022756963, -0.009305916, 0.015742613, -0.0077253063, -0.0047450014},
 						Index:     0,
 					},
 				},
-				Model: "text-embedding-ada-002",
+				Model: "text-embedding-ada-002-v2",
 				Usage: &v1.EmbeddingUsage{
 					PromptTokens: 8,
 					TotalTokens: 8,

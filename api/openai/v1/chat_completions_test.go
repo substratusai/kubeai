@@ -50,14 +50,44 @@ func TestChatCompletionRequest_JSON(t *testing.T) {
 		roundTripJSON string
 		req           *v1.ChatCompletionRequest
 	}{
-		// OpenAPI example: Default chat request
+		// Real-world examples from reference folder
 		{
-			name: "openapi default example",
+			name: "extra field test",
 			json: `{
-				"model": "gpt-4o",
+				"model": "deepseek-r1-distill-llama-8b-l4",
 				"messages": [
 					{
-						"role": "developer",
+						"role": "system",
+						"content": "You are a helpful assistant."
+					},
+					{
+						"role": "user",
+						"content": "Hello!"
+					}
+				],
+				"extra_field": "should be preserved"
+			}`,
+			req: &v1.ChatCompletionRequest{
+				Model: "deepseek-r1-distill-llama-8b-l4",
+				Messages: []v1.ChatCompletionMessage{
+					{
+						Role:    "system",
+						Content: &v1.ChatMessageContent{String: "You are a helpful assistant."},
+					},
+					{
+						Role:    "user",
+						Content: &v1.ChatMessageContent{String: "Hello!"},
+					},
+				},
+			},
+		},
+		{
+			name: "basic chat completion",
+			json: `{
+				"model": "deepseek-r1-distill-llama-8b-l4",
+				"messages": [
+					{
+						"role": "system",
 						"content": "You are a helpful assistant."
 					},
 					{
@@ -67,10 +97,10 @@ func TestChatCompletionRequest_JSON(t *testing.T) {
 				]
 			}`,
 			req: &v1.ChatCompletionRequest{
-				Model: "gpt-4o",
+				Model: "deepseek-r1-distill-llama-8b-l4",
 				Messages: []v1.ChatCompletionMessage{
 					{
-						Role:    "developer",
+						Role:    "system",
 						Content: &v1.ChatMessageContent{String: "You are a helpful assistant."},
 					},
 					{
@@ -130,14 +160,14 @@ func TestChatCompletionRequest_JSON(t *testing.T) {
 			},
 		},
 
-		// OpenAPI example: Streaming
+		// Real-world example - streaming chat completion
 		{
-			name: "openapi streaming example",
+			name: "real-world example - streaming chat completion",
 			json: `{
-				"model": "gpt-4o",
+				"model": "deepseek-r1-distill-llama-8b-l4",
 				"messages": [
 					{
-						"role": "developer",
+						"role": "system",
 						"content": "You are a helpful assistant."
 					},
 					{
@@ -148,10 +178,10 @@ func TestChatCompletionRequest_JSON(t *testing.T) {
 				"stream": true
 			}`,
 			req: &v1.ChatCompletionRequest{
-				Model: "gpt-4o",
+				Model: "deepseek-r1-distill-llama-8b-l4",
 				Messages: []v1.ChatCompletionMessage{
 					{
-						Role:    "developer",
+						Role:    "system",
 						Content: &v1.ChatMessageContent{String: "You are a helpful assistant."},
 					},
 					{
