@@ -163,7 +163,7 @@ func TestEmbeddingResponse_JSON(t *testing.T) {
 				Model: "text-embedding-ada-002-v2",
 				Usage: &v1.EmbeddingUsage{
 					PromptTokens: 8,
-					TotalTokens: 8,
+					TotalTokens:  8,
 				},
 			},
 		},
@@ -201,7 +201,7 @@ func TestEmbeddingResponse_JSON(t *testing.T) {
 				Model: "text-embedding-ada-002",
 				Usage: &v1.EmbeddingUsage{
 					PromptTokens: 10,
-					TotalTokens: 20,
+					TotalTokens:  20,
 				},
 			},
 		},
