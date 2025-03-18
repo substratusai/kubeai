@@ -8,13 +8,13 @@
       
       
       
-        <link rel="canonical" href="https://www.kubeai.org/contributing/development-environment/">
+        <link rel="canonical" href="https://www.kubeai.org/contributing/development-guide/">
       
       
-        <link rel="prev" href="../../tutorials/weaviate/">
+        <link rel="prev" href="../development-environment/">
       
       
-        <link rel="next" href="../development-guide/">
+        <link rel="next" href="../documentation/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -22,7 +22,7 @@
     
     
       
-        <title>Development environment - KubeAI</title>
+        <title>KubeAI Development Guide - KubeAI</title>
       
     
     
@@ -65,11 +65,11 @@
       
         <meta  property="og:type"  content="website" >
       
-        <meta  property="og:title"  content="Development environment - KubeAI" >
+        <meta  property="og:title"  content="KubeAI Development Guide - KubeAI" >
       
         <meta  property="og:description"  content="None" >
       
-        <meta  property="og:image"  content="https://www.kubeai.org/assets/images/social/contributing/development-environment.png" >
+        <meta  property="og:image"  content="https://www.kubeai.org/assets/images/social/contributing/development-guide.png" >
       
         <meta  property="og:image:type"  content="image/png" >
       
@@ -77,15 +77,15 @@
       
         <meta  property="og:image:height"  content="630" >
       
-        <meta  property="og:url"  content="https://www.kubeai.org/contributing/development-environment/" >
+        <meta  property="og:url"  content="https://www.kubeai.org/contributing/development-guide/" >
       
         <meta  name="twitter:card"  content="summary_large_image" >
       
-        <meta  name="twitter:title"  content="Development environment - KubeAI" >
+        <meta  name="twitter:title"  content="KubeAI Development Guide - KubeAI" >
       
         <meta  name="twitter:description"  content="None" >
       
-        <meta  name="twitter:image"  content="https://www.kubeai.org/assets/images/social/contributing/development-environment.png" >
+        <meta  name="twitter:image"  content="https://www.kubeai.org/assets/images/social/contributing/development-guide.png" >
       
     
     
@@ -106,7 +106,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#development-environment" class="md-skip">
+        <a href="#kubeai-development-guide" class="md-skip">
           Skip to content
         </a>
       
@@ -142,7 +142,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Development environment
+              KubeAI Development Guide
             
           </span>
         </div>
@@ -1081,6 +1081,28 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../development-environment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Development environment
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -1097,7 +1119,7 @@
           
   
   <span class="md-ellipsis">
-    Development environment
+    KubeAI Development Guide
     
   </span>
   
@@ -1109,7 +1131,7 @@
         
   
   <span class="md-ellipsis">
-    Development environment
+    KubeAI Development Guide
     
   </span>
   
@@ -1132,68 +1154,47 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#optional-cloud-setup" class="md-nav__link">
+  <a href="#openai-api" class="md-nav__link">
     <span class="md-ellipsis">
-      Optional: Cloud Setup
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Optional: Cloud Setup">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#gcp-pubsub" class="md-nav__link">
-    <span class="md-ellipsis">
-      GCP PubSub
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#run-in-local-cluster" class="md-nav__link">
-    <span class="md-ellipsis">
-      Run in Local Cluster
+      OpenAI API
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#running" class="md-nav__link">
+  <a href="#build-and-run-commands" class="md-nav__link">
     <span class="md-ellipsis">
-      Running
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Running">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#completions-api" class="md-nav__link">
-    <span class="md-ellipsis">
-      Completions API
+      Build and Run Commands
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#messaging-integration" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#testing-commands" class="md-nav__link">
     <span class="md-ellipsis">
-      Messaging Integration
+      Testing Commands
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#code-style" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Style
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conventions
+    </span>
+  </a>
   
 </li>
       
@@ -1201,28 +1202,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../development-guide/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    KubeAI Development Guide
-    
-  </span>
-  
-
-      </a>
     </li>
   
 
@@ -1683,68 +1662,47 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#optional-cloud-setup" class="md-nav__link">
+  <a href="#openai-api" class="md-nav__link">
     <span class="md-ellipsis">
-      Optional: Cloud Setup
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Optional: Cloud Setup">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#gcp-pubsub" class="md-nav__link">
-    <span class="md-ellipsis">
-      GCP PubSub
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#run-in-local-cluster" class="md-nav__link">
-    <span class="md-ellipsis">
-      Run in Local Cluster
+      OpenAI API
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#running" class="md-nav__link">
+  <a href="#build-and-run-commands" class="md-nav__link">
     <span class="md-ellipsis">
-      Running
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Running">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#completions-api" class="md-nav__link">
-    <span class="md-ellipsis">
-      Completions API
+      Build and Run Commands
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#messaging-integration" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#testing-commands" class="md-nav__link">
     <span class="md-ellipsis">
-      Messaging Integration
+      Testing Commands
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#code-style" class="md-nav__link">
+    <span class="md-ellipsis">
+      Code Style
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conventions
+    </span>
+  </a>
   
 </li>
       
@@ -1767,65 +1725,41 @@
   
 
 
-<h1 id="development-environment">Development environment<a class="headerlink" href="#development-environment" title="Permanent link">&para;</a></h1>
-<p>This document provides instructions for setting up an environment for developing KubeAI.</p>
-<h2 id="optional-cloud-setup">Optional: Cloud Setup<a class="headerlink" href="#optional-cloud-setup" title="Permanent link">&para;</a></h2>
-<h3 id="gcp-pubsub">GCP PubSub<a class="headerlink" href="#gcp-pubsub" title="Permanent link">&para;</a></h3>
-<p>If you are develop PubSub messaging integration on GCP, setup test topics and subscriptions and uncomment the <code>.messaging.streams</code> in <code>./hack/dev-config.yaml</code>.</p>
-<div class="highlight"><pre><span></span><code>gcloud<span class="w"> </span>auth<span class="w"> </span>login<span class="w"> </span>--update-adc
-
-gcloud<span class="w"> </span>pubsub<span class="w"> </span>topics<span class="w"> </span>create<span class="w"> </span>test-kubeai-requests
-gcloud<span class="w"> </span>pubsub<span class="w"> </span>subscriptions<span class="w"> </span>create<span class="w"> </span>test-kubeai-requests-sub<span class="w"> </span>--topic<span class="w"> </span>test-kubeai-requests
-gcloud<span class="w"> </span>pubsub<span class="w"> </span>topics<span class="w"> </span>create<span class="w"> </span>test-kubeai-responses
-gcloud<span class="w"> </span>pubsub<span class="w"> </span>subscriptions<span class="w"> </span>create<span class="w"> </span>test-kubeai-responses-sub<span class="w"> </span>--topic<span class="w"> </span>test-kubeai-responses
-</code></pre></div>
-<h2 id="run-in-local-cluster">Run in Local Cluster<a class="headerlink" href="#run-in-local-cluster" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>kind<span class="w"> </span>create<span class="w"> </span>cluster
-<span class="c1"># OR</span>
-<span class="c1">#./hack/create-dev-gke-cluster.yaml</span>
-
-<span class="c1"># Generate CRDs from Go code.</span>
-make<span class="w"> </span>generate<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>make<span class="w"> </span>manifests
-
-<span class="c1"># When CRDs are changed reapply using kubectl:</span>
-kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>./charts/kubeai/templates/crds
-
-<span class="c1"># Model with special address annotations:</span>
-kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>./hack/dev-models/kind-cpu.yaml
-
-<span class="c1"># OPTION A #</span>
-<span class="c1"># Run KubeAI inside cluster</span>
-<span class="c1"># Change `-f` based on the cluster environment.</span>
-helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>kubeai<span class="w"> </span>./charts/kubeai<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--set<span class="w"> </span>open-webui.enabled<span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--set<span class="w"> </span>image.tag<span class="o">=</span>latest<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--set<span class="w"> </span>image.pullPolicy<span class="o">=</span>Always<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--set<span class="w"> </span>image.repository<span class="o">=</span>us-central1-docker.pkg.dev/substratus-dev/default/kubeai<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--set<span class="w"> </span>secrets.huggingface.token<span class="o">=</span><span class="nv">$HUGGING_FACE_HUB_TOKEN</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--set<span class="w"> </span><span class="nv">replicaCount</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>-f<span class="w"> </span>./hack/dev-gke-helm-values.yaml
-
-<span class="c1"># OPTION B #</span>
-<span class="c1"># For quick local interation (run KubeAI outside of cluster)</span>
-kubectl<span class="w"> </span>create<span class="w"> </span>cm<span class="w"> </span>kubeai-autoscaler-state<span class="w"> </span>-oyaml<span class="w"> </span>--dry-run<span class="o">=</span>client<span class="w"> </span><span class="p">|</span><span class="w"> </span>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>-
-<span class="nv">CONFIG_PATH</span><span class="o">=</span>./hack/dev-configs/kind.yaml<span class="w"> </span><span class="nv">POD_NAMESPACE</span><span class="o">=</span>default<span class="w"> </span>go<span class="w"> </span>run<span class="w"> </span>./cmd/main.go
-
-<span class="c1"># In another terminal:</span>
-<span class="k">while</span><span class="w"> </span>true<span class="p">;</span><span class="w"> </span><span class="k">do</span><span class="w"> </span>kubectl<span class="w"> </span>port-forward<span class="w"> </span>service/dev-model<span class="w"> </span><span class="m">7000</span>:7000<span class="p">;</span><span class="w"> </span><span class="k">done</span>
-<span class="c1">############</span>
-</code></pre></div>
-<h2 id="running">Running<a class="headerlink" href="#running" title="Permanent link">&para;</a></h2>
-<h3 id="completions-api">Completions API<a class="headerlink" href="#completions-api" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><span class="c1"># If you are running kubeai in-cluster:</span>
-<span class="c1"># kubectl port-forward svc/kubeai 8000:80</span>
-
-curl<span class="w"> </span>http://localhost:8000/openai/v1/completions<span class="w"> </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;prompt&quot;: &quot;Hi&quot;, &quot;model&quot;: &quot;dev&quot;}&#39;</span><span class="w"> </span>-v
-</code></pre></div>
-<h3 id="messaging-integration">Messaging Integration<a class="headerlink" href="#messaging-integration" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code>gcloud<span class="w"> </span>pubsub<span class="w"> </span>topics<span class="w"> </span>publish<span class="w"> </span>test-kubeai-requests<span class="w"> </span><span class="se">\ </span><span class="w">                 </span>
-<span class="w">  </span>--message<span class="o">=</span><span class="s1">&#39;{&quot;path&quot;:&quot;/v1/completions&quot;, &quot;metadata&quot;:{&quot;a&quot;:&quot;b&quot;}, &quot;body&quot;: {&quot;model&quot;: &quot;dev&quot;, &quot;prompt&quot;: &quot;hi&quot;}}&#39;</span>
-
-gcloud<span class="w"> </span>pubsub<span class="w"> </span>subscriptions<span class="w"> </span>pull<span class="w"> </span>test-kubeai-responses-sub<span class="w"> </span>--auto-ack
-</code></pre></div>
+<h1 id="kubeai-development-guide">KubeAI Development Guide<a class="headerlink" href="#kubeai-development-guide" title="Permanent link">&para;</a></h1>
+<h2 id="openai-api">OpenAI API<a class="headerlink" href="#openai-api" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Types: See <code>./api/openai/v1/README.md</code></li>
+</ul>
+<h2 id="build-and-run-commands">Build and Run Commands<a class="headerlink" href="#build-and-run-commands" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Build: <code>make build</code> (manager binary)</li>
+<li>Docker: <code>make docker-build</code></li>
+<li>Run locally: <code>make run</code></li>
+<li>Generate go code (for <code>./api/*</code>): <code>make generate</code></li>
+<li>Generate manifests: <code>make manifests</code></li>
+</ul>
+<h2 id="testing-commands">Testing Commands<a class="headerlink" href="#testing-commands" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Unit tests: <code>make test-unit</code></li>
+<li>Single unit test (does not work for integration tests): <code>go test -v ./path/to/package -run TestNamePattern</code></li>
+<li>Integration tests: <code>make test-integration RUN=SpecificTestToRun</code></li>
+<li>E2E tests: <code>make test-e2e-*</code> (various test suites)</li>
+<li>Must be run with an active <code>kind</code> cluster (Run <code>kind create cluster</code> if <code>kubectl config current-context</code> does not report a cluster as existing).</li>
+</ul>
+<h2 id="code-style">Code Style<a class="headerlink" href="#code-style" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Format: <code>make fmt</code> (standard Go formatting)</li>
+<li>Lint: <code>make lint</code> (golangci-lint v1.59.1)</li>
+<li>Vet: <code>make vet</code> (standard Go vetting)</li>
+</ul>
+<h2 id="conventions">Conventions<a class="headerlink" href="#conventions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Standard Go project layout (cmd/, internal/, api/, test/)</li>
+<li>Table-driven tests with descriptive names</li>
+<li>Use testify for assertions</li>
+<li>Integration tests use require.EventuallyWithT for async verification</li>
+<li>Follow Kubernetes controller patterns (kubebuilder / controller-runtime)</li>
+</ul>
 
 
 
