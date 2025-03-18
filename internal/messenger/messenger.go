@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	v1 "github.com/substratusai/kubeai/api/v1"
+	v1 "github.com/substratusai/kubeai/api/k8s/v1"
 	"github.com/substratusai/kubeai/internal/apiutils"
 	"github.com/substratusai/kubeai/internal/metrics"
 	"go.opentelemetry.io/otel/attribute"

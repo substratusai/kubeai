@@ -35,7 +35,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
+	kubeaiv1 "github.com/substratusai/kubeai/api/k8s/v1"
 	"github.com/substratusai/kubeai/internal/config"
 	"github.com/substratusai/kubeai/internal/k8sutils"
 	"github.com/substratusai/kubeai/internal/vllmclient"

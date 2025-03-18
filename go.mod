@@ -1,9 +1,12 @@
 module github.com/substratusai/kubeai
 
-go 1.22.0
+go 1.24
+
+toolchain go1.24.1
 
 require (
 	github.com/cespare/xxhash v1.1.0
+	github.com/go-json-experiment/json v0.0.0-20250223041408-d3c622f1b874
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/google/uuid v1.6.0
 	github.com/onsi/ginkgo/v2 v2.17.1
