@@ -50,6 +50,26 @@ catalog:
       - --enable-prefix-caching
       - --disable-log-requests
     resourceProfile: nvidia-gpu-h100:1
+  mistral-small-3.1-24b-instruct-h100:
+    enabled: false
+    features: [TextGeneration]
+    url: hf://mistralai/Mistral-Small-3.1-24B-Instruct-2503
+    engine: VLLM
+    env:
+      VLLM_ATTENTION_BACKEND: FLASHINFER
+    args:
+      - --kv-cache-dtype=fp8
+      - --max-model-len=65536
+      - --gpu-memory-utilization=0.9
+      # Doesn't work in v0 with multimodal models
+      # - --enable-prefix-caching
+      - --disable-log-requests
+      # Bug with vLLM v0.8.1, workaround from here:
+      # https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503/discussions/14#67d9ba6bb158df9ac8afa2c1
+      - --tokenizer-mode=mistral
+      - --load-format=mistral
+      - --config-format=mistral
+    resourceProfile: nvidia-gpu-h100:1
   # Gemma #
   gemma2-2b-cpu:
     enabled: false
