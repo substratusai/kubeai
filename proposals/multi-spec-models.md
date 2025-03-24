@@ -63,6 +63,8 @@ spec:
       meanLoadPercentage: 125
       replication: 200
       prefixChatLength: 100
+
+# NOTE: Scale up would be attempted in the order specified below:
 specs:
 - name: gpu-l4-70b
   url: hf://neuralmagic/Meta-Llama-3.1-70B-Instruct-FP8
