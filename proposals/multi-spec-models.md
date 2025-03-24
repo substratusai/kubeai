@@ -109,11 +109,11 @@ specs:
   resourceProfile: cpu:2
   # AVOIDING COLD STARTS #
   minReplicas: 1
-  # Setting to 0 means that is should receive 0 load when there is at least
+  # Setting targetRequests to 0 means that this spec should receive 0 load when there is at least
   # one other replica.
   # This also means it is OK to scale this replica down to 0 when
-  # there are other replicas running. (And scale back up to minReplicas
-  # before scaling all others to 0).
+  # there are other replicas running.
+  # (And scale back up to minReplicas before scaling all others to 0).
   targetRequests: 0
   ########################
 ```
