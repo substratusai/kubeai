@@ -7,4 +7,5 @@ spec:
   features: [TextEmbedding]
   url: hf://BAAI/bge-small-en-v1.5
   engine: Infinity
+  minReplicas: 0
   resourceProfile: cpu:1

@@ -7,4 +7,5 @@ spec:
   features: [TextGeneration]
   url: ollama://gemma2:2b
   engine: OLlama
+  minReplicas: 0
   resourceProfile: cpu:2

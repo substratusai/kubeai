@@ -12,4 +12,5 @@ spec:
     - --max-num-batched-token=32768
   env:
     VLLM_CPU_KVCACHE_SPACE: "4"
+  minReplicas: 0
   resourceProfile: cpu:6

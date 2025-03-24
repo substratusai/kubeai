@@ -15,4 +15,5 @@ spec:
     - --disable-log-requests
   env:
     VLLM_ATTENTION_BACKEND: FLASHINFER
+  minReplicas: 0
   resourceProfile: nvidia-gpu-h100:1

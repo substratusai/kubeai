@@ -7,4 +7,5 @@ spec:
   features: [TextGeneration]
   url: ollama://qwen2.5-coder:1.5b
   engine: OLlama
+  minReplicas: 0
   resourceProfile: cpu:1

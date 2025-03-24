@@ -16,5 +16,6 @@ spec:
     - --disable-log-requests
     - --max-num-seqs=1024
     - --kv-cache-dtype=fp8
+  minReplicas: 0
   targetRequests: 500
   resourceProfile: nvidia-gpu-h100:8

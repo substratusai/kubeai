@@ -17,5 +17,6 @@ spec:
     - --disable-log-requests
   env:
     VLLM_ATTENTION_BACKEND: FLASHINFER
+  minReplicas: 0
   targetRequests: 200
   resourceProfile: nvidia-gpu-gh200:1

@@ -7,4 +7,5 @@ spec:
   features: [TextGeneration]
   url: ollama://granite3.1-dense
   engine: OLlama
+  minReplicas: 0
   resourceProfile: nvidia-gpu-l4:1
