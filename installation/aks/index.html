@@ -6,28 +6,30 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Using the CHWBL algorithm results in a 95% reduction in TTFT, 127% increase in throughput.">
       
       
-      
-        <link rel="canonical" href="https://www.kubeai.org/blog/2025/02/26/llm-load-balancing-at-scale-chwbl/">
-      
+        <link rel="canonical" href="https://www.kubeai.org/installation/aks/">
       
       
+        <link rel="prev" href="../..">
       
-      <link rel="icon" href="../../../../../assets/images/favicon.png">
+      
+        <link rel="next" href="../any/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.9">
     
     
       
-        <title>LLM Load Balancing at Scale: Consistent Hashing with Bounded Loads - KubeAI</title>
+        <title>Install on AKS - KubeAI</title>
       
     
     
-      <link rel="stylesheet" href="../../../../../assets/stylesheets/main.4af4bdda.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.4af4bdda.min.css">
       
         
-        <link rel="stylesheet" href="../../../../../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -46,7 +48,7 @@
       
     
     
-    <script>__md_scope=new URL("../../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
   
@@ -63,11 +65,11 @@
       
         <meta  property="og:type"  content="website" >
       
-        <meta  property="og:title"  content="LLM Load Balancing at Scale: Consistent Hashing with Bounded Loads - KubeAI" >
+        <meta  property="og:title"  content="Install on AKS - KubeAI" >
       
-        <meta  property="og:description"  content="Using the CHWBL algorithm results in a 95% reduction in TTFT, 127% increase in throughput." >
+        <meta  property="og:description"  content="None" >
       
-        <meta  property="og:image"  content="https://www.kubeai.org/assets/images/social/blog/posts/llm-load-balancing-at-scale-chwbl.png" >
+        <meta  property="og:image"  content="https://www.kubeai.org/assets/images/social/installation/aks.png" >
       
         <meta  property="og:image:type"  content="image/png" >
       
@@ -75,15 +77,15 @@
       
         <meta  property="og:image:height"  content="630" >
       
-        <meta  property="og:url"  content="https://www.kubeai.org/blog/2025/02/26/llm-load-balancing-at-scale-chwbl/" >
+        <meta  property="og:url"  content="https://www.kubeai.org/installation/aks/" >
       
         <meta  name="twitter:card"  content="summary_large_image" >
       
-        <meta  name="twitter:title"  content="LLM Load Balancing at Scale: Consistent Hashing with Bounded Loads - KubeAI" >
+        <meta  name="twitter:title"  content="Install on AKS - KubeAI" >
       
-        <meta  name="twitter:description"  content="Using the CHWBL algorithm results in a 95% reduction in TTFT, 127% increase in throughput." >
+        <meta  name="twitter:description"  content="None" >
       
-        <meta  name="twitter:image"  content="https://www.kubeai.org/assets/images/social/blog/posts/llm-load-balancing-at-scale-chwbl.png" >
+        <meta  name="twitter:image"  content="https://www.kubeai.org/assets/images/social/installation/aks.png" >
       
     
     
@@ -104,7 +106,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#llm-load-balancing-at-scale-consistent-hashing-with-bounded-loads" class="md-skip">
+        <a href="#install-on-aks" class="md-skip">
           Skip to content
         </a>
       
@@ -120,7 +122,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../../../.." title="KubeAI" class="md-header__button md-logo" aria-label="KubeAI" data-md-component="logo">
+    <a href="../.." title="KubeAI" class="md-header__button md-logo" aria-label="KubeAI" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -140,7 +142,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              LLM Load Balancing at Scale: Consistent Hashing with Bounded Loads
+              Install on AKS
             
           </span>
         </div>
@@ -218,9 +220,7 @@
           
             
               
-                
-              
-              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" hidden>
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
                 <div class="md-sidebar__scrollwrap">
                   <div class="md-sidebar__inner">
                     
@@ -229,7 +229,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../../../.." title="KubeAI" class="md-nav__button md-logo" aria-label="KubeAI" data-md-component="logo">
+    <a href="../.." title="KubeAI" class="md-nav__button md-logo" aria-label="KubeAI" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -259,7 +259,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../.." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -277,17 +277,19 @@
       
   
   
+    
   
   
+  
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
           <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
@@ -302,7 +304,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Installation
@@ -313,10 +315,31 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../../../../installation/aks/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Install on AKS
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -326,6 +349,122 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#installing-prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installing Prerequisites
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-define-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Define environment variables
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-create-a-resource-group" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Create a Resource Group
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-create-an-aks-cluster-cpu-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Create an AKS Cluster (CPU Only)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-optional-add-a-gpu-node-pool" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. (Optional) Add a GPU Node Pool
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-get-aks-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Get AKS Credentials
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-install-the-nvidia-device-plugin-for-gpu-clusters" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Install the NVIDIA Device Plugin (for GPU Clusters)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-install-kubeai" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Install KubeAI
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Install KubeAI">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resource-profiles" class="md-nav__link">
+    <span class="md-ellipsis">
+      Resource Profiles
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-deploying-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. Deploying models
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -338,7 +477,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../installation/any/" class="md-nav__link">
+      <a href="../any/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -360,7 +499,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../installation/eks/" class="md-nav__link">
+      <a href="../eks/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -382,7 +521,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../installation/gke/" class="md-nav__link">
+      <a href="../gke/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -447,7 +586,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../how-to/architect-for-multitenancy/" class="md-nav__link">
+      <a href="../../how-to/architect-for-multitenancy/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -469,7 +608,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../how-to/authenticate-to-model-repos/" class="md-nav__link">
+      <a href="../../how-to/authenticate-to-model-repos/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -491,7 +630,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../how-to/build-models-into-containers/" class="md-nav__link">
+      <a href="../../how-to/build-models-into-containers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -513,7 +652,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../how-to/cache-models-with-aws-efs/" class="md-nav__link">
+      <a href="../../how-to/cache-models-with-aws-efs/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -535,7 +674,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../how-to/cache-models-with-gcp-filestore/" class="md-nav__link">
+      <a href="../../how-to/cache-models-with-gcp-filestore/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -557,7 +696,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../how-to/configure-autoscaling/" class="md-nav__link">
+      <a href="../../how-to/configure-autoscaling/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -579,7 +718,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../how-to/configure-embedding-models/" class="md-nav__link">
+      <a href="../../how-to/configure-embedding-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -601,7 +740,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../how-to/configure-resource-profiles/" class="md-nav__link">
+      <a href="../../how-to/configure-resource-profiles/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -623,7 +762,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../how-to/configure-speech-to-text/" class="md-nav__link">
+      <a href="../../how-to/configure-speech-to-text/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -645,7 +784,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../how-to/configure-text-generation-models/" class="md-nav__link">
+      <a href="../../how-to/configure-text-generation-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -667,7 +806,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../how-to/install-models/" class="md-nav__link">
+      <a href="../../how-to/install-models/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -689,7 +828,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../how-to/load-models-from-pvc/" class="md-nav__link">
+      <a href="../../how-to/load-models-from-pvc/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -711,7 +850,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../how-to/observability-with-prometheus-stack/" class="md-nav__link">
+      <a href="../../how-to/observability-with-prometheus-stack/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -733,7 +872,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../how-to/serve-lora-adapters/" class="md-nav__link">
+      <a href="../../how-to/serve-lora-adapters/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -798,7 +937,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../concepts/autoscaling/" class="md-nav__link">
+      <a href="../../concepts/autoscaling/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -820,7 +959,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../concepts/backend-servers/" class="md-nav__link">
+      <a href="../../concepts/backend-servers/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -842,7 +981,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../concepts/load-balancing/" class="md-nav__link">
+      <a href="../../concepts/load-balancing/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -864,7 +1003,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../concepts/lora-adapters/" class="md-nav__link">
+      <a href="../../concepts/lora-adapters/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -886,7 +1025,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../concepts/resource-profiles/" class="md-nav__link">
+      <a href="../../concepts/resource-profiles/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -908,7 +1047,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../concepts/storage-caching/" class="md-nav__link">
+      <a href="../../concepts/storage-caching/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -973,7 +1112,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../tutorials/langchain/" class="md-nav__link">
+      <a href="../../tutorials/langchain/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -995,7 +1134,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../tutorials/langtrace/" class="md-nav__link">
+      <a href="../../tutorials/langtrace/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1017,7 +1156,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../tutorials/private-deep-chat/" class="md-nav__link">
+      <a href="../../tutorials/private-deep-chat/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1039,7 +1178,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../tutorials/weaviate/" class="md-nav__link">
+      <a href="../../tutorials/weaviate/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1104,7 +1243,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../contributing/development-environment/" class="md-nav__link">
+      <a href="../../contributing/development-environment/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1126,7 +1265,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../contributing/development-guide/" class="md-nav__link">
+      <a href="../../contributing/development-guide/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1148,7 +1287,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../contributing/documentation/" class="md-nav__link">
+      <a href="../../contributing/documentation/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1170,7 +1309,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../contributing/release-process/" class="md-nav__link">
+      <a href="../../contributing/release-process/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1235,7 +1374,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../reference/kubernetes-api/" class="md-nav__link">
+      <a href="../../reference/kubernetes-api/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1257,7 +1396,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../reference/openai-api-compatibility/" class="md-nav__link">
+      <a href="../../reference/openai-api-compatibility/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1322,7 +1461,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../benchmarks/llama-3.2-11b-vision/" class="md-nav__link">
+      <a href="../../benchmarks/llama-3.2-11b-vision/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1344,7 +1483,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../../benchmarks/prefix-aware-load-balancing/" class="md-nav__link">
+      <a href="../../benchmarks/prefix-aware-load-balancing/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1370,19 +1509,17 @@
       
   
   
-    
   
   
-  
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
         
           
           <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
@@ -1397,7 +1534,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_9">
             <span class="md-nav__icon md-icon"></span>
             Blog
@@ -1408,14 +1545,12 @@
                 
   
   
-    
-  
   
     
   
   
-    <li class="md-nav__item md-nav__item--active">
-      <a href="../../../../" class="md-nav__link">
+    <li class="md-nav__item">
+      <a href="../../blog/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1475,7 +1610,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../archive/2025/" class="md-nav__link">
+      <a href="../../blog/archive/2025/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1543,7 +1678,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../../category/performance/" class="md-nav__link">
+      <a href="../../blog/category/performance/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1581,8 +1716,6 @@
             
             
               
-                
-              
               <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
                 <div class="md-sidebar__scrollwrap">
                   <div class="md-sidebar__inner">
@@ -1602,100 +1735,82 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#abstract" class="md-nav__link">
+  <a href="#installing-prerequisites" class="md-nav__link">
     <span class="md-ellipsis">
-      Abstract:
+      Installing Prerequisites
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#1-introduction" class="md-nav__link">
+  <a href="#1-define-environment-variables" class="md-nav__link">
     <span class="md-ellipsis">
-      1. Introduction
+      1. Define environment variables
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-problem-statement" class="md-nav__link">
+  <a href="#2-create-a-resource-group" class="md-nav__link">
     <span class="md-ellipsis">
-      2. Problem Statement
+      2. Create a Resource Group
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-sticky-sessions" class="md-nav__link">
+  <a href="#3-create-an-aks-cluster-cpu-only" class="md-nav__link">
     <span class="md-ellipsis">
-      3. Sticky Sessions?
+      3. Create an AKS Cluster (CPU Only)
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-the-algorithm" class="md-nav__link">
+  <a href="#4-optional-add-a-gpu-node-pool" class="md-nav__link">
     <span class="md-ellipsis">
-      4. The Algorithm
+      4. (Optional) Add a GPU Node Pool
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-implementation" class="md-nav__link">
+  <a href="#5-get-aks-credentials" class="md-nav__link">
     <span class="md-ellipsis">
-      5. Implementation
+      5. Get AKS Credentials
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-evaluation" class="md-nav__link">
+  <a href="#6-install-the-nvidia-device-plugin-for-gpu-clusters" class="md-nav__link">
     <span class="md-ellipsis">
-      6. Evaluation
+      6. Install the NVIDIA Device Plugin (for GPU Clusters)
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="6. Evaluation">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-install-kubeai" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Install KubeAI
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Install KubeAI">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#61-scenarios" class="md-nav__link">
+  <a href="#resource-profiles" class="md-nav__link">
     <span class="md-ellipsis">
-      6.1. Scenarios
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#62-setup" class="md-nav__link">
-    <span class="md-ellipsis">
-      6.2. Setup
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#63-metrics" class="md-nav__link">
-    <span class="md-ellipsis">
-      6.3. Metrics
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#64-results" class="md-nav__link">
-    <span class="md-ellipsis">
-      6.4. Results
+      Resource Profiles
     </span>
   </a>
   
@@ -1707,18 +1822,9 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-conclusion" class="md-nav__link">
+  <a href="#8-deploying-models" class="md-nav__link">
     <span class="md-ellipsis">
-      7. Conclusion
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#references" class="md-nav__link">
-    <span class="md-ellipsis">
-      References
+      8. Deploying models
     </span>
   </a>
   
@@ -1733,201 +1839,116 @@
             
           
           
-  <div class="md-content md-content--post" data-md-component="content">
-    <div class="md-sidebar md-sidebar--post" data-md-component="sidebar" data-md-type="navigation">
-      <div class="md-sidebar__scrollwrap">
-        <div class="md-sidebar__inner md-post">
-          <nav class="md-nav md-nav--primary">
-            <div class="md-post__back">
-              <div class="md-nav__title md-nav__container">
-                <a href="../../../../" class="md-nav__link">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
-                  <span class="md-ellipsis">
-                    Back to index
-                  </span>
-                </a>
-              </div>
-            </div>
-            
-              <div class="md-post__authors md-typeset">
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
                 
-                  <div class="md-profile md-post__profile">
-                    <span class="md-author md-author--long">
-                      <img src="https://avatars.githubusercontent.com/u/10274189" alt="Nick Stogner">
-                    </span>
-                    <span class="md-profile__description">
-                      <strong>
-                        
-                          <a href="https://www.linkedin.com/in/nstogner/">Nick Stogner</a>
-                        
-                      </strong>
-                      <br>
-                      Creator
-                    </span>
-                  </div>
-                
-              </div>
-            
-            <ul class="md-post__meta md-nav__list">
-              <li class="md-nav__item md-nav__item--section">
-                <div class="md-post__title">
-                  <span class="md-ellipsis">
-                    Metadata
-                  </span>
-                </div>
-                <nav class="md-nav">
-                  <ul class="md-nav__list">
-                    <li class="md-nav__item">
-                      <div class="md-nav__link">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 19H5V8h14m-3-7v2H8V1H6v2H5c-1.11 0-2 .89-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-1V1m-1 11h-5v5h5z"/></svg>
-                        <time datetime="2025-02-26 00:00:00+00:00" class="md-ellipsis">February 26, 2025</time>
-                      </div>
-                    </li>
-                    
-                      <li class="md-nav__item">
-                        <div class="md-nav__link">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15 13h1.5v2.82l2.44 1.41-.75 1.3L15 16.69zm4-5H5v11h4.67c-.43-.91-.67-1.93-.67-3a7 7 0 0 1 7-7c1.07 0 2.09.24 3 .67zM5 21a2 2 0 0 1-2-2V5c0-1.11.89-2 2-2h1V1h2v2h8V1h2v2h1a2 2 0 0 1 2 2v6.1c1.24 1.26 2 2.99 2 4.9a7 7 0 0 1-7 7c-1.91 0-3.64-.76-4.9-2zm11-9.85A4.85 4.85 0 0 0 11.15 16c0 2.68 2.17 4.85 4.85 4.85A4.85 4.85 0 0 0 20.85 16c0-2.68-2.17-4.85-4.85-4.85"/></svg>
-                          <time datetime="2025-03-04 00:00:00+00:00" class="md-ellipsis">March 4, 2025</time>
-                        </div>
-                      </li>
-                    
-                    
-                      <li class="md-nav__item">
-                        <div class="md-nav__link">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 3v15h3V3zm3 2 4 13 3-1-4-13zM5 5v13h3V5zM3 19v2h18v-2z"/></svg>
-                          <span class="md-ellipsis">
-                            in
-                            
-                              <a href="../../../../category/performance/">Performance</a></span>
-                        </div>
-                      </li>
-                    
-                    
-                      
-                      <li class="md-nav__item">
-                        <div class="md-nav__link">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 20a8 8 0 0 0 8-8 8 8 0 0 0-8-8 8 8 0 0 0-8 8 8 8 0 0 0 8 8m0-18a10 10 0 0 1 10 10 10 10 0 0 1-10 10C6.47 22 2 17.5 2 12A10 10 0 0 1 12 2m.5 5v5.25l4.5 2.67-.75 1.23L11 13V7z"/></svg>
-                          <span class="md-ellipsis">
-                            
-                              5 min read
-                            
-                          </span>
-                        </div>
-                      </li>
-                    
-                  </ul>
-                </nav>
-              </li>
-            </ul>
-            
-          </nav>
-          
-        </div>
-      </div>
-    </div>
-    <article class="md-content__inner md-typeset">
-      
-        
-  
-
+                  
 
 
   
   
 
 
-<h1 id="llm-load-balancing-at-scale-consistent-hashing-with-bounded-loads">LLM Load Balancing at Scale: Consistent Hashing with Bounded Loads<a class="headerlink" href="#llm-load-balancing-at-scale-consistent-hashing-with-bounded-loads" title="Permanent link">&para;</a></h1>
-<p>Conducted by <a href="https://www.substratus.ai/">Substratus.AI</a>, the creators of KubeAI.</p>
-<h2 id="abstract">Abstract:<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
-<p>Operating large language models (LLMs) at scale in real-world scenarios necessitates multiple backend replicas. The inter-replica load balancing algorithm greatly influences overall system performance by impacting the caching dynamics inherent in modern inference engines. In this study, we explore the application of the Consistent Hashing with Bounded Loads (CHWBL) algorithm in the domain of LLM inference. We simulate real-world load patterns on Kubernetes, the industry's most widely adopted deployment platform.  Our results demonstrate a <u>95% reduction</u> in Time To First Token (TTFT) and a <u>127% increase</u> in overall throughput compared to the baseline strategy.</p>
-<h2 id="1-introduction">1. Introduction<a class="headerlink" href="#1-introduction" title="Permanent link">&para;</a></h2>
-<p>Before an inference engine such as vLLM can begin generating output tokens, it must first process the input prompt during the “prefill phase”. The resulting intermediate representation is stored in a key-value (KV) cache. This cache can be reused across multiple requests that share the same prefix - a feature known as "prefix caching". The impact of prefix caching can be significant in several real world scenarios:</p>
-<p><strong>Multi-turn Conversations:</strong> In applications like chatbots (e.g., ChatGPT) or autonomous AI agents, every new turn appends to an evolving shared context.</p>
-<p><img alt="Multi-turn conversation diagram" src="../../../../../diagrams/multi-turn-clients.excalidraw.png" /></p>
-<p><strong>Multi-threaded Requests with Shared Context:</strong>
-Scenarios that involve multiple queries against a single long document are particularly sensitive to the efficiency of prefix caching. When requests are executed concurrently, even slight improvements in cache hit rates can lead to substantial reductions in end-to-end latency.</p>
-<p><img alt="Multi-threaded shared context diagram" src="../../../../../diagrams/multi-threaded-shared-context.excalidraw.png" /></p>
-<p>The conventional random routing strategy provided by Kubernetes often results in suboptimal cache utilization, leading to frequent cache evictions and degraded performance.</p>
-<p><img alt="Random vs consistent routing" src="../../../../../diagrams/random-vs-consistent-hash.excalidraw.png" /></p>
-<h2 id="2-problem-statement">2. Problem Statement<a class="headerlink" href="#2-problem-statement" title="Permanent link">&para;</a></h2>
-<p>An effective load balancing strategy for LLM serving should satisfy the following criteria:</p>
-<p><strong>Maximize cache utilization:</strong> Route requests with common prefixes to vLLM replicas with hot caches.</p>
-<p><strong>Adapt to replica changes:</strong> Minimize cache shuffling as replicas come and go.</p>
-<p><strong>Avoid hotspots:</strong> Prevent any single replica from becoming overloaded.</p>
-<p><strong>Account for LoRA adapters:</strong> Prefix caches for different adapters should be considered distinct.</p>
-<p><strong>Avoid client-side requirements:</strong> Common client libraries should be usable out of the box.</p>
-<h2 id="3-sticky-sessions">3. Sticky Sessions?<a class="headerlink" href="#3-sticky-sessions" title="Permanent link">&para;</a></h2>
-<p>Load balancing across stateful backends is not a new problem. We considered sticky sessions, the go-to for stateful load balancing. In a ChatGPT-like scenario, cookies could be used to reliably map users to active threads. However many agentic systems are not browser based, leaving client IP as the primary out-of-the-box source for client identification. Client-IP is typically unreliable for determining the end-client (NAT, dynamic IPs). To make matters worse, a single agentic program typically simulates N logical agents - i.e. multiple concurrent multi-turn conversations.</p>
-<h2 id="4-the-algorithm">4. The Algorithm<a class="headerlink" href="#4-the-algorithm" title="Permanent link">&para;</a></h2>
-<p>The Consistent Hashing with Bounded Loads (CHWBL) algorithm inherently addresses the above challenges, making it a compelling choice for LLM load balancing. It has a proven track record being employed at-scale in cache-sensitive use cases such as video serving.</p>
-<p>The CHWBL algorithm extends traditional consistent hashing by incorporating load bounds, ensuring that no individual replica receives more than its fair share of requests. This approach not only preserves cache affinity but also prevents the overloading of any single server, thereby optimizing overall system performance.</p>
-<p><img alt="CHWBL algorithm diagram" src="../../../../../diagrams/chwbl.excalidraw.png" /></p>
-<h2 id="5-implementation">5. Implementation<a class="headerlink" href="#5-implementation" title="Permanent link">&para;</a></h2>
-<p>We integrated the CHWBL routing strategy into the <a href="https://github.com/substratusai/kubeai" target="_blank">KubeAI project</a> under the PrefixHash configuration. This strategy functions as follows:</p>
-<ol>
-<li><strong>Request Inspection:</strong> The incoming HTTP body is analyzed (OpenAI-formatted API request).</li>
-<li><strong>Prefix Extraction:</strong> A prefix is extracted from the request (for example, using the first user message in chat completions) as well as the requested LoRA adapter (if applicable).</li>
-<li><strong>Hashing:</strong> The <code>(extracted_prefix + lora_adapter_name)</code> is hashed using the <code>xxHash</code> algorithm.</li>
-<li><strong>Replica Lookup:</strong> The hash value is used to select the appropriate vLLM replica using the CHWBL algorithm.
-The configuration is specified on a per-model basis via the following YAML snippet:</li>
-</ol>
-<div class="highlight"><pre><span></span><code><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Model</span>
-<span class="nt">spec</span><span class="p">:</span>
-<span class="w">  </span><span class="c1"># ...</span>
-<span class="w">  </span><span class="nt">loadBalancing</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">strategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PrefixHash</span>
-<span class="w">    </span><span class="c1"># Optional parameters:</span>
-<span class="w">    </span><span class="nt">prefixHash</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">meanLoadFactor</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">125</span>
-<span class="w">      </span><span class="nt">prefixCharLength</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span>
-<span class="w">      </span><span class="nt">replication</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">256</span>
+<h1 id="install-on-aks">Install on AKS<a class="headerlink" href="#install-on-aks" title="Permanent link">&para;</a></h1>
+<details>
+<summary><b>TIP</b>: Make sure you have the right quota and permissions.</summary>
+<ul>
+<li>Confirm you have enough quota for GPU-enabled node SKUs (like <code>Standard_NC48ads_A100_v4</code>).</li>
+<li>Verify that you have the right permissions and that the account you use with Azure CLI can create AKS clusters, node pools, etc.</li>
+</ul>
+</details>
+<h2 id="installing-prerequisites">Installing Prerequisites<a class="headerlink" href="#installing-prerequisites" title="Permanent link">&para;</a></h2>
+<p>Before running this setup, ensure you have:</p>
+<ul>
+<li><a href="https://learn.microsoft.com/en-us/cli/azure/install-azure-cli">Azure CLI</a></li>
+<li><a href="https://kubernetes.io/docs/tasks/tools/#kubectl">Kubectl</a></li>
+<li><a href="https://helm.sh/docs/intro/install/">Helm</a></li>
+</ul>
+<h2 id="1-define-environment-variables">1. Define environment variables<a class="headerlink" href="#1-define-environment-variables" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="nv">AZURE_RESOURCE_GROUP</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">AZURE_RESOURCE_GROUP</span><span class="k">:-</span><span class="nv">kubeai</span><span class="p">-stack</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="nv">AZURE_REGION</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">AZURE_REGION</span><span class="k">:-</span><span class="nv">southcentralus</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="nv">CLUSTER_NAME</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">CLUSTER_NAME</span><span class="k">:-</span><span class="nv">kubeai</span><span class="p">-stack</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="nv">USER_NAME</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">USER_NAME</span><span class="k">:-</span><span class="nv">azureuser</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="nv">GPU_NODE_POOL_NAME</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">GPU_NODE_POOL_NAME</span><span class="k">:-</span><span class="nv">gpunodes</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="nv">GPU_NODE_COUNT</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">GPU_NODE_COUNT</span><span class="k">:-</span><span class="nv">1</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="nv">GPU_VM_SIZE</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">GPU_VM_SIZE</span><span class="k">:-</span><span class="nv">Standard_NC48ads_A100_v4</span><span class="si">}</span><span class="s2">&quot;</span>
 </code></pre></div>
-<h2 id="6-evaluation">6. Evaluation<a class="headerlink" href="#6-evaluation" title="Permanent link">&para;</a></h2>
-<h3 id="61-scenarios">6.1. Scenarios<a class="headerlink" href="#61-scenarios" title="Permanent link">&para;</a></h3>
-<p>We conducted experiments using three distinct load balancing strategies:</p>
-<ol>
-<li><strong>Kubernetes Service (Random)</strong><ul>
-<li>Utilized the default Kubernetes Service, bypassing the KubeAI proxy.</li>
-<li>Relied on <code>iptables</code> for proxying via kube-proxy.</li>
-</ul>
-</li>
-<li><strong>KubeAI (LeastLoad)</strong><ul>
-<li>Employed the KubeAI load balancer to route traffic to the replica with the fewest active requests.</li>
-</ul>
-</li>
-<li><strong>KubeAI (PrefixHash)</strong><ul>
-<li>Applied a CHWBL-driven strategy to route requests via the KubeAI proxy.</li>
-</ul>
-</li>
-</ol>
-<h3 id="62-setup">6.2. Setup<a class="headerlink" href="#62-setup" title="Permanent link">&para;</a></h3>
-<p>A Kubernetes cluster running KubeAI was setup with the following specifications:</p>
 <ul>
-<li><strong>Hardware:</strong> 8x L4 GPUs</li>
-<li><strong>Software:</strong> 8x vLLM instances</li>
-<li><strong>Model:</strong> Llama 3.1 8B</li>
-<li><strong>Dataset:</strong> Message threads derived from ShareGPT</li>
-<li><strong>Workload:</strong> A custom load generator simulating parallel chat completion threads, preserving conversation state by appending LLM responses in a loop.</li>
+<li><code>AZURE_RESOURCE_GROUP</code>: The name of the Azure resource group. The default value is <code>kubeai-stack</code>.</li>
+<li><code>AZURE_REGION</code>: The Azure location or region where the AKS cluster will be deployed. The default value is <code>southcentralus</code>.</li>
+<li><code>CLUSTER_NAME</code>: The name of the AKS cluster. The default value is <code>kubeai-stack</code>.</li>
+<li><code>USER_NAME</code>: The username for the AKS cluster. The default value is <code>azureuser</code>.</li>
+<li><code>GPU_NODE_POOL_NAME</code>: The name of the GPU node pool. The default value is <code>gpunodes</code>.</li>
+<li><code>GPU_NODE_COUNT</code>: The number of GPU nodes in the GPU node pool. The default value is <code>1</code>.</li>
+<li><code>GPU_VM_SIZE</code>: The SKU of the GPU VMs in the GPU node pool. The default value is <code>Standard_NC48ads_A100_v4</code>. You can find more GPU VM sizes <a href="https://learn.microsoft.com/en-us/azure/virtual-machines/sizes/overview#gpu-accelerated">here</a>.</li>
 </ul>
-<h3 id="63-metrics">6.3. Metrics<a class="headerlink" href="#63-metrics" title="Permanent link">&para;</a></h3>
-<p>Our evaluation focused on two key performance metrics:</p>
+<h2 id="2-create-a-resource-group">2. Create a Resource Group<a class="headerlink" href="#2-create-a-resource-group" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>az<span class="w"> </span>group<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">AZURE_RESOURCE_GROUP</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--location<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">AZURE_REGION</span><span class="si">}</span><span class="s2">&quot;</span>
+</code></pre></div>
+<h2 id="3-create-an-aks-cluster-cpu-only">3. Create an AKS Cluster (CPU Only)<a class="headerlink" href="#3-create-an-aks-cluster-cpu-only" title="Permanent link">&para;</a></h2>
+<p>If you only intend to run CPU-based models, you can create a simple AKS cluster as follows:</p>
+<div class="highlight"><pre><span></span><code>az<span class="w"> </span>aks<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--resource-group<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">AZURE_RESOURCE_GROUP</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--name<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">CLUSTER_NAME</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--enable-oidc-issuer<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--enable-workload-identity<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--enable-managed-identity<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--node-count<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--location<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">AZURE_REGION</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--admin-username<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">USER_NAME</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--generate-ssh-keys<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--os-sku<span class="w"> </span>Ubuntu
+</code></pre></div>
+<h2 id="4-optional-add-a-gpu-node-pool">4. (Optional) Add a GPU Node Pool<a class="headerlink" href="#4-optional-add-a-gpu-node-pool" title="Permanent link">&para;</a></h2>
+<p>If you want to run GPU-backed models, you need a GPU node pool. Below is an example using the <code>Standard_NC48ads_A100_v4</code> SKU. Feel free to adjust <code>--node-vm-size</code> to match a GPU SKU you have quota for:</p>
+<div class="highlight"><pre><span></span><code>az<span class="w"> </span>aks<span class="w"> </span>nodepool<span class="w"> </span>add<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--resource-group<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">AZURE_RESOURCE_GROUP</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--cluster-name<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">CLUSTER_NAME</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">GPU_NODE_POOL_NAME</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--node-count<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">GPU_NODE_COUNT</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--node-vm-size<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">GPU_VM_SIZE</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--enable-cluster-autoscaler<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--min-count<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--max-count<span class="w"> </span><span class="m">3</span>
+</code></pre></div>
+<h2 id="5-get-aks-credentials">5. Get AKS Credentials<a class="headerlink" href="#5-get-aks-credentials" title="Permanent link">&para;</a></h2>
+<p>Download and merge the kubeconfig for your AKS cluster:</p>
+<div class="highlight"><pre><span></span><code>az<span class="w"> </span>aks<span class="w"> </span>get-credentials<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--resource-group<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">AZURE_RESOURCE_GROUP</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">CLUSTER_NAME</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--overwrite-existing
+</code></pre></div>
+<h2 id="6-install-the-nvidia-device-plugin-for-gpu-clusters">6. Install the NVIDIA Device Plugin (for GPU Clusters)<a class="headerlink" href="#6-install-the-nvidia-device-plugin-for-gpu-clusters" title="Permanent link">&para;</a></h2>
+<p>If you created a GPU node pool, install the NVIDIA device plugin so Pods can request GPUs:</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.17.1/deployments/static/nvidia-device-plugin.yml
+</code></pre></div>
+<p>Confirm the DaemonSet is running:</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>get<span class="w"> </span>daemonset<span class="w"> </span>nvidia-device-plugin-daemonset<span class="w"> </span>-n<span class="w"> </span>kube-system
+</code></pre></div>
+<h2 id="7-install-kubeai">7. Install KubeAI<a class="headerlink" href="#7-install-kubeai" title="Permanent link">&para;</a></h2>
+<p>Add the KubeAI Helm repository and update:</p>
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>kubeai<span class="w"> </span>https://www.kubeai.org
+helm<span class="w"> </span>repo<span class="w"> </span>update
+</code></pre></div>
+<p><strong>(Optional)</strong> If you plan to use private or TOS-protected models from Hugging Face, export your token:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">HUGGING_FACE_HUB_TOKEN</span><span class="o">=</span>&lt;YOUR_HF_TOKEN&gt;
+</code></pre></div>
+<p>Install KubeAI:</p>
+<div class="highlight"><pre><span></span><code>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>kubeai<span class="w"> </span>kubeai/kubeai<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--set<span class="w"> </span>secrets.huggingface.token<span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">HUGGING_FACE_HUB_TOKEN</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--wait
+</code></pre></div>
+<h3 id="resource-profiles">Resource Profiles<a class="headerlink" href="#resource-profiles" title="Permanent link">&para;</a></h3>
+<p>For AKS GPU deployments using the upstream Kubernetes device plugin, you can customize resource requests and limits via KubeAI’s <a href="https://github.com/substratusai/kubeai/blob/main/charts/kubeai/values-nvidia-k8s-device-plugin.yaml">values-nvidia-k8s-device-plugin.yaml</a>.</p>
+<p>We recommend referencing <a href="../any/#installation-using-nvidia-gpus">the installation guide</a> for examples of how to specify these resource profiles within your Helm values. This file contains preconfigured resource profiles you can adjust for your environment.</p>
+<h2 id="8-deploying-models">8. Deploying models<a class="headerlink" href="#8-deploying-models" title="Permanent link">&para;</a></h2>
+<p>Take a look at the following how-to guides to deploy models:</p>
 <ul>
-<li><strong>Time To First Token (TTFT):</strong> The latency before the first token is generated.</li>
-<li><strong>Tokens Per Second (TPS):</strong> The overall throughput of token generation.</li>
-</ul>
-<h3 id="64-results">6.4. Results<a class="headerlink" href="#64-results" title="Permanent link">&para;</a></h3>
-<p>The benchmark showed that the PrefixHash strategy resulted in significant improvements in TTFT and throughput compared to both the default Kubernetes Service and the LeastLoad strategy.</p>
-<p><strong>TTFT:</strong> The PrefixHash strategy resulted in a <u>95% reduction in Time to First Token</u> compared to the built-in Kubernetes strategy when the system was operating at 1200 concurrent threads (150 threads per replica).</p>
-<p><img alt="Mean TTFT Barchart" src="../../../../../graphs/ttft-benchmark.png" /></p>
-<p><strong>Throughput:</strong> The PrefixHash strategy resulted in a <u>127% increase in throughput</u> compared to the built-in Kubernetes strategy when the system was operating at 1200 concurrent threads (150 threads per replica).</p>
-<p><img alt="Mean TPS barchart" src="../../../../../graphs/throughput-benchmark.png" /></p>
-<h2 id="7-conclusion">7. Conclusion<a class="headerlink" href="#7-conclusion" title="Permanent link">&para;</a></h2>
-<p>In this work, we demonstrated that incorporating the CHWBL algorithm into LLM load balancing through the PrefixHash strategy in KubeAI can significantly enhance performance in real-world scenarios. Notably, improvements in cache hit rates yielded lower latency and increased throughput. Moving forward, we plan to expand our benchmarks to cover a broader range of workloads. We plan to incorporate benchmarks for emerging strategies as they come out, with the ultimate aim of ensuring that KubeAI features the most effective load balancing techniques.</p>
-<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
-<ul>
-<li><a href="https://docs.vllm.ai/en/latest/features/automatic_prefix_caching.html">vLLM Documentation on Automatic Prefix Caching</a></li>
-<li><a href="https://research.google/blog/consistent-hashing-with-bounded-loads/">Google Research: Consistent Hashing with Bounded Loads.</a></li>
-<li><a href="https://www.kubeai.org/concepts/load-balancing/">KubeAI Load Balancing Concepts</a></li>
+<li><a href="../../how-to/configure-text-generation-models/">Configure Text Generation Models</a></li>
+<li><a href="../../how-to/configure-embedding-models/">Configure Embedding Models</a></li>
+<li><a href="../../how-to/configure-speech-to-text/">Configure Speech to Text Models</a></li>
 </ul>
 
 
@@ -1944,14 +1965,12 @@ The configuration is specified on a per-model basis via the following YAML snipp
   
 
 
-  
 
 
-
-      
-    </article>
-  </div>
-
+                
+              </article>
+            </div>
+          
           
 <script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
         </div>
@@ -1982,10 +2001,10 @@ The configuration is specified on a per-model basis via the following YAML snipp
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "../../../../..", "features": [], "search": "../../../../../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../../../../assets/javascripts/bundle.c8b220af.min.js"></script>
+      <script src="../../assets/javascripts/bundle.c8b220af.min.js"></script>
       
     
   </body>
