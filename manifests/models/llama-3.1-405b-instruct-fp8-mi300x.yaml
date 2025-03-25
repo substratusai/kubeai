@@ -23,5 +23,6 @@ spec:
     NCCL_MIN_NCHANNELS: "112"
     TORCH_BLAS_PREFER_HIPBLASLT: "1"
     VLLM_USE_TRITON_FLASH_ATTN: "0"
+  minReplicas: 0
   targetRequests: 1024
   resourceProfile: amd-gpu-mi300x:8

@@ -15,4 +15,5 @@ spec:
     - --kv-cache-dtype=fp8
   env:
     VLLM_ATTENTION_BACKEND: FLASHINFER
+  minReplicas: 0
   resourceProfile: nvidia-gpu-l4:1

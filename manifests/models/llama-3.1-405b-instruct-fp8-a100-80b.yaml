@@ -21,5 +21,6 @@ spec:
     - --num-scheduler-steps=8
   env:
     VLLM_ATTENTION_BACKEND: FLASHINFER
+  minReplicas: 0
   targetRequests: 128
   resourceProfile: nvidia-gpu-a100-80gb:8

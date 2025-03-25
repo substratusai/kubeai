@@ -9,4 +9,5 @@ spec:
   engine: VLLM
   args:
     - --gpu-memory-utilization=0.9
+  minReplicas: 0
   resourceProfile: cpu:1

@@ -21,5 +21,6 @@ spec:
     - --enforce-eager
   env:
     VLLM_ATTENTION_BACKEND: FLASHINFER
+  minReplicas: 0
   targetRequests: 500
   resourceProfile: nvidia-gpu-l4:8

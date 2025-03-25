@@ -9,6 +9,7 @@ spec:
   engine: VLLM
   args:
     - --chat-template=/config/chat-template.jinja
+  minReplicas: 0
   resourceProfile: cpu:1
   files:
     - content: |-

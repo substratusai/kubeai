@@ -15,5 +15,6 @@ spec:
     - --tensor-parallel-size=2
     - --enable-prefix-caching
     - --disable-log-requests
+  minReplicas: 0
   targetRequests: 500
   resourceProfile: nvidia-gpu-h100:2

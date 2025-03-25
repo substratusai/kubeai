@@ -14,4 +14,5 @@ spec:
     - --num-scheduler-steps=4
     - --max-model-len=8192
     - --distributed-executor-backend=ray
+  minReplicas: 0
   resourceProfile: google-tpu-v5e-2x2:4
