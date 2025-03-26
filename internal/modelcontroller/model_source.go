@@ -215,7 +215,7 @@ func (r *ModelReconciler) pvcPodAdditions(url modelURL) *modelSourcePodAdditions
 	}
 }
 
-var modelURLRegex = regexp.MustCompile(`^([a-z]+):\/\/([^?]+)(\?.*)?$`)
+var modelURLRegex = regexp.MustCompile(`^([a-z0-9]+):\/\/([^?]+)(\?.*)?$`)
 
 func parseModelURL(urlStr string) (modelURL, error) {
 	matches := modelURLRegex.FindStringSubmatch(urlStr)
