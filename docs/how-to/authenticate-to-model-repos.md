@@ -61,7 +61,7 @@ When using Helm to manage your KubeAI installation, you can pass your credential
 
 ```bash
 helm upgrade --install kubeai kubeai/kubeai \
-    --set secrets.aws.accessKeyId=$AWS_ACCESS_KEY_ID \
+    --set secrets.aws.accessKeyID=$AWS_ACCESS_KEY_ID \
     --set secrets.aws.secretAccessKey=$AWS_SECRET_ACCESS_KEY \
     ...
 ```
