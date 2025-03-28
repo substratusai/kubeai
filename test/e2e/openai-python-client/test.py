@@ -8,7 +8,8 @@ client = OpenAI(base_url=base_url, api_key="ignored-by-kubeai")
 
 def test_list_models():
     response = client.models.list()
-    model_ids = [model.id for model in response.data]
+    # Access the data directly from the response object
+    model_ids = [m.id for m in response.data]
     assert model in model_ids
 
 
