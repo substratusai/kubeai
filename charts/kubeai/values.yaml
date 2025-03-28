@@ -17,7 +17,7 @@ secrets:
     secretAccessKey: ""
     # The name of the secret to use.
     # If not set, and create is true, the name is generated using the fullname template.
-    # The secret values are pulled from the keys, "accessKeyId" and "secretAccessKey".
+    # The secret values are pulled from the keys, "accessKeyID" and "secretAccessKey".
     name: ""
   gcp:
     create: true
