@@ -31,19 +31,6 @@ messaging:
 
     # Optional: Maximum concurrent message handlers for this stream.
     maxHandlers: 5000
-
-    # Optional: Kafka-specific configuration (authentication, TLS, etc.)
-    # See gocloud.dev/pubsub/kafkapubsub documentation for details.
-    # kafkaOptions:
-    #   brokers: "kafka-broker1:9092,kafka-broker2:9092"
-    #   saslUsername: "my-user"
-    #   saslPassword: "my-password"
-    #   saslMechanism: "PLAIN" # or SCRAM-SHA-256, SCRAM-SHA-512
-    #   tlsEnable: true
-    #   tlsCaCertPath: "/path/to/ca.crt"
-    #   tlsClientCertPath: "/path/to/client.crt"
-    #   tlsClientKeyPath: "/path/to/client.key"
-    #   tlsInsecureSkipVerify: false
 ```
 
 ### Parameter Explanations
@@ -58,4 +45,4 @@ messaging:
     *   `kafka://`: Specifies the Kafka protocol.
     *   `<response-topic>`: Specifies the Kafka topic to which KubeAI will publish inference responses.
 *   `maxHandlers`: (Optional) Controls the maximum number of concurrent requests KubeAI will process from this stream. Adjust based on your expected load and resource availability.
-*   `kafkaOptions`: (Optional) Allows for advanced Kafka client configuration, including broker addresses, SASL authentication, and TLS encryption. Refer to the [Go CDK Kafka documentation](https://gocloud.dev/pubsub/kafkapubsub/) for all available options. *Note: You might need to mount certificates/keys as secrets into the KubeAI pod.*
+*   **Kafka Client Configuration**: Advanced Kafka client settings (like brokers, SASL authentication, TLS) are configured directly within the `requestsURL` and `responsesURL` using URL parameters, following the [Go CDK Kafka documentation](https://gocloud.dev/pubsub/kafkapubsub/). For example, to specify brokers and SASL: `kafka://my-group?topic=requests&brokers=b1:9092,b2:9092&sasl_mechanism=PLAIN&sasl_user=user&sasl_password=pass`. *Note: For TLS certificates, you might need to mount them as secrets into the KubeAI pod and reference their paths in the URL parameters (e.g., `cacert_path=/path/to/ca.crt`).*
