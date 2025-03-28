@@ -1764,7 +1764,7 @@
 <p>Authenication is required when accessing models or adapters from private S3 buckets.</p>
 <p>When using Helm to manage your KubeAI installation, you can pass your credentials as follows:</p>
 <div class="highlight"><pre><span></span><code>helm<span class="w"> </span>upgrade<span class="w"> </span>--install<span class="w"> </span>kubeai<span class="w"> </span>kubeai/kubeai<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--set<span class="w"> </span>secrets.aws.accessKeyId<span class="o">=</span><span class="nv">$AWS_ACCESS_KEY_ID</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--set<span class="w"> </span>secrets.aws.accessKeyID<span class="o">=</span><span class="nv">$AWS_ACCESS_KEY_ID</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--set<span class="w"> </span>secrets.aws.secretAccessKey<span class="o">=</span><span class="nv">$AWS_SECRET_ACCESS_KEY</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>...
 </code></pre></div>
