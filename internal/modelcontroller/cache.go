@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -307,6 +308,19 @@ func cachePVCName(m *kubeaiv1.Model, c ModelConfig) string {
 }
 
 func (r *ModelReconciler) loadCacheJobForModel(m *kubeaiv1.Model, c ModelConfig) *batchv1.Job {
+	var env []corev1.EnvVar
+	var envKeys []string
+	for key := range m.Spec.Env {
+		envKeys = append(envKeys, key)
+	}
+	sort.Strings(envKeys)
+	for _, key := range envKeys {
+		env = append(env, corev1.EnvVar{
+			Name:  key,
+			Value: m.Spec.Env[key],
+		})
+	}
+
 	job := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      loadCacheJobName(m),
@@ -322,6 +336,7 @@ func (r *ModelReconciler) loadCacheJobForModel(m *kubeaiv1.Model, c ModelConfig)
 					Containers: []corev1.Container{
 						{
 							Name: "loader",
+							Env:  env,
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      "model",
