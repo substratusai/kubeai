@@ -59,6 +59,15 @@ func Test_parseModelURL(t *testing.T) {
 				path:   "model-name",
 			},
 		},
+		"valid-s3": {
+			input: "s3://test-bucket/model-name",
+			want: modelURL{
+				scheme: "s3",
+				ref:    "test-bucket/model-name",
+				name:   "test-bucket",
+				path:   "model-name",
+			},
+		},
 		"valid-pvc": {
 			input: "pvc://my-vpc/path/to/model",
 			want: modelURL{

@@ -1,0 +1,46 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: upload-model-to-s3
+  labels:
+    app: upload
+spec:
+  template:
+    metadata:
+      name: upload-model-to-s3
+      labels:
+        app: upload
+    spec:
+      restartPolicy: Never
+      initContainers:
+        - name: wait-for-s3
+          image: curlimages/curl
+          command:
+            - sh 
+            - -c 
+          args:
+            - 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://s3:9000/status)" != "200" ]]; do sleep 10; echo "wait for s3"; sleep 5; done'
+      containers:
+      - name: s3-mc-model
+        image: amazon/aws-cli
+        env:
+          - name: AWS_ACCESS_KEY_ID
+            value: testuser
+          - name: AWS_SECRET_ACCESS_KEY
+            value: testuser
+          - name: AWS_ENDPOINT_URL
+            value: http://s3:9000
+        # command: [ "/bin/bash", "-c", "--" ]
+        # args: [ "while true; do sleep 30; done;" ]
+        command:
+        - /bin/bash
+        - -c
+        args: 
+        - aws s3api create-bucket --bucket models && aws s3 sync /data/models/ s3://models/
+        volumeMounts:
+        - mountPath: /data
+          name: localvolume
+      volumes:
+      - name: localvolume
+        persistentVolumeClaim:
+          claimName: model-pvc
