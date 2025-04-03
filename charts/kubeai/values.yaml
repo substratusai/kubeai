@@ -84,6 +84,8 @@ metrics:
     vLLMPodMonitor:
       # Enable creation of PodMonitor resource that scrapes vLLM metrics endpoint.
       enabled: false
+      # Set the apiVersion to azmonitoring.coreos.com/v1 when using Azure Monitor managed service for Prometheus
+      apiVersion: monitoring.coreos.com/v1
       labels: {}
 
 resourceProfiles:
