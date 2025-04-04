@@ -1,0 +1,11 @@
+open-webui:
+  enabled: false
+secrets:
+  aws:
+    create: true
+    accessKeyID: "testuser"
+    secretAccessKey: "testuser"
+cacheProfiles:
+  e2e-test-kind-pv:
+    sharedFilesystem:
+      persistentVolumeName: "kind-hostpath"
