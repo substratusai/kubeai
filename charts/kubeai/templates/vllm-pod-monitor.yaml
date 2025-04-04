@@ -1,5 +1,5 @@
 {{- if .Values.metrics.prometheusOperator.vLLMPodMonitor.enabled }}
-apiVersion: monitoring.coreos.com/v1
+apiVersion: {{ .Values.metrics.prometheusOperator.vLLMPodMonitor.apiVersion }}
 kind: PodMonitor
 metadata:
   name: {{ include "kubeai.fullname" . }}-vllm
