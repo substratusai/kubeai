@@ -3,6 +3,7 @@ package modelcontroller
 import (
 	"fmt"
 	"sort"
+	"strings"
 
 	kubeaiv1 "github.com/substratusai/kubeai/api/k8s/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -46,11 +47,16 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, c ModelConfig) *c
 		envKeys = append(envKeys, key)
 	}
 	sort.Strings(envKeys)
+	useInsecurePull := false
 	for _, key := range envKeys {
 		env = append(env, corev1.EnvVar{
 			Name:  key,
 			Value: m.Spec.Env[key],
 		})
+		// Check for INSECURE=true (case-insensitive)
+		if strings.EqualFold(key, "INSECURE") && strings.EqualFold(m.Spec.Env[key], "true") {
+			useInsecurePull = true
+		}
 	}
 
 	featuresMap := map[kubeaiv1.ModelFeature]struct{}{}
@@ -58,7 +64,7 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, c ModelConfig) *c
 		featuresMap[f] = struct{}{}
 	}
 
-	startupProbeScript := ollamaStartupProbeScript(m, c.Source.url)
+	startupProbeScript := ollamaStartupProbeScript(m, c.Source.url, useInsecurePull)
 
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -168,7 +174,7 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, c ModelConfig) *c
 
 }
 
-func ollamaStartupProbeScript(m *kubeaiv1.Model, u modelURL) string {
+func ollamaStartupProbeScript(m *kubeaiv1.Model, u modelURL, useInsecurePull bool) string {
 	// Pull model and copy to rename it to Model.metadata.name.
 	// See Ollama issue for rename/copy workaround: https://github.com/ollama/ollama/issues/5914
 	// NOTE: The cp command should just create a pointer to the old model, not copy data
@@ -183,7 +189,11 @@ func ollamaStartupProbeScript(m *kubeaiv1.Model, u modelURL) string {
 		startupScript = fmt.Sprintf("/bin/ollama cp %s %s",
 			u.modelParam, m.Name)
 	} else {
-		startupScript = fmt.Sprintf("/bin/ollama pull %s && /bin/ollama cp %s %s", u.ref, u.ref, m.Name)
+		pullCmd := "/bin/ollama pull"
+		if useInsecurePull {
+			pullCmd += " --insecure"
+		}
+		startupScript = fmt.Sprintf("%s %s && /bin/ollama cp %s %s", pullCmd, u.ref, u.ref, m.Name)
 	}
 
 	// Only run the model if the model has features
