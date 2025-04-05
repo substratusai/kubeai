@@ -36,9 +36,15 @@ spec:
     volumeMounts:
       - mountPath: /etc/sw
         name: s3-config
+    resources:
+      limits:
+        cpu: "1"
+        memory: "2Gi"
+      requests:
+        cpu: "0.5"
+        memory: "1Gi"
   volumes:
     - name: s3-config
       configMap:
         name: s3-config
-        
 
