@@ -147,3 +147,16 @@ chat_completion = client.chat.completions.create(
     model=model_name,
 )
 ```
+
+## Ollama Insecure Model Pulling
+
+You can set the environment variable `INSECURE=true` to allow pulling from insecure repositories.
+
+**Warning:** Use this only in trusted network environments.
+
+Example Model spec:
+```yaml
+spec:
+  env:
+    INSECURE: "true"
+```
