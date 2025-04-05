@@ -31,8 +31,8 @@ spec:
   - name: s3
     image: chrislusf/seaweedfs:3.85
     ports:
-        - containerPort: 9000
-    args: ["server", "-s3", "-s3.port", "9000"]
+      - containerPort: 9000
+    args: ["server", "-s3", "-s3.port", "9000", "-volume.max", "1", "-master.volumeSizeLimitMB", "10000"]
     volumeMounts:
       - mountPath: /etc/sw
         name: s3-config
