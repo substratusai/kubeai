@@ -17,11 +17,10 @@ func Test_ollamaStartupProbeScript(t *testing.T) {
 	ollamaRef := "qwen2:0.5b"
 
 	cases := map[string]struct {
-		model           kubeaiv1.Model
-		modelURL        modelURL
-		featuresMap     map[kubeaiv1.ModelFeature]struct{}
-		useInsecurePull bool
-		want            string
+		model       kubeaiv1.Model
+		modelURL    modelURL
+		featuresMap map[kubeaiv1.ModelFeature]struct{}
+		want        string
 	}{
 		"basic-model-no-pvc": {
 			model: kubeaiv1.Model{
@@ -37,7 +36,6 @@ func Test_ollamaStartupProbeScript(t *testing.T) {
 				ref:    ollamaRef,
 				name:   "abc",
 			},
-			useInsecurePull: false,
 			want: fmt.Sprintf("/bin/ollama pull %s && /bin/ollama cp %s %s && /bin/ollama run %s hi",
 				ollamaRef, ollamaRef, modelName, modelName),
 		},
@@ -56,7 +54,6 @@ func Test_ollamaStartupProbeScript(t *testing.T) {
 				name:       "abc",
 				modelParam: ollamaRef,
 			},
-			useInsecurePull: false,
 			want: fmt.Sprintf("/bin/ollama cp %s %s && /bin/ollama run %s hi",
 				ollamaRef, modelName, modelName),
 		},
@@ -67,6 +64,7 @@ func Test_ollamaStartupProbeScript(t *testing.T) {
 				},
 				Spec: kubeaiv1.ModelSpec{
 					Features: []kubeaiv1.ModelFeature{kubeaiv1.ModelFeatureTextGeneration},
+					Env:      map[string]string{"INSECURE": "true"},
 				},
 			},
 			modelURL: modelURL{
@@ -74,7 +72,6 @@ func Test_ollamaStartupProbeScript(t *testing.T) {
 				ref:    ollamaRef,
 				name:   "abc",
 			},
-			useInsecurePull: true,
 			want: fmt.Sprintf("/bin/ollama pull --insecure %s && /bin/ollama cp %s %s && /bin/ollama run %s hi",
 				ollamaRef, ollamaRef, modelName, modelName),
 		},
@@ -83,7 +80,7 @@ func Test_ollamaStartupProbeScript(t *testing.T) {
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			got := ollamaStartupProbeScript(&c.model, c.modelURL, c.useInsecurePull)
+			got := ollamaStartupProbeScript(&c.model, c.modelURL)
 			require.Equal(t, c.want, got)
 		})
 	}
