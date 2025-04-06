@@ -148,15 +148,16 @@ chat_completion = client.chat.completions.create(
 )
 ```
 
-## Ollama Insecure Model Pulling
+## Ollama Configuration Notes
 
-You can set the environment variable `INSECURE=true` to allow pulling from insecure repositories.
+### Insecure Model Pulling
+
+To allow pulling Ollama models from insecure registries (e.g., HTTP-only or self-signed TLS), append the `?insecure=true` query parameter to the model URL.
 
 **Warning:** Use this only in trusted network environments.
 
-Example Model spec:
+Example Model spec using an insecure registry:
 ```yaml
 spec:
-  env:
-    INSECURE: "true"
+  url: ollama://my-local-registry:5000/my-model?insecure=true
 ```

@@ -64,13 +64,13 @@ func Test_ollamaStartupProbeScript(t *testing.T) {
 				},
 				Spec: kubeaiv1.ModelSpec{
 					Features: []kubeaiv1.ModelFeature{kubeaiv1.ModelFeatureTextGeneration},
-					Env:      map[string]string{"INSECURE": "true"},
 				},
 			},
 			modelURL: modelURL{
-				scheme: "ollama",
-				ref:    ollamaRef,
-				name:   "abc",
+				scheme:   "ollama",
+				ref:      ollamaRef,
+				name:     "abc",
+				insecure: true, // Set insecure flag here
 			},
 			want: fmt.Sprintf("/bin/ollama pull --insecure %s && /bin/ollama cp %s %s && /bin/ollama run %s hi",
 				ollamaRef, ollamaRef, modelName, modelName),

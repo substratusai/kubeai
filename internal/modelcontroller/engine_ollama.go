@@ -3,7 +3,6 @@ package modelcontroller
 import (
 	"fmt"
 	"sort"
-	"strings"
 
 	kubeaiv1 "github.com/substratusai/kubeai/api/k8s/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -185,8 +184,8 @@ func ollamaStartupProbeScript(m *kubeaiv1.Model, u modelURL) string {
 			u.modelParam, m.Name)
 	} else {
 		pullCmd := "/bin/ollama pull"
-		insecure, exists := m.Spec.Env["INSECURE"]
-		if exists && strings.ToLower(insecure) == "true" {
+		// Check the insecure flag from the parsed URL instead of Env Var
+		if u.insecure {
 			pullCmd += " --insecure"
 		}
 		startupScript = fmt.Sprintf("%s %s && /bin/ollama cp %s %s", pullCmd, u.ref, u.ref, m.Name)
