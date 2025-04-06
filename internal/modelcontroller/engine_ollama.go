@@ -184,7 +184,6 @@ func ollamaStartupProbeScript(m *kubeaiv1.Model, u modelURL) string {
 			u.modelParam, m.Name)
 	} else {
 		pullCmd := "/bin/ollama pull"
-		// Check the insecure flag from the parsed URL instead of Env Var
 		if u.insecure {
 			pullCmd += " --insecure"
 		}
