@@ -1,0 +1,21 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: deepseek-r1-70b-gh200
+spec:
+  features: [TextGeneration]
+  url: hf://deepseek-ai/DeepSeek-R1-Distill-Llama-70B
+  engine: VLLM
+  args:
+    - --max-model-len=32768
+    - --max-num-batched-token=32768
+    - --gpu-memory-utilization=0.95
+    - --kv-cache-dtype=fp8
+    - --cpu-offload-gb=120
+    - --enable-prefix-caching
+    - --disable-log-requests
+  env:
+    VLLM_ATTENTION_BACKEND: FLASHINFER
+  minReplicas: 0
+  resourceProfile: nvidia-gpu-gh200:1

@@ -1,0 +1,18 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: deepseek-r1-70b-gh200-fp8
+spec:
+  features: [TextGeneration]
+  url: hf://neuralmagic/DeepSeek-R1-Distill-Llama-70B-FP8-dynamic
+  engine: VLLM
+  args:
+    - --max-model-len=32768
+    - --max-num-batched-token=32768
+    - --gpu-memory-utilization=0.95
+    - --kv-cache-dtype=fp8
+    - --enable-prefix-caching
+    - --disable-log-requests
+  minReplicas: 0
+  resourceProfile: nvidia-gpu-gh200:1
