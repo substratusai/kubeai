@@ -495,6 +495,35 @@ catalog:
       - --disable-log-requests
     resourceProfile: nvidia-gpu-gh200:1
     targetRequests: 200
+  deepseek-r1-70b-gh200-fp8:
+    enabled: false
+    features: [TextGeneration]
+    url: hf://neuralmagic/DeepSeek-R1-Distill-Llama-70B-FP8-dynamic
+    engine: VLLM
+    args:
+      - --max-model-len=32768
+      - --max-num-batched-token=32768
+      - --gpu-memory-utilization=0.95
+      - --kv-cache-dtype=fp8
+      - --enable-prefix-caching
+      - --disable-log-requests
+    resourceProfile: nvidia-gpu-gh200:1
+  deepseek-r1-70b-gh200:
+    enabled: false
+    features: [TextGeneration]
+    url: hf://deepseek-ai/DeepSeek-R1-Distill-Llama-70B
+    engine: VLLM
+    env:
+      VLLM_ATTENTION_BACKEND: FLASHINFER
+    args:
+      - --max-model-len=32768
+      - --max-num-batched-token=32768
+      - --gpu-memory-utilization=0.95
+      - --kv-cache-dtype=fp8
+      - --cpu-offload-gb=120
+      - --enable-prefix-caching
+      - --disable-log-requests
+    resourceProfile: nvidia-gpu-gh200:1
   deepseek-r1-distill-qwen-1.5b-rtx4070:
     enabled: false
     features: ["TextGeneration"]
