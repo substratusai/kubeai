@@ -233,6 +233,12 @@ type ModelLoading struct {
 	Image string `json:"image" validate:"required"`
 }
 
+type Patch struct {
+	Op    string      `json:"op"`
+	Path  string      `json:"path"`
+	Value interface{} `json:"value"`
+}
+
 type ModelServerPods struct {
 	// The service account to use for all model pods
 	ModelServiceAccountName string `json:"serviceAccountName,omitempty"`
@@ -245,4 +251,9 @@ type ModelServerPods struct {
 
 	// ImagePullSecrets is a list of references to secrets in the same namespace to use for pulling any of the images
 	ImagePullSecrets []corev1.LocalObjectReference `json:"imagePullSecrets,omitempty"`
+
+	// ModelPodPatches is a list of patches to apply to the model pod template.
+	// This is a JSON Patch as defined in RFC 6902.
+	// https://datatracker.ietf.org/doc/html/rfc6902
+	ModelPodPatches []Patch `json:"podPatch,omitempty"`
 }
