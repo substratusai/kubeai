@@ -44,9 +44,9 @@ modelServers:
       nvidia-gpu: "vllm/vllm-openai:v0.8.3"
       cpu: "public.ecr.aws/q9t5s3a7/vllm-cpu-release-repo:v0.8.3"
       # Nightly from April 5
-      google-tpu: "vllm/vllm-tpu:ba10801961f94afbceed39a41af2b29a85c348e3
+      google-tpu: "vllm/vllm-tpu:ba10801961f94afbceed39a41af2b29a85c348e3"
       # Source: https://github.com/substratusai/vllm-docker/blob/main/Dockerfile.cuda-arm
-      gh200: "substratusai/vllm-gh200:v0.8.2"
+      gh200: "substratusai/vllm-gh200:v0.8.3"
       # upstream vLLM seems to have broken ROCm support, so we are using a fork from AMD.
       # Source: https://hub.docker.com/r/rocm/vllm-dev
       # Source: https://github.com/ROCm/vllm
