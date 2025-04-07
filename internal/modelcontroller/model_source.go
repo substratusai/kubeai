@@ -225,13 +225,19 @@ func parseModelURL(urlStr string) (modelURL, error) {
 	scheme, ref := matches[1], matches[2]
 	name, path, _ := strings.Cut(ref, "/")
 	var modelParam string
+	var insecure bool
 
-	if len(matches) == 4 { // check for query parameter model, e.g. pvc://my-pvc?model=qwen2:0.5b
-		urlParser, err := url.ParseQuery(strings.TrimPrefix(matches[3], "?"))
+	if len(matches) == 4 { // check for query parameters
+		queryParams := strings.TrimPrefix(matches[3], "?")
+		urlParser, err := url.ParseQuery(queryParams)
 		if err == nil {
-			modelname := urlParser.Get("model")
+			modelname := urlParser.Get("model") // e.g. pvc://my-pvc?model=qwen2:0.5b
 			if modelname != "" {
 				modelParam = modelname
+			}
+			insecureVal := urlParser.Get("insecure") // e.g. ollama://my-registry/model?insecure=true
+			if strings.ToLower(insecureVal) == "true" {
+				insecure = true
 			}
 		}
 	}
@@ -243,6 +249,7 @@ func parseModelURL(urlStr string) (modelURL, error) {
 		name:       name,
 		path:       path,
 		modelParam: modelParam,
+		insecure:   insecure,
 	}, nil
 }
 
@@ -255,4 +262,7 @@ type modelURL struct {
 	// e.g. "qwen2:0.5b" when ?model=qwen2:0.5b is part of the URL.
 	// This is used for Ollama where the PVC may have multiple models and we need to specify which one to load by name.
 	modelParam string
+	// e.g. true when ?insecure=true is part of the URL.
+	// This is used for Ollama to allow pulling from insecure registries.
+	insecure bool
 }
