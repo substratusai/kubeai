@@ -27,6 +27,10 @@ data:
       podSecurityContext:
         {{- .Values.modelServerPods.podSecurityContext | toYaml | nindent 8}}
       {{- end}}
+      {{- if .Values.modelServerPods.podPatches }}
+      podPatches:
+        {{- .Values.modelServerPods.podPatches | toYaml | nindent 8}}
+      {{- end}}
       {{- if .Values.modelServerPods.securityContext }}
       securityContext:
         {{- .Values.modelServerPods.securityContext | toYaml | nindent 8}}

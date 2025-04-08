@@ -74,6 +74,11 @@ modelServerPods:
     capabilities:
       drop:
         - ALL
+  # JSON Patch to apply to the model server pods
+  # podPatches:
+  # - op: add
+  #   path: /spec/podPriorityClassName
+  #   value: kubeai-model-server
 
 modelRollouts:
   # The number of replicas to add when rolling out a new model.
