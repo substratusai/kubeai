@@ -77,7 +77,7 @@ modelServerPods:
   # JSON Patch to apply to the model server pods
   # podPatches:
   # - op: add
-  #   path: /spec/podPriorityClassName
+  #   path: /spec/priorityClassName
   #   value: kubeai-model-server
 
 modelRollouts:
