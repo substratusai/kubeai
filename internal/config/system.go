@@ -255,5 +255,5 @@ type ModelServerPods struct {
 	// ModelPodPatches is a list of patches to apply to the model pod template.
 	// This is a JSON Patch as defined in RFC 6902.
 	// https://datatracker.ietf.org/doc/html/rfc6902
-	ModelPodPatches []Patch `json:"podPatch,omitempty"`
+	ModelPodPatches []Patch `json:"podPatches,omitempty"`
 }
