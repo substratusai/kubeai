@@ -10,6 +10,10 @@ import (
 )
 
 func patchPod(patches []config.Patch, pod *corev1.Pod) error {
+	if len(patches) == 0 {
+		return nil
+	}
+
 	pb, err := json.Marshal(patches)
 	if err != nil {
 		return fmt.Errorf("marshal pod patch: %w", err)
