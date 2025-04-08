@@ -38,7 +38,7 @@ func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubea
 		podForModel = r.vLLMPodForModel(model, modelConfig)
 	}
 
-	r.patchPod(podForModel)
+	patchPod(r.ModelServerPods.ModelPodPatches, podForModel)
 	expectedHash := k8sutils.PodHash(podForModel.Spec)
 	podForModel.GenerateName = fmt.Sprintf("model-%s-%s-", model.Name, expectedHash)
 	k8sutils.SetLabel(podForModel, kubeaiv1.PodHashLabel, expectedHash)
