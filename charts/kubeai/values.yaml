@@ -74,8 +74,9 @@ modelServerPods:
     capabilities:
       drop:
         - ALL
-  # JSON Patch to apply to the model server pods
-  # podPatches:
+  # JSONPatch to apply to the model server pods
+  # Invalid patches will be ignored.
+  # jsonPatches:
   # - op: add
   #   path: /spec/priorityClassName
   #   value: kubeai-model-server
