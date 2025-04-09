@@ -33,7 +33,7 @@ func Test_patchPod(t *testing.T) {
 					},
 				},
 			},
-			patches: []config.Patch{
+			patches: []config.JSONPatch{
 				{Op: "replace", Path: "/spec/containers/0/image", Value: "new-image"},
 			},
 			want: &corev1.Pod{
@@ -59,7 +59,7 @@ func Test_patchPod(t *testing.T) {
 				},
 				Spec: corev1.PodSpec{},
 			},
-			patches: []config.Patch{
+			patches: []config.JSONPatch{
 				{Op: "add", Path: "/spec/preemptionPolicy", Value: "Never"},
 			},
 			want: &corev1.Pod{

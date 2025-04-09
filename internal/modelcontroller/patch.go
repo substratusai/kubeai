@@ -9,7 +9,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-func patchPod(patches []config.Patch, pod *corev1.Pod) error {
+func applyJSONPatchToPod(patches []config.JSONPatch, pod *corev1.Pod) error {
 	if len(patches) == 0 {
 		return nil
 	}
@@ -24,18 +24,18 @@ func patchPod(patches []config.Patch, pod *corev1.Pod) error {
 		return fmt.Errorf("decode pod patch: %w", err)
 	}
 
-	podB, err := json.Marshal(pod)
+	podJson, err := json.Marshal(pod)
 	if err != nil {
 		return fmt.Errorf("marshal pod: %w", err)
 	}
 
-	patchedPodB, err := patch.Apply(podB)
+	patchedPodJson, err := patch.Apply(podJson)
 	if err != nil {
 		return fmt.Errorf("apply pod patch: %w", err)
 	}
 
 	patchedPod := &corev1.Pod{}
-	if err := json.Unmarshal(patchedPodB, patchedPod); err != nil {
+	if err := json.Unmarshal(patchedPodJson, patchedPod); err != nil {
 		return fmt.Errorf("unmarshal patched pod: %w", err)
 	}
 	*pod = *patchedPod
