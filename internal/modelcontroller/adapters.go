@@ -215,6 +215,7 @@ func (r *ModelReconciler) patchServerAdapterLoader(podSpec *corev1.PodSpec, m *v
 	}
 	podSpec.Containers = append(podSpec.Containers, loaderContainer)
 	r.modelAuthCredentialsForAllSources().applyToPodSpec(podSpec, len(podSpec.Containers)-1)
+	r.modelEnvFrom(m).applyToPodSpec(podSpec, len(podSpec.Containers)-1)
 }
 
 func getLabelledAdapters(pod *corev1.Pod) map[string]struct{} {
