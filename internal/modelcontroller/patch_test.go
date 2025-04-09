@@ -10,14 +10,28 @@ import (
 	"k8s.io/utils/ptr"
 )
 
-func Test_patchPod(t *testing.T) {
+func Test_applyJSONPatchToPod(t *testing.T) {
 	t.Parallel()
 
 	cases := map[string]struct {
-		modelPod *corev1.Pod
-		patches  []config.Patch
-		want     *corev1.Pod
+		modelPod    *corev1.Pod
+		patches     []config.JSONPatch
+		want        *corev1.Pod
+		errorString *string
 	}{
+		"no-patch": {
+			modelPod: &corev1.Pod{},
+			patches:  nil,
+			want:     &corev1.Pod{},
+		},
+		"error-patch": {
+			modelPod: &corev1.Pod{},
+			patches: []config.JSONPatch{
+				{Op: "invalid", Path: "/spec/containers/0/image", Value: "new-image"},
+			},
+			want:        &corev1.Pod{},
+			errorString: ptr.To("apply pod patch: Unexpected kind: invalid"),
+		},
 		"replace-image": {
 			modelPod: &corev1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
