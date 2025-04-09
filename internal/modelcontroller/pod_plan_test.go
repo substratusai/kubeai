@@ -154,7 +154,7 @@ func Test_calculatePodPlan(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			plan := r.calculatePodPlan(&corev1.PodList{Items: c.pods}, model, modelConfig)
+			plan := r.calculatePodPlan(t.Context(), &corev1.PodList{Items: c.pods}, model, modelConfig)
 			detailsCSV := strings.Join(plan.details, ", ")
 			require.Lenf(t, plan.toCreate, c.wantNCreations, "Unexpected creation count, details: %v", detailsCSV)
 			var deletionNames []string

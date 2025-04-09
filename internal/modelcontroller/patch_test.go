@@ -77,8 +77,13 @@ func Test_patchPod(t *testing.T) {
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			err := patchPod(c.patches, c.modelPod)
-			require.NoError(t, err)
+			err := applyJSONPatchToPod(c.patches, c.modelPod)
+			if c.errorString != nil {
+				require.ErrorContains(t, err, *c.errorString)
+			} else {
+				require.NoError(t, err)
+			}
+
 			require.Equal(t, c.want, c.modelPod, "expected pod to be patched correctly")
 		})
 	}

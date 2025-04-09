@@ -25,8 +25,10 @@ import (
 // - Adds a surge Pod
 // - Recreates any out-of-date Pod that is not Ready immediately
 // - Waits for all Pods to be Ready before recreating any out-of-date Pods that are Ready
-func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubeaiv1.Model, modelConfig ModelConfig) *podPlan {
+func (r *ModelReconciler) calculatePodPlan(ctx context.Context, allPods *corev1.PodList, model *kubeaiv1.Model, modelConfig ModelConfig) *podPlan {
 	var podForModel *corev1.Pod
+	var log = log.FromContext(ctx)
+
 	switch model.Spec.Engine {
 	case kubeaiv1.OLlamaEngine:
 		podForModel = r.oLlamaPodForModel(model, modelConfig)
@@ -38,7 +40,10 @@ func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubea
 		podForModel = r.vLLMPodForModel(model, modelConfig)
 	}
 
-	patchPod(r.ModelServerPods.ModelPodPatches, podForModel)
+	if err := applyJSONPatchToPod(r.ModelServerPods.JSONPatches, podForModel); err != nil {
+		log.Error(err, "JSONPatches ignored as they failed to apply to Pod")
+	}
+
 	expectedHash := k8sutils.PodHash(podForModel.Spec)
 	podForModel.GenerateName = fmt.Sprintf("model-%s-%s-", model.Name, expectedHash)
 	k8sutils.SetLabel(podForModel, kubeaiv1.PodHashLabel, expectedHash)
