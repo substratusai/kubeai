@@ -173,7 +173,7 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (res 
 		}
 	}()
 
-	plan := r.calculatePodPlan(allPods, model, modelConfig)
+	plan := r.calculatePodPlan(ctx, allPods, model, modelConfig)
 	if plan.containsActions() {
 		var err error
 		scaled, err = plan.execute(ctx, r.Client, r.Scheme)
