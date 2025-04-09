@@ -91,6 +91,7 @@ func Test_calculatePodPlan(t *testing.T) {
 		pods           []corev1.Pod
 		wantNCreations int
 		wantDeletions  []string
+		jsonPatches    []config.JSONPatch
 	}{
 		{
 			name: "do nothing",
@@ -106,6 +107,16 @@ func Test_calculatePodPlan(t *testing.T) {
 				testPod("up-to-date-1", expectedHash, ready),
 			},
 			wantNCreations: 2,
+		},
+		{
+			name: "ignore json patch failure",
+			pods: []corev1.Pod{
+				testPod("up-to-date-1", expectedHash, ready),
+			},
+			wantNCreations: 2,
+			jsonPatches: []config.JSONPatch{
+				{Op: "invalid", Path: "/spec/containers/0/image", Value: "new-image"},
+			},
 		},
 		{
 			name: "scale down",
@@ -154,6 +165,10 @@ func Test_calculatePodPlan(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
+			r.ModelServerPods.JSONPatches = nil
+			if c.jsonPatches != nil {
+				r.ModelServerPods.JSONPatches = c.jsonPatches
+			}
 			plan := r.calculatePodPlan(t.Context(), &corev1.PodList{Items: c.pods}, model, modelConfig)
 			detailsCSV := strings.Join(plan.details, ", ")
 			require.Lenf(t, plan.toCreate, c.wantNCreations, "Unexpected creation count, details: %v", detailsCSV)
