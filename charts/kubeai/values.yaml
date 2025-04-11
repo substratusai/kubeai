@@ -42,7 +42,7 @@ modelServers:
       # "default" is used when no imageName is specified or if a specific image is not found.
       default: "vllm/vllm-openai:v0.8.3"
       nvidia-gpu: "vllm/vllm-openai:v0.8.3"
-      cpu: "public.ecr.aws/q9t5s3a7/vllm-cpu-release-repo:v0.8.3"
+      cpu: "substratusai/vllm:v0.6.3.post1-cpu"
       # Nightly from April 5
       google-tpu: "vllm/vllm-tpu:ba10801961f94afbceed39a41af2b29a85c348e3"
       # Source: https://github.com/substratusai/vllm-docker/blob/main/Dockerfile.cuda-arm
