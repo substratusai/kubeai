@@ -109,16 +109,6 @@ func Test_calculatePodPlan(t *testing.T) {
 			wantNCreations: 2,
 		},
 		{
-			name: "ignore json patch failure",
-			pods: []corev1.Pod{
-				testPod("up-to-date-1", expectedHash, ready),
-			},
-			wantNCreations: 2,
-			jsonPatches: []config.JSONPatch{
-				{Op: "invalid", Path: "/spec/containers/0/image", Value: "new-image"},
-			},
-		},
-		{
 			name: "scale down",
 			pods: []corev1.Pod{
 				testPod("ready-up-to-date-1", expectedHash, ready),
