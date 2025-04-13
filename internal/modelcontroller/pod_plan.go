@@ -25,9 +25,8 @@ import (
 // - Adds a surge Pod
 // - Recreates any out-of-date Pod that is not Ready immediately
 // - Waits for all Pods to be Ready before recreating any out-of-date Pods that are Ready
-func (r *ModelReconciler) calculatePodPlan(ctx context.Context, allPods *corev1.PodList, model *kubeaiv1.Model, modelConfig ModelConfig) *podPlan {
+func (r *ModelReconciler) calculatePodPlan(allPods *corev1.PodList, model *kubeaiv1.Model, modelConfig ModelConfig) (*podPlan, error) {
 	var podForModel *corev1.Pod
-	var log = log.FromContext(ctx)
 
 	switch model.Spec.Engine {
 	case kubeaiv1.OLlamaEngine:
@@ -41,7 +40,7 @@ func (r *ModelReconciler) calculatePodPlan(ctx context.Context, allPods *corev1.
 	}
 
 	if err := applyJSONPatchToPod(r.ModelServerPods.JSONPatches, podForModel); err != nil {
-		log.Error(err, "JSONPatches ignored as they failed to apply to Pod")
+		return nil, err
 	}
 
 	expectedHash := k8sutils.PodHash(podForModel.Spec)
@@ -153,7 +152,7 @@ func (r *ModelReconciler) calculatePodPlan(ctx context.Context, allPods *corev1.
 		toDelete: toDelete,
 		toRemain: toRemain,
 		details:  details,
-	}
+	}, nil
 }
 
 type podPlan struct {

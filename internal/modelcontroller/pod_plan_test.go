@@ -169,7 +169,8 @@ func Test_calculatePodPlan(t *testing.T) {
 			if c.jsonPatches != nil {
 				r.ModelServerPods.JSONPatches = c.jsonPatches
 			}
-			plan := r.calculatePodPlan(t.Context(), &corev1.PodList{Items: c.pods}, model, modelConfig)
+			plan, err := r.calculatePodPlan(&corev1.PodList{Items: c.pods}, model, modelConfig)
+			require.NoError(t, err)
 			detailsCSV := strings.Join(plan.details, ", ")
 			require.Lenf(t, plan.toCreate, c.wantNCreations, "Unexpected creation count, details: %v", detailsCSV)
 			var deletionNames []string
