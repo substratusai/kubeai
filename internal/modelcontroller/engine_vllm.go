@@ -20,6 +20,8 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 	vllmModelFlag := c.Source.url.ref
 	if m.Spec.CacheProfile != "" {
 		vllmModelFlag = modelCacheDir(m)
+	} else if c.Source.url.scheme == "s3" {
+		vllmModelFlag = c.Source.url.original
 	}
 	// The vllmModelFlag can be safely overridden because validation logic ensures
 	// that a model with PVC source and cacheProfile won't be admitted.

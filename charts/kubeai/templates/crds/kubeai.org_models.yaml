@@ -261,8 +261,6 @@ spec:
                 "s3://...", "gs://...", or "oss://..." at the moment.
               rule: '!has(self.cacheProfile) || self.url.startsWith("hf://") || self.url.startsWith("s3://")
                 || self.url.startsWith("gs://") || self.url.startsWith("oss://")'
-            - message: urls of format "s3://..." only supported when using a cacheProfile
-              rule: '!self.url.startsWith("s3://") || has(self.cacheProfile)'
             - message: urls of format "gs://..." only supported when using a cacheProfile
               rule: '!self.url.startsWith("gs://") || has(self.cacheProfile)'
             - message: urls of format "oss://..." only supported when using a cacheProfile
