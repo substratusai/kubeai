@@ -147,3 +147,17 @@ chat_completion = client.chat.completions.create(
     model=model_name,
 )
 ```
+
+## Ollama Configuration Notes
+
+### Insecure Model Pulling
+
+To allow pulling Ollama models from insecure registries (e.g., HTTP-only or self-signed TLS), append the `?insecure=true` query parameter to the model URL.
+
+**Warning:** Use this only in trusted network environments.
+
+Example Model spec using an insecure registry:
+```yaml
+spec:
+  url: ollama://my-local-registry:5000/my-model?insecure=true
+```
