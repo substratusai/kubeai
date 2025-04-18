@@ -495,6 +495,19 @@ catalog:
       - --disable-log-requests
     resourceProfile: nvidia-gpu-gh200:1
     targetRequests: 200
+  llama-4-maverick-430k-h100:
+    enabled: false
+    features: [TextGeneration]
+    url: hf://meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8
+    engine: VLLM
+    env:
+      VLLM_DISABLE_COMPILE_CACHE: "1"
+    args:
+      - --max-model-len=430000
+      - --tensor-parallel-size=8
+      - --enable-prefix-caching
+      - --disable-log-requests
+    resourceProfile: nvidia-gpu-h100:8
   deepseek-r1-70b-gh200-fp8:
     enabled: false
     features: [TextGeneration]
