@@ -87,7 +87,7 @@ type ModelSpec struct {
 	// Env variables to be added to the server process.
 	Env map[string]string `json:"env,omitempty"`
 
-	// Env variables to be added to the server process from secret and confimap
+	// Env variables to be added to the server process from Secret or ConfigMap.
 	EnvFrom []corev1.EnvFromSource `json:"envFrom,omitempty"`
 
 	// Replicas is the number of Pod replicas that should be actively

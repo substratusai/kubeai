@@ -92,7 +92,7 @@ spec:
                 type: object
               envFrom:
                 description: Env variables to be added to the server process from
-                  secret and confimap
+                  Secret or ConfigMap.
                 items:
                   description: EnvFromSource represents the source of a set of ConfigMaps
                   properties:
