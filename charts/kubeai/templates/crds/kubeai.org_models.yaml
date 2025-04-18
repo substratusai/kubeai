@@ -243,6 +243,12 @@ spec:
                   OpenAI /v1/models endpoint.
                   DEPRECATED.
                 type: string
+              priorityClassName:
+                description: |-
+                  PriorityClassName sets the priority class for all pods created for this model.
+                  If specified, the PriorityClass must exist before the model is created.
+                  This is useful for implementing priority and preemption for models.
+                type: string
               replicas:
                 description: |-
                   Replicas is the number of Pod replicas that should be actively
