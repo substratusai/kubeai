@@ -18,10 +18,12 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 	}
 
 	vllmModelFlag := c.Source.url.ref
+	useRunaiStreamer := false
 	if m.Spec.CacheProfile != "" {
 		vllmModelFlag = modelCacheDir(m)
 	} else if c.Source.url.scheme == "s3" {
 		vllmModelFlag = c.Source.url.original
+		useRunaiStreamer = true
 	}
 	// The vllmModelFlag can be safely overridden because validation logic ensures
 	// that a model with PVC source and cacheProfile won't be admitted.
@@ -32,6 +34,9 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 	args := []string{
 		"--model=" + vllmModelFlag,
 		"--served-model-name=" + m.Name,
+	}
+	if useRunaiStreamer {
+		args = append(args, "--load-format=runai_streamer")
 	}
 	args = append(args, m.Spec.Args...)
 
