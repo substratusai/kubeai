@@ -96,7 +96,7 @@ Model resources define the ML models that will be served by KubeAI.
 | --- | --- | --- | --- |
 | `apiVersion` _string_ | `kubeai.org/v1` | | |
 | `kind` _string_ | `Model` | | |
-| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.3/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `spec` _[ModelSpec](#modelspec)_ |  |  |  |
 | `status` _[ModelStatus](#modelstatus)_ |  |  |  |
 
@@ -137,6 +137,7 @@ _Appears in:_
 | `image` _string_ | Image to be used for the server process.<br />Will be set from ResourceProfile + Engine if not specified. |  |  |
 | `args` _string array_ | Args to be added to the server process. |  |  |
 | `env` _object (keys:string, values:string)_ | Env variables to be added to the server process. |  |  |
+| `envFrom` _[EnvFromSource](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#envfromsource-v1-core) array_ | Env variables to be added to the server process from Secret or ConfigMap. |  |  |
 | `replicas` _integer_ | Replicas is the number of Pod replicas that should be actively<br />serving the model. KubeAI will manage this field unless AutoscalingDisabled<br />is set to true. |  |  |
 | `minReplicas` _integer_ | MinReplicas is the minimum number of Pod replicas that the model can scale down to.<br />Note: 0 is a valid value. |  | Minimum: 0 <br />Optional: \{\} <br /> |
 | `maxReplicas` _integer_ | MaxReplicas is the maximum number of Pod replicas that the model can scale up to.<br />Empty value means no limit. |  | Minimum: 1 <br /> |
