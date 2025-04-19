@@ -240,14 +240,14 @@ func TestModelValidation(t *testing.T) {
 		},
 		{
 			model: v1.Model{
-				ObjectMeta: metadata("s3-url-without-cache-profile-invalid"),
+				ObjectMeta: metadata("s3-url-without-cache-profile-valid"),
 				Spec: v1.ModelSpec{
 					URL:      "s3://test-bucket/test-path",
 					Engine:   "VLLM",
 					Features: []v1.ModelFeature{},
 				},
 			},
-			expValid: false,
+			expValid: true,
 		},
 		{
 			model: v1.Model{
