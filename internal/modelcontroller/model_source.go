@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	v1 "github.com/substratusai/kubeai/api/k8s/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/utils/ptr"
 )
@@ -42,18 +43,21 @@ func (r *ModelReconciler) parseModelSource(urlStr string) (modelSource, error) {
 }
 
 type modelSourcePodAdditions struct {
+	envFrom      []corev1.EnvFromSource
 	env          []corev1.EnvVar
 	volumes      []corev1.Volume
 	volumeMounts []corev1.VolumeMount
 }
 
 func (c *modelSourcePodAdditions) append(other *modelSourcePodAdditions) {
+	c.envFrom = append(c.envFrom, other.envFrom...)
 	c.env = append(c.env, other.env...)
 	c.volumes = append(c.volumes, other.volumes...)
 	c.volumeMounts = append(c.volumeMounts, other.volumeMounts...)
 }
 
 func (c *modelSourcePodAdditions) applyToPodSpec(spec *corev1.PodSpec, containerIndex int) {
+	spec.Containers[containerIndex].EnvFrom = append(spec.Containers[containerIndex].EnvFrom, c.envFrom...)
 	spec.Containers[containerIndex].Env = append(spec.Containers[containerIndex].Env, c.env...)
 	spec.Volumes = append(spec.Volumes, c.volumes...)
 	spec.Containers[containerIndex].VolumeMounts = append(spec.Containers[containerIndex].VolumeMounts, c.volumeMounts...)
@@ -66,6 +70,13 @@ func (r *ModelReconciler) modelAuthCredentialsForAllSources() *modelSourcePodAdd
 	c.append(r.authForOSS())
 	c.append(r.authForS3())
 	return c
+}
+
+func (r *ModelReconciler) modelEnvFrom(m *v1.Model) *modelSourcePodAdditions {
+	if m.Spec.EnvFrom == nil {
+		return &modelSourcePodAdditions{}
+	}
+	return &modelSourcePodAdditions{envFrom: m.Spec.EnvFrom}
 }
 
 func (r *ModelReconciler) authForS3() *modelSourcePodAdditions {

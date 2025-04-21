@@ -17,6 +17,7 @@ limitations under the License.
 package v1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -85,6 +86,9 @@ type ModelSpec struct {
 
 	// Env variables to be added to the server process.
 	Env map[string]string `json:"env,omitempty"`
+
+	// Env variables to be added to the server process from Secret or ConfigMap.
+	EnvFrom []corev1.EnvFromSource `json:"envFrom,omitempty"`
 
 	// Replicas is the number of Pod replicas that should be actively
 	// serving the model. KubeAI will manage this field unless AutoscalingDisabled
