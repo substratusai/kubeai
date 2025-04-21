@@ -37,4 +37,4 @@ func TestModelPriorityClassName(t *testing.T) {
 		// Verify the priorityClassName is set on the pod
 		assert.Equal(t, expectedPriorityClassName, pod.Spec.PriorityClassName)
 	}, 5*time.Second, time.Second/10, "Pod should have the correct priorityClassName")
-} 
+}
