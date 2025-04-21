@@ -305,6 +305,10 @@ func (r *ModelReconciler) getModelConfig(model *kubeaiv1.Model) (ModelConfig, er
 	result.Requests = requests
 	result.Limits = limits
 
+	if model.Spec.EnvFrom != nil {
+		result.Source.modelSourcePodAdditions.envFrom = model.Spec.EnvFrom
+	}
+
 	image, err := r.lookupServerImage(model, profile)
 	if err != nil {
 		return result, fmt.Errorf("looking up server image: %w", err)
