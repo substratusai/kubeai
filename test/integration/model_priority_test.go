@@ -7,12 +7,20 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
+	schedulingv1 "k8s.io/api/scheduling/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // TestModelPriorityClassName tests that priorityClassName is set properly on model pods.
 func TestModelPriorityClassName(t *testing.T) {
 	initTest(t, baseSysCfg(t))
+	priorityClass := &schedulingv1.PriorityClass{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "test-priority-class",
+		},
+	}
+	require.NoError(t, testK8sClient.Create(testCtx, priorityClass))
 
 	// Create a Model object with priorityClassName set
 	m := modelForTest(t)
