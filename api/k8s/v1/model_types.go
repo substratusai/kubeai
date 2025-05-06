@@ -199,6 +199,9 @@ type PrefixHash struct {
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:default=100
 	PrefixCharLength int `json:"prefixCharLength,omitempty"`
+	// MinLoadThreshold is the minimum number of requests an endpoint must receive to be considered overloaded.
+	// +kubebuilder:validation:Optional
+	MinLoadThreshold *int `json:"minLoadThreshold,omitempty"`
 }
 
 // File represents a file to be mounted in the model pod.
