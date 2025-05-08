@@ -1,0 +1,11 @@
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: critical-service-model
+spec:
+  features: [TextGeneration]
+  url: hf://neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8
+  engine: VLLM
+  # Critical service model gets high priority to preempt other models when resources are limited
+  priorityClassName: high-priority
+  resourceProfile: nvidia-gpu-l4:1 

@@ -74,6 +74,7 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 			Affinity:           c.Affinity,
 			Tolerations:        c.Tolerations,
 			RuntimeClassName:   c.RuntimeClassName,
+			PriorityClassName:  m.Spec.PriorityClassName,
 			ServiceAccountName: r.ModelServerPods.ModelServiceAccountName,
 			SecurityContext:    r.ModelServerPods.ModelPodSecurityContext,
 			ImagePullSecrets:   r.ModelServerPods.ImagePullSecrets,

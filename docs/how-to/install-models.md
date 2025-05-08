@@ -102,6 +102,66 @@ See the [examples](https://github.com/substratusai/kubeai/tree/main/examples/k8s
 
 You can inference a model by calling the KubeAI OpenAI compatible API. The model name should match the KubeAI model name.
 
+## Using Pod Priority Classes for Model Preemption
+
+You can use Kubernetes [Pod Priority and Preemption](https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/) to configure your models with different priority levels. This is useful when you have limited resources and want to ensure that high-priority models can preempt lower-priority models when necessary.
+
+First, create the necessary PriorityClasses in your cluster:
+
+```yaml
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: high-priority
+value: 1000000  # Higher value means higher priority
+globalDefault: false
+description: "This priority class should be used for critical inference models only."
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: medium-priority
+value: 100000
+globalDefault: false
+description: "This priority class should be used for medium priority inference models."
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: low-priority
+value: 10000
+globalDefault: false
+description: "This priority class should be used for low priority inference models."
+```
+
+Then, assign these priority classes to your models:
+
+```yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: critical-service-model
+spec:
+  features: [TextGeneration]
+  url: hf://neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8
+  engine: VLLM
+  resourceProfile: nvidia-gpu-l4:1
+  priorityClassName: high-priority
+---
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: background-research-model
+spec:
+  features: [TextGeneration]
+  url: ollama://gemma2:2b
+  engine: OLlama
+  resourceProfile: cpu:2
+  priorityClassName: low-priority
+```
+
+When the cluster is under resource pressure, Kubernetes will evict lower-priority model pods to make room for higher-priority model pods. This ensures that your most critical models remain available even during resource constraints.
+
 ## Feedback welcome: A model management UI
 
 We are considering adding a UI for managing models in a running KubeAI instance. Give the [GitHub Issue](https://github.com/substratusai/kubeai/issues/148) a thumbs up if you would be interested in this feature.
