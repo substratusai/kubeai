@@ -11,7 +11,7 @@ import (
 	"go.opentelemetry.io/otel/metric"
 )
 
-func (g *group) chwblGetAddr(key string, loadFactor float64, adapter string) (endpoint, bool) {
+func (g *group) chwblGetAddr(key string, loadFactor float64, adapter string, minThresh float64) (endpoint, bool) {
 	if len(g.chwblHashes) == 0 {
 		return endpoint{}, false
 	}
@@ -54,7 +54,7 @@ func (g *group) chwblGetAddr(key string, loadFactor float64, adapter string) (en
 				defaultEndpoint = &ep
 				defaultEndpointName = name
 			}
-			if chwblLoadOK(ep.inFlight.Load(), g.totalInFlight.Load(), len(g.endpoints), loadFactor) {
+			if chwblLoadOK(ep.inFlight.Load(), g.totalInFlight.Load(), len(g.endpoints), loadFactor, minThresh) {
 				metrics.InferenceRequestsHashLookupIterations.Record(context.Background(), int64(n+1))
 				metrics.InferenceRequestsHashLookupFinal.Add(context.Background(), 1, metric.WithAttributeSet(attribute.NewSet(
 					metrics.AttrEndpoint.String(name),
@@ -149,7 +149,7 @@ func chwblEndpointReplicaHashInput(name string, replica int) string {
 	return fmt.Sprintf("%s%d", name, replica)
 }
 
-func chwblLoadOK(load, totalLoad int64, n int, loadFactor float64) bool {
+func chwblLoadOK(load, totalLoad int64, n int, loadFactor float64, minThresh float64) bool {
 	if totalLoad == 0 {
 		return true
 	}
@@ -157,6 +157,9 @@ func chwblLoadOK(load, totalLoad int64, n int, loadFactor float64) bool {
 	// The "+1"s are to simulate the load of the new request.
 	avgLoad := float64(totalLoad+1) / float64(n)
 	threshold := avgLoad * loadFactor
+	if minThresh > 0 && threshold < minThresh {
+		threshold = minThresh
+	}
 	ok := float64(load)+1 <= threshold
 	return ok
 }

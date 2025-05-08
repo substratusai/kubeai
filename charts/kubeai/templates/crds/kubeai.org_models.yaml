@@ -200,6 +200,10 @@ spec:
                           a widely accepted value for the Consistent Hashing with Bounded Loads algorithm.
                         minimum: 100
                         type: integer
+                      minLoadThreshold:
+                        description: MinLoadThreshold is the minimum number of requests
+                          an endpoint must receive to be considered overloaded.
+                        type: integer
                       prefixCharLength:
                         default: 100
                         description: PrefixCharLength is the number of characters
