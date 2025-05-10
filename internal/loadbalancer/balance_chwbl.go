@@ -11,6 +11,7 @@ import (
 	"go.opentelemetry.io/otel/metric"
 )
 
+// chwbl = Consistent Hashing with Bounded Loads
 func (g *group) chwblGetAddr(key string, loadFactor float64, adapter string) (endpoint, bool) {
 	if len(g.chwblHashes) == 0 {
 		return endpoint{}, false
@@ -54,7 +55,11 @@ func (g *group) chwblGetAddr(key string, loadFactor float64, adapter string) (en
 				defaultEndpoint = &ep
 				defaultEndpointName = name
 			}
-			if chwblLoadOK(ep.inFlight.Load(), g.totalInFlight.Load(), len(g.endpoints), loadFactor) {
+			nextNeighbour, ok := g.endpoints[g.chwblHashes[g.chwblSortedHashes[(i+1)%len(g.chwblSortedHashes)]]]
+			if !ok {
+				panic(fmt.Sprintf("endpoints corrupted, %q should be in map", name))
+			}
+			if chwblLoadOK(ep.inFlight.Load(), g.totalInFlight.Load(), len(g.endpoints), loadFactor, nextNeighbour.inFlight.Load()) {
 				metrics.InferenceRequestsHashLookupIterations.Record(context.Background(), int64(n+1))
 				metrics.InferenceRequestsHashLookupFinal.Add(context.Background(), 1, metric.WithAttributeSet(attribute.NewSet(
 					metrics.AttrEndpoint.String(name),
@@ -149,12 +154,15 @@ func chwblEndpointReplicaHashInput(name string, replica int) string {
 	return fmt.Sprintf("%s%d", name, replica)
 }
 
-func chwblLoadOK(load, totalLoad int64, n int, loadFactor float64) bool {
+// params are: in flight of endpoint , total in flight, len(endpoints), loadFactor
+func chwblLoadOK(load, totalLoad int64, n int, loadFactor float64, nextNeighbourLoad int64) bool {
 	if totalLoad == 0 {
 		return true
 	}
-
-	// The "+1"s are to simulate the load of the new request.
+	//  todo: idea to improve the distribution for lower loads
+	//if totalLoad+1 < int64(n) {
+	//	return load <= nextNeighbourLoad
+	//}
 	avgLoad := float64(totalLoad+1) / float64(n)
 	threshold := avgLoad * loadFactor
 	ok := float64(load)+1 <= threshold
