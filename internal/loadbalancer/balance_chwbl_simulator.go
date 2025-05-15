@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 	"sync/atomic"
+	"time"
 )
 
 // SimulateCHWBL simulates the distribution of requests using the CHWBL algorithm
@@ -55,6 +56,11 @@ func SimulateCHWBL(numNodes, numRequests, totalInFlights int, loadDistribution, 
 			panic(fmt.Sprintf("endpoint not found for key %s", key))
 		}
 		ep.inFlight.Add(1)
+		go func() {
+			// tweak the sleep time
+			time.Sleep(time.Duration(rand.Intn(int(10 * time.Millisecond))))
+			ep.inFlight.Add(-1)
+		}()
 		// Extract the endpoint name from the address
 		if parts := strings.Split(ep.address, "://"); len(parts) > 1 {
 			if parts = strings.Split(parts[1], ":"); len(parts) > 0 {
