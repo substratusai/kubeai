@@ -11,6 +11,7 @@ import (
 	"go.opentelemetry.io/otel/metric"
 )
 
+// chwbl = Consistent Hashing with Bounded Loads
 func (g *group) chwblGetAddr(key string, loadFactor float64, adapter string) (endpoint, bool) {
 	if len(g.chwblHashes) == 0 {
 		return endpoint{}, false
@@ -54,7 +55,11 @@ func (g *group) chwblGetAddr(key string, loadFactor float64, adapter string) (en
 				defaultEndpoint = &ep
 				defaultEndpointName = name
 			}
-			if chwblLoadOK(ep.inFlight.Load(), g.totalInFlight.Load(), len(g.endpoints), loadFactor) {
+			nextNeighbour, ok := g.endpoints[g.chwblHashes[g.chwblSortedHashes[(i+1)%len(g.chwblSortedHashes)]]]
+			if !ok {
+				panic(fmt.Sprintf("endpoints corrupted, %q should be in map", name))
+			}
+			if chwblLoadOK2(ep.inFlight.Load(), g.totalInFlight.Load(), len(g.endpoints), loadFactor, nextNeighbour.inFlight.Load()) {
 				metrics.InferenceRequestsHashLookupIterations.Record(context.Background(), int64(n+1))
 				metrics.InferenceRequestsHashLookupFinal.Add(context.Background(), 1, metric.WithAttributeSet(attribute.NewSet(
 					metrics.AttrEndpoint.String(name),
@@ -149,14 +154,42 @@ func chwblEndpointReplicaHashInput(name string, replica int) string {
 	return fmt.Sprintf("%s%d", name, replica)
 }
 
-func chwblLoadOK(load, totalLoad int64, n int, loadFactor float64) bool {
+// scenario 1: original code
+// params are: in flight of endpoint , total in flight, len(endpoints), loadFactor
+func chwblLoadOK(load, totalLoad int64, n int, loadFactor float64, nextNeighbourLoad int64) bool {
 	if totalLoad == 0 {
 		return true
 	}
-
-	// The "+1"s are to simulate the load of the new request.
 	avgLoad := float64(totalLoad+1) / float64(n)
-	threshold := avgLoad * loadFactor
+	threshold := avgLoad * loadFactor // = 1/3 * 2 = 2/3
+	ok := float64(load)+1 <= threshold
+	return ok
+}
+
+// scenario 2: remove "+1"
+// params are: in flight of endpoint , total in flight, len(endpoints), loadFactor
+func chwblLoadOK2(load, totalLoad int64, n int, loadFactor float64, nextNeighbourLoad int64) bool {
+	if totalLoad == 0 {
+		return true
+	}
+	var epsilon int64 = 0
+	avgLoad := float64(totalLoad+epsilon) / float64(n) // 100/ 300
+	threshold := avgLoad * loadFactor                  // = 1/3 * 2 = 2/3
+	ok := float64(load+epsilon) <= threshold           //    1 <= 2/3
+	return ok
+}
+
+// scenario 3: compare with next neighbor
+// params are: in flight of endpoint , total in flight, len(endpoints), loadFactor
+func chwblLoadOK3(load, totalLoad int64, n int, loadFactor float64, nextNeighbourLoad int64) bool {
+	if totalLoad == 0 {
+		return true
+	}
+	if totalLoad+1 < int64(n) {
+		return load <= nextNeighbourLoad
+	}
+	avgLoad := float64(totalLoad+1) / float64(n)
+	threshold := avgLoad * loadFactor // = 1/3 * 2 = 2/3
 	ok := float64(load)+1 <= threshold
 	return ok
 }
