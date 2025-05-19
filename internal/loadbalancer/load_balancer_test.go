@@ -296,7 +296,7 @@ func TestLoadBalancingStrategies(t *testing.T) {
 					},
 				},
 				{
-					// load0	load1	1.5*(avg+1)		(load0)+1 <= (thres)
+					// load0	load1	1.5*(avg+1)		(load0) <= (thres)
 					// 10		10		15.75			TRUE
 					// 11		10		16.5			TRUE
 					// 12		10		17.25			TRUE
@@ -317,7 +317,7 @@ func TestLoadBalancingStrategies(t *testing.T) {
 					// 27		10		28.5			TRUE
 					// 28		10		29.25			TRUE
 					// 29		10		30				TRUE
-					// 30		10		30.75			FALSE
+					// 30		10		30.75			TRUE
 					name:  "20 more requests preferring pod-a-1",
 					model: modelA,
 					// By making sure that the prefix matches the input used to hash the endpoint (pod-a-1),
@@ -326,16 +326,15 @@ func TestLoadBalancingStrategies(t *testing.T) {
 					requestCount: 20,
 					// See the table above for the expected distribution.
 					expectedAddrCounts: map[string]int{
-						podA1Addr: 19,
-						podA2Addr: 1,
+						podA1Addr: 20,
 					},
 				},
 				{
-					// 30	10	30.75	FALSE
-					// 30	11	31.5	TRUE  <-- 1 request (starting here)
+					// 30	10	30.75	TRUE
+					// 31	10	31.5	FALSE <-- 1 request (starting here)
 					// 31	11	32.25	TRUE  <-- 2 requests
 					// 32	11	33		TRUE  <-- 3 requests
-					// 33	11	33.75	FALSE <-- 4 requests
+					// 33	11	33.75	TRUE  <-- 4 requests
 					name:         "4 more requests preferring pod-a-1",
 					model:        modelA,
 					prefix:       podA1Hash,
