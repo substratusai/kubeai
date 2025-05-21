@@ -1,10 +1,13 @@
 package integration
 
 import (
+	"context"
 	"testing"
 
+	"log"
+
 	"github.com/stretchr/testify/require"
-	v1 "github.com/substratusai/kubeai/api/v1"
+	v1 "github.com/substratusai/kubeai/api/k8s/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/ptr"
 )
@@ -237,14 +240,14 @@ func TestModelValidation(t *testing.T) {
 		},
 		{
 			model: v1.Model{
-				ObjectMeta: metadata("s3-url-without-cache-profile-invalid"),
+				ObjectMeta: metadata("s3-url-without-cache-profile-valid"),
 				Spec: v1.ModelSpec{
 					URL:      "s3://test-bucket/test-path",
 					Engine:   "VLLM",
 					Features: []v1.ModelFeature{},
 				},
 			},
-			expValid: false,
+			expValid: true,
 		},
 		{
 			model: v1.Model{
@@ -292,20 +295,6 @@ func TestModelValidation(t *testing.T) {
 		},
 		{
 			model: v1.Model{
-				ObjectMeta: metadata("mutate-url-invalid"),
-				Spec: v1.ModelSpec{
-					URL:      "hf://test-repo/test-model",
-					Engine:   "VLLM",
-					Features: []v1.ModelFeature{},
-				},
-			},
-			update: func(m *v1.Model) {
-				m.Spec.URL = "hf://update-test-repo/update-test-model"
-			},
-			expErrContain: "url is immutable",
-		},
-		{
-			model: v1.Model{
 				ObjectMeta: metadata("mutate-cacheprofile-invalid"),
 				Spec: v1.ModelSpec{
 					URL:          "hf://test-repo/test-model",
@@ -318,6 +307,162 @@ func TestModelValidation(t *testing.T) {
 				m.Spec.CacheProfile = "some-updated-cache-profile"
 			},
 			expErrContain: "cacheProfile is immutable",
+		},
+		{
+			model: v1.Model{
+				ObjectMeta: metadata("url-mutable-without-cache-profile-valid"),
+				Spec: v1.ModelSpec{
+					URL:      "hf://test-repo/test-model",
+					Engine:   "VLLM",
+					Features: []v1.ModelFeature{},
+				},
+			},
+			update: func(m *v1.Model) {
+				m.Spec.URL = "hf://test-repo/updated-model"
+			},
+			expValid: true,
+		},
+		{
+			model: v1.Model{
+				ObjectMeta: metadata("url-immutable-with-cache-profile-invalid"),
+				Spec: v1.ModelSpec{
+					URL:          "hf://test-repo/test-model",
+					Engine:       "VLLM",
+					Features:     []v1.ModelFeature{},
+					CacheProfile: "some-cache-profile",
+				},
+			},
+			update: func(m *v1.Model) {
+				m.Spec.URL = "hf://test-repo/updated-model"
+			},
+			expErrContain: "url is immutable when using cacheProfile",
+		},
+		{
+			model: v1.Model{
+				ObjectMeta: metadata("root-file-path-valid"),
+				Spec: v1.ModelSpec{
+					URL:      "hf://test-repo/test-model",
+					Engine:   "VLLM",
+					Features: []v1.ModelFeature{},
+					Files: []v1.File{
+						{
+							Path:    "/file.txt",
+							Content: "file content",
+						},
+					},
+				},
+			},
+			expValid: true,
+		},
+		{
+			model: v1.Model{
+				ObjectMeta: metadata("absolute-file-path-valid"),
+				Spec: v1.ModelSpec{
+					URL:      "hf://test-repo/test-model",
+					Engine:   "VLLM",
+					Features: []v1.ModelFeature{},
+					Files: []v1.File{
+						{
+							Path:    "/absolute/path/to/file.txt",
+							Content: "file content",
+						},
+					},
+				},
+			},
+			expValid: true,
+		},
+		{
+			model: v1.Model{
+				ObjectMeta: metadata("relative-file-path-invalid"),
+				Spec: v1.ModelSpec{
+					URL:      "hf://test-repo/test-model",
+					Engine:   "VLLM",
+					Features: []v1.ModelFeature{},
+					Files: []v1.File{
+						{
+							Path:    "relative/path/to/file.txt",
+							Content: "file content",
+						},
+					},
+				},
+			},
+			expErrContain: "Path must be an absolute path",
+		},
+		{
+			model: v1.Model{
+				ObjectMeta: metadata("invalid-file-path-character"),
+				Spec: v1.ModelSpec{
+					URL:      "hf://test-repo/test-model",
+					Engine:   "VLLM",
+					Features: []v1.ModelFeature{},
+					Files: []v1.File{
+						{
+							Path:    "c://path/to/file.txt",
+							Content: "file content",
+						},
+					},
+				},
+			},
+			expErrContain: "must not contain a ':' character",
+		},
+		{
+			model: v1.Model{
+				ObjectMeta: metadata("duplicate-file-paths-invalid"),
+				Spec: v1.ModelSpec{
+					URL:      "hf://test-repo/test-model",
+					Engine:   "VLLM",
+					Features: []v1.ModelFeature{},
+					Files: []v1.File{
+						{
+							Path:    "/path/to/file1.txt",
+							Content: "file 1 content",
+						},
+						{
+							Path:    "/path/to/file2.txt",
+							Content: "file 2 content",
+						},
+						{
+							Path:    "/path/to/file1.txt", // Duplicate path
+							Content: "duplicated path content",
+						},
+					},
+				},
+			},
+			expErrContain: "All file paths must be unique",
+		},
+		{
+			model: v1.Model{
+				ObjectMeta: metadata("large-files-valid"),
+				Spec: v1.ModelSpec{
+					URL:      "hf://test-repo/test-model",
+					Engine:   "VLLM",
+					Features: []v1.ModelFeature{},
+					Files: []v1.File{
+						{
+							Path:    "/path/to/file1.txt",
+							Content: nCharacters(100_000),
+						},
+					},
+				},
+			},
+			expValid: true,
+		},
+		{
+			model: v1.Model{
+				ObjectMeta: metadata("xlarge-files-invalid"),
+				Spec: v1.ModelSpec{
+					URL:      "hf://test-repo/test-model",
+					Engine:   "VLLM",
+					Features: []v1.ModelFeature{},
+					Files: []v1.File{
+						{
+							Path:    "/path/to/file1.txt",
+							Content: nCharacters(100_001),
+						},
+					},
+				},
+			},
+			expErrContain: "may not be longer than 100000",
 		},
 	}
 	for _, c := range cases {
@@ -338,6 +483,13 @@ func TestModelValidation(t *testing.T) {
 				}
 			}
 
+			if c.expValid {
+				t.Cleanup(func() {
+					if err := testK8sClient.Delete(context.Background(), &c.model); err != nil {
+						log.Printf("Failed to delete model: %v", err)
+					}
+				})
+			}
 			if c.update == nil {
 				validateErr(testK8sClient.Create(testCtx, &c.model))
 			} else {
@@ -347,4 +499,12 @@ func TestModelValidation(t *testing.T) {
 			}
 		})
 	}
+}
+
+func nCharacters(n int) string {
+	s := make([]byte, n)
+	for i := range s {
+		s[i] = 'a'
+	}
+	return string(s)
 }

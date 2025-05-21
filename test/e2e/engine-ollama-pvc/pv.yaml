@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: kind-model-hostpath
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 25Gi
+  accessModes:
+    - ReadWriteMany
+    - ReadOnlyMany
+    - ReadWriteOnce
+  hostPath:
+    path: $PV_HOST_PATH
+    type: DirectoryOrCreate
+  persistentVolumeReclaimPolicy: Retain

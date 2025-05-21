@@ -90,6 +90,56 @@ spec:
                   type: string
                 description: Env variables to be added to the server process.
                 type: object
+              envFrom:
+                description: Env variables to be added to the server process from
+                  Secret or ConfigMap.
+                items:
+                  description: EnvFromSource represents the source of a set of ConfigMaps
+                  properties:
+                    configMapRef:
+                      description: The ConfigMap to select from
+                      properties:
+                        name:
+                          default: ""
+                          description: |-
+                            Name of the referent.
+                            This field is effectively required, but due to backwards compatibility is
+                            allowed to be empty. Instances of this type with an empty value here are
+                            almost certainly wrong.
+                            TODO: Add other useful fields. apiVersion, kind, uid?
+                            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                            TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
+                          type: string
+                        optional:
+                          description: Specify whether the ConfigMap must be defined
+                          type: boolean
+                      type: object
+                      x-kubernetes-map-type: atomic
+                    prefix:
+                      description: An optional identifier to prepend to each key in
+                        the ConfigMap. Must be a C_IDENTIFIER.
+                      type: string
+                    secretRef:
+                      description: The Secret to select from
+                      properties:
+                        name:
+                          default: ""
+                          description: |-
+                            Name of the referent.
+                            This field is effectively required, but due to backwards compatibility is
+                            allowed to be empty. Instances of this type with an empty value here are
+                            almost certainly wrong.
+                            TODO: Add other useful fields. apiVersion, kind, uid?
+                            More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                            TODO: Drop `kubebuilder:default` when controller-gen doesn't need it https://github.com/kubernetes-sigs/kubebuilder/issues/3896.
+                          type: string
+                        optional:
+                          description: Specify whether the Secret must be defined
+                          type: boolean
+                      type: object
+                      x-kubernetes-map-type: atomic
+                  type: object
+                type: array
               features:
                 description: |-
                   Features that the model supports.
@@ -100,6 +150,33 @@ spec:
                   - TextEmbedding
                   - SpeechToText
                   type: string
+                type: array
+              files:
+                description: Files to be mounted in the model Pods.
+                items:
+                  description: File represents a file to be mounted in the model pod.
+                  properties:
+                    content:
+                      description: |-
+                        Content of the file to be mounted.
+                        Will be injected into a ConfigMap and mounted in the model Pods.
+                      maxLength: 100000
+                      type: string
+                    path:
+                      description: |-
+                        Path where the file should be mounted in the pod.
+                        Must be an absolute path.
+                      maxLength: 1024
+                      type: string
+                      x-kubernetes-validations:
+                      - message: Path must be an absolute path, starting with /, and
+                          must not contain a ':' character.
+                        rule: self.startsWith('/') && !self.contains(':')
+                  required:
+                  - content
+                  - path
+                  type: object
+                maxItems: 10
                 type: array
               image:
                 description: |-
@@ -166,6 +243,12 @@ spec:
                   OpenAI /v1/models endpoint.
                   DEPRECATED.
                 type: string
+              priorityClassName:
+                description: |-
+                  PriorityClassName sets the priority class for all pods created for this model.
+                  If specified, the PriorityClass must exist before the model is created.
+                  This is useful for implementing priority and preemption for models.
+                type: string
               replicas:
                 description: |-
                   Replicas is the number of Pod replicas that should be actively
@@ -218,8 +301,6 @@ spec:
                   "ollama://<model>"
                 type: string
                 x-kubernetes-validations:
-                - message: url is immutable.
-                  rule: self == oldSelf
                 - message: url must start with "hf://", "pvc://", "ollama://", "s3://",
                     "gs://", or "oss://" and not be empty.
                   rule: self.startsWith("hf://") || self.startsWith("pvc://") || self.startsWith("ollama://")
@@ -236,8 +317,6 @@ spec:
                 "s3://...", "gs://...", or "oss://..." at the moment.
               rule: '!has(self.cacheProfile) || self.url.startsWith("hf://") || self.url.startsWith("s3://")
                 || self.url.startsWith("gs://") || self.url.startsWith("oss://")'
-            - message: urls of format "s3://..." only supported when using a cacheProfile
-              rule: '!self.url.startsWith("s3://") || has(self.cacheProfile)'
             - message: urls of format "gs://..." only supported when using a cacheProfile
               rule: '!self.url.startsWith("gs://") || has(self.cacheProfile)'
             - message: urls of format "oss://..." only supported when using a cacheProfile
@@ -246,6 +325,11 @@ spec:
               rule: '!has(self.maxReplicas) || self.minReplicas <= self.maxReplicas'
             - message: adapters only supported with VLLM engine.
               rule: '!has(self.adapters) || self.engine == "VLLM"'
+            - message: url is immutable when using cacheProfile.
+              rule: '!has(oldSelf.cacheProfile) || self.url == oldSelf.url'
+            - message: All file paths must be unique.
+              rule: '!has(self.files) || self.files.size() <= 1 || !self.files.exists(f,
+                self.files.filter(other, other.path == f.path).size() > 1)'
           status:
             description: ModelStatus defines the observed state of Model.
             properties:

@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: s3
+spec:
+  selector:
+    app: s3
+  type: ClusterIP
+  ports:
+  - name: api
+    protocol: TCP
+    port: 9000
+    targetPort: 9000 
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: s3-config
+data:
+  seaweedfs_s3_config: |
+    {"identities":[{"name":"testuser","credentials":[{"accessKey":"testuser","secretKey":"testuser"}],"actions":["Admin","Read","Write"]}]}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: s3
+  name: s3
+spec:
+  containers:
+  - name: s3
+    image: chrislusf/seaweedfs:3.85
+    ports:
+      - containerPort: 9000
+    args: ["server", "-s3", "-s3.port", "9000", "-volume.max", "1", "-master.volumeSizeLimitMB", "10000"]
+    volumeMounts:
+      - mountPath: /etc/sw
+        name: s3-config
+  volumes:
+    - name: s3-config
+      configMap:
+        name: s3-config
+        
+

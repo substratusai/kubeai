@@ -3,7 +3,7 @@ package modelcontroller
 import (
 	"sort"
 
-	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
+	kubeaiv1 "github.com/substratusai/kubeai/api/k8s/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -18,8 +18,12 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 	}
 
 	vllmModelFlag := c.Source.url.ref
+	useRunaiStreamer := false
 	if m.Spec.CacheProfile != "" {
 		vllmModelFlag = modelCacheDir(m)
+	} else if c.Source.url.scheme == "s3" {
+		vllmModelFlag = c.Source.url.original
+		useRunaiStreamer = true
 	}
 	// The vllmModelFlag can be safely overridden because validation logic ensures
 	// that a model with PVC source and cacheProfile won't be admitted.
@@ -30,6 +34,9 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 	args := []string{
 		"--model=" + vllmModelFlag,
 		"--served-model-name=" + m.Name,
+	}
+	if useRunaiStreamer {
+		args = append(args, "--load-format=runai_streamer")
 	}
 	args = append(args, m.Spec.Args...)
 
@@ -67,8 +74,10 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 			Affinity:           c.Affinity,
 			Tolerations:        c.Tolerations,
 			RuntimeClassName:   c.RuntimeClassName,
+			PriorityClassName:  m.Spec.PriorityClassName,
 			ServiceAccountName: r.ModelServerPods.ModelServiceAccountName,
 			SecurityContext:    r.ModelServerPods.ModelPodSecurityContext,
+			ImagePullSecrets:   r.ModelServerPods.ImagePullSecrets,
 			Containers: []corev1.Container{
 				{
 					Name:            serverContainerName,
@@ -148,6 +157,7 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 		},
 	}
 
+	patchFileVolumes(&pod.Spec, m)
 	r.patchServerAdapterLoader(&pod.Spec, m, r.ModelLoaders.Image)
 	patchServerCacheVolumes(&pod.Spec, m, c)
 	c.Source.modelSourcePodAdditions.applyToPodSpec(&pod.Spec, 0)

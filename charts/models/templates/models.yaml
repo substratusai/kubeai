@@ -30,9 +30,7 @@ spec:
   env:
   {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- with $model.minReplicas }}
-  minReplicas: {{ . }}
-  {{- end }}
+  minReplicas: {{ default 0 $model.minReplicas }}
   {{- with $model.maxReplicas }}
   maxReplicas: {{ . }}
   {{- end}}
@@ -48,5 +46,9 @@ spec:
   {{- with $model.cacheProfile }}
   cacheProfile: {{ . }}
   {{- end}}
+  {{- with $model.files }}
+  files:
+  {{- toYaml . | nindent 4 }}
+  {{- end }}
 {{- end}}
 {{- end}}

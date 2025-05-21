@@ -1,0 +1,18 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: llama-4-maverick-430k-h100
+spec:
+  features: [TextGeneration]
+  url: hf://meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8
+  engine: VLLM
+  args:
+    - --max-model-len=430000
+    - --tensor-parallel-size=8
+    - --enable-prefix-caching
+    - --disable-log-requests
+  env:
+    VLLM_DISABLE_COMPILE_CACHE: "1"
+  minReplicas: 0
+  resourceProfile: nvidia-gpu-h100:8

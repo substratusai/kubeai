@@ -15,4 +15,5 @@ spec:
     - --kv-cache-dtype=fp8
   env:
     VLLM_USE_V1: "1"
+  minReplicas: 0
   resourceProfile: nvidia-gpu-l4:1

@@ -29,11 +29,15 @@ jobs:
       matrix:
         testcase:
         - "quickstart"
+        - "rollouts"
         - "openai-python-client"
         - "autoscaler-restart-under-load"
         - "autoscaler-restart-no-load"
         - "cache-shared-filesystem"
         - "engine-vllm-pvc"
+        - "engine-ollama-pvc"
+        - "model-files"
+        - "s3-model"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -54,7 +58,7 @@ jobs:
         run: kind create cluster
 
       - name: Run the e2e testcase
-        run: make test-e2e-${{ matrix.testcase }}
+        run: make test-e2e TEST_CASE=${{ matrix.testcase }}
 
   e2e-engines:
     runs-on: ubuntu-latest
@@ -63,7 +67,7 @@ jobs:
     #needs: unit-and-integration # No use in running e2e tests if integration tests fail.
     strategy:
       matrix:
-        engine: ["FasterWhisper"] # "VLLM", "Infinity", "OLlama"
+        engine: ["fasterwhisper", "infinity"] # "VLLM", "OLlama"
         # Run each test case with and without caching.
         cacheProfile: ["", "e2e-test-kind-pv"]
     steps:
@@ -86,4 +90,4 @@ jobs:
         run: kind create cluster
 
       - name: Run the e2e testcase
-        run: make test-e2e-engine ENGINE=${{ matrix.engine }} CACHE_PROFILE=${{ matrix.cacheProfile }}
+        run: make test-e2e TEST_CASE=engine-${{ matrix.engine }} CACHE_PROFILE=${{ matrix.cacheProfile }}

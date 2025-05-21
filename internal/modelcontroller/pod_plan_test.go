@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	v1 "github.com/substratusai/kubeai/api/v1"
+	v1 "github.com/substratusai/kubeai/api/k8s/v1"
 	"github.com/substratusai/kubeai/internal/config"
 	"github.com/substratusai/kubeai/internal/k8sutils"
 	"golang.org/x/exp/rand"
@@ -91,6 +91,7 @@ func Test_calculatePodPlan(t *testing.T) {
 		pods           []corev1.Pod
 		wantNCreations int
 		wantDeletions  []string
+		jsonPatches    []config.JSONPatch
 	}{
 		{
 			name: "do nothing",
@@ -154,7 +155,12 @@ func Test_calculatePodPlan(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			plan := r.calculatePodPlan(&corev1.PodList{Items: c.pods}, model, modelConfig)
+			r.ModelServerPods.JSONPatches = nil
+			if c.jsonPatches != nil {
+				r.ModelServerPods.JSONPatches = c.jsonPatches
+			}
+			plan, err := r.calculatePodPlan(&corev1.PodList{Items: c.pods}, model, modelConfig)
+			require.NoError(t, err)
 			detailsCSV := strings.Join(plan.details, ", ")
 			require.Lenf(t, plan.toCreate, c.wantNCreations, "Unexpected creation count, details: %v", detailsCSV)
 			var deletionNames []string

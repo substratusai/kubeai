@@ -7,4 +7,5 @@ spec:
   features: [SpeechToText]
   url: hf://Systran/faster-whisper-medium.en
   engine: FasterWhisper
+  minReplicas: 0
   resourceProfile: cpu:1

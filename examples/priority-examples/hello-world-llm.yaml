@@ -1,0 +1,11 @@
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: hello-world-llm
+spec:
+  features: [TextGeneration]
+  url: hf://neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8
+  engine: VLLM
+  # Uncomment to set the priority class for this model
+  # priorityClassName: high-priority
+  resourceProfile: nvidia-gpu-l4:1 

@@ -8,7 +8,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 
-	v1 "github.com/substratusai/kubeai/api/v1"
+	v1 "github.com/substratusai/kubeai/api/k8s/v1"
 	"github.com/substratusai/kubeai/internal/apiutils"
 	"github.com/substratusai/kubeai/internal/metrics"
 	"go.opentelemetry.io/otel/attribute"
@@ -59,7 +59,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("X-Proxy", "lingo")
 
-	// TODO: Only parse model for paths that would have a model.
 	pr, err := h.parseProxyRequest(r)
 	if err != nil {
 		if errors.Is(err, apiutils.ErrBadRequest) {

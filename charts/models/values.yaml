@@ -36,6 +36,40 @@ catalog:
     resourceProfile: cpu:1
     args:
     - --gpu-memory-utilization=0.9
+  mistral-small-24b-instruct-h100:
+    enabled: false
+    features: [TextGeneration]
+    url: hf://mistralai/Mistral-Small-24B-Instruct-2501
+    engine: VLLM
+    env:
+      VLLM_ATTENTION_BACKEND: FLASHINFER
+    args:
+      - --kv-cache-dtype=fp8
+      - --max-num-batched-token=65536
+      - --gpu-memory-utilization=0.9
+      - --enable-prefix-caching
+      - --disable-log-requests
+    resourceProfile: nvidia-gpu-h100:1
+  mistral-small-3.1-24b-instruct-h100:
+    enabled: false
+    features: [TextGeneration]
+    url: hf://mistralai/Mistral-Small-3.1-24B-Instruct-2503
+    engine: VLLM
+    env:
+      VLLM_ATTENTION_BACKEND: FLASHINFER
+    args:
+      - --kv-cache-dtype=fp8
+      - --max-model-len=65536
+      - --gpu-memory-utilization=0.9
+      # Doesn't work in v0 with multimodal models
+      # - --enable-prefix-caching
+      - --disable-log-requests
+      # Bug with vLLM v0.8.1, workaround from here:
+      # https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503/discussions/14#67d9ba6bb158df9ac8afa2c1
+      - --tokenizer-mode=mistral
+      - --load-format=mistral
+      - --config-format=mistral
+    resourceProfile: nvidia-gpu-h100:1
   # Gemma #
   gemma2-2b-cpu:
     enabled: false
@@ -314,6 +348,18 @@ catalog:
     url: 'ollama://gemma2:27b'
     engine: OLlama
     resourceProfile: 'nvidia-gpu-l4:1'
+  gemma-3-12b-ollama-l4:
+    enabled: false
+    features: [TextGeneration]
+    url: 'ollama://gemma3:12b'
+    engine: OLlama
+    resourceProfile: 'nvidia-gpu-l4:1'
+  gemma-3-27b-ollama-l4:
+    enabled: false
+    features: [TextGeneration]
+    url: 'ollama://gemma3:27b'
+    engine: OLlama
+    resourceProfile: 'nvidia-gpu-l4:1'
   gemma-9b-ollama-l4:
     enabled: false
     features: [TextGeneration]
@@ -449,6 +495,48 @@ catalog:
       - --disable-log-requests
     resourceProfile: nvidia-gpu-gh200:1
     targetRequests: 200
+  llama-4-maverick-430k-h100:
+    enabled: false
+    features: [TextGeneration]
+    url: hf://meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8
+    engine: VLLM
+    env:
+      VLLM_DISABLE_COMPILE_CACHE: "1"
+    args:
+      - --max-model-len=430000
+      - --tensor-parallel-size=8
+      - --enable-prefix-caching
+      - --disable-log-requests
+    resourceProfile: nvidia-gpu-h100:8
+  deepseek-r1-70b-gh200-fp8:
+    enabled: false
+    features: [TextGeneration]
+    url: hf://neuralmagic/DeepSeek-R1-Distill-Llama-70B-FP8-dynamic
+    engine: VLLM
+    args:
+      - --max-model-len=32768
+      - --max-num-batched-token=32768
+      - --gpu-memory-utilization=0.95
+      - --kv-cache-dtype=fp8
+      - --enable-prefix-caching
+      - --disable-log-requests
+    resourceProfile: nvidia-gpu-gh200:1
+  deepseek-r1-70b-gh200:
+    enabled: false
+    features: [TextGeneration]
+    url: hf://deepseek-ai/DeepSeek-R1-Distill-Llama-70B
+    engine: VLLM
+    env:
+      VLLM_ATTENTION_BACKEND: FLASHINFER
+    args:
+      - --max-model-len=32768
+      - --max-num-batched-token=32768
+      - --gpu-memory-utilization=0.95
+      - --kv-cache-dtype=fp8
+      - --cpu-offload-gb=120
+      - --enable-prefix-caching
+      - --disable-log-requests
+    resourceProfile: nvidia-gpu-gh200:1
   deepseek-r1-distill-qwen-1.5b-rtx4070:
     enabled: false
     features: ["TextGeneration"]
@@ -509,6 +597,11 @@ catalog:
     engine: VLLM
     # TODO: Adjust - the memory associated with this request is too low.
     resourceProfile: cpu:1
+    args:
+    - --chat-template=/config/chat-template.jinja
+    files:
+    - path: "/config/chat-template.jinja"
+      content: "{% for message in messages %}\n{% if message['role'] == 'user' %}\n{{ 'Question:\n' + message['content'] + '\n\n' }}{% elif message['role'] == 'system' %}\n{{ 'System:\n' + message['content'] + '\n\n' }}{% elif message['role'] == 'assistant' %}{{ 'Answer:\n'  + message['content'] + '\n\n' }}{% endif %}\n{% if loop.last and add_generation_prompt %}\n{{ 'Answer:\n' }}{% endif %}{% endfor %}"
   opt-125m-l4:
     enabled: false
     features: ["TextGeneration"]

@@ -94,22 +94,6 @@ spec:
   resourceProfile: nvidia-gpu-l4:1
 ```
 
-## Load Models from PVC
-
-You can store your models in a Persistent Volume Claim (PVC) and load them into KubeAI for serving. This guide will show you how to load models from a PVC.
-
-Currenly only vLLM supports loading models from PVCs.
-
-The following formats are supported to load models from a PVC:
-
-- `url: pvc://$PVC_NAME` - Loads the model from the PVC named `$PVC_NAME`.
-- `url: pvc://$PVC_NAME/$PATH` - Loads the model from the PVC named `$PVC_NAME` and mounts the subpath `$PATH` within the PVC.
-
-You need to make sure the model is preloaded into the PVC before you can use it in KubeAI.
-
-The Access Mode of the PVC should be `ReadOnlyMany` or `ReadWriteMany`, because otherwise
-KubeAI won't be able to spin up more than 1 replica of the model.
-
 ## Programmatically installing models
 
 See the [examples](https://github.com/substratusai/kubeai/tree/main/examples/k8s-api-clients).
@@ -117,6 +101,66 @@ See the [examples](https://github.com/substratusai/kubeai/tree/main/examples/k8s
 ## Calling a model
 
 You can inference a model by calling the KubeAI OpenAI compatible API. The model name should match the KubeAI model name.
+
+## Using Pod Priority Classes for Model Preemption
+
+You can use Kubernetes [Pod Priority and Preemption](https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/) to configure your models with different priority levels. This is useful when you have limited resources and want to ensure that high-priority models can preempt lower-priority models when necessary.
+
+First, create the necessary PriorityClasses in your cluster:
+
+```yaml
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: high-priority
+value: 1000000  # Higher value means higher priority
+globalDefault: false
+description: "This priority class should be used for critical inference models only."
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: medium-priority
+value: 100000
+globalDefault: false
+description: "This priority class should be used for medium priority inference models."
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: low-priority
+value: 10000
+globalDefault: false
+description: "This priority class should be used for low priority inference models."
+```
+
+Then, assign these priority classes to your models:
+
+```yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: critical-service-model
+spec:
+  features: [TextGeneration]
+  url: hf://neuralmagic/Meta-Llama-3.1-8B-Instruct-FP8
+  engine: VLLM
+  resourceProfile: nvidia-gpu-l4:1
+  priorityClassName: high-priority
+---
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: background-research-model
+spec:
+  features: [TextGeneration]
+  url: ollama://gemma2:2b
+  engine: OLlama
+  resourceProfile: cpu:2
+  priorityClassName: low-priority
+```
+
+When the cluster is under resource pressure, Kubernetes will evict lower-priority model pods to make room for higher-priority model pods. This ensures that your most critical models remain available even during resource constraints.
 
 ## Feedback welcome: A model management UI
 

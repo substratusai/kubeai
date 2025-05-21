@@ -35,7 +35,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	kubeaiv1 "github.com/substratusai/kubeai/api/v1"
+	kubeaiv1 "github.com/substratusai/kubeai/api/k8s/v1"
 	"github.com/substratusai/kubeai/internal/config"
 	"github.com/substratusai/kubeai/internal/k8sutils"
 	"github.com/substratusai/kubeai/internal/vllmclient"
@@ -45,6 +45,8 @@ import (
 const (
 	modelReconcilerName = "kubeai-model-controller"
 	serverContainerName = "server"
+	// Model files ConfigMap volume name
+	modelFilesVolumeName = "model-files"
 )
 
 // ModelReconciler reconciles a Model object
@@ -65,15 +67,6 @@ type ModelReconciler struct {
 	ModelRollouts           config.ModelRollouts
 }
 
-// +kubebuilder:rbac:groups=kubeai.org,resources=models,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=kubeai.org,resources=models/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=kubeai.org,resources=models/scale,verbs=get;update;patch
-// +kubebuilder:rbac:groups=kubeai.org,resources=models/finalizers,verbs=update
-
-//+kubebuilder:rbac:groups="",resources=pods,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups="",resources=pods/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups="",resources=pods/finalizers,verbs=update
-
 func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (res ctrl.Result, resErr error) {
 	log := log.FromContext(ctx)
 	log.Info("Reconciling Model")
@@ -92,6 +85,12 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (res 
 			}
 		}
 	}()
+
+	// Ensure ConfigMap for model files exists and is up to date
+	if err := r.ensureModelFilesConfigMap(ctx, model); err != nil {
+		log.Error(err, "Failed to ensure model files ConfigMap")
+		return ctrl.Result{}, err
+	}
 
 	// Apply self labels based on features so that we can easily filter models.
 	shouldUpdate := r.applySelfLabels(model)
@@ -174,7 +173,12 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (res 
 		}
 	}()
 
-	plan := r.calculatePodPlan(allPods, model, modelConfig)
+	plan, err := r.calculatePodPlan(allPods, model, modelConfig)
+	if err != nil {
+		log.Error(err, "Failed to calculate pod plan")
+		return ctrl.Result{}, nil
+	}
+
 	if plan.containsActions() {
 		var err error
 		scaled, err = plan.execute(ctx, r.Client, r.Scheme)
@@ -300,6 +304,10 @@ func (r *ModelReconciler) getModelConfig(model *kubeaiv1.Model) (ModelConfig, er
 	// Apply the multiplied requests and limits to the profile.
 	result.Requests = requests
 	result.Limits = limits
+
+	if model.Spec.EnvFrom != nil {
+		result.Source.modelSourcePodAdditions.envFrom = model.Spec.EnvFrom
+	}
 
 	image, err := r.lookupServerImage(model, profile)
 	if err != nil {

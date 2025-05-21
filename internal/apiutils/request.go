@@ -2,17 +2,20 @@ package apiutils
 
 import (
 	"bytes"
-	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"mime"
 	"mime/multipart"
 	"net/http"
 
+	"github.com/go-json-experiment/json"
+
 	"context"
 
 	"github.com/google/uuid"
-	v1 "github.com/substratusai/kubeai/api/v1"
+	k8sv1 "github.com/substratusai/kubeai/api/k8s/v1"
+	openaiv1 "github.com/substratusai/kubeai/api/openai/v1"
 )
 
 var (
@@ -20,9 +23,21 @@ var (
 	ErrModelNotFound = fmt.Errorf("model not found")
 )
 
+// modelRequest represents a request that will be made to a given model.
+type modelRequest interface {
+	GetModel() string
+	SetModel(string)
+}
+
+// inferenceRequest should be implemented by inference requests so that
+// prefixes can be examined to make routing decisions.
+type inferenceRequest interface {
+	Prefix(int) string
+}
+
 type Request struct {
-	Body        []byte
-	bodyPayload map[string]interface{}
+	Body         []byte
+	modelRequest modelRequest
 
 	Selectors []string
 
@@ -35,7 +50,7 @@ type Request struct {
 	Model   string
 	Adapter string
 
-	LoadBalancing v1.LoadBalancing
+	LoadBalancing k8sv1.LoadBalancing
 
 	Prefix string
 
@@ -43,7 +58,7 @@ type Request struct {
 }
 
 type ModelClient interface {
-	LookupModel(ctx context.Context, model, adapter string, selectors []string) (*v1.Model, error)
+	LookupModel(ctx context.Context, model, adapter string, selectors []string) (*k8sv1.Model, error)
 }
 
 func ParseRequest(ctx context.Context, client ModelClient, body io.Reader, path string, headers http.Header) (*Request, error) {
@@ -79,7 +94,7 @@ func ParseRequest(ctx context.Context, client ModelClient, body io.Reader, path 
 
 	// Assume "application/json":
 	default:
-		if err := r.readJSONBody(body); err != nil {
+		if err := r.readJSONBody(body, path); err != nil {
 			return nil, fmt.Errorf("%w: reading model from body: %w", ErrBadRequest, err)
 		}
 	}
@@ -149,32 +164,35 @@ func (r *Request) readyMultiPartBody(body io.Reader, mediaParams map[string]stri
 	return nil
 }
 
-func (r *Request) readJSONBody(body io.Reader) error {
-	var payload map[string]interface{}
-	if err := json.NewDecoder(body).Decode(&payload); err != nil {
+func (r *Request) readJSONBody(body io.Reader, path string) error {
+	switch path {
+	case "/v1/completions":
+		r.modelRequest = &openaiv1.CompletionRequest{}
+	case "/v1/chat/completions":
+		r.modelRequest = &openaiv1.ChatCompletionRequest{}
+	case "/v1/embeddings":
+		r.modelRequest = &openaiv1.EmbeddingRequest{}
+	default:
+		return fmt.Errorf("unknown path: %q", path)
+	}
+
+	if err := json.UnmarshalRead(body, r.modelRequest); err != nil {
 		return fmt.Errorf("decoding: %w", err)
 	}
 
-	modelInf, ok := payload["model"]
-	if !ok {
-		return fmt.Errorf("missing 'model' field")
-	}
-	r.bodyPayload = payload
-
-	modelStr, ok := modelInf.(string)
-	if !ok {
-		return fmt.Errorf("field 'model' should be a string")
+	if r.modelRequest.GetModel() == "" {
+		return errors.New("missing 'model' field")
 	}
 
-	r.RequestedModel = modelStr
-	r.Model, r.Adapter = SplitModelAdapter(modelStr)
+	r.RequestedModel = r.modelRequest.GetModel()
+	r.Model, r.Adapter = SplitModelAdapter(r.RequestedModel)
 
 	if r.Adapter != "" {
 		// vLLM expects the adapter to be in the model field.
-		payload["model"] = r.Adapter
+		r.modelRequest.SetModel(r.Adapter)
 	}
 
-	rewritten, err := json.Marshal(payload)
+	rewritten, err := json.Marshal(r.modelRequest)
 	if err != nil {
 		return fmt.Errorf("remarshalling: %w", err)
 	}
@@ -195,95 +213,13 @@ func (r *Request) lookupModel(ctx context.Context, client ModelClient, path stri
 
 	r.LoadBalancing = model.Spec.LoadBalancing
 
-	if r.LoadBalancing.Strategy == v1.PrefixHashStrategy && r.bodyPayload != nil {
-		defer func() {
-			r.bodyPayload = nil
-		}()
-		switch path {
-		case "/v1/completions":
-			prefix, err := getPrefixForCompletionRequest(r.bodyPayload, r.LoadBalancing.PrefixHash.PrefixCharLength)
-			if err != nil {
-				return fmt.Errorf("getting prefix for completion request: %w", err)
-			}
-			r.Prefix = prefix
-		case "/v1/chat/completions":
-			prefix, err := getPrefixForChatCompletionRequest(r.bodyPayload, r.LoadBalancing.PrefixHash.PrefixCharLength)
-			if err != nil {
-				return fmt.Errorf("getting prefix for chat completion request: %w", err)
-			}
-			r.Prefix = prefix
+	if infReq, ok := r.modelRequest.(inferenceRequest); ok {
+		if r.LoadBalancing.Strategy == k8sv1.PrefixHashStrategy && r.modelRequest != nil {
+			r.Prefix = infReq.Prefix(r.LoadBalancing.PrefixHash.PrefixCharLength)
 		}
 	}
 
 	return nil
-}
-
-func getPrefixForCompletionRequest(body map[string]interface{}, n int) (string, error) {
-	// Example request body:
-	// {
-	//   "model": "gpt-3.5-turbo-instruct",
-	//   "prompt": "Say this is a test",
-	//   "max_tokens": 7,
-	//   "temperature": 0
-	// }
-	promptInf, ok := body["prompt"]
-	if !ok {
-		return "", fmt.Errorf("missing '.prompt' field")
-	}
-	prompt, ok := promptInf.(string)
-	if !ok {
-		return "", fmt.Errorf("'.prompt' field should be a string")
-	}
-	return firstNChars(prompt, n), nil
-}
-
-func getPrefixForChatCompletionRequest(body map[string]interface{}, n int) (string, error) {
-	// Example request body:
-	// {
-	//   "model": "gpt-4o",
-	//   "messages": [
-	//     {
-	//       "role": "system",
-	//       "content": "You are a helpful assistant."
-	//     },
-	//     {
-	//       "role": "user",
-	//       "content": "Hello!"
-	//     }
-	//   ]
-	// }
-	messagesInf, ok := body["messages"]
-	if !ok {
-		return "", fmt.Errorf("missing '.messages' field")
-	}
-	messages, ok := messagesInf.([]interface{})
-	if !ok {
-		return "", fmt.Errorf("'.messages' field should be an array")
-	}
-	if len(messages) == 0 {
-		return "", fmt.Errorf("empty '.messages' field")
-	}
-
-	// Find the first user request and return the first n characters.
-	for i, msgInf := range messages {
-		msg, ok := msgInf.(map[string]interface{})
-		if !ok {
-			return "", fmt.Errorf("'.messages[i]' should be an object")
-		}
-		if msg["role"] == "user" {
-			textInf, ok := msg["content"]
-			if !ok {
-				return "", fmt.Errorf("missing '.messages[%d].content' field", i)
-			}
-			text, ok := textInf.(string)
-			if !ok {
-				return "", fmt.Errorf("'.messages[%d].content' should be a string", i)
-			}
-			return firstNChars(text, n), nil
-		}
-	}
-
-	return "", fmt.Errorf("no user message found")
 }
 
 // firstNChars returns the first n characters of a string.

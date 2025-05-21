@@ -7,4 +7,5 @@ spec:
   features: [TextGeneration]
   url: hf://facebook/opt-125m
   engine: VLLM
+  minReplicas: 0
   resourceProfile: nvidia-gpu-l4:1

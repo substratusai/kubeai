@@ -12,5 +12,6 @@ spec:
     - --max-num-batched-token=16384
     - --enable-prefix-caching
     - --disable-log-requests
+  minReplicas: 0
   targetRequests: 50
   resourceProfile: nvidia-gpu-gh200:1

@@ -17,7 +17,7 @@ secrets:
     secretAccessKey: ""
     # The name of the secret to use.
     # If not set, and create is true, the name is generated using the fullname template.
-    # The secret values are pulled from the keys, "accessKeyId" and "secretAccessKey".
+    # The secret values are pulled from the keys, "accessKeyID" and "secretAccessKey".
     name: ""
   gcp:
     create: true
@@ -40,14 +40,12 @@ modelServers:
       # The key is the image name (referenced from resourceProfiles) and the value is the image.
       # The "default" image should always be specified.
       # "default" is used when no imageName is specified or if a specific image is not found.
-      default: "vllm/vllm-openai:v0.7.2"
+      default: "vllm/vllm-openai:v0.8.3"
+      nvidia-gpu: "vllm/vllm-openai:v0.8.3"
       cpu: "substratusai/vllm:v0.6.3.post1-cpu"
       google-tpu: "substratusai/vllm:v0.6.4.post1-tpu"
-      nvidia-gpu: "vllm/vllm-openai:v0.7.2"
-      # TODO (samos123) switch to the official image when it is available.
-      # Source: https://github.com/drikster80/vllm/tree/gh200-docker
-      # gh200: "drikster80/vllm-gh200-openai:v0.6.4.post1"
-      gh200: "substratusai/vllm-gh200-openai:v0.6.4.post1"
+      # Source: https://github.com/substratusai/vllm-docker/blob/main/Dockerfile.cuda-arm
+      gh200: "substratusai/vllm-gh200:v0.8.3"
       # upstream vLLM seems to have broken ROCm support, so we are using a fork from AMD.
       # Source: https://hub.docker.com/r/rocm/vllm-dev
       # Source: https://github.com/ROCm/vllm
@@ -76,6 +74,12 @@ modelServerPods:
     capabilities:
       drop:
         - ALL
+  # JSONPatch to apply to the model server pods
+  # Invalid patches will be ignored.
+  # jsonPatches:
+  # - op: add
+  #   path: /spec/priorityClassName
+  #   value: kubeai-model-server
 
 modelRollouts:
   # The number of replicas to add when rolling out a new model.
@@ -86,6 +90,8 @@ metrics:
     vLLMPodMonitor:
       # Enable creation of PodMonitor resource that scrapes vLLM metrics endpoint.
       enabled: false
+      # Set the apiVersion to azmonitoring.coreos.com/v1 when using Azure Monitor managed service for Prometheus
+      apiVersion: monitoring.coreos.com/v1
       labels: {}
 
 resourceProfiles:
@@ -252,6 +258,7 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
+# The imagePullSecrets will be used to pull both the kubeai controller image and the model images.
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: "kubeai"
@@ -288,6 +295,9 @@ podLabels: {}
 podSecurityContext:
   runAsNonRoot: true
   # fsGroup: 2000
+
+# Additional environment variables to add to the KubeAI container
+env: []
 
 securityContext:
   allowPrivilegeEscalation: false

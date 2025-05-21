@@ -2,9 +2,11 @@ package modelcontroller
 
 import (
 	"fmt"
+	"net/url"
 	"regexp"
 	"strings"
 
+	v1 "github.com/substratusai/kubeai/api/k8s/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/utils/ptr"
 )
@@ -41,18 +43,21 @@ func (r *ModelReconciler) parseModelSource(urlStr string) (modelSource, error) {
 }
 
 type modelSourcePodAdditions struct {
+	envFrom      []corev1.EnvFromSource
 	env          []corev1.EnvVar
 	volumes      []corev1.Volume
 	volumeMounts []corev1.VolumeMount
 }
 
 func (c *modelSourcePodAdditions) append(other *modelSourcePodAdditions) {
+	c.envFrom = append(c.envFrom, other.envFrom...)
 	c.env = append(c.env, other.env...)
 	c.volumes = append(c.volumes, other.volumes...)
 	c.volumeMounts = append(c.volumeMounts, other.volumeMounts...)
 }
 
 func (c *modelSourcePodAdditions) applyToPodSpec(spec *corev1.PodSpec, containerIndex int) {
+	spec.Containers[containerIndex].EnvFrom = append(spec.Containers[containerIndex].EnvFrom, c.envFrom...)
 	spec.Containers[containerIndex].Env = append(spec.Containers[containerIndex].Env, c.env...)
 	spec.Volumes = append(spec.Volumes, c.volumes...)
 	spec.Containers[containerIndex].VolumeMounts = append(spec.Containers[containerIndex].VolumeMounts, c.volumeMounts...)
@@ -65,6 +70,13 @@ func (r *ModelReconciler) modelAuthCredentialsForAllSources() *modelSourcePodAdd
 	c.append(r.authForOSS())
 	c.append(r.authForS3())
 	return c
+}
+
+func (r *ModelReconciler) modelEnvFrom(m *v1.Model) *modelSourcePodAdditions {
+	if m.Spec.EnvFrom == nil {
+		return &modelSourcePodAdditions{}
+	}
+	return &modelSourcePodAdditions{envFrom: m.Spec.EnvFrom}
 }
 
 func (r *ModelReconciler) authForS3() *modelSourcePodAdditions {
@@ -214,28 +226,54 @@ func (r *ModelReconciler) pvcPodAdditions(url modelURL) *modelSourcePodAdditions
 	}
 }
 
-var modelURLRegex = regexp.MustCompile(`^([a-z]+):\/\/(\S+)$`)
+var modelURLRegex = regexp.MustCompile(`^([a-z0-9]+):\/\/([^?]+)(\?.*)?$`)
 
 func parseModelURL(urlStr string) (modelURL, error) {
 	matches := modelURLRegex.FindStringSubmatch(urlStr)
-	if len(matches) != 3 {
+	if len(matches) != 3 && len(matches) != 4 {
 		return modelURL{}, fmt.Errorf("invalid model URL: %s", urlStr)
 	}
 	scheme, ref := matches[1], matches[2]
 	name, path, _ := strings.Cut(ref, "/")
+	var modelParam string
+	var insecure bool
+
+	if len(matches) == 4 { // check for query parameters
+		queryParams := strings.TrimPrefix(matches[3], "?")
+		urlParser, err := url.ParseQuery(queryParams)
+		if err == nil {
+			modelname := urlParser.Get("model") // e.g. pvc://my-pvc?model=qwen2:0.5b
+			if modelname != "" {
+				modelParam = modelname
+			}
+			insecureVal := urlParser.Get("insecure") // e.g. ollama://my-registry/model?insecure=true
+			if strings.ToLower(insecureVal) == "true" {
+				insecure = true
+			}
+		}
+	}
+
 	return modelURL{
-		original: urlStr,
-		scheme:   scheme,
-		ref:      ref,
-		name:     name,
-		path:     path,
+		original:   urlStr,
+		scheme:     scheme,
+		ref:        ref,
+		name:       name,
+		path:       path,
+		modelParam: modelParam,
+		insecure:   insecure,
 	}, nil
 }
 
 type modelURL struct {
 	original string // e.g. "hf://username/model"
-	scheme   string // e.g. "hf", "s3", "gs", "oss"
+	scheme   string // e.g. "hf", "s3", "gs", "oss", "pvc"
 	ref      string // e.g. "username/model"
 	name     string // e.g. username or bucket-name
 	path     string // e.g. model or path/to/model
+	// e.g. "qwen2:0.5b" when ?model=qwen2:0.5b is part of the URL.
+	// This is used for Ollama where the PVC may have multiple models and we need to specify which one to load by name.
+	modelParam string
+	// e.g. true when ?insecure=true is part of the URL.
+	// This is used for Ollama to allow pulling from insecure registries.
+	insecure bool
 }

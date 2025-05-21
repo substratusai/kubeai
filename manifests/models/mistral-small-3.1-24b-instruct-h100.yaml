@@ -1,0 +1,21 @@
+# Source: models/templates/models.yaml
+apiVersion: kubeai.org/v1
+kind: Model
+metadata:
+  name: mistral-small-3.1-24b-instruct-h100
+spec:
+  features: [TextGeneration]
+  url: hf://mistralai/Mistral-Small-3.1-24B-Instruct-2503
+  engine: VLLM
+  args:
+    - --kv-cache-dtype=fp8
+    - --max-model-len=65536
+    - --gpu-memory-utilization=0.9
+    - --disable-log-requests
+    - --tokenizer-mode=mistral
+    - --load-format=mistral
+    - --config-format=mistral
+  env:
+    VLLM_ATTENTION_BACKEND: FLASHINFER
+  minReplicas: 0
+  resourceProfile: nvidia-gpu-h100:1

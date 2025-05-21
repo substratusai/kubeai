@@ -3,9 +3,10 @@ package modelcontroller
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strings"
 
-	v1 "github.com/substratusai/kubeai/api/v1"
+	v1 "github.com/substratusai/kubeai/api/k8s/v1"
 	"github.com/substratusai/kubeai/internal/k8sutils"
 	"github.com/substratusai/kubeai/internal/vllmclient"
 	corev1 "k8s.io/api/core/v1"
@@ -171,7 +172,18 @@ func (r *ModelReconciler) patchServerAdapterLoader(podSpec *corev1.PodSpec, m *v
 	if m.Spec.Adapters == nil {
 		return
 	}
-
+	var env []corev1.EnvVar
+	var envKeys []string
+	for key := range m.Spec.Env {
+		envKeys = append(envKeys, key)
+	}
+	sort.Strings(envKeys)
+	for _, key := range envKeys {
+		env = append(env, corev1.EnvVar{
+			Name:  key,
+			Value: m.Spec.Env[key],
+		})
+	}
 	podSpec.Volumes = append(podSpec.Volumes, corev1.Volume{
 		Name: adaptersVolName,
 		VolumeSource: corev1.VolumeSource{
@@ -192,6 +204,7 @@ func (r *ModelReconciler) patchServerAdapterLoader(podSpec *corev1.PodSpec, m *v
 		Name:            loaderContainerName,
 		Image:           image,
 		ImagePullPolicy: corev1.PullIfNotPresent,
+		Env:             env,
 		Command:         []string{"sleep", "infinity"},
 		VolumeMounts: []corev1.VolumeMount{
 			{
@@ -202,6 +215,7 @@ func (r *ModelReconciler) patchServerAdapterLoader(podSpec *corev1.PodSpec, m *v
 	}
 	podSpec.Containers = append(podSpec.Containers, loaderContainer)
 	r.modelAuthCredentialsForAllSources().applyToPodSpec(podSpec, len(podSpec.Containers)-1)
+	r.modelEnvFrom(m).applyToPodSpec(podSpec, len(podSpec.Containers)-1)
 }
 
 func getLabelledAdapters(pod *corev1.Pod) map[string]struct{} {

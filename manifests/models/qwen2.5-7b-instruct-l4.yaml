@@ -16,4 +16,5 @@ spec:
     - --enable-prefix-caching
   env:
     VLLM_ATTENTION_BACKEND: FLASHINFER
+  minReplicas: 0
   resourceProfile: nvidia-gpu-l4:1

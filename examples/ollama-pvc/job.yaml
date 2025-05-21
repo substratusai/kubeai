@@ -1,0 +1,47 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ollama-load-model-to-pvc
+spec:
+  template:
+    spec:
+      containers:
+      - name: ollama
+        image: ollama/ollama:latest
+        env:
+        - name: OLLAMA_MODELS
+          value: /model
+        command: 
+        - /bin/sh
+        - -c
+        - |
+          /bin/ollama serve &
+          echo "Waiting for Ollama server to start..."
+          sleep 10
+          
+          # Pull the model and ensure it downloads successfully
+          echo "Pulling model qwen:0.5b..."
+          if ! /bin/ollama pull qwen:0.5b; then
+            echo "Failed to pull model"
+            exit 1
+          fi
+          
+          # Verify the model files exist
+          echo "Verifying model files..."
+          ls -R /model
+          if [ ! -d "/model/blobs" ] || [ ! -d "/model/manifests" ]; then
+            echo "Model directories not found"
+            exit 1
+          fi
+          
+          echo "Model setup completed successfully"
+          ls -la /model/manifests/registry.ollama.ai/library/qwen/0.5b
+        volumeMounts:
+        - name: models-volume
+          mountPath: /model
+      volumes:
+      - name: models-volume
+        persistentVolumeClaim:
+          claimName: model-pvc
+          readOnly: false
+      restartPolicy: OnFailure
