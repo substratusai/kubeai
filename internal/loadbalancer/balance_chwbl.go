@@ -157,6 +157,6 @@ func chwblLoadOK(load, totalLoad int64, n int, loadFactor float64) bool {
 	// The "+1"s are to simulate the load of the new request.
 	avgLoad := float64(totalLoad+1) / float64(n)
 	threshold := avgLoad * loadFactor
-	ok := float64(load)+1 <= threshold
+	ok := float64(load) <= threshold
 	return ok
 }
