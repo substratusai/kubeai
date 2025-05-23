@@ -5,7 +5,7 @@ resourceProfiles:
       nvidia.com/gpu.memory: "16384"
   nvidia-gpu-l4:
     nodeSelector:
-      nvidia.com/gpu.family: "ampere"
+      nvidia.com/gpu.family: "ada-lovelace"
       nvidia.com/gpu.memory: "23034"
   nvidia-gpu-h100:
     nodeSelector:
