@@ -2,6 +2,31 @@ apiVersion: v1
 entries:
   kubeai:
   - apiVersion: v2
+    appVersion: v0.21.0
+    created: "2025-05-25T06:49:08.282280546Z"
+    dependencies:
+    - condition: open-webui.enabled
+      name: open-webui
+      repository: https://helm.openwebui.com/
+      version: 6.4.0
+    description: Private Open AI Platform for Kubernetes.
+    digest: b576576cbfd39b3c4a8190317f325d77fc5e259b72c46ebba853f3c2d2e95256
+    home: https://www.substratus.ai
+    keywords:
+    - LLM
+    - AI
+    maintainers:
+    - name: nstogner
+      url: https://www.linkedin.com/in/nstogner/
+    - email: sammiestoel@gmail.com
+      name: samos123
+      url: https://www.linkedin.com/in/samstoelinga/
+    name: kubeai
+    type: application
+    urls:
+    - https://github.com/substratusai/kubeai/releases/download/helm-chart-kubeai-0.21.0/kubeai-0.21.0.tgz
+    version: 0.21.0
+  - apiVersion: v2
     appVersion: v0.20.0
     created: "2025-04-24T18:26:22.800594733Z"
     dependencies:
@@ -883,6 +908,22 @@ entries:
   models:
   - apiVersion: v2
     appVersion: 1.16.0
+    created: "2025-05-25T06:49:08.434973564Z"
+    description: A Helm chart for Kubernetes
+    digest: 09c327bbf7c910f8b61af55bb97a7df18e11bc486c222aefa3618743c6531753
+    maintainers:
+    - name: nstogner
+      url: https://www.linkedin.com/in/nstogner/
+    - email: sammiestoel@gmail.com
+      name: samos123
+      url: https://www.linkedin.com/in/samstoelinga/
+    name: models
+    type: application
+    urls:
+    - https://github.com/substratusai/kubeai/releases/download/helm-chart-models-0.21.0/models-0.21.0.tgz
+    version: 0.21.0
+  - apiVersion: v2
+    appVersion: 1.16.0
     created: "2025-04-24T18:26:22.980758199Z"
     description: A Helm chart for Kubernetes
     digest: b811be4d40d1f1e4c2835a3e5f5b42516e026fdc398a8b443a1232554a00c888
@@ -1121,4 +1162,4 @@ entries:
     urls:
     - https://github.com/substratusai/kubeai/releases/download/kubeai-helm-chart-0.4.1/models-0.4.1.tgz
     version: 0.4.1
-generated: "2025-04-24T18:26:22.981117832Z"
+generated: "2025-05-25T06:49:08.43532024Z"
