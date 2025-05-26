@@ -48,7 +48,12 @@ help: ## Display this help.
 .PHONY: manifests
 manifests: controller-gen yq
 	# Generate CustomResourceDefinition objects.
-	$(CONTROLLER_GEN) crd webhook paths="./..." output:crd:artifacts:config=charts/kubeai/templates/crds/
+	$(CONTROLLER_GEN) crd webhook paths="./..." output:crd:artifacts:config=manifests/crds/
+
+	# Generate CustomResourceDefinition for helm chart
+	echo '{{-  if .Values.crds.enabled -}}' > charts/kubeai/templates/crds/kubeai.org_models.yaml
+	cat manifests/crds/kubeai.org_models.yaml >> charts/kubeai/templates/crds/kubeai.org_models.yaml
+	echo '{{-  end }}' >> charts/kubeai/templates/crds/kubeai.org_models.yaml
 
 	# Generate model manifests.
 	rm -f ./manifests/models/*
