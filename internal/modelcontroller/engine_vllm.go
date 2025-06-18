@@ -73,6 +73,7 @@ func (r *ModelReconciler) vLLMPodForModel(m *kubeaiv1.Model, c ModelConfig) *cor
 			NodeSelector:       c.NodeSelector,
 			Affinity:           c.Affinity,
 			Tolerations:        c.Tolerations,
+			SchedulerName: 		c.SchedulerName,
 			RuntimeClassName:   c.RuntimeClassName,
 			PriorityClassName:  m.Spec.PriorityClassName,
 			ServiceAccountName: r.ModelServerPods.ModelServiceAccountName,
