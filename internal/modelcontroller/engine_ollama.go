@@ -184,7 +184,7 @@ func ollamaStartupProbeScript(m *kubeaiv1.Model, u modelURL) string {
 		startupScript = fmt.Sprintf("/bin/ollama cp %s %s",
 			u.modelParam, m.Name)
 	} else {
-		pullCmd := "/bin/ollama pull"
+		pullCmd := fmt.Sprintf("/bin/ollama list | grep %s || /bin/ollama pull", u.ref)
 		if u.insecure {
 			pullCmd += " --insecure"
 		}
