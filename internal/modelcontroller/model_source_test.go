@@ -30,6 +30,7 @@ func Test_parseModelURL(t *testing.T) {
 				ref:    "path/b://to/model",
 				name:   "path",
 				path:   "b://to/model",
+				pull:   true,
 			},
 		},
 		"valid-google-storage": {
@@ -39,6 +40,7 @@ func Test_parseModelURL(t *testing.T) {
 				ref:    "bucket-name/path/to/model",
 				name:   "bucket-name",
 				path:   "path/to/model",
+				pull:   true,
 			},
 		},
 		"valid-ollama": {
@@ -48,6 +50,7 @@ func Test_parseModelURL(t *testing.T) {
 				ref:    "gemma2:2b",
 				name:   "gemma2:2b",
 				path:   "",
+				pull:   true,
 			},
 		},
 		"valid-huggingface": {
@@ -57,6 +60,7 @@ func Test_parseModelURL(t *testing.T) {
 				ref:    "test-user/model-name",
 				name:   "test-user",
 				path:   "model-name",
+				pull:   true,
 			},
 		},
 		"valid-s3": {
@@ -66,6 +70,7 @@ func Test_parseModelURL(t *testing.T) {
 				ref:    "test-bucket/model-name",
 				name:   "test-bucket",
 				path:   "model-name",
+				pull:   true,
 			},
 		},
 		"valid-pvc": {
@@ -75,6 +80,7 @@ func Test_parseModelURL(t *testing.T) {
 				ref:    "my-vpc/path/to/model",
 				name:   "my-vpc",
 				path:   "path/to/model",
+				pull:   true,
 			},
 		},
 		"valid-pvc-no-path": {
@@ -84,6 +90,7 @@ func Test_parseModelURL(t *testing.T) {
 				ref:    "my-vpc",
 				name:   "my-vpc",
 				path:   "",
+				pull:   true,
 			},
 		},
 		"valid-pvc-with-slash-empty": {
@@ -93,6 +100,7 @@ func Test_parseModelURL(t *testing.T) {
 				ref:    "my-vpc/",
 				name:   "my-vpc",
 				path:   "",
+				pull:   true,
 			},
 		},
 		"valid-pvc-with-double-slash": {
@@ -102,6 +110,7 @@ func Test_parseModelURL(t *testing.T) {
 				ref:    "my-vpc//",
 				name:   "my-vpc",
 				path:   "/",
+				pull:   true,
 			},
 		},
 		"valid-pvc-with-modelname": {
@@ -112,6 +121,7 @@ func Test_parseModelURL(t *testing.T) {
 				name:       "my-vpc",
 				path:       "",
 				modelParam: "qwen2:0.5b",
+				pull:       true,
 			},
 		},
 		"valid-pvc-withpath-and-modelname": {
@@ -122,6 +132,17 @@ func Test_parseModelURL(t *testing.T) {
 				name:       "my-vpc",
 				path:       "path/to/model",
 				modelParam: "qwen2:0.5b",
+				pull:       true,
+			},
+		},
+		"valid-ollama-with-no-pull": {
+			input: "ollama://gemma2:2b?pull=false",
+			want: modelURL{
+				scheme: "ollama",
+				ref:    "gemma2:2b",
+				name:   "gemma2:2b",
+				path:   "",
+				pull:   false,
 			},
 		},
 	}

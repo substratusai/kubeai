@@ -70,7 +70,7 @@ func (r *ModelReconciler) oLlamaPodForModel(m *kubeaiv1.Model, c ModelConfig) *c
 			NodeSelector:       c.NodeSelector,
 			Affinity:           c.Affinity,
 			Tolerations:        c.Tolerations,
-			SchedulerName: 		c.SchedulerName,
+			SchedulerName:      c.SchedulerName,
 			RuntimeClassName:   c.RuntimeClassName,
 			PriorityClassName:  m.Spec.PriorityClassName,
 			ServiceAccountName: r.ModelServerPods.ModelServiceAccountName,
@@ -183,16 +183,16 @@ func ollamaStartupProbeScript(m *kubeaiv1.Model, u modelURL) string {
 	if u.scheme == "pvc" {
 		// There is a potential race condition when multiple pods try to rename/copy the same model.
 		startupScript = fmt.Sprintf("/bin/ollama cp %s %s", u.modelParam, m.Name)
-	} else if m.Spec.Image != "" {
-		// If the model has a custom image, we assume the model is already present in the image.
-		// This is useful for disconnected environments, where we cant pull the model.
-		startupScript = fmt.Sprintf("/bin/ollama cp %s %s", u.ref, m.Name)
 	} else {
-		pullCmd := "/bin/ollama pull"
-		if u.insecure {
-			pullCmd += " --insecure"
+		if u.pull {
+			pullCmd := "/bin/ollama pull"
+			if u.insecure {
+				pullCmd += " --insecure"
+			}
+			startupScript = fmt.Sprintf("%s %s && /bin/ollama cp %s %s", pullCmd, u.ref, u.ref, m.Name)
+		} else {
+			startupScript = fmt.Sprintf("/bin/ollama cp %s %s", u.ref, m.Name)
 		}
-		startupScript = fmt.Sprintf("%s %s && /bin/ollama cp %s %s", pullCmd, u.ref, u.ref, m.Name)
 	}
 
 	// Only run the model if the model has features
