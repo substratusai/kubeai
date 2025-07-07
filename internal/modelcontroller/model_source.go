@@ -237,6 +237,7 @@ func parseModelURL(urlStr string) (modelURL, error) {
 	name, path, _ := strings.Cut(ref, "/")
 	var modelParam string
 	var insecure bool
+	var pull bool = true
 
 	if len(matches) == 4 { // check for query parameters
 		queryParams := strings.TrimPrefix(matches[3], "?")
@@ -250,6 +251,10 @@ func parseModelURL(urlStr string) (modelURL, error) {
 			if strings.ToLower(insecureVal) == "true" {
 				insecure = true
 			}
+			pullVal := urlParser.Get("pull") // e.g. ollama://my-registry/model?pull=false
+			if strings.ToLower(pullVal) == "false" {
+				pull = false
+			}
 		}
 	}
 
@@ -261,6 +266,7 @@ func parseModelURL(urlStr string) (modelURL, error) {
 		path:       path,
 		modelParam: modelParam,
 		insecure:   insecure,
+		pull:       pull,
 	}, nil
 }
 
@@ -276,4 +282,6 @@ type modelURL struct {
 	// e.g. true when ?insecure=true is part of the URL.
 	// This is used for Ollama to allow pulling from insecure registries.
 	insecure bool
+	// If false, the model will not be pulled and assumed to be already present.
+	pull bool
 }

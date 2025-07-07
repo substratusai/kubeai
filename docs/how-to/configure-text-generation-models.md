@@ -161,3 +161,13 @@ Example Model spec using an insecure registry:
 spec:
   url: ollama://my-local-registry:5000/my-model?insecure=true
 ```
+
+### Disable Model Pulling
+
+To disable model pulling from Ollama, set the `pull` field to `false` in the Model spec. This is useful when you want to use a model that is already available in the Ollama server.
+
+Example Model spec to disable pulling:
+```yaml
+spec:
+  url: ollama://my-local-registry:5000/my-model?pull=false
+```

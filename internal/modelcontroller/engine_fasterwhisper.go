@@ -57,6 +57,7 @@ func (r *ModelReconciler) fasterWhisperPodForModel(m *kubeaiv1.Model, c ModelCon
 			NodeSelector:       c.NodeSelector,
 			Affinity:           c.Affinity,
 			Tolerations:        c.Tolerations,
+			SchedulerName:      c.SchedulerName,
 			RuntimeClassName:   c.RuntimeClassName,
 			PriorityClassName:  m.Spec.PriorityClassName,
 			ServiceAccountName: r.ModelServerPods.ModelServiceAccountName,

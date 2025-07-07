@@ -36,6 +36,7 @@ resourceProfiles:
       custom.com/gpu: "1"
       cpu: "3"
       memory: "12Gi"
+    schedulerName: "my-custom-scheduler"
     runtimeClassName: "my-custom-runtime-class"
 ```
 

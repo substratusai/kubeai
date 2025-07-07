@@ -48,6 +48,7 @@ func TestModelProfiles(t *testing.T) {
 		// The Pod should have a single container named "server".
 		container := mustFindPodContainerByName(t, pod, "server")
 		assert.Equal(t, expectedResources, container.Resources)
+		assert.Equal(t, cpuSchedulerName, pod.Spec.SchedulerName)
 		assert.Equal(t, ptr.To(cpuRuntimeClassName), pod.Spec.RuntimeClassName)
 		assert.Contains(t, pod.Spec.Tolerations, sysCfg.ResourceProfiles[resourceProfileCPU].Tolerations[0])
 		assert.Equal(t, sysCfg.ResourceProfiles[resourceProfileCPU].Affinity, pod.Spec.Affinity)
