@@ -70,7 +70,7 @@ modelServerPods:
   # Security Context for the model pods
   # Needed for OpenShift
   securityContext:
-    runAsUser: 0
+    # runAsUser: 0
     readOnlyRootFilesystem: false
     allowPrivilegeEscalation: false
     capabilities:
@@ -245,7 +245,7 @@ open-webui:
   # Security Context for the openwebui pod
   # Needed for OpenShift
   containerSecurityContext:
-    runAsUser: 0
+    # runAsUser: 0
     readOnlyRootFilesystem: false
     allowPrivilegeEscalation: false
     capabilities:
