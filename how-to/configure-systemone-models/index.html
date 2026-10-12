@@ -1101,6 +1101,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-anthropic-messages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Use the Anthropic Messages API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1716,6 +1744,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../reference/api-route-migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API routes and migration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../reference/kubernetes-api/" class="md-nav__link">
         
   
@@ -2249,7 +2305,7 @@
 
 
 <h1 id="route-system-one-requests-through-kubeai">Route System One requests through KubeAI<a class="headerlink" href="#route-system-one-requests-through-kubeai" title="Permanent link">&para;</a></h1>
-<p>KubeAI exposes <code>POST /openai/v1/systemone</code> and forwards it to
+<p>KubeAI exposes <code>POST /v1/systemone</code> and forwards it to
 <code>POST /v1/systemone</code> on a selected model server. This endpoint is an inference
 extension alongside chat, embeddings and reranking.</p>
 <p>Supported engine values are <code>OLlama</code>, <code>VLLM</code>, <code>LlamaCpp</code> and <code>SGLang</code>. This
@@ -2257,6 +2313,10 @@ integration assumes the selected server image already implements
 <code>/v1/systemone</code>. KubeAI adds routing and access to its existing inference
 lifecycle; it does not install an endpoint into the engine, add a wrapper,
 change the model server launcher or translate between engine payload formats.</p>
+<p><code>POST /openai/v1/systemone</code> remains available during the migration and serves
+the same backend endpoint. It is deprecated and planned for removal in the
+release following the one that introduces <code>/v1/systemone</code>. See the
+<a href="../../reference/api-route-migration/">API route migration</a> before upgrading clients.</p>
 <h2 id="enable-the-feature-on-a-model">Enable the feature on a Model<a class="headerlink" href="#enable-the-feature-on-a-model" title="Permanent link">&para;</a></h2>
 <p>Install a KubeAI version and Model CRD containing the <code>SystemOne</code> feature.
 Upgrade the controller and CRD together using your normal installation method;
@@ -2328,9 +2388,12 @@ accepted by this endpoint.</p>
 <h2 id="discover-and-select-models">Discover and select models<a class="headerlink" href="#discover-and-select-models" title="Permanent link">&para;</a></h2>
 <p>List Models that advertise the feature:</p>
 <div class="highlight"><pre><span></span><code>curl<span class="w"> </span>--fail-with-body<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="s1">'http://localhost:8000/openai/v1/models?feature=SystemOne'</span>
+<span class="w">  </span><span class="s1">'http://localhost:8000/v1/models?feature=SystemOne'</span>
 </code></pre></div>
-<p>Without a feature query, model discovery defaults to <code>TextGeneration</code>.
+<p>Without a feature query, both <code>/v1/models</code> and <code>/openai/v1/models</code> list all
+installed Models and their adapters. Use <code>?feature=TextGeneration</code> for chat-only
+discovery. Discovery includes Models scaled to zero; it does not probe backend
+endpoint availability.
 In the request, <code>model</code> must be the Model's Kubernetes <code>metadata.name</code>, such as
 <code>ticket-decisions</code>. It is not a Hugging Face repository, an Ollama model tag or
 an SDK's default model name. KubeAI forwards this value unchanged; the server's
@@ -2345,7 +2408,7 @@ model-name rewriting used by other endpoints for adapters.</p>
 <p>KubeAI requires a JSON object with a non-empty string <code>model</code>. All other fields
 are backend-defined. The example below illustrates a decision payload; confirm
 its field names and question types against your selected engine implementation.</p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>--fail-with-body<span class="w"> </span>http://localhost:8000/openai/v1/systemone<span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>--fail-with-body<span class="w"> </span>http://localhost:8000/v1/systemone<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s1">'Content-Type: application/json'</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-H<span class="w"> </span><span class="s1">'X-Label-Selector: team=support'</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--data-binary<span class="w"> </span><span class="s1">'{</span>
@@ -2374,7 +2437,7 @@ own response format rather than becoming KubeAI routing errors.</p>
 KubeAI expects exactly one text form field named <code>request</code>, containing the JSON
 routing envelope. Put <code>model</code> inside that JSON field. A separate <code>model</code> form
 field does not select the destination.</p>
-<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>--fail-with-body<span class="w"> </span>http://localhost:8000/openai/v1/systemone<span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>--fail-with-body<span class="w"> </span>http://localhost:8000/v1/systemone<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-F<span class="w"> </span><span class="s1">'request={"model":"ticket-decisions","state":"Inspect this image","questions":{"damaged":{"type":"noul","instructions":"Is the item damaged?"}}}'</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>-F<span class="w"> </span><span class="s1">'image=@photo.png;type=image/png'</span>
 </code></pre></div>

@@ -1046,6 +1046,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-anthropic-messages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Use the Anthropic Messages API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1661,6 +1689,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../reference/api-route-migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API routes and migration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../reference/kubernetes-api/" class="md-nav__link">
         
   
@@ -2140,6 +2196,11 @@
 
 <h1 id="configure-reranking-models">Configure reranking models<a class="headerlink" href="#configure-reranking-models" title="Permanent link">&para;</a></h1>
 <p>KubeAI supports reranking models via the Infinity and vLLM (Recommended for GPU) engine.</p>
+<p>Use <code>POST /v1/rerank</code> for new integrations. The existing
+<code>POST /openai/v1/rerank</code> remains operational during the migration, with
+deprecation headers, and is planned for removal in the following release.
+Both routes forward to the same <code>/v1/rerank</code> backend endpoint. See the
+<a href="../../reference/api-route-migration/">API route migration</a>.</p>
 <h2 id="install-baaibge-reranker-base-model-using-infinity">Install BAAI/bge-reranker-base model using Infinity<a class="headerlink" href="#install-baaibge-reranker-base-model-using-infinity" title="Permanent link">&para;</a></h2>
 <p>Create a file named <code>kubeai-rerank-models.yaml</code> with the following content:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">catalog</span><span class="p">:</span>
@@ -2160,7 +2221,7 @@
 <p>Once the pod is ready, you can call the rerank endpoint:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
-    <span class="s2">"http://localhost:8000/openai/v1/rerank"</span><span class="p">,</span>
+    <span class="s2">"http://localhost:8000/v1/rerank"</span><span class="p">,</span>
     <span class="n">json</span><span class="o">=</span><span class="p">{</span>
         <span class="s2">"model"</span><span class="p">:</span> <span class="s2">"bge-rerank-base-cpu"</span><span class="p">,</span>
         <span class="s2">"query"</span><span class="p">:</span> <span class="s2">"Which document talks about apples?"</span><span class="p">,</span>

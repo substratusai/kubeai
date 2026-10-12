@@ -133,6 +133,10 @@
          <lastmod>2026-10-12</lastmod>
     </url>
     <url>
+         <loc>https://www.kubeai.org/how-to/use-anthropic-messages/</loc>
+         <lastmod>2026-10-12</lastmod>
+    </url>
+    <url>
          <loc>https://www.kubeai.org/installation/aks/</loc>
          <lastmod>2026-10-12</lastmod>
     </url>
@@ -146,6 +150,10 @@
     </url>
     <url>
          <loc>https://www.kubeai.org/installation/gke/</loc>
+         <lastmod>2026-10-12</lastmod>
+    </url>
+    <url>
+         <loc>https://www.kubeai.org/reference/api-route-migration/</loc>
          <lastmod>2026-10-12</lastmod>
     </url>
     <url>

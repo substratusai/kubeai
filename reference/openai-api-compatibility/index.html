@@ -986,6 +986,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how-to/use-anthropic-messages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Use the Anthropic Messages API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1603,6 +1631,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../api-route-migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API routes and migration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../kubernetes-api/" class="md-nav__link">
         
   
@@ -1785,16 +1841,38 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#responses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Responses
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#openai-client-libaries" class="md-nav__link">
+  <a href="#anthropic-messages" class="md-nav__link">
     <span class="md-ellipsis">
       
-        OpenAI Client libaries
+        Anthropic Messages
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openai-client-libraries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenAI Client libraries
       
     </span>
   </a>
@@ -2302,16 +2380,38 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#responses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Responses
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#openai-client-libaries" class="md-nav__link">
+  <a href="#anthropic-messages" class="md-nav__link">
     <span class="md-ellipsis">
       
-        OpenAI Client libaries
+        Anthropic Messages
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openai-client-libraries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenAI Client libraries
       
     </span>
   </a>
@@ -2339,36 +2439,46 @@
 
 
 <h1 id="openai-api-compatibility">OpenAI API Compatibility<a class="headerlink" href="#openai-api-compatibility" title="Permanent link">&para;</a></h1>
-<p>KubeAI provides an OpenAI API compatiblity layer.</p>
+<p>KubeAI provides an OpenAI API compatibility layer under <code>/openai/v1</code>.
+The paths below are public KubeAI URLs. See the
+<a href="../api-route-migration/">API routes and migration</a> for the complete route table,
+the explicit list of deprecated URLs and the compatibility policy.</p>
 <h2 id="general">General:<a class="headerlink" href="#general" title="Permanent link">&para;</a></h2>
 <h3 id="models">Models<a class="headerlink" href="#models" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code>GET /v1/models
+<div class="highlight"><pre><span></span><code>GET /openai/v1/models
+GET /v1/models
 </code></pre></div>
 <ul>
-<li>Lists all <code>kind: Model</code> object installed in teh Kubernetes API Server.</li>
+<li>Both routes list all installed <code>kind: Model</code> objects and their adapters,
+  including embedding, reranking, speech and System One models, and Models
+  scaled to zero. <code>/openai/v1/models</code> is not deprecated.</li>
+<li>Use <code>?feature=TextGeneration</code> for chat-only discovery. Repeated <code>feature</code>
+  parameters form a union; <code>X-Label-Selector</code> restricts results.</li>
 </ul>
 <h2 id="inference">Inference<a class="headerlink" href="#inference" title="Permanent link">&para;</a></h2>
 <h3 id="text-generation">Text Generation<a class="headerlink" href="#text-generation" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code>POST /v1/chat/completions
-POST /v1/completions
+<div class="highlight"><pre><span></span><code>POST /openai/v1/chat/completions
+POST /openai/v1/completions
 </code></pre></div>
 <ul>
 <li>Supported for Models with <code>.spec.features: ["TextGeneration"]</code>.</li>
 </ul>
 <h3 id="embeddings">Embeddings<a class="headerlink" href="#embeddings" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code>POST /v1/embeddings
+<div class="highlight"><pre><span></span><code>POST /openai/v1/embeddings
 </code></pre></div>
 <ul>
 <li>Supported for  Models with <code>.spec.features: ["TextEmbedding"]</code>.</li>
 </ul>
 <h3 id="reranking">Reranking<a class="headerlink" href="#reranking" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code>POST /v1/vllm/rerank
+<div class="highlight"><pre><span></span><code>POST /v1/rerank
 </code></pre></div>
 <ul>
 <li>Supported for  Models with <code>.spec.features: ["Reranking"]</code>.</li>
+<li><code>/openai/v1/rerank</code> remains operational but is deprecated; migrate to
+  <code>/v1/rerank</code> before the following release.</li>
 </ul>
 <h3 id="speech-to-text">Speech-to-Text<a class="headerlink" href="#speech-to-text" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code>POST /v1/audio/transcriptions
+<div class="highlight"><pre><span></span><code>POST /openai/v1/audio/transcriptions
 </code></pre></div>
 <ul>
 <li>Supported for Models with <code>.spec.features: ["SpeechToText"]</code>.</li>
@@ -2377,7 +2487,8 @@ POST /v1/completions
 <div class="highlight"><pre><span></span><code>POST /v1/systemone
 </code></pre></div>
 <ul>
-<li>KubeAI URL: <code>/openai/v1/systemone</code>.</li>
+<li><code>/openai/v1/systemone</code> remains operational but is deprecated; migrate to
+  <code>/v1/systemone</code> before the following release.</li>
 <li>Requires <code>.spec.features: ["SystemOne"]</code> and engine <code>OLlama</code>, <code>VLLM</code>,
   <code>LlamaCpp</code> or <code>SGLang</code>.</li>
 <li>The engine image must already serve <code>/v1/systemone</code> at its inference port.</li>
@@ -2390,7 +2501,18 @@ POST /v1/completions
 <li>See <a href="../../how-to/configure-systemone-models/">Route System One requests</a> for
   configuration, discovery, examples, limitations and error behavior.</li>
 </ul>
-<h2 id="openai-client-libaries">OpenAI Client libaries<a class="headerlink" href="#openai-client-libaries" title="Permanent link">&para;</a></h2>
+<h3 id="responses">Responses<a class="headerlink" href="#responses" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>POST /openai/v1/responses
+</code></pre></div>
+<p>The existing route remains unchanged.</p>
+<h2 id="anthropic-messages">Anthropic Messages<a class="headerlink" href="#anthropic-messages" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>POST /v1/messages
+</code></pre></div>
+<p>Requires <code>TextGeneration</code> and a backend implementing the native Messages API.
+KubeAI preserves the Anthropic payload and streaming response; it does not
+convert Messages to OpenAI chat. See
+<a href="../../how-to/use-anthropic-messages/">Use the Anthropic Messages API</a>.</p>
+<h2 id="openai-client-libraries">OpenAI Client libraries<a class="headerlink" href="#openai-client-libraries" title="Permanent link">&para;</a></h2>
 <p>You can use the official OpenAI client libraries by setting the
 <code>base_url</code> to the KubeAI endpoint.</p>
 <p>For example, you can use the Python client like this:
