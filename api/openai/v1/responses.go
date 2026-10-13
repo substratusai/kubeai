@@ -1,10 +1,9 @@
 package v1
 
 import (
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
-
-	"github.com/go-json-experiment/json"
-	"github.com/go-json-experiment/json/jsontext"
 )
 
 // ResponsesInput is the input field of a Responses API request.
@@ -40,7 +39,7 @@ type ResponsesInputItem struct {
 	Type    string              `json:"type,omitzero"`
 	Role    string              `json:"role,omitzero"`
 	Content *ChatMessageContent `json:"content,omitzero"`
-	Unknown jsontext.Value      `json:",unknown"`
+	Unknown jsontext.Value      `json:",embed"`
 }
 
 // ResponsesRequest is the request body for POST /v1/responses.
@@ -57,7 +56,7 @@ type ResponsesRequest struct {
 	Metadata           map[string]string `json:"metadata,omitzero"`
 	Store              bool              `json:"store,omitzero"`
 	// Unknown fields are preserved to support backend-specific extensions.
-	Unknown jsontext.Value `json:",unknown"`
+	Unknown jsontext.Value `json:",embed"`
 }
 
 func (r *ResponsesRequest) GetModel() string  { return r.Model }

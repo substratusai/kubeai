@@ -1,9 +1,8 @@
 package v1
 
 import (
+	"encoding/json/jsontext"
 	"errors"
-
-	"github.com/go-json-experiment/json/jsontext"
 )
 
 var ErrVectorLengthMismatch = errors.New("vector length mismatch")
@@ -40,7 +39,7 @@ type EmbeddingRequest struct {
 	Dimensions int `json:"dimensions,omitzero"`
 
 	// Unknown fields should be preserved to fully support the extended set of fields that backends such as vLLM support.
-	Unknown jsontext.Value `json:",unknown"`
+	Unknown jsontext.Value `json:",embed"`
 }
 
 func (r *EmbeddingRequest) GetModel() string {
@@ -59,5 +58,5 @@ type EmbeddingResponse struct {
 	Usage  *EmbeddingUsage `json:"usage,omitzero"`
 
 	// Unknown fields should be preserved to fully support the extended set of fields that backends such as vLLM support.
-	Unknown jsontext.Value `json:",unknown"`
+	Unknown jsontext.Value `json:",embed"`
 }

@@ -1,3 +1,3 @@
 module private-chat
 
-go 1.22.0
+go 1.27.2

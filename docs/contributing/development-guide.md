@@ -1,5 +1,10 @@
 # KubeAI Development Guide
 
+## Go Toolchain
+- Go 1.27.2 or later is required.
+- CI reads the Go version from `go.mod`. Keep its `go` directive and the
+  builder images in both Dockerfiles aligned when updating Go.
+
 ## OpenAI API
 - Types: See `./api/openai/v1/README.md`
 
@@ -19,7 +24,7 @@
 
 ## Code Style
 - Format: `make fmt` (standard Go formatting)
-- Lint: `make lint` (golangci-lint v1.59.1)
+- Lint: `make lint` (golangci-lint v2.14.0)
 - Vet: `make vet` (standard Go vetting)
 
 ## Conventions

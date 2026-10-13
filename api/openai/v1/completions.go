@@ -1,7 +1,7 @@
 package v1
 
 import (
-	"github.com/go-json-experiment/json/jsontext"
+	"encoding/json/jsontext"
 )
 
 // CompletionRequest represents a request structure for completion API.
@@ -120,7 +120,7 @@ type CompletionRequest struct {
 	User string `json:"user,omitzero"`
 
 	// Unknown fields should be preserved to fully support the extended set of fields that backends such as vLLM support.
-	Unknown jsontext.Value `json:",unknown"`
+	Unknown jsontext.Value `json:",embed"`
 }
 
 func (r *CompletionRequest) GetModel() string {
@@ -237,5 +237,5 @@ type CompletionResponse struct {
 	SystemFingerprint string `json:"system_fingerprint,omitzero"`
 
 	// Unknown fields should be preserved to fully support the extended set of fields that backends such as vLLM support.
-	Unknown jsontext.Value `json:",unknown"`
+	Unknown jsontext.Value `json:",embed"`
 }

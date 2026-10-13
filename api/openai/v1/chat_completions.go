@@ -1,11 +1,10 @@
 package v1
 
 import (
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
-
-	"github.com/go-json-experiment/json"
-	"github.com/go-json-experiment/json/jsontext"
 )
 
 // Chat message roles defined by the OpenAI API.
@@ -356,7 +355,7 @@ type ChatCompletionRequest struct {
 	// Messages is a list of messages comprising the conversation so far.
 	// Different message types (modalities) are supported, like text, images, and audio.
 	// +required
-	Messages []ChatCompletionMessage `json:"messages,format:emitnull"`
+	Messages []ChatCompletionMessage `json:"messages"`
 
 	// MaxTokens is the maximum number of tokens to generate in the chat completion.
 	// Deprecated: Use MaxCompletionTokens instead.
@@ -511,7 +510,22 @@ type ChatCompletionRequest struct {
 	Audio *AudioConfig `json:"audio,omitzero"`
 
 	// Unknown fields should be preserved to fully support the extended set of fields that backends such as vLLM support.
-	Unknown jsontext.Value `json:",unknown"`
+	Unknown jsontext.Value `json:",embed"`
+}
+
+// MarshalJSON preserves the API's distinction between absent messages (null)
+// and an explicitly empty conversation ([]). Go 1.27 no longer supports the
+// experimental format:emitnull field tag.
+func (r ChatCompletionRequest) MarshalJSON() ([]byte, error) {
+	type request ChatCompletionRequest
+	var messages *[]ChatCompletionMessage
+	if r.Messages != nil {
+		messages = &r.Messages
+	}
+	return json.Marshal(struct {
+		*request
+		Messages *[]ChatCompletionMessage `json:"messages"`
+	}{request: (*request)(&r), Messages: messages})
 }
 
 func (r *ChatCompletionRequest) GetModel() string {
@@ -839,7 +853,7 @@ type ChatCompletionResponse struct {
 	PromptFilterResults []PromptFilterResult `json:"prompt_filter_results,omitzero"`
 
 	// Unknown fields should be preserved to fully support the extended set of fields that backends such as vLLM support.
-	Unknown jsontext.Value `json:",unknown"`
+	Unknown jsontext.Value `json:",embed"`
 }
 
 // PromptFilterResult contains information about content filtering applied to a particular prompt.

@@ -3,9 +3,9 @@
 The goal of these API structs is to define a standard API for interfacing with models using OpenAI-compatible APIs.
 
 * JSON-to-struct-to-JSON round trip is not guaranteed. This package strives to preserve semantic meaning during JSON round trips.
-* Use the `https://github.com/go-json-experiment/json` pkg (the WIP implementation of stdlib json v2), not the stdlib `encoding/json` pkg.
-  * NOTE: `We have confidence in the correctness and performance of the module as it has been used internally at Tailscale in various production services. However, the module is an experiment and breaking changes are expected to occur based on feedback in this discussion` - https://github.com/golang/go/discussions/63397
-  * Used to preserve unknown fields while staying close to the stdlib.
+* Use Go 1.27's `encoding/json/v2` and `encoding/json/jsontext` packages.
+  * Preserve unknown members in a `jsontext.Value` field tagged `json:",embed"`.
+  * `ChatCompletionRequest.MarshalJSON` preserves `null` for nil messages and `[]` for an explicitly empty slice.
 * Extra fields at the root of requests/responses should be preserved (supports additional fields that engines like vLLM support - see [vLLM docs](https://docs.vllm.ai/en/latest/serving/openai_compatible_server.html#extra-parameters)).
 
 ## API References

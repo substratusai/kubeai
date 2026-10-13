@@ -1,9 +1,9 @@
 package v1
 
 import (
+	"encoding/json/v2"
 	"testing"
 
-	"github.com/go-json-experiment/json"
 	"github.com/stretchr/testify/require"
 )
 

@@ -1,7 +1,7 @@
 package v1
 
 import (
-	"github.com/go-json-experiment/json/jsontext"
+	"encoding/json/jsontext"
 )
 
 // RerankRequest represents a request to rerank a list of documents based on a query.
@@ -13,7 +13,7 @@ type RerankRequest struct {
 
 	// Unknown fields should be preserved to fully support engines that accept
 	// extended parameters.
-	Unknown jsontext.Value `json:",unknown"`
+	Unknown jsontext.Value `json:",embed"`
 }
 
 func (r *RerankRequest) GetModel() string  { return r.Model }
@@ -34,5 +34,5 @@ type RerankResponse struct {
 
 	// Unknown fields should be preserved to fully support engines that return
 	// extended parameters.
-	Unknown jsontext.Value `json:",unknown"`
+	Unknown jsontext.Value `json:",embed"`
 }
