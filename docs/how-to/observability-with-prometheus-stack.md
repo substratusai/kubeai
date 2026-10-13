@@ -65,3 +65,9 @@ kubectl get secret prometheus-grafana -o jsonpath="{.data.admin-password}" | bas
 ```
 
 You can import the example vLLM dashboard in the KubeAI repo at [examples/observability/vllm-grafana-dashboard.json](https://github.com/kubeai-project/kubeai/blob/main/examples/observability/vllm-grafana-dashboard.json).
+
+The dashboard uses vLLM V1 metrics, including `vllm:kv_cache_usage_perc`
+and `vllm:inter_token_latency_seconds`, available in vLLM 0.11.2 and 0.27.1.
+KV cache usage is displayed as a percentage; inter-token latency quantiles
+and the mean are displayed in seconds. The scheduler panel shows running
+and waiting requests; V1 no longer exports the swapped-request gauge.

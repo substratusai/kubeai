@@ -81,37 +81,15 @@
               },
               {
                 "color": "red",
-                "value": 80
+                "value": 0.8
               }
             ]
-          }
+          },
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
         },
-        "overrides": [
-          {
-            "__systemRef": "hideSeriesFrom",
-            "matcher": {
-              "id": "byNames",
-              "options": {
-                "mode": "exclude",
-                "names": [
-                  "{__name__=\"vllm:gpu_cache_usage_perc\", container=\"server\", endpoint=\"http\", instance=\"10.32.3.11:8000\", job=\"default/vllm-pods\", model_name=\"llama-3.1-8b-instruct-fp8-l4\", namespace=\"default\", pod=\"model-llama-3.1-8b-instruct-fp8-l4-7bd69c5c6f-phfm7\"}"
-                ],
-                "prefix": "All except:",
-                "readOnly": true
-              }
-            },
-            "properties": [
-              {
-                "id": "custom.hideFrom",
-                "value": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": true
-                }
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 8,
@@ -142,7 +120,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "vllm:gpu_cache_usage_perc{model_name=\"$model_name\"}",
+          "expr": "vllm:kv_cache_usage_perc{model_name=\"$model_name\"}",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "interval": "",
@@ -163,7 +141,7 @@
           "refId": "B"
         }
       ],
-      "title": "GPU Cache Usage",
+      "title": "KV Cache Usage",
       "type": "timeseries"
     },
     {
@@ -377,7 +355,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "histogram_quantile(0.99, sum by(le) (rate(vllm:time_per_output_token_seconds_bucket{model_name=\"$model_name\"}[$__rate_interval])))",
+          "expr": "histogram_quantile(0.99, sum by(le) (rate(vllm:inter_token_latency_seconds_bucket{model_name=\"$model_name\"}[$__rate_interval])))",
           "fullMetaSearch": false,
           "includeNullMetadata": false,
           "instant": false,
@@ -393,7 +371,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "histogram_quantile(0.95, sum by(le) (rate(vllm:time_per_output_token_seconds_bucket{model_name=\"$model_name\"}[$__rate_interval])))",
+          "expr": "histogram_quantile(0.95, sum by(le) (rate(vllm:inter_token_latency_seconds_bucket{model_name=\"$model_name\"}[$__rate_interval])))",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": false,
@@ -410,7 +388,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "histogram_quantile(0.9, sum by(le) (rate(vllm:time_per_output_token_seconds_bucket{model_name=\"$model_name\"}[$__rate_interval])))",
+          "expr": "histogram_quantile(0.9, sum by(le) (rate(vllm:inter_token_latency_seconds_bucket{model_name=\"$model_name\"}[$__rate_interval])))",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": false,
@@ -427,7 +405,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "histogram_quantile(0.5, sum by(le) (rate(vllm:time_per_output_token_seconds_bucket{model_name=\"$model_name\"}[$__rate_interval])))",
+          "expr": "histogram_quantile(0.5, sum by(le) (rate(vllm:inter_token_latency_seconds_bucket{model_name=\"$model_name\"}[$__rate_interval])))",
           "fullMetaSearch": false,
           "hide": false,
           "includeNullMetadata": false,
@@ -443,7 +421,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "rate(vllm:time_per_output_token_seconds_sum{model_name=\"$model_name\"}[$__rate_interval])\n/\nrate(vllm:time_per_output_token_seconds_count{model_name=\"$model_name\"}[$__rate_interval])",
+          "expr": "rate(vllm:inter_token_latency_seconds_sum{model_name=\"$model_name\"}[$__rate_interval])\n/\nrate(vllm:inter_token_latency_seconds_count{model_name=\"$model_name\"}[$__rate_interval])",
           "hide": false,
           "instant": false,
           "legendFormat": "Mean",
@@ -451,7 +429,7 @@
           "refId": "E"
         }
       ],
-      "title": "Time Per Output Token Latency",
+      "title": "Inter-Token Latency",
       "type": "timeseries"
     },
     {
@@ -459,7 +437,7 @@
         "type": "prometheus",
         "uid": "${DS_PROMETHEUS}"
       },
-      "description": "Number of requests in RUNNING, WAITING, and SWAPPED state",
+      "description": "Number of requests in RUNNING and WAITING state",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -552,23 +530,6 @@
           "legendFormat": "Num Running",
           "range": true,
           "refId": "A",
-          "useBackend": false
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "disableTextWrap": false,
-          "editorMode": "builder",
-          "expr": "vllm:num_requests_swapped{model_name=\"$model_name\"}",
-          "fullMetaSearch": false,
-          "hide": false,
-          "includeNullMetadata": true,
-          "instant": false,
-          "legendFormat": "Num Swapped",
-          "range": true,
-          "refId": "B",
           "useBackend": false
         },
         {
