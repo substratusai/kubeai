@@ -1,10 +1,9 @@
 package v1
 
 import (
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"strings"
-
-	"github.com/go-json-experiment/json"
-	"github.com/go-json-experiment/json/jsontext"
 )
 
 // MessagesRequest is the routing envelope for Anthropic's Messages API.
@@ -12,7 +11,7 @@ import (
 // without translating them into OpenAI messages.
 type MessagesRequest struct {
 	Model   string         `json:"model"`
-	Unknown jsontext.Value `json:",unknown"`
+	Unknown jsontext.Value `json:",embed"`
 }
 
 func (r *MessagesRequest) GetModel() string      { return r.Model }

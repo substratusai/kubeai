@@ -2,13 +2,45 @@ package v1_test
 
 import (
 	stdjson "encoding/json"
+	"encoding/json/v2"
 	"fmt"
 	"testing"
 
-	"github.com/go-json-experiment/json"
 	v1 "github.com/kubeai-project/kubeai/api/openai/v1"
 	"github.com/stretchr/testify/require"
 )
+
+func TestChatCompletionRequestMessagesJSON(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		messages []v1.ChatCompletionMessage
+		want     string
+	}{
+		{name: "nil", want: "null"},
+		{name: "empty slice", messages: []v1.ChatCompletionMessage{}, want: "[]"},
+		{
+			name: "populated",
+			messages: []v1.ChatCompletionMessage{{
+				Role: v1.ChatMessageRoleUser, Content: &v1.ChatMessageContent{String: "JSON v2"},
+			}},
+			want: `[{"role":"user","content":"JSON v2"}]`,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var request v1.ChatCompletionRequest
+			require.NoError(t, json.Unmarshal([]byte(`{"model":"chat","temperature":0.5,"backend_extension":{"enabled":true}}`), &request))
+			request.Messages = tc.messages
+			body, err := json.Marshal(request)
+			require.NoError(t, err)
+			var fields map[string]stdjson.RawMessage
+			require.NoError(t, stdjson.Unmarshal(body, &fields))
+			require.JSONEq(t, tc.want, string(fields["messages"]))
+			require.JSONEq(t, `"chat"`, string(fields["model"]))
+			require.JSONEq(t, `0.5`, string(fields["temperature"]))
+			require.JSONEq(t, `{"enabled":true}`, string(fields["backend_extension"]))
+		})
+	}
+}
 
 func TestChatCompletionRequestPrefix(t *testing.T) {
 	cases := []struct {

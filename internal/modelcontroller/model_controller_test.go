@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"context"
+
 	v1 "github.com/kubeai-project/kubeai/api/k8s/v1"
 	"github.com/kubeai-project/kubeai/internal/config"
 	"github.com/stretchr/testify/require"

@@ -475,6 +475,9 @@ func TestAwaitBestHostParallelAccounting(t *testing.T) {
 				const n = 100_000
 				rnd := rand.New(rand.NewPCG(uint64(i), 0))
 				for j := 0; j < n; j++ {
+					// Generate seeded input before starting the goroutine: Rand
+					// and its PCG source are not safe for concurrent use.
+					prefix := fmt.Sprintf("%d", rnd.IntN(100_000_000))
 					wg.Add(1)
 					awaitGroup.Add(1)
 					go func() {
@@ -482,7 +485,7 @@ func TestAwaitBestHostParallelAccounting(t *testing.T) {
 							Model:         myModel,
 							Adapter:       "",
 							LoadBalancing: lb,
-							Prefix:        fmt.Sprintf("%d", rnd.IntN(100_000_000)),
+							Prefix:        prefix,
 						})
 						require.NoError(t, err)
 						awaitGroup.Done()

@@ -1,12 +1,11 @@
 package v1_test
 
 import (
+	stdjson "encoding/json"
+	"encoding/json/v2"
 	"fmt"
 	"testing"
 
-	stdjson "encoding/json"
-
-	"github.com/go-json-experiment/json"
 	v1 "github.com/kubeai-project/kubeai/api/openai/v1"
 	"github.com/stretchr/testify/require"
 )

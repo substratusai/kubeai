@@ -2,12 +2,12 @@ package apiutils
 
 import (
 	"bytes"
+	"encoding/json/v2"
 	"fmt"
 	"io"
 	"mime/multipart"
 	"strings"
 
-	"github.com/go-json-experiment/json"
 	openaiv1 "github.com/kubeai-project/kubeai/api/openai/v1"
 )
 

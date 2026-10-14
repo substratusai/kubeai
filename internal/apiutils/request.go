@@ -2,6 +2,8 @@ package apiutils
 
 import (
 	"bytes"
+	"context"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"io"
@@ -10,10 +12,6 @@ import (
 	"net/http"
 	"slices"
 	"strings"
-
-	"github.com/go-json-experiment/json"
-
-	"context"
 
 	"github.com/google/uuid"
 	anthropicv1 "github.com/kubeai-project/kubeai/api/anthropic/v1"
