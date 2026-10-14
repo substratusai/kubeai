@@ -1553,6 +1553,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#go-toolchain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Go Toolchain
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#openai-api" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2208,6 +2219,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#go-toolchain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Go Toolchain
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#openai-api" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2283,6 +2305,12 @@
 
 
 <h1 id="kubeai-development-guide">KubeAI Development Guide<a class="headerlink" href="#kubeai-development-guide" title="Permanent link">&para;</a></h1>
+<h2 id="go-toolchain">Go Toolchain<a class="headerlink" href="#go-toolchain" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Go 1.27.2 or later is required.</li>
+<li>CI reads the Go version from <code>go.mod</code>. Keep its <code>go</code> directive and the
+  builder images in both Dockerfiles aligned when updating Go.</li>
+</ul>
 <h2 id="openai-api">OpenAI API<a class="headerlink" href="#openai-api" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Types: See <code>./api/openai/v1/README.md</code></li>
@@ -2306,7 +2334,7 @@
 <h2 id="code-style">Code Style<a class="headerlink" href="#code-style" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Format: <code>make fmt</code> (standard Go formatting)</li>
-<li>Lint: <code>make lint</code> (golangci-lint v1.59.1)</li>
+<li>Lint: <code>make lint</code> (golangci-lint v2.14.0)</li>
 <li>Vet: <code>make vet</code> (standard Go vetting)</li>
 </ul>
 <h2 id="conventions">Conventions<a class="headerlink" href="#conventions" title="Permanent link">&para;</a></h2>
