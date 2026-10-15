@@ -2281,6 +2281,11 @@ helm<span class="w"> </span>repo<span class="w"> </span>update
 <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>get<span class="w"> </span>secret<span class="w"> </span>prometheus-grafana<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s2">"{.data.admin-password}"</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>--decode<span class="w"> </span><span class="p">;</span><span class="w"> </span><span class="nb">echo</span>
 </code></pre></div></p>
 <p>You can import the example vLLM dashboard in the KubeAI repo at <a href="https://github.com/kubeai-project/kubeai/blob/main/examples/observability/vllm-grafana-dashboard.json">examples/observability/vllm-grafana-dashboard.json</a>.</p>
+<p>The dashboard uses vLLM V1 metrics, including <code>vllm:kv_cache_usage_perc</code>
+and <code>vllm:inter_token_latency_seconds</code>, available in vLLM 0.11.2 and 0.27.1.
+KV cache usage is displayed as a percentage; inter-token latency quantiles
+and the mean are displayed in seconds. The scheduler panel shows running
+and waiting requests; V1 no longer exports the swapped-request gauge.</p>
 
 
 
