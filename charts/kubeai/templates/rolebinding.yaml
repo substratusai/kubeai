@@ -39,7 +39,7 @@ metadata:
     {{- include "kubeai.labels" $ | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
+  kind: {{if $.Values.watchNamespaces }}ClusterRole{{ else }}Role{{ end }}
   name: {{ include "kubeai.fullname" $ }}
 subjects:
 - kind: ServiceAccount
