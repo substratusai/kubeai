@@ -19,6 +19,7 @@ jobs:
     with:
       output: image
       push: true
+      sign: ${{ startsWith(github.ref, 'refs/tags/') }}
       platforms: linux/amd64,linux/arm64
       context: .
       file: Dockerfile
