@@ -22,7 +22,7 @@ spec:
             - 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://s3:9000/status)" != "200" ]]; do sleep 10; echo "wait for s3"; sleep 5; done'
       containers:
       - name: s3-mc-model
-        image: amazon/aws-cli
+        image: amazon/aws-cli:2.38.1
         env:
           - name: AWS_ACCESS_KEY_ID
             value: testuser
