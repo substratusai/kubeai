@@ -2258,15 +2258,23 @@ namespace is labeled:</p>
 <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>label<span class="w"> </span>namespace<span class="w"> </span>&lt;kubeai-namespace&gt;<span class="w"> </span>aibom.k8saibom.dev/enabled<span class="o">=</span><span class="nb">true</span>
 </code></pre></div>
 <h2 id="read-the-inventory">Read the inventory<a class="headerlink" href="#read-the-inventory" title="Permanent link">&para;</a></h2>
-<p>Each model server Deployment gets an <code>AIBOM</code> resource:</p>
+<p>Each supported workload gets an <code>AIBOM</code> resource. Today that covers
+Deployments, StatefulSets and the operator CRDs listed in the
+<a href="https://github.com/GoogleCloudPlatform/k8s-aibom#what-it-observes">k8s-aibom README</a>.
+KubeAI's own <code>Model</code> resources, whose Pods KubeAI creates directly, are
+not yet covered: that is tracked in
+<a href="https://github.com/GoogleCloudPlatform/k8s-aibom/issues/172">GoogleCloudPlatform/k8s-aibom#172</a>
+and arrives with k8s-aibom v1.7. Until then, enabling the subchart
+inventories the other AI workloads in the opted-in namespace, not
+KubeAI-managed models.</p>
 <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>get<span class="w"> </span>aiboms<span class="w"> </span>-n<span class="w"> </span>&lt;kubeai-namespace&gt;
 </code></pre></div>
 <p>The <code>kubectl aibom</code> plugin (<code>kubectl krew install aibom</code>) summarizes them:</p>
 <div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>aibom<span class="w"> </span>summary<span class="w"> </span>-n<span class="w"> </span>&lt;kubeai-namespace&gt;
 </code></pre></div>
-<p>KubeAI's vLLM and Ollama model servers are detected out of the box (runtime
-confidence <code>inferred</code>, from the image; model identity <code>declared</code>, from the
-server arguments). Documents can be shipped to external sinks (object
+<p>Once <code>Model</code> support lands, KubeAI's vLLM and Ollama model servers will be
+reported with the runtime and model identity <code>declared</code> from the <code>Model</code>
+spec and image digests from the running Pods. Documents can be shipped to external sinks (object
 storage, webhook) for audit retention — see the
 <a href="https://github.com/GoogleCloudPlatform/k8s-aibom#readme">k8s-aibom documentation</a>.</p>
 
