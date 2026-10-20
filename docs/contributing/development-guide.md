@@ -5,6 +5,21 @@
 - CI reads the Go version from `go.mod`. Keep its `go` directive and the
   builder images in both Dockerfiles aligned when updating Go.
 
+## Kubernetes dependencies
+
+- Kubernetes client libraries: `k8s.io/api`, `apimachinery`, `client-go` and
+  `apiextensions-apiserver` v0.37.1.
+- Controller runtime: v0.25.2. Keep its minor version aligned with the
+  [upstream compatibility table](https://github.com/kubernetes-sigs/controller-runtime#compatibility).
+- Code and CRD generator: controller-gen v0.23.0.
+- Integration tests: envtest Kubernetes 1.37.0, using setup-envtest release-0.25.
+- End-to-end tests: kind v0.33.0 with the published Kubernetes 1.37.0 image.
+
+Update these together when changing Kubernetes minor versions. Regenerate the
+CRD in `manifests/crds` and its Helm copy, and run the API lifecycle test as
+well as the controller and autoscaling suites. See
+[Kubernetes compatibility](../reference/kubernetes-compatibility.md).
+
 ## OpenAI API
 - Types: See `./api/openai/v1/README.md`
 
@@ -19,8 +34,15 @@
 - Unit tests: `make test-unit`
   * Single unit test (does not work for integration tests): `go test -v ./path/to/package -run TestNamePattern`
 - Integration tests: `make test-integration RUN=SpecificTestToRun`
+- API compatibility smoke test: `make test-integration RUN=TestKubernetesModelLifecycle`
+- Override envtest: `make test-integration ENVTEST_K8S_VERSION=1.37.0`.
+  To use externally installed API server/etcd binaries, set `KUBEBUILDER_ASSETS`
+  and invoke `go test ./test/integration` directly.
+- If a local service uses port 8080, set `KUBEAI_TEST_METRICS_ADDR=127.0.0.1:18080`
+  when running integration tests. Port 8000 must be free for the inference API.
 - E2E tests: `make test-e2e-*` (various test suites)
-  * Must be run with an active `kind` cluster (Run `kind create cluster` if `kubectl config current-context` does not report a cluster as existing).
+  * Must be run with an active `kind` cluster; see the pinned image in the
+    [development environment guide](development-environment.md).
 
 ## Code Style
 - Format: `make fmt` (standard Go formatting)

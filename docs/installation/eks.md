@@ -17,11 +17,17 @@ The following quotas may require an increase if you wish to use GPUs in your EKS
 
 Set the environment variables used throughout this guide:
 
+Use a current `eksctl` release supporting Kubernetes 1.37 and Karpenter 1.15.
+Confirm that EKS offers the selected Kubernetes version in your AWS Region.
+The [Karpenter compatibility matrix](https://karpenter.sh/v1.15/upgrading/compatibility/)
+requires Karpenter 1.15.x for Kubernetes 1.37. Use Amazon Linux 2023 for both
+the managed nodes and NVIDIA GPU nodes.
+
 ```bash
 export CLUSTER_NAME="cluster-with-karpenter"
 export AWS_DEFAULT_REGION="us-west-2"
-export K8S_VERSION="1.30"
-export GPU_AMI_ID="$(aws ssm get-parameter --name /aws/service/eks/optimized-ami/${K8S_VERSION}/amazon-linux-2-gpu/recommended/image_id --query Parameter.Value --output text)"
+export K8S_VERSION="1.37"
+export GPU_AMI_ID="$(aws ssm get-parameter --name /aws/service/eks/optimized-ami/${K8S_VERSION}/amazon-linux-2023/x86_64/nvidia/recommended/image_id --query Parameter.Value --output text)"
 ```
 
 Create the EKS cluster using eksctl:
@@ -41,11 +47,11 @@ iam:
   withOIDC: true # required
 
 karpenter:
-  version: '1.0.6' # Exact version must be specified
+  version: '1.15.0' # Exact version must be specified
 
 managedNodeGroups:
 - instanceType: m5.large
-  amiFamily: AmazonLinux2
+  amiFamily: AmazonLinux2023
   name: "${CLUSTER_NAME}-m5-ng"
   desiredCapacity: 2
   minSize: 1
@@ -93,7 +99,7 @@ kind: EC2NodeClass
 metadata:
   name: gpu
 spec:
-  amiFamily: AL2 # Amazon Linux 2
+  amiFamily: AL2023
   role: "eksctl-KarpenterNodeRole-${CLUSTER_NAME}"
   subnetSelectorTerms:
     - tags:
@@ -102,7 +108,7 @@ spec:
     - tags:
         karpenter.sh/discovery: "${CLUSTER_NAME}" # replace with your cluster name
   amiSelectorTerms:
-    - id: "${GPU_AMI_ID}" # <- GPU Optimized AMD AMI 
+    - id: "${GPU_AMI_ID}" # NVIDIA GPU AMI for x86_64 nodes
   blockDeviceMappings:
     - deviceName: /dev/xvda
       ebs:

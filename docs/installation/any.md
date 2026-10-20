@@ -8,6 +8,10 @@ Please follow the Installation using GPUs section if you have GPUs available.
 
 ## Prerequisites
 
+Kubernetes 1.37 is the current development and CI target. See
+[Kubernetes compatibility](../reference/kubernetes-compatibility.md) for client
+versions, test coverage and cluster upgrade instructions.
+
 1. Add the KubeAI helm repository.
 
 ```bash

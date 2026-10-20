@@ -19,8 +19,10 @@ gcloud pubsub subscriptions create test-kubeai-responses-sub --topic test-kubeai
 
 ## Run in Local Cluster
 
+Install kind v0.33.0 to use the same Kubernetes 1.37 image as CI.
+
 ```bash
-kind create cluster
+kind create cluster --image kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5
 # OR
 #./hack/create-dev-gke-cluster.yaml
 
@@ -28,7 +30,7 @@ kind create cluster
 make generate && make manifests
 
 # When CRDs are changed reapply using kubectl:
-kubectl apply -f ./charts/kubeai/templates/crds
+kubectl apply -f ./manifests/crds
 
 # Model with special address annotations:
 kubectl apply -f ./hack/dev-models/kind-cpu.yaml
