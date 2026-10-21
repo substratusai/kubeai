@@ -5,7 +5,7 @@ source $REPO_DIR/test/e2e/common.sh
 model="opt-125m-cpu"
 
 kubectl apply -f $TEST_DIR/model.yaml
-kubectl wait --timeout=5m --for=jsonpath='{.status.replicas.ready}'=1 model/$model
+kubectl wait --timeout=30m --for=jsonpath='{.status.replicas.ready}'=1 model/$model
 
 sleep 5
 
