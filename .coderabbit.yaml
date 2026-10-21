@@ -1,0 +1,74 @@
+language: "en-US"
+
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  collapse_walkthrough: true
+
+  auto_review:
+    enabled: true
+    drafts: false
+    ignore_title_keywords:
+      - "build(deps)"
+      - "WIP"
+
+  path_filters:
+    - "!**/zz_generated*.go"
+    - "!go.sum"
+    - "!**/*.png"
+    - "!docs/graphs/**"
+    - "!docs/diagrams/**"
+
+  path_instructions:
+    - path: "api/k8s/v1/**"
+      instructions: >-
+        CRD types. Flag any change that breaks backward compatibility of the
+        Model CRD (renamed or removed fields, changed defaults, tighter validation).
+        Check that kubebuilder markers are consistent and remind to run make generate.
+    - path: "internal/modelproxy/**"
+      instructions: >-
+        Hot path for every inference request. Focus on goroutine leaks,
+        context cancellation, request body handling for retries, streaming
+        responses and lock contention.
+    - path: "internal/loadbalancer/**"
+      instructions: >-
+        Prefix-aware (CHWBL) load balancing. Check thread safety, correctness
+        of hashing and behavior when endpoints are added or removed.
+    - path: "internal/modelcontroller/**"
+      instructions: >-
+        Reconciler code. Reconcile must be idempotent, must not hot-loop,
+        must handle NotFound and conflicts, and status updates must be correct.
+    - path: "internal/modelautoscaler/**"
+      instructions: >-
+        Check scale-from-zero and scale-to-zero edge cases and races with the proxy queue.
+    - path: "charts/**"
+      instructions: >-
+        Helm chart. Check that new values are documented in values.yaml, templates
+        render with default values, and RBAC follows least privilege.
+    - path: ".github/workflows/**"
+      instructions: >-
+        Flag overly broad permissions, unpinned third party actions and
+        untrusted input used in run steps.
+    - path: "test/e2e/**"
+      instructions: "Check for flakiness: fixed sleeps, missing timeouts, missing cleanup."
+
+  tools:
+    golangci-lint:
+      enabled: true
+    hadolint:
+      enabled: true
+    shellcheck:
+      enabled: true
+    actionlint:
+      enabled: true
+    yamllint:
+      enabled: true
+    gitleaks:
+      enabled: true
+    markdownlint:
+      enabled: true
+
+chat:
+  auto_reply: true

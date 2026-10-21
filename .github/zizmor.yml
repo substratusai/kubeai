@@ -1,0 +1,10 @@
+rules:
+  artipacked:
+    ignore:
+      - publish-docs.yml:14
+      - release-helm-chart.yml:22
+      - release-tag.yml:37
+      - release.yml:46
+  dependabot-cooldown:
+    ignore:
+      - dependabot.yaml:8

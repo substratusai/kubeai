@@ -12,24 +12,40 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: kubeai-project/kubeai
 
+permissions:
+  contents: read
+
 jobs:
+  required-tests:
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [unit-and-integration, e2e-general, e2e-engines]
+    permissions: {}
+    steps:
+      - name: Require all unit, integration and e2e tests to pass
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: jq -e 'all(.[]; .result == "success")' <<< "$RESULTS"
+
   build-image:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069
 
       - name: Build and export kubeai
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc
         with:
           tags: ghcr.io/kubeai-project/kubeai:test
           outputs: type=docker,dest=${{ runner.temp }}/kubeai.tar
 
       - name: Build and export model loader
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc
         with:
           context: ./components/model-loader
           file: ./components/model-loader/Dockerfile
@@ -37,7 +53,7 @@ jobs:
           outputs: type=docker,dest=${{ runner.temp }}/model-loader.tar
 
       - name: Build and export llmman loader
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc
         with:
           context: ./components/llmman-loader
           file: ./components/llmman-loader/Dockerfile
@@ -45,7 +61,7 @@ jobs:
           outputs: type=docker,dest=${{ runner.temp }}/llmman-loader.tar
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: docker-images
           path: ${{ runner.temp }}/*.tar
@@ -54,10 +70,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
 
       - name: Set up Go
-        uses: actions/setup-go@v7
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
         with:
           go-version-file: go.mod
 
@@ -135,9 +153,11 @@ jobs:
           docker builder prune -af || true
           df -h
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
       - name: Download artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
           name: docker-images
           path: ${{ runner.temp }}
@@ -186,10 +206,12 @@ jobs:
         cacheProfile: ["", "e2e-test-kind-pv"]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
 
       - name: Download artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
           name: docker-images
           path: ${{ runner.temp }}

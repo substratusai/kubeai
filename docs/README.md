@@ -8,6 +8,8 @@
   <img src="https://img.shields.io/github/last-commit/kubeai-project/kubeai/main" />
 </p>
 
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/kubeai-project/kubeai/badge)](https://scorecard.dev/viewer/?uri=github.com/kubeai-project/kubeai)
+
 Deploy and scale machine learning models on Kubernetes. 
 
 Built for LLMs, embeddings, reranking and speech-to-text.

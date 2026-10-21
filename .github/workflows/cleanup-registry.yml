@@ -24,7 +24,7 @@ jobs:
     concurrency:
       group: cleanup-${{ matrix.package }}
     steps:
-      - uses: dataaxiom/ghcr-cleanup-action@v1
+      - uses: dataaxiom/ghcr-cleanup-action@d52806a0dc70b430571a37da1fde39733ffd640f
         with:
           owner: ${{ github.repository_owner }}
           package: ${{ matrix.package }}
