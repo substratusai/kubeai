@@ -162,8 +162,12 @@ func initTest(t *testing.T, cfg config.System) {
 // A function is used to avoid test cases accidentally modifying a global configuration variable
 // which would be tricky to debug.
 func baseSysCfg(t *testing.T) config.System {
+	metricsAddr := os.Getenv("KUBEAI_TEST_METRICS_ADDR")
+	if metricsAddr == "" {
+		metricsAddr = "127.0.0.1:8080"
+	}
 	return config.System{
-		MetricsAddr:   "127.0.0.1:8080",
+		MetricsAddr:   metricsAddr,
 		HealthAddress: "127.0.0.1:0",
 		SecretNames: config.SecretNames{
 			Huggingface: "huggingface",
@@ -260,6 +264,6 @@ func baseSysCfg(t *testing.T) config.System {
 		AllowPodAddressOverride: true,
 		// FixedSelfIPs is used to tell the autoscaler to scrape metrics from the local host
 		// (because KubeAI is not running in a Pod).
-		FixedSelfMetricAddrs: []string{"127.0.0.1:8080"},
+		FixedSelfMetricAddrs: []string{metricsAddr},
 	}
 }

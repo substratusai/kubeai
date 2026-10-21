@@ -1,7 +1,8 @@
 # Image URL to use all building/pushing image targets
 IMG ?= controller:latest
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION = 1.33.0
+# Latest published envtest assets for Kubernetes 1.37; clients use patch 0.37.1.
+ENVTEST_K8S_VERSION ?= 1.37.0
 CRD_REF_DOCS_VERSION = v0.2.0
 SKAFFOLD_VERSION = v2.18.1
 
@@ -171,8 +172,8 @@ YQ ?= $(LOCALBIN)/yq
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v5.4.2
-CONTROLLER_TOOLS_VERSION ?= v0.19.0
-ENVTEST_VERSION ?= release-0.22
+CONTROLLER_TOOLS_VERSION ?= v0.23.0
+ENVTEST_VERSION ?= release-0.25
 GOLANGCI_LINT_VERSION ?= v2.14.0
 YQ_VERSION ?= v4.44.3
 
