@@ -1564,6 +1564,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#kubernetes-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kubernetes dependencies
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#openai-api" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1780,6 +1791,34 @@
     
   
     Kubernetes API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/kubernetes-compatibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kubernetes compatibility
   
 
     
@@ -2230,6 +2269,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#kubernetes-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kubernetes dependencies
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#openai-api" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2311,6 +2361,20 @@
 <li>CI reads the Go version from <code>go.mod</code>. Keep its <code>go</code> directive and the
   builder images in both Dockerfiles aligned when updating Go.</li>
 </ul>
+<h2 id="kubernetes-dependencies">Kubernetes dependencies<a class="headerlink" href="#kubernetes-dependencies" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Kubernetes client libraries: <code>k8s.io/api</code>, <code>apimachinery</code>, <code>client-go</code> and
+  <code>apiextensions-apiserver</code> v0.37.1.</li>
+<li>Controller runtime: v0.25.2. Keep its minor version aligned with the
+  <a href="https://github.com/kubernetes-sigs/controller-runtime#compatibility">upstream compatibility table</a>.</li>
+<li>Code and CRD generator: controller-gen v0.23.0.</li>
+<li>Integration tests: envtest Kubernetes 1.37.0, using setup-envtest release-0.25.</li>
+<li>End-to-end tests: kind v0.33.0 with the published Kubernetes 1.37.0 image.</li>
+</ul>
+<p>Update these together when changing Kubernetes minor versions. Regenerate the
+CRD in <code>manifests/crds</code> and its Helm copy, and run the API lifecycle test as
+well as the controller and autoscaling suites. See
+<a href="../../reference/kubernetes-compatibility/">Kubernetes compatibility</a>.</p>
 <h2 id="openai-api">OpenAI API<a class="headerlink" href="#openai-api" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Types: See <code>./api/openai/v1/README.md</code></li>
@@ -2328,8 +2392,15 @@
 <li>Unit tests: <code>make test-unit</code></li>
 <li>Single unit test (does not work for integration tests): <code>go test -v ./path/to/package -run TestNamePattern</code></li>
 <li>Integration tests: <code>make test-integration RUN=SpecificTestToRun</code></li>
+<li>API compatibility smoke test: <code>make test-integration RUN=TestKubernetesModelLifecycle</code></li>
+<li>Override envtest: <code>make test-integration ENVTEST_K8S_VERSION=1.37.0</code>.
+  To use externally installed API server/etcd binaries, set <code>KUBEBUILDER_ASSETS</code>
+  and invoke <code>go test ./test/integration</code> directly.</li>
+<li>If a local service uses port 8080, set <code>KUBEAI_TEST_METRICS_ADDR=127.0.0.1:18080</code>
+  when running integration tests. Port 8000 must be free for the inference API.</li>
 <li>E2E tests: <code>make test-e2e-*</code> (various test suites)</li>
-<li>Must be run with an active <code>kind</code> cluster (Run <code>kind create cluster</code> if <code>kubectl config current-context</code> does not report a cluster as existing).</li>
+<li>Must be run with an active <code>kind</code> cluster; see the pinned image in the
+    <a href="../development-environment/">development environment guide</a>.</li>
 </ul>
 <h2 id="code-style">Code Style<a class="headerlink" href="#code-style" title="Permanent link">&para;</a></h2>
 <ul>

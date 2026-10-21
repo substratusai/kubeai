@@ -1778,6 +1778,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../reference/kubernetes-compatibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kubernetes compatibility
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../reference/openai-api-compatibility/" class="md-nav__link">
         
   
@@ -2272,10 +2300,15 @@
 </details>
 <h2 id="1-create-eks-cluster-with-karpenter">1. Create EKS cluster with Karpenter<a class="headerlink" href="#1-create-eks-cluster-with-karpenter" title="Permanent link">&para;</a></h2>
 <p>Set the environment variables used throughout this guide:</p>
+<p>Use a current <code>eksctl</code> release supporting Kubernetes 1.37 and Karpenter 1.15.
+Confirm that EKS offers the selected Kubernetes version in your AWS Region.
+The <a href="https://karpenter.sh/v1.15/upgrading/compatibility/">Karpenter compatibility matrix</a>
+requires Karpenter 1.15.x for Kubernetes 1.37. Use Amazon Linux 2023 for both
+the managed nodes and NVIDIA GPU nodes.</p>
 <div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">CLUSTER_NAME</span><span class="o">=</span><span class="s2">"cluster-with-karpenter"</span>
 <span class="nb">export</span><span class="w"> </span><span class="nv">AWS_DEFAULT_REGION</span><span class="o">=</span><span class="s2">"us-west-2"</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">K8S_VERSION</span><span class="o">=</span><span class="s2">"1.30"</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">GPU_AMI_ID</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>aws<span class="w"> </span>ssm<span class="w"> </span>get-parameter<span class="w"> </span>--name<span class="w"> </span>/aws/service/eks/optimized-ami/<span class="si">${</span><span class="nv">K8S_VERSION</span><span class="si">}</span>/amazon-linux-2-gpu/recommended/image_id<span class="w"> </span>--query<span class="w"> </span>Parameter.Value<span class="w"> </span>--output<span class="w"> </span>text<span class="k">)</span><span class="s2">"</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">K8S_VERSION</span><span class="o">=</span><span class="s2">"1.37"</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">GPU_AMI_ID</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>aws<span class="w"> </span>ssm<span class="w"> </span>get-parameter<span class="w"> </span>--name<span class="w"> </span>/aws/service/eks/optimized-ami/<span class="si">${</span><span class="nv">K8S_VERSION</span><span class="si">}</span>/amazon-linux-2023/x86_64/nvidia/recommended/image_id<span class="w"> </span>--query<span class="w"> </span>Parameter.Value<span class="w"> </span>--output<span class="w"> </span>text<span class="k">)</span><span class="s2">"</span>
 </code></pre></div>
 <p>Create the EKS cluster using eksctl:
 <div class="highlight"><pre><span></span><code>eksctl<span class="w"> </span>create<span class="w"> </span>cluster<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;EOF</span>
@@ -2293,11 +2326,11 @@
 <span class="s">  withOIDC: true # required</span>
 
 <span class="s">karpenter:</span>
-<span class="s">  version: '1.0.6' # Exact version must be specified</span>
+<span class="s">  version: '1.15.0' # Exact version must be specified</span>
 
 <span class="s">managedNodeGroups:</span>
 <span class="s">- instanceType: m5.large</span>
-<span class="s">  amiFamily: AmazonLinux2</span>
+<span class="s">  amiFamily: AmazonLinux2023</span>
 <span class="s">  name: "${CLUSTER_NAME}-m5-ng"</span>
 <span class="s">  desiredCapacity: 2</span>
 <span class="s">  minSize: 1</span>
@@ -2341,7 +2374,7 @@
 <span class="s">metadata:</span>
 <span class="s">  name: gpu</span>
 <span class="s">spec:</span>
-<span class="s">  amiFamily: AL2 # Amazon Linux 2</span>
+<span class="s">  amiFamily: AL2023</span>
 <span class="s">  role: "eksctl-KarpenterNodeRole-${CLUSTER_NAME}"</span>
 <span class="s">  subnetSelectorTerms:</span>
 <span class="s">    - tags:</span>
@@ -2350,7 +2383,7 @@
 <span class="s">    - tags:</span>
 <span class="s">        karpenter.sh/discovery: "${CLUSTER_NAME}" # replace with your cluster name</span>
 <span class="s">  amiSelectorTerms:</span>
-<span class="s">    - id: "${GPU_AMI_ID}" # &lt;- GPU Optimized AMD AMI </span>
+<span class="s">    - id: "${GPU_AMI_ID}" # NVIDIA GPU AMI for x86_64 nodes</span>
 <span class="s">  blockDeviceMappings:</span>
 <span class="s">    - deviceName: /dev/xvda</span>
 <span class="s">      ebs:</span>

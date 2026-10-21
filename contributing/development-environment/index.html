@@ -1812,6 +1812,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../reference/kubernetes-compatibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kubernetes compatibility
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../reference/openai-api-compatibility/" class="md-nav__link">
         
   
@@ -2341,7 +2369,8 @@ gcloud<span class="w"> </span>pubsub<span class="w"> </span>topics<span class="w
 gcloud<span class="w"> </span>pubsub<span class="w"> </span>subscriptions<span class="w"> </span>create<span class="w"> </span>test-kubeai-responses-sub<span class="w"> </span>--topic<span class="w"> </span>test-kubeai-responses
 </code></pre></div>
 <h2 id="run-in-local-cluster">Run in Local Cluster<a class="headerlink" href="#run-in-local-cluster" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code>kind<span class="w"> </span>create<span class="w"> </span>cluster
+<p>Install kind v0.33.0 to use the same Kubernetes 1.37 image as CI.</p>
+<div class="highlight"><pre><span></span><code>kind<span class="w"> </span>create<span class="w"> </span>cluster<span class="w"> </span>--image<span class="w"> </span>kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5
 <span class="c1"># OR</span>
 <span class="c1">#./hack/create-dev-gke-cluster.yaml</span>
 
@@ -2349,7 +2378,7 @@ gcloud<span class="w"> </span>pubsub<span class="w"> </span>subscriptions<span c
 make<span class="w"> </span>generate<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>make<span class="w"> </span>manifests
 
 <span class="c1"># When CRDs are changed reapply using kubectl:</span>
-kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>./charts/kubeai/templates/crds
+kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>./manifests/crds
 
 <span class="c1"># Model with special address annotations:</span>
 kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>./hack/dev-models/kind-cpu.yaml
